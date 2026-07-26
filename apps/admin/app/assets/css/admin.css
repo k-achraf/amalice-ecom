@@ -1,0 +1,90 @@
+/*
+ * DS-09 — Polaris × Stripe admin override layer.
+ * Imported AFTER packages/ui's main.css (via apps/admin/nuxt.config.ts css[]),
+ * so it wins on equal specificity. ADMIN-SCOPED ONLY — every token here is
+ * deliberate and must not leak into the storefront (verified by the DS-09
+ * non-leak gate: grep these hexes in apps/storefront + packages/ui = nothing).
+ *
+ * The hybrid:
+ *  - Polaris supplies the skeleton/density discipline (4px grid, hairline
+ *    borders, 14px body, restrained palette, flat-but-layered shadows).
+ *  - Stripe supplies the personality: indigo #635BFF primary (more clickable
+ *    than Polaris's near-black for a SaaS dashboard), #F6F9FC off-white page
+ *    surface, navy #0A2540-based soft shadows, lilac row hover.
+ *
+ * Status semantics (StatusBadge order-lifecycle colors) are SHARED and FROZEN
+ * across both apps — NOT re-skinned here. This override touches primary,
+ * surface, shadow, and density only.
+ */
+:root {
+  /* Stripe indigo replaces Polaris's near-black for primary ACTIONS.
+     Hover/700 ≈ #4F46E5 (Indigo 600). */
+  --ui-primary: #635bff;
+  --color-primary-500: #635bff;
+  --color-primary-600: #5a52f7;
+  --color-primary-700: #4f46e5;
+
+  /* Stripe surfaces: off-white page bg, white cards, navy dark surface. */
+  --color-admin-bg: #f6f9fc;
+  --color-admin-surface: #ffffff;
+  --color-admin-border: #e3e8ee;
+  --color-admin-row-hover: #f4f1ff; /* lilac wash — the Stripe tell */
+  --color-admin-row-selected: #efeffb;
+  --color-admin-text-secondary: #425466;
+  --color-admin-dark: #0a2540; /* deep navy — dark surfaces, shadow base */
+
+  /* Stripe signature: soft, layered, navy-based, low-opacity. Never pure black. */
+  --shadow-admin-sm: 0 1px 2px rgba(10, 37, 64, 0.06), 0 1px 3px rgba(10, 37, 64, 0.04);
+  --shadow-admin-md: 0 4px 10px rgba(10, 37, 64, 0.06), 0 2px 6px rgba(10, 37, 64, 0.05);
+  --shadow-admin-lg: 0 10px 30px rgba(10, 37, 64, 0.1), 0 4px 12px rgba(10, 37, 64, 0.06);
+
+  /* Stripe radius: 6px default for components (their most-used value). */
+  --radius-admin: 6px;
+}
+
+/* Dark mode: deep-navy surfaces (Stripe's #0A2540 family), keep the indigo.
+   Scoped to .dark so it layers on top of the shared dark theme cleanly. */
+.dark {
+  --color-admin-bg: #0a2540;
+  --color-admin-surface: #102a4c;
+  --color-admin-border: #1d3a5e;
+  --color-admin-row-hover: #16365e;
+  --color-admin-row-selected: #1a3a66;
+  --color-admin-text-secondary: #9bb0c9;
+}
+
+/* Page background — applied on the dashboard layout root via the
+   .admin-surface class, NOT globally, so /style-guide (shared, inherited
+   from the storefront look) stays neutral. */
+.admin-surface {
+  background-color: var(--color-admin-bg);
+  min-height: 100vh;
+}
+
+/* Stripe-style data table treatment, applied via utility classes on UTable.
+  - no harsh zebra: white rows on the page bg
+  - 1px hairline separators (#E3E8EE)
+  - comfortable-but-dense: ~44–48px row height, 16px h-padding
+  - header: secondary grey text, 11–12px, weight 500 */
+.admin-table :deep(thead th) {
+  color: var(--color-admin-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  border-bottom: 1px solid var(--color-admin-border);
+}
+.admin-table :deep(tbody td) {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-admin-border);
+}
+.admin-table :deep(tbody tr:hover td) {
+  background-color: var(--color-admin-row-hover);
+}
+
+/* KPI card — Stripe look: white surface, soft navy shadow, tabular numbers. */
+.admin-kpi-card {
+  background-color: var(--color-admin-surface);
+  border: 1px solid var(--color-admin-border);
+  border-radius: var(--radius-admin);
+  box-shadow: var(--shadow-admin-sm);
+}

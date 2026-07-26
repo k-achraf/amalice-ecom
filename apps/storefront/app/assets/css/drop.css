@@ -1,0 +1,164 @@
+/*
+ * Drop template — a streetwear / sneaker-drop hype system, scoped to
+ * .tpl-drop. Like nova/atelier, Drop renders ZERO @nuxt/ui components —
+ * every interactive element (components/drop/ui/*) is hand-built from plain
+ * Tailwind, so there is nothing to re-skin via Nuxt UI's --ui-* semantic
+ * tokens here. This file only needs to: (1) point the shared bg-primary-* /
+ * text-primary-* / bg-neutral-* utilities at Drop's fiery red-orange +
+ * cold-neutral ramps, since those utility classes already exist globally
+ * (generated once in packages/ui/main.css) and Drop's own components use
+ * them directly, and (2) register the new tokens Drop introduces (display
+ * font, sticker motif) that nothing else needs.
+ *
+ * Nike SNKRS / StockX energy: black surface (#0a0a0a), a loud "drop red"
+ * accent, ultra-condensed heavy Anton display type, sharp zero-radius
+ * corners everywhere, and — the key differentiator from Nova's hard-offset
+ * shadows and Atelier's glow shadows — NO shadow anywhere. Hierarchy comes
+ * from border/contrast only. Diagonal rotated sticker tags ("NEW DROP",
+ * "LIMITED", "SOLD OUT") are the one rounded, one-off shape.
+ */
+
+.tpl-drop {
+  /* "Drop red" — the loud fiery accent. 500 is the hero red-orange used for
+     CTAs/accents; 600/700 are the pressed/hover stops. */
+  --color-primary-50: #fff1ec;
+  --color-primary-100: #ffe0d1;
+  --color-primary-200: #ffbfa3;
+  --color-primary-300: #ff9670;
+  --color-primary-400: #ff6340;
+  --color-primary-500: #ff3300;
+  --color-primary-600: #d62900;
+  --color-primary-700: #a82000;
+  --color-primary-800: #7a1700;
+  --color-primary-900: #4d0f00;
+  --color-primary-950: #2b0800;
+
+  /* CRITICAL: Tailwind's `@theme default inline` (packages/ui/main.css)
+     compiles `bg-primary-600` etc. straight to
+     `background-color: var(--ui-color-primary-600)` — it inlines through
+     the --color-primary-* indirection at build time, so overriding
+     --color-primary-* alone (above) never reaches the generated utility
+     classes. Confirmed on Nova. Every bg-primary-* / text-primary-* /
+     border-primary-* utility Drop's own components use needs
+     --ui-color-primary-* overridden too. */
+  --ui-color-primary-50: #fff1ec;
+  --ui-color-primary-100: #ffe0d1;
+  --ui-color-primary-200: #ffbfa3;
+  --ui-color-primary-300: #ff9670;
+  --ui-color-primary-400: #ff6340;
+  --ui-color-primary-500: #ff3300;
+  --ui-color-primary-600: #d62900;
+  --ui-color-primary-700: #a82000;
+  --ui-color-primary-800: #7a1700;
+  --ui-color-primary-900: #4d0f00;
+  --ui-color-primary-950: #2b0800;
+
+  /* True cold black/white/gray neutral ramp (NOT Tailwind's default warm
+     zinc/gray) — used directly via bg-neutral-* / text-neutral-* /
+     border-neutral-* utilities across every Drop component for panels,
+     dividers and muted text on the black surface. The 0 (#ffffff) stop
+     is not a valid Tailwind step name; components use the built-in white
+     utility for that instead. */
+  --color-neutral-50: #f5f5f5;
+  --color-neutral-100: #e8e8e8;
+  --color-neutral-200: #d1d1d1;
+  --color-neutral-300: #ababab;
+  --color-neutral-400: #7a7a7a;
+  --color-neutral-500: #525252;
+  --color-neutral-600: #3a3a3a;
+  --color-neutral-700: #262626;
+  --color-neutral-800: #171717;
+  --color-neutral-900: #0a0a0a;
+  --color-neutral-950: #000000;
+
+  --ui-color-neutral-50: #f5f5f5;
+  --ui-color-neutral-100: #e8e8e8;
+  --ui-color-neutral-200: #d1d1d1;
+  --ui-color-neutral-300: #ababab;
+  --ui-color-neutral-400: #7a7a7a;
+  --ui-color-neutral-500: #525252;
+  --ui-color-neutral-600: #3a3a3a;
+  --ui-color-neutral-700: #262626;
+  --ui-color-neutral-800: #171717;
+  --ui-color-neutral-900: #0a0a0a;
+  --ui-color-neutral-950: #000000;
+
+  --font-drop-display: 'Anton', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Display type — headings and anything opting into `.font-display` render in
+   Anton: ultra-condensed, heavy (Anton only ships one weight, ~800),
+   uppercase, tight tracking. Body text stays Inter (inherited from
+   packages/ui). */
+.tpl-drop h1,
+.tpl-drop h2,
+.tpl-drop h3,
+.tpl-drop .font-display {
+  font-family: var(--font-drop-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+
+/* The sticker badge — rotated pill, used for New Drop/Limited/Sold Out tags.
+   Deliberately the ONLY fully-rounded shape in the template; everything
+   structural (cards, buttons, inputs) stays sharp-cornered (radius: 0) by
+   contrast. No shadow, per the flat-design brief — the black/white outline
+   plus rotation carries all the energy. */
+.tpl-drop .sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transform: rotate(-5deg);
+  background-color: var(--color-primary-500);
+  color: #0a0a0a;
+}
+.tpl-drop .sticker-dark {
+  background-color: #000000;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transform: rotate(4deg);
+}
+.tpl-drop .sticker-outline {
+  background-color: transparent;
+  color: var(--color-primary-500);
+  border: 1px solid var(--color-primary-500);
+  transform: rotate(-4deg);
+}
+
+/* Diagonal insert — the full-bleed hero visual's signature clip, a hard
+   angled cut echoing the Anton display type's slant. Independent of the
+   max-w-7xl text column so it can bleed to the true viewport edge. */
+.tpl-drop .drop-diagonal-insert {
+  clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+/* PDP diagonal accent — a big angled block bleeding behind the gallery on
+   the product page, echoing the hero's diagonal insert at a smaller scale. */
+.tpl-drop .drop-pdp-diagonal {
+  clip-path: polygon(0 0, 100% 12%, 82% 100%, 0 88%);
+  z-index: 0;
+}
+
+/* Marquee — thin scrolling announcement strip, an optional chrome flourish
+   echoing Nova's header signature. Respects reduced-motion. */
+.tpl-drop .drop-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: drop-marquee 20s linear infinite;
+}
+@keyframes drop-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tpl-drop .drop-marquee-track {
+    animation: none;
+  }
+}

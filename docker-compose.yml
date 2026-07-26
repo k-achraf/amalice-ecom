@@ -1,0 +1,57 @@
+name: amalice
+
+services:
+  postgres:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-amalice}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-amalice_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-amalice}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      # PG18 changed the image's internal data layout to a version-specific
+      # subdirectory (/var/lib/postgresql/<version>/docker) — mount the
+      # parent VOLUME rather than the old .../data path so it survives
+      # future major-version image bumps without a manual migration.
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-amalice} -d ${POSTGRES_DB:-amalice}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:8
+    restart: unless-stopped
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    restart: unless-stopped
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-amalice_dev_master_key}
+      MEILI_ENV: development
+    ports:
+      - '${MEILI_PORT:-7700}:7700'
+    volumes:
+      - meilisearch-data:/meili_data
+    healthcheck:
+      test: ['CMD', 'curl', '-sf', 'http://127.0.0.1:7700/health']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres-data:
+  redis-data:
+  meilisearch-data:

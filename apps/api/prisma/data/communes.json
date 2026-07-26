@@ -1,0 +1,10250 @@
+[
+  {
+    "id": "1",
+    "name": "Adrar",
+    "postCode": "01001",
+    "wilayaId": "1"
+  },
+  {
+    "id": "2",
+    "name": "Tamest",
+    "postCode": "01002",
+    "wilayaId": "1"
+  },
+  {
+    "id": "3",
+    "name": "Charouine",
+    "postCode": "49003",
+    "wilayaId": "49"
+  },
+  {
+    "id": "4",
+    "name": "Reggane",
+    "postCode": "01004",
+    "wilayaId": "1"
+  },
+  {
+    "id": "5",
+    "name": "In Zghmir",
+    "postCode": "01005",
+    "wilayaId": "1"
+  },
+  {
+    "id": "6",
+    "name": "Tit",
+    "postCode": "01006",
+    "wilayaId": "1"
+  },
+  {
+    "id": "7",
+    "name": "Ksar Kaddour",
+    "postCode": "49007",
+    "wilayaId": "49"
+  },
+  {
+    "id": "8",
+    "name": "Tsabit",
+    "postCode": "01008",
+    "wilayaId": "1"
+  },
+  {
+    "id": "9",
+    "name": "Timimoun",
+    "postCode": "49009",
+    "wilayaId": "49"
+  },
+  {
+    "id": "10",
+    "name": "Ouled Said",
+    "postCode": "49010",
+    "wilayaId": "49"
+  },
+  {
+    "id": "11",
+    "name": "Zaouiet Kounta",
+    "postCode": "01011",
+    "wilayaId": "1"
+  },
+  {
+    "id": "12",
+    "name": "Aoulef",
+    "postCode": "01012",
+    "wilayaId": "1"
+  },
+  {
+    "id": "13",
+    "name": "Timokten",
+    "postCode": "01013",
+    "wilayaId": "1"
+  },
+  {
+    "id": "14",
+    "name": "Tamentit",
+    "postCode": "01014",
+    "wilayaId": "1"
+  },
+  {
+    "id": "15",
+    "name": "Fenoughil",
+    "postCode": "01015",
+    "wilayaId": "1"
+  },
+  {
+    "id": "16",
+    "name": "Tinerkouk",
+    "postCode": "49016",
+    "wilayaId": "49"
+  },
+  {
+    "id": "17",
+    "name": "Deldoul",
+    "postCode": "49017",
+    "wilayaId": "49"
+  },
+  {
+    "id": "18",
+    "name": "Sali",
+    "postCode": "01018",
+    "wilayaId": "1"
+  },
+  {
+    "id": "19",
+    "name": "Akabli",
+    "postCode": "01019",
+    "wilayaId": "1"
+  },
+  {
+    "id": "20",
+    "name": "Metarfa",
+    "postCode": "49020",
+    "wilayaId": "49"
+  },
+  {
+    "id": "21",
+    "name": "Ouled Ahmed Tammi",
+    "postCode": "01021",
+    "wilayaId": "1"
+  },
+  {
+    "id": "22",
+    "name": "Bouda",
+    "postCode": "01022",
+    "wilayaId": "1"
+  },
+  {
+    "id": "23",
+    "name": "Aougrout",
+    "postCode": "49023",
+    "wilayaId": "49"
+  },
+  {
+    "id": "24",
+    "name": "Talmine",
+    "postCode": "49024",
+    "wilayaId": "49"
+  },
+  {
+    "id": "25",
+    "name": "Bordj Badji Mokhtar",
+    "postCode": "50025",
+    "wilayaId": "50"
+  },
+  {
+    "id": "26",
+    "name": "Sbaa",
+    "postCode": "01026",
+    "wilayaId": "1"
+  },
+  {
+    "id": "27",
+    "name": "Ouled Aissa",
+    "postCode": "49027",
+    "wilayaId": "49"
+  },
+  {
+    "id": "28",
+    "name": "Timiaouine",
+    "postCode": "50028",
+    "wilayaId": "50"
+  },
+  {
+    "id": "29",
+    "name": "Chlef",
+    "postCode": "02001",
+    "wilayaId": "2"
+  },
+  {
+    "id": "30",
+    "name": "Tenes",
+    "postCode": "02002",
+    "wilayaId": "2"
+  },
+  {
+    "id": "31",
+    "name": "Benairia",
+    "postCode": "02003",
+    "wilayaId": "2"
+  },
+  {
+    "id": "32",
+    "name": "El Karimia",
+    "postCode": "02004",
+    "wilayaId": "2"
+  },
+  {
+    "id": "33",
+    "name": "Tadjna",
+    "postCode": "02005",
+    "wilayaId": "2"
+  },
+  {
+    "id": "34",
+    "name": "Taougrite",
+    "postCode": "02006",
+    "wilayaId": "2"
+  },
+  {
+    "id": "35",
+    "name": "Beni Haoua",
+    "postCode": "02007",
+    "wilayaId": "2"
+  },
+  {
+    "id": "36",
+    "name": "Sobha",
+    "postCode": "02008",
+    "wilayaId": "2"
+  },
+  {
+    "id": "37",
+    "name": "Harchoun",
+    "postCode": "02009",
+    "wilayaId": "2"
+  },
+  {
+    "id": "38",
+    "name": "Ouled Fares",
+    "postCode": "02010",
+    "wilayaId": "2"
+  },
+  {
+    "id": "39",
+    "name": "Sidi Akacha",
+    "postCode": "02011",
+    "wilayaId": "2"
+  },
+  {
+    "id": "40",
+    "name": "Boukadir",
+    "postCode": "02012",
+    "wilayaId": "2"
+  },
+  {
+    "id": "41",
+    "name": "Beni Rached",
+    "postCode": "02013",
+    "wilayaId": "2"
+  },
+  {
+    "id": "42",
+    "name": "Talassa",
+    "postCode": "02014",
+    "wilayaId": "2"
+  },
+  {
+    "id": "43",
+    "name": "Herenfa",
+    "postCode": "02015",
+    "wilayaId": "2"
+  },
+  {
+    "id": "44",
+    "name": "Oued Goussine",
+    "postCode": "02016",
+    "wilayaId": "2"
+  },
+  {
+    "id": "45",
+    "name": "Dahra",
+    "postCode": "02017",
+    "wilayaId": "2"
+  },
+  {
+    "id": "46",
+    "name": "Ouled Abbes",
+    "postCode": "02018",
+    "wilayaId": "2"
+  },
+  {
+    "id": "47",
+    "name": "Sendjas",
+    "postCode": "02019",
+    "wilayaId": "2"
+  },
+  {
+    "id": "48",
+    "name": "Zeboudja",
+    "postCode": "02020",
+    "wilayaId": "2"
+  },
+  {
+    "id": "49",
+    "name": "Oued Sly",
+    "postCode": "02021",
+    "wilayaId": "2"
+  },
+  {
+    "id": "50",
+    "name": "Abou El Hassen",
+    "postCode": "02022",
+    "wilayaId": "2"
+  },
+  {
+    "id": "51",
+    "name": "El Marsa",
+    "postCode": "02023",
+    "wilayaId": "2"
+  },
+  {
+    "id": "52",
+    "name": "Chettia",
+    "postCode": "02024",
+    "wilayaId": "2"
+  },
+  {
+    "id": "53",
+    "name": "Sidi Abderrahmane",
+    "postCode": "02025",
+    "wilayaId": "2"
+  },
+  {
+    "id": "54",
+    "name": "Moussadek",
+    "postCode": "02026",
+    "wilayaId": "2"
+  },
+  {
+    "id": "55",
+    "name": "El Hadjadj",
+    "postCode": "02027",
+    "wilayaId": "2"
+  },
+  {
+    "id": "56",
+    "name": "Labiod Medjadja",
+    "postCode": "02028",
+    "wilayaId": "2"
+  },
+  {
+    "id": "57",
+    "name": "Oued Fodda",
+    "postCode": "02029",
+    "wilayaId": "2"
+  },
+  {
+    "id": "58",
+    "name": "Ouled Ben Abdelkader",
+    "postCode": "02030",
+    "wilayaId": "2"
+  },
+  {
+    "id": "59",
+    "name": "Bouzghaia",
+    "postCode": "02031",
+    "wilayaId": "2"
+  },
+  {
+    "id": "60",
+    "name": "Ain Merane",
+    "postCode": "02032",
+    "wilayaId": "2"
+  },
+  {
+    "id": "61",
+    "name": "Oum Drou",
+    "postCode": "02033",
+    "wilayaId": "2"
+  },
+  {
+    "id": "62",
+    "name": "Breira",
+    "postCode": "02034",
+    "wilayaId": "2"
+  },
+  {
+    "id": "63",
+    "name": "Beni Bouateb",
+    "postCode": "02035",
+    "wilayaId": "2"
+  },
+  {
+    "id": "64",
+    "name": "Laghouat",
+    "postCode": "03001",
+    "wilayaId": "3"
+  },
+  {
+    "id": "65",
+    "name": "Ksar El Hirane",
+    "postCode": "03002",
+    "wilayaId": "3"
+  },
+  {
+    "id": "66",
+    "name": "Benacer Ben Chohra",
+    "postCode": "03003",
+    "wilayaId": "3"
+  },
+  {
+    "id": "67",
+    "name": "Sidi Makhlouf",
+    "postCode": "03004",
+    "wilayaId": "3"
+  },
+  {
+    "id": "68",
+    "name": "Hassi Delaa",
+    "postCode": "03005",
+    "wilayaId": "3"
+  },
+  {
+    "id": "69",
+    "name": "Hassi R'Mel",
+    "postCode": "03006",
+    "wilayaId": "3"
+  },
+  {
+    "id": "70",
+    "name": "Ain Mahdi",
+    "postCode": "03007",
+    "wilayaId": "3"
+  },
+  {
+    "id": "71",
+    "name": "Tadjmout",
+    "postCode": "03008",
+    "wilayaId": "3"
+  },
+  {
+    "id": "72",
+    "name": "El Kheneg",
+    "postCode": "03009",
+    "wilayaId": "3"
+  },
+  {
+    "id": "73",
+    "name": "Gueltat Sidi Saad",
+    "postCode": "59010",
+    "wilayaId": "59"
+  },
+  {
+    "id": "74",
+    "name": "Ain Sidi Ali",
+    "postCode": "59011",
+    "wilayaId": "59"
+  },
+  {
+    "id": "75",
+    "name": "Beidha",
+    "postCode": "59012",
+    "wilayaId": "59"
+  },
+  {
+    "id": "76",
+    "name": "Brida",
+    "postCode": "59013",
+    "wilayaId": "59"
+  },
+  {
+    "id": "77",
+    "name": "El Ghicha",
+    "postCode": "59014",
+    "wilayaId": "59"
+  },
+  {
+    "id": "78",
+    "name": "Hadj Mechri",
+    "postCode": "03015",
+    "wilayaId": "3"
+  },
+  {
+    "id": "79",
+    "name": "Sebgag",
+    "postCode": "59016",
+    "wilayaId": "59"
+  },
+  {
+    "id": "80",
+    "name": "Taouiala",
+    "postCode": "03017",
+    "wilayaId": "3"
+  },
+  {
+    "id": "81",
+    "name": "Tadjrouna",
+    "postCode": "03018",
+    "wilayaId": "3"
+  },
+  {
+    "id": "82",
+    "name": "Aflou",
+    "postCode": "59019",
+    "wilayaId": "59"
+  },
+  {
+    "id": "83",
+    "name": "El Assafia",
+    "postCode": "03020",
+    "wilayaId": "3"
+  },
+  {
+    "id": "84",
+    "name": "Oued Morra",
+    "postCode": "59021",
+    "wilayaId": "59"
+  },
+  {
+    "id": "85",
+    "name": "Oued M'Zi",
+    "postCode": "03022",
+    "wilayaId": "3"
+  },
+  {
+    "id": "86",
+    "name": "El Haouaita",
+    "postCode": "03023",
+    "wilayaId": "3"
+  },
+  {
+    "id": "87",
+    "name": "Sidi Bouzid",
+    "postCode": "59024",
+    "wilayaId": "59"
+  },
+  {
+    "id": "88",
+    "name": "Oum El Bouaghi",
+    "postCode": "04001",
+    "wilayaId": "4"
+  },
+  {
+    "id": "89",
+    "name": "Ain Beida",
+    "postCode": "04002",
+    "wilayaId": "4"
+  },
+  {
+    "id": "90",
+    "name": "Ain M'lila",
+    "postCode": "04003",
+    "wilayaId": "4"
+  },
+  {
+    "id": "91",
+    "name": "Behir Chergui",
+    "postCode": "04004",
+    "wilayaId": "4"
+  },
+  {
+    "id": "92",
+    "name": "El Amiria",
+    "postCode": "04005",
+    "wilayaId": "4"
+  },
+  {
+    "id": "93",
+    "name": "Sigus",
+    "postCode": "04006",
+    "wilayaId": "4"
+  },
+  {
+    "id": "94",
+    "name": "El Belala",
+    "postCode": "04007",
+    "wilayaId": "4"
+  },
+  {
+    "id": "95",
+    "name": "Ain Babouche",
+    "postCode": "04008",
+    "wilayaId": "4"
+  },
+  {
+    "id": "96",
+    "name": "Berriche",
+    "postCode": "04009",
+    "wilayaId": "4"
+  },
+  {
+    "id": "97",
+    "name": "Ouled Hamla",
+    "postCode": "04010",
+    "wilayaId": "4"
+  },
+  {
+    "id": "98",
+    "name": "Dhala",
+    "postCode": "04011",
+    "wilayaId": "4"
+  },
+  {
+    "id": "99",
+    "name": "Ain Kercha",
+    "postCode": "04012",
+    "wilayaId": "4"
+  },
+  {
+    "id": "100",
+    "name": "Hanchir Toumghani",
+    "postCode": "04013",
+    "wilayaId": "4"
+  },
+  {
+    "id": "101",
+    "name": "El Djazia",
+    "postCode": "04014",
+    "wilayaId": "4"
+  },
+  {
+    "id": "102",
+    "name": "Ain Diss",
+    "postCode": "04015",
+    "wilayaId": "4"
+  },
+  {
+    "id": "103",
+    "name": "Fkirina",
+    "postCode": "04016",
+    "wilayaId": "4"
+  },
+  {
+    "id": "104",
+    "name": "Souk Naamane",
+    "postCode": "04017",
+    "wilayaId": "4"
+  },
+  {
+    "id": "105",
+    "name": "Zorg",
+    "postCode": "04018",
+    "wilayaId": "4"
+  },
+  {
+    "id": "106",
+    "name": "El Fedjoudj Boughrara Saoudi",
+    "postCode": "04019",
+    "wilayaId": "4"
+  },
+  {
+    "id": "107",
+    "name": "Ouled Zouai",
+    "postCode": "04020",
+    "wilayaId": "4"
+  },
+  {
+    "id": "108",
+    "name": "Bir Chouhada",
+    "postCode": "04021",
+    "wilayaId": "4"
+  },
+  {
+    "id": "109",
+    "name": "Ksar Sbahi",
+    "postCode": "04022",
+    "wilayaId": "4"
+  },
+  {
+    "id": "110",
+    "name": "Oued Nini",
+    "postCode": "04023",
+    "wilayaId": "4"
+  },
+  {
+    "id": "111",
+    "name": "Meskiana",
+    "postCode": "04024",
+    "wilayaId": "4"
+  },
+  {
+    "id": "112",
+    "name": "Ain Fekroune",
+    "postCode": "04025",
+    "wilayaId": "4"
+  },
+  {
+    "id": "113",
+    "name": "Rahia",
+    "postCode": "04026",
+    "wilayaId": "4"
+  },
+  {
+    "id": "114",
+    "name": "Ain Zitoun",
+    "postCode": "04027",
+    "wilayaId": "4"
+  },
+  {
+    "id": "115",
+    "name": "Ouled Gacem",
+    "postCode": "04028",
+    "wilayaId": "4"
+  },
+  {
+    "id": "116",
+    "name": "El Harmilia",
+    "postCode": "04029",
+    "wilayaId": "4"
+  },
+  {
+    "id": "117",
+    "name": "Batna",
+    "postCode": "05001",
+    "wilayaId": "5"
+  },
+  {
+    "id": "118",
+    "name": "Ghassira",
+    "postCode": "05002",
+    "wilayaId": "5"
+  },
+  {
+    "id": "119",
+    "name": "Maafa",
+    "postCode": "05003",
+    "wilayaId": "5"
+  },
+  {
+    "id": "120",
+    "name": "Merouana",
+    "postCode": "05004",
+    "wilayaId": "5"
+  },
+  {
+    "id": "121",
+    "name": "Seriana",
+    "postCode": "05005",
+    "wilayaId": "5"
+  },
+  {
+    "id": "122",
+    "name": "Menaa",
+    "postCode": "05006",
+    "wilayaId": "5"
+  },
+  {
+    "id": "123",
+    "name": "El Madher",
+    "postCode": "60007",
+    "wilayaId": "60"
+  },
+  {
+    "id": "124",
+    "name": "Tazoult",
+    "postCode": "05008",
+    "wilayaId": "5"
+  },
+  {
+    "id": "125",
+    "name": "Ngaous",
+    "postCode": "05009",
+    "wilayaId": "5"
+  },
+  {
+    "id": "126",
+    "name": "Guigba",
+    "postCode": "05010",
+    "wilayaId": "5"
+  },
+  {
+    "id": "127",
+    "name": "Inoughissen",
+    "postCode": "05011",
+    "wilayaId": "5"
+  },
+  {
+    "id": "128",
+    "name": "Ouyoun El Assafir",
+    "postCode": "05012",
+    "wilayaId": "5"
+  },
+  {
+    "id": "129",
+    "name": "Djerma",
+    "postCode": "60013",
+    "wilayaId": "60"
+  },
+  {
+    "id": "130",
+    "name": "Bitam",
+    "postCode": "60014",
+    "wilayaId": "60"
+  },
+  {
+    "id": "131",
+    "name": "Metkaouak",
+    "postCode": "05015",
+    "wilayaId": "5"
+  },
+  {
+    "id": "132",
+    "name": "Arris",
+    "postCode": "05016",
+    "wilayaId": "5"
+  },
+  {
+    "id": "133",
+    "name": "Kimmel",
+    "postCode": "05017",
+    "wilayaId": "5"
+  },
+  {
+    "id": "134",
+    "name": "Tilatou",
+    "postCode": "05018",
+    "wilayaId": "5"
+  },
+  {
+    "id": "135",
+    "name": "Ain Djasser",
+    "postCode": "05019",
+    "wilayaId": "5"
+  },
+  {
+    "id": "136",
+    "name": "Ouled Selam",
+    "postCode": "05020",
+    "wilayaId": "5"
+  },
+  {
+    "id": "137",
+    "name": "Tigherghar",
+    "postCode": "05021",
+    "wilayaId": "5"
+  },
+  {
+    "id": "138",
+    "name": "Ain Yagout",
+    "postCode": "05022",
+    "wilayaId": "5"
+  },
+  {
+    "id": "139",
+    "name": "Fesdis",
+    "postCode": "05023",
+    "wilayaId": "5"
+  },
+  {
+    "id": "140",
+    "name": "Sefiane",
+    "postCode": "05024",
+    "wilayaId": "5"
+  },
+  {
+    "id": "141",
+    "name": "Rahbat",
+    "postCode": "05025",
+    "wilayaId": "5"
+  },
+  {
+    "id": "142",
+    "name": "Tighanimine",
+    "postCode": "05026",
+    "wilayaId": "5"
+  },
+  {
+    "id": "143",
+    "name": "Lemsane",
+    "postCode": "05027",
+    "wilayaId": "5"
+  },
+  {
+    "id": "144",
+    "name": "Ksar Belezma",
+    "postCode": "05028",
+    "wilayaId": "5"
+  },
+  {
+    "id": "145",
+    "name": "Seggana",
+    "postCode": "60029",
+    "wilayaId": "60"
+  },
+  {
+    "id": "146",
+    "name": "Ichmoul",
+    "postCode": "05030",
+    "wilayaId": "5"
+  },
+  {
+    "id": "147",
+    "name": "Foum Toub",
+    "postCode": "05031",
+    "wilayaId": "5"
+  },
+  {
+    "id": "148",
+    "name": "Beni Foudhala El Hakania",
+    "postCode": "05032",
+    "wilayaId": "5"
+  },
+  {
+    "id": "149",
+    "name": "Oued El Ma",
+    "postCode": "05033",
+    "wilayaId": "5"
+  },
+  {
+    "id": "150",
+    "name": "Talkhamt",
+    "postCode": "05034",
+    "wilayaId": "5"
+  },
+  {
+    "id": "151",
+    "name": "Bouzina",
+    "postCode": "05035",
+    "wilayaId": "5"
+  },
+  {
+    "id": "152",
+    "name": "Chemora",
+    "postCode": "05036",
+    "wilayaId": "5"
+  },
+  {
+    "id": "153",
+    "name": "Oued Chaaba",
+    "postCode": "05037",
+    "wilayaId": "5"
+  },
+  {
+    "id": "154",
+    "name": "Taxlent",
+    "postCode": "05038",
+    "wilayaId": "5"
+  },
+  {
+    "id": "155",
+    "name": "Gosbat",
+    "postCode": "05039",
+    "wilayaId": "5"
+  },
+  {
+    "id": "156",
+    "name": "Ouled Aouf",
+    "postCode": "05040",
+    "wilayaId": "5"
+  },
+  {
+    "id": "157",
+    "name": "Boumagueur",
+    "postCode": "05041",
+    "wilayaId": "5"
+  },
+  {
+    "id": "158",
+    "name": "Barika",
+    "postCode": "60042",
+    "wilayaId": "60"
+  },
+  {
+    "id": "159",
+    "name": "Djezzar",
+    "postCode": "05043",
+    "wilayaId": "5"
+  },
+  {
+    "id": "160",
+    "name": "Tkout",
+    "postCode": "05044",
+    "wilayaId": "5"
+  },
+  {
+    "id": "161",
+    "name": "Ain Touta",
+    "postCode": "05045",
+    "wilayaId": "5"
+  },
+  {
+    "id": "162",
+    "name": "Hidoussa",
+    "postCode": "05046",
+    "wilayaId": "5"
+  },
+  {
+    "id": "163",
+    "name": "Teniet El Abed",
+    "postCode": "05047",
+    "wilayaId": "5"
+  },
+  {
+    "id": "164",
+    "name": "Oued Taga",
+    "postCode": "05048",
+    "wilayaId": "5"
+  },
+  {
+    "id": "165",
+    "name": "Ouled Fadel",
+    "postCode": "05049",
+    "wilayaId": "5"
+  },
+  {
+    "id": "166",
+    "name": "Timgad",
+    "postCode": "05050",
+    "wilayaId": "5"
+  },
+  {
+    "id": "167",
+    "name": "Ras El Aioun",
+    "postCode": "05051",
+    "wilayaId": "5"
+  },
+  {
+    "id": "168",
+    "name": "Chir",
+    "postCode": "05052",
+    "wilayaId": "5"
+  },
+  {
+    "id": "169",
+    "name": "Ouled Si Slimane",
+    "postCode": "05053",
+    "wilayaId": "5"
+  },
+  {
+    "id": "170",
+    "name": "Zanat El Beida",
+    "postCode": "05054",
+    "wilayaId": "5"
+  },
+  {
+    "id": "171",
+    "name": "M'doukel",
+    "postCode": "05055",
+    "wilayaId": "5"
+  },
+  {
+    "id": "172",
+    "name": "Ouled Ammar",
+    "postCode": "60056",
+    "wilayaId": "60"
+  },
+  {
+    "id": "173",
+    "name": "El Hassi",
+    "postCode": "05057",
+    "wilayaId": "5"
+  },
+  {
+    "id": "174",
+    "name": "Lazrou",
+    "postCode": "05058",
+    "wilayaId": "5"
+  },
+  {
+    "id": "175",
+    "name": "Boumia",
+    "postCode": "05059",
+    "wilayaId": "5"
+  },
+  {
+    "id": "176",
+    "name": "Boulhilat",
+    "postCode": "05060",
+    "wilayaId": "5"
+  },
+  {
+    "id": "177",
+    "name": "Larbaa",
+    "postCode": "05061",
+    "wilayaId": "5"
+  },
+  {
+    "id": "178",
+    "name": "Bejaia",
+    "postCode": "06001",
+    "wilayaId": "6"
+  },
+  {
+    "id": "179",
+    "name": "Amizour",
+    "postCode": "06002",
+    "wilayaId": "6"
+  },
+  {
+    "id": "180",
+    "name": "Ferraoun",
+    "postCode": "06003",
+    "wilayaId": "6"
+  },
+  {
+    "id": "181",
+    "name": "Taourirt Ighil",
+    "postCode": "06004",
+    "wilayaId": "6"
+  },
+  {
+    "id": "182",
+    "name": "Chelata",
+    "postCode": "06005",
+    "wilayaId": "6"
+  },
+  {
+    "id": "183",
+    "name": "Tamokra",
+    "postCode": "06006",
+    "wilayaId": "6"
+  },
+  {
+    "id": "184",
+    "name": "Timzrit",
+    "postCode": "06007",
+    "wilayaId": "6"
+  },
+  {
+    "id": "185",
+    "name": "Souk El Thenine",
+    "postCode": "06008",
+    "wilayaId": "6"
+  },
+  {
+    "id": "186",
+    "name": "M'cisna",
+    "postCode": "06009",
+    "wilayaId": "6"
+  },
+  {
+    "id": "187",
+    "name": "Thinabdher",
+    "postCode": "06010",
+    "wilayaId": "6"
+  },
+  {
+    "id": "188",
+    "name": "Tichi",
+    "postCode": "06011",
+    "wilayaId": "6"
+  },
+  {
+    "id": "189",
+    "name": "Semaoun",
+    "postCode": "06012",
+    "wilayaId": "6"
+  },
+  {
+    "id": "190",
+    "name": "Kendira",
+    "postCode": "06013",
+    "wilayaId": "6"
+  },
+  {
+    "id": "191",
+    "name": "Tifra",
+    "postCode": "06014",
+    "wilayaId": "6"
+  },
+  {
+    "id": "192",
+    "name": "Ighram",
+    "postCode": "06015",
+    "wilayaId": "6"
+  },
+  {
+    "id": "193",
+    "name": "Amalou",
+    "postCode": "06016",
+    "wilayaId": "6"
+  },
+  {
+    "id": "194",
+    "name": "Ighil Ali",
+    "postCode": "06017",
+    "wilayaId": "6"
+  },
+  {
+    "id": "195",
+    "name": "Ifelain Ilmathen",
+    "postCode": "06018",
+    "wilayaId": "6"
+  },
+  {
+    "id": "196",
+    "name": "Toudja",
+    "postCode": "06019",
+    "wilayaId": "6"
+  },
+  {
+    "id": "197",
+    "name": "Darguina",
+    "postCode": "06020",
+    "wilayaId": "6"
+  },
+  {
+    "id": "198",
+    "name": "Sidi Ayad",
+    "postCode": "06021",
+    "wilayaId": "6"
+  },
+  {
+    "id": "199",
+    "name": "Aokas",
+    "postCode": "06022",
+    "wilayaId": "6"
+  },
+  {
+    "id": "200",
+    "name": "Ait Djellil",
+    "postCode": "06023",
+    "wilayaId": "6"
+  },
+  {
+    "id": "201",
+    "name": "Adekar",
+    "postCode": "06024",
+    "wilayaId": "6"
+  },
+  {
+    "id": "202",
+    "name": "Akbou",
+    "postCode": "06025",
+    "wilayaId": "6"
+  },
+  {
+    "id": "203",
+    "name": "Seddouk",
+    "postCode": "06026",
+    "wilayaId": "6"
+  },
+  {
+    "id": "204",
+    "name": "Tazmalt",
+    "postCode": "06027",
+    "wilayaId": "6"
+  },
+  {
+    "id": "205",
+    "name": "Ait R'zine",
+    "postCode": "06028",
+    "wilayaId": "6"
+  },
+  {
+    "id": "206",
+    "name": "Chemini",
+    "postCode": "06029",
+    "wilayaId": "6"
+  },
+  {
+    "id": "207",
+    "name": "Souk Oufella",
+    "postCode": "06030",
+    "wilayaId": "6"
+  },
+  {
+    "id": "208",
+    "name": "Taskriout",
+    "postCode": "06031",
+    "wilayaId": "6"
+  },
+  {
+    "id": "209",
+    "name": "Tibane",
+    "postCode": "06032",
+    "wilayaId": "6"
+  },
+  {
+    "id": "210",
+    "name": "Tala Hamza",
+    "postCode": "06033",
+    "wilayaId": "6"
+  },
+  {
+    "id": "211",
+    "name": "Barbacha",
+    "postCode": "06034",
+    "wilayaId": "6"
+  },
+  {
+    "id": "212",
+    "name": "Beni Ksila",
+    "postCode": "06035",
+    "wilayaId": "6"
+  },
+  {
+    "id": "213",
+    "name": "Ouzallaguen",
+    "postCode": "06036",
+    "wilayaId": "6"
+  },
+  {
+    "id": "214",
+    "name": "Bouhamza",
+    "postCode": "06037",
+    "wilayaId": "6"
+  },
+  {
+    "id": "215",
+    "name": "Beni Melikeche",
+    "postCode": "06038",
+    "wilayaId": "6"
+  },
+  {
+    "id": "216",
+    "name": "Sidi Aich",
+    "postCode": "06039",
+    "wilayaId": "6"
+  },
+  {
+    "id": "217",
+    "name": "El Kseur",
+    "postCode": "06040",
+    "wilayaId": "6"
+  },
+  {
+    "id": "218",
+    "name": "Melbou",
+    "postCode": "06041",
+    "wilayaId": "6"
+  },
+  {
+    "id": "219",
+    "name": "Akfadou",
+    "postCode": "06042",
+    "wilayaId": "6"
+  },
+  {
+    "id": "220",
+    "name": "Leflaye",
+    "postCode": "06043",
+    "wilayaId": "6"
+  },
+  {
+    "id": "221",
+    "name": "Kherrata",
+    "postCode": "06044",
+    "wilayaId": "6"
+  },
+  {
+    "id": "222",
+    "name": "Draa Kaid",
+    "postCode": "06045",
+    "wilayaId": "6"
+  },
+  {
+    "id": "223",
+    "name": "Tamridjet",
+    "postCode": "06046",
+    "wilayaId": "6"
+  },
+  {
+    "id": "224",
+    "name": "Ait Smail",
+    "postCode": "06047",
+    "wilayaId": "6"
+  },
+  {
+    "id": "225",
+    "name": "Boukhelifa",
+    "postCode": "06048",
+    "wilayaId": "6"
+  },
+  {
+    "id": "226",
+    "name": "Tizi N'berber",
+    "postCode": "06049",
+    "wilayaId": "6"
+  },
+  {
+    "id": "227",
+    "name": "Beni Maouch",
+    "postCode": "06050",
+    "wilayaId": "6"
+  },
+  {
+    "id": "228",
+    "name": "Oued Ghir",
+    "postCode": "06051",
+    "wilayaId": "6"
+  },
+  {
+    "id": "229",
+    "name": "Boudjellil",
+    "postCode": "06052",
+    "wilayaId": "6"
+  },
+  {
+    "id": "230",
+    "name": "Biskra",
+    "postCode": "07001",
+    "wilayaId": "7"
+  },
+  {
+    "id": "231",
+    "name": "Oumache",
+    "postCode": "07002",
+    "wilayaId": "7"
+  },
+  {
+    "id": "232",
+    "name": "Branis",
+    "postCode": "61003",
+    "wilayaId": "61"
+  },
+  {
+    "id": "233",
+    "name": "Chetma",
+    "postCode": "07004",
+    "wilayaId": "7"
+  },
+  {
+    "id": "234",
+    "name": "Ouled Djellal",
+    "postCode": "51005",
+    "wilayaId": "51"
+  },
+  {
+    "id": "235",
+    "name": "Ras El Miaad",
+    "postCode": "51006",
+    "wilayaId": "51"
+  },
+  {
+    "id": "236",
+    "name": "Besbes",
+    "postCode": "51007",
+    "wilayaId": "51"
+  },
+  {
+    "id": "237",
+    "name": "Sidi Khaled",
+    "postCode": "51008",
+    "wilayaId": "51"
+  },
+  {
+    "id": "238",
+    "name": "Doucen",
+    "postCode": "51009",
+    "wilayaId": "51"
+  },
+  {
+    "id": "239",
+    "name": "Ech Chaiba",
+    "postCode": "07010",
+    "wilayaId": "7"
+  },
+  {
+    "id": "240",
+    "name": "Sidi Okba",
+    "postCode": "07011",
+    "wilayaId": "7"
+  },
+  {
+    "id": "241",
+    "name": "Mchouneche",
+    "postCode": "07012",
+    "wilayaId": "7"
+  },
+  {
+    "id": "242",
+    "name": "El Haouch",
+    "postCode": "07013",
+    "wilayaId": "7"
+  },
+  {
+    "id": "243",
+    "name": "Ain Naga",
+    "postCode": "07014",
+    "wilayaId": "7"
+  },
+  {
+    "id": "244",
+    "name": "Zeribet El Oued",
+    "postCode": "07015",
+    "wilayaId": "7"
+  },
+  {
+    "id": "245",
+    "name": "El Feidh",
+    "postCode": "07016",
+    "wilayaId": "7"
+  },
+  {
+    "id": "246",
+    "name": "El Kantara",
+    "postCode": "61017",
+    "wilayaId": "61"
+  },
+  {
+    "id": "247",
+    "name": "Ain Zaatout",
+    "postCode": "61018",
+    "wilayaId": "61"
+  },
+  {
+    "id": "248",
+    "name": "El Outaya",
+    "postCode": "61019",
+    "wilayaId": "61"
+  },
+  {
+    "id": "249",
+    "name": "Djemorah",
+    "postCode": "07020",
+    "wilayaId": "7"
+  },
+  {
+    "id": "250",
+    "name": "Tolga",
+    "postCode": "07021",
+    "wilayaId": "7"
+  },
+  {
+    "id": "251",
+    "name": "Lioua",
+    "postCode": "07022",
+    "wilayaId": "7"
+  },
+  {
+    "id": "252",
+    "name": "Lichana",
+    "postCode": "07023",
+    "wilayaId": "7"
+  },
+  {
+    "id": "253",
+    "name": "Ourlal",
+    "postCode": "07024",
+    "wilayaId": "7"
+  },
+  {
+    "id": "254",
+    "name": "M'lili",
+    "postCode": "07025",
+    "wilayaId": "7"
+  },
+  {
+    "id": "255",
+    "name": "Foughala",
+    "postCode": "07026",
+    "wilayaId": "7"
+  },
+  {
+    "id": "256",
+    "name": "Bordj Ben Azzouz",
+    "postCode": "07027",
+    "wilayaId": "7"
+  },
+  {
+    "id": "257",
+    "name": "M'ziraa",
+    "postCode": "07028",
+    "wilayaId": "7"
+  },
+  {
+    "id": "258",
+    "name": "Bouchagroun",
+    "postCode": "07029",
+    "wilayaId": "7"
+  },
+  {
+    "id": "259",
+    "name": "Mekhadma",
+    "postCode": "07030",
+    "wilayaId": "7"
+  },
+  {
+    "id": "260",
+    "name": "El Ghrous",
+    "postCode": "07031",
+    "wilayaId": "7"
+  },
+  {
+    "id": "261",
+    "name": "El Hadjab",
+    "postCode": "07032",
+    "wilayaId": "7"
+  },
+  {
+    "id": "262",
+    "name": "Khanguet Sidinadji",
+    "postCode": "07033",
+    "wilayaId": "7"
+  },
+  {
+    "id": "263",
+    "name": "Bechar",
+    "postCode": "08001",
+    "wilayaId": "8"
+  },
+  {
+    "id": "264",
+    "name": "Erg Ferradj",
+    "postCode": "08002",
+    "wilayaId": "8"
+  },
+  {
+    "id": "265",
+    "name": "Ouled Khoudir",
+    "postCode": "52003",
+    "wilayaId": "52"
+  },
+  {
+    "id": "266",
+    "name": "Meridja",
+    "postCode": "08004",
+    "wilayaId": "8"
+  },
+  {
+    "id": "267",
+    "name": "Timoudi",
+    "postCode": "52005",
+    "wilayaId": "52"
+  },
+  {
+    "id": "268",
+    "name": "Lahmar",
+    "postCode": "08006",
+    "wilayaId": "8"
+  },
+  {
+    "id": "269",
+    "name": "Beni Abbes",
+    "postCode": "52007",
+    "wilayaId": "52"
+  },
+  {
+    "id": "270",
+    "name": "Beni Ikhlef",
+    "postCode": "08008",
+    "wilayaId": "8"
+  },
+  {
+    "id": "271",
+    "name": "Mechraa Houari Boumedienne",
+    "postCode": "08009",
+    "wilayaId": "8"
+  },
+  {
+    "id": "272",
+    "name": "Kenedsa",
+    "postCode": "08010",
+    "wilayaId": "8"
+  },
+  {
+    "id": "273",
+    "name": "Igli",
+    "postCode": "52011",
+    "wilayaId": "52"
+  },
+  {
+    "id": "274",
+    "name": "Tabalbala",
+    "postCode": "08012",
+    "wilayaId": "8"
+  },
+  {
+    "id": "275",
+    "name": "Taghit",
+    "postCode": "08013",
+    "wilayaId": "8"
+  },
+  {
+    "id": "276",
+    "name": "El Ouata",
+    "postCode": "52014",
+    "wilayaId": "52"
+  },
+  {
+    "id": "277",
+    "name": "Boukais",
+    "postCode": "08015",
+    "wilayaId": "8"
+  },
+  {
+    "id": "278",
+    "name": "Mogheul",
+    "postCode": "08016",
+    "wilayaId": "8"
+  },
+  {
+    "id": "279",
+    "name": "Abadla",
+    "postCode": "08017",
+    "wilayaId": "8"
+  },
+  {
+    "id": "280",
+    "name": "Kerzaz",
+    "postCode": "52018",
+    "wilayaId": "52"
+  },
+  {
+    "id": "281",
+    "name": "Ksabi",
+    "postCode": "52019",
+    "wilayaId": "52"
+  },
+  {
+    "id": "282",
+    "name": "Tamtert",
+    "postCode": "08020",
+    "wilayaId": "8"
+  },
+  {
+    "id": "283",
+    "name": "Beni Ounif",
+    "postCode": "08021",
+    "wilayaId": "8"
+  },
+  {
+    "id": "284",
+    "name": "Blida",
+    "postCode": "09001",
+    "wilayaId": "9"
+  },
+  {
+    "id": "285",
+    "name": "Chebli",
+    "postCode": "09002",
+    "wilayaId": "9"
+  },
+  {
+    "id": "286",
+    "name": "Bouinan",
+    "postCode": "09003",
+    "wilayaId": "9"
+  },
+  {
+    "id": "287",
+    "name": "Oued El Alleug",
+    "postCode": "09004",
+    "wilayaId": "9"
+  },
+  {
+    "id": "288",
+    "name": "Ouled Yaich",
+    "postCode": "09007",
+    "wilayaId": "9"
+  },
+  {
+    "id": "289",
+    "name": "Chrea",
+    "postCode": "09008",
+    "wilayaId": "9"
+  },
+  {
+    "id": "290",
+    "name": "El Affroun",
+    "postCode": "09010",
+    "wilayaId": "9"
+  },
+  {
+    "id": "291",
+    "name": "Chiffa",
+    "postCode": "09011",
+    "wilayaId": "9"
+  },
+  {
+    "id": "292",
+    "name": "Hammam Melouane",
+    "postCode": "09012",
+    "wilayaId": "9"
+  },
+  {
+    "id": "293",
+    "name": "Ben Khlil",
+    "postCode": "09013",
+    "wilayaId": "9"
+  },
+  {
+    "id": "294",
+    "name": "Soumaa",
+    "postCode": "09014",
+    "wilayaId": "9"
+  },
+  {
+    "id": "295",
+    "name": "Mouzaia",
+    "postCode": "09016",
+    "wilayaId": "9"
+  },
+  {
+    "id": "296",
+    "name": "Souhane",
+    "postCode": "09017",
+    "wilayaId": "9"
+  },
+  {
+    "id": "297",
+    "name": "Meftah",
+    "postCode": "09018",
+    "wilayaId": "9"
+  },
+  {
+    "id": "298",
+    "name": "Ouled Selama",
+    "postCode": "09019",
+    "wilayaId": "9"
+  },
+  {
+    "id": "299",
+    "name": "Boufarik",
+    "postCode": "09020",
+    "wilayaId": "9"
+  },
+  {
+    "id": "300",
+    "name": "Larbaa",
+    "postCode": "09021",
+    "wilayaId": "9"
+  },
+  {
+    "id": "301",
+    "name": "Oued Djer",
+    "postCode": "09022",
+    "wilayaId": "9"
+  },
+  {
+    "id": "302",
+    "name": "Beni Tamou",
+    "postCode": "09023",
+    "wilayaId": "9"
+  },
+  {
+    "id": "303",
+    "name": "Bouarfa",
+    "postCode": "09024",
+    "wilayaId": "9"
+  },
+  {
+    "id": "304",
+    "name": "Beni Mered",
+    "postCode": "09025",
+    "wilayaId": "9"
+  },
+  {
+    "id": "305",
+    "name": "Bougara",
+    "postCode": "09026",
+    "wilayaId": "9"
+  },
+  {
+    "id": "306",
+    "name": "Guerrouaou",
+    "postCode": "09027",
+    "wilayaId": "9"
+  },
+  {
+    "id": "307",
+    "name": "Ain Romana",
+    "postCode": "09028",
+    "wilayaId": "9"
+  },
+  {
+    "id": "308",
+    "name": "Djebabra",
+    "postCode": "09029",
+    "wilayaId": "9"
+  },
+  {
+    "id": "309",
+    "name": "Bouira",
+    "postCode": "10001",
+    "wilayaId": "10"
+  },
+  {
+    "id": "310",
+    "name": "El Asnam",
+    "postCode": "10002",
+    "wilayaId": "10"
+  },
+  {
+    "id": "311",
+    "name": "Guerrouma",
+    "postCode": "10003",
+    "wilayaId": "10"
+  },
+  {
+    "id": "312",
+    "name": "Souk El Khemis",
+    "postCode": "10004",
+    "wilayaId": "10"
+  },
+  {
+    "id": "313",
+    "name": "Kadiria",
+    "postCode": "10005",
+    "wilayaId": "10"
+  },
+  {
+    "id": "314",
+    "name": "Hanif",
+    "postCode": "10006",
+    "wilayaId": "10"
+  },
+  {
+    "id": "315",
+    "name": "Dirah",
+    "postCode": "10007",
+    "wilayaId": "10"
+  },
+  {
+    "id": "316",
+    "name": "Ait Laaziz",
+    "postCode": "10008",
+    "wilayaId": "10"
+  },
+  {
+    "id": "317",
+    "name": "Taghzout",
+    "postCode": "10009",
+    "wilayaId": "10"
+  },
+  {
+    "id": "318",
+    "name": "Raouraoua",
+    "postCode": "10010",
+    "wilayaId": "10"
+  },
+  {
+    "id": "319",
+    "name": "Mezdour",
+    "postCode": "10011",
+    "wilayaId": "10"
+  },
+  {
+    "id": "320",
+    "name": "Haizer",
+    "postCode": "10012",
+    "wilayaId": "10"
+  },
+  {
+    "id": "321",
+    "name": "Lakhdaria",
+    "postCode": "10013",
+    "wilayaId": "10"
+  },
+  {
+    "id": "322",
+    "name": "Maala",
+    "postCode": "10014",
+    "wilayaId": "10"
+  },
+  {
+    "id": "323",
+    "name": "El Hachimia",
+    "postCode": "10015",
+    "wilayaId": "10"
+  },
+  {
+    "id": "324",
+    "name": "Aomar",
+    "postCode": "10016",
+    "wilayaId": "10"
+  },
+  {
+    "id": "325",
+    "name": "Chorfa",
+    "postCode": "10017",
+    "wilayaId": "10"
+  },
+  {
+    "id": "326",
+    "name": "Bordj Oukhriss",
+    "postCode": "10018",
+    "wilayaId": "10"
+  },
+  {
+    "id": "327",
+    "name": "El Adjiba",
+    "postCode": "10019",
+    "wilayaId": "10"
+  },
+  {
+    "id": "328",
+    "name": "El Hakimia",
+    "postCode": "10020",
+    "wilayaId": "10"
+  },
+  {
+    "id": "329",
+    "name": "El Khebouzia",
+    "postCode": "10021",
+    "wilayaId": "10"
+  },
+  {
+    "id": "330",
+    "name": "Ahl El Ksar",
+    "postCode": "10022",
+    "wilayaId": "10"
+  },
+  {
+    "id": "331",
+    "name": "Bouderbala",
+    "postCode": "10023",
+    "wilayaId": "10"
+  },
+  {
+    "id": "332",
+    "name": "Zbarbar",
+    "postCode": "10024",
+    "wilayaId": "10"
+  },
+  {
+    "id": "333",
+    "name": "Ain El Hadjar",
+    "postCode": "10025",
+    "wilayaId": "10"
+  },
+  {
+    "id": "334",
+    "name": "Djebahia",
+    "postCode": "10026",
+    "wilayaId": "10"
+  },
+  {
+    "id": "335",
+    "name": "Aghbalou",
+    "postCode": "10027",
+    "wilayaId": "10"
+  },
+  {
+    "id": "336",
+    "name": "Taguedit",
+    "postCode": "10028",
+    "wilayaId": "10"
+  },
+  {
+    "id": "337",
+    "name": "Ain Turk",
+    "postCode": "10029",
+    "wilayaId": "10"
+  },
+  {
+    "id": "338",
+    "name": "Saharidj",
+    "postCode": "10030",
+    "wilayaId": "10"
+  },
+  {
+    "id": "339",
+    "name": "Dechmia",
+    "postCode": "10031",
+    "wilayaId": "10"
+  },
+  {
+    "id": "340",
+    "name": "Ridane",
+    "postCode": "10032",
+    "wilayaId": "10"
+  },
+  {
+    "id": "341",
+    "name": "Bechloul",
+    "postCode": "10033",
+    "wilayaId": "10"
+  },
+  {
+    "id": "342",
+    "name": "Boukram",
+    "postCode": "10034",
+    "wilayaId": "10"
+  },
+  {
+    "id": "343",
+    "name": "Ain Bessam",
+    "postCode": "10035",
+    "wilayaId": "10"
+  },
+  {
+    "id": "344",
+    "name": "Bir Ghbalou",
+    "postCode": "10036",
+    "wilayaId": "10"
+  },
+  {
+    "id": "345",
+    "name": "Mchedallah",
+    "postCode": "10037",
+    "wilayaId": "10"
+  },
+  {
+    "id": "346",
+    "name": "Sour El Ghozlane",
+    "postCode": "10038",
+    "wilayaId": "10"
+  },
+  {
+    "id": "347",
+    "name": "Maamora",
+    "postCode": "10039",
+    "wilayaId": "10"
+  },
+  {
+    "id": "348",
+    "name": "Ouled Rached",
+    "postCode": "10040",
+    "wilayaId": "10"
+  },
+  {
+    "id": "349",
+    "name": "Ain Laloui",
+    "postCode": "10041",
+    "wilayaId": "10"
+  },
+  {
+    "id": "350",
+    "name": "Hadjera Zerga",
+    "postCode": "10042",
+    "wilayaId": "10"
+  },
+  {
+    "id": "351",
+    "name": "Ath Mansour",
+    "postCode": "10043",
+    "wilayaId": "10"
+  },
+  {
+    "id": "352",
+    "name": "El Mokrani",
+    "postCode": "10044",
+    "wilayaId": "10"
+  },
+  {
+    "id": "353",
+    "name": "Oued El Berdi",
+    "postCode": "10045",
+    "wilayaId": "10"
+  },
+  {
+    "id": "354",
+    "name": "Tamanghasset",
+    "postCode": "11001",
+    "wilayaId": "11"
+  },
+  {
+    "id": "355",
+    "name": "Abalessa",
+    "postCode": "11002",
+    "wilayaId": "11"
+  },
+  {
+    "id": "356",
+    "name": "In Ghar",
+    "postCode": "53003",
+    "wilayaId": "53"
+  },
+  {
+    "id": "357",
+    "name": "In Guezzam",
+    "postCode": "54004",
+    "wilayaId": "54"
+  },
+  {
+    "id": "358",
+    "name": "Idles",
+    "postCode": "11005",
+    "wilayaId": "11"
+  },
+  {
+    "id": "359",
+    "name": "Tazouk",
+    "postCode": "11006",
+    "wilayaId": "11"
+  },
+  {
+    "id": "360",
+    "name": "Tinzaouatine",
+    "postCode": "11007",
+    "wilayaId": "11"
+  },
+  {
+    "id": "361",
+    "name": "In Salah",
+    "postCode": "53008",
+    "wilayaId": "53"
+  },
+  {
+    "id": "362",
+    "name": "In Amguel",
+    "postCode": "11009",
+    "wilayaId": "11"
+  },
+  {
+    "id": "363",
+    "name": "Foggaret Ezzaouia",
+    "postCode": "53010",
+    "wilayaId": "53"
+  },
+  {
+    "id": "364",
+    "name": "Tebessa",
+    "postCode": "12001",
+    "wilayaId": "12"
+  },
+  {
+    "id": "365",
+    "name": "Bir El Ater",
+    "postCode": "62002",
+    "wilayaId": "62"
+  },
+  {
+    "id": "366",
+    "name": "Cheria",
+    "postCode": "12003",
+    "wilayaId": "12"
+  },
+  {
+    "id": "367",
+    "name": "Stah Guentis",
+    "postCode": "12004",
+    "wilayaId": "12"
+  },
+  {
+    "id": "368",
+    "name": "El Aouinet",
+    "postCode": "12005",
+    "wilayaId": "12"
+  },
+  {
+    "id": "369",
+    "name": "Lahouidjbet",
+    "postCode": "12006",
+    "wilayaId": "12"
+  },
+  {
+    "id": "370",
+    "name": "Safsaf El Ouesra",
+    "postCode": "12007",
+    "wilayaId": "12"
+  },
+  {
+    "id": "371",
+    "name": "Hammamet",
+    "postCode": "12008",
+    "wilayaId": "12"
+  },
+  {
+    "id": "372",
+    "name": "Negrine",
+    "postCode": "62009",
+    "wilayaId": "62"
+  },
+  {
+    "id": "373",
+    "name": "Bir El Mokadem",
+    "postCode": "12010",
+    "wilayaId": "12"
+  },
+  {
+    "id": "374",
+    "name": "El Kouif",
+    "postCode": "12011",
+    "wilayaId": "12"
+  },
+  {
+    "id": "375",
+    "name": "Morsott",
+    "postCode": "12012",
+    "wilayaId": "12"
+  },
+  {
+    "id": "376",
+    "name": "El Ogla",
+    "postCode": "62013",
+    "wilayaId": "62"
+  },
+  {
+    "id": "377",
+    "name": "Bir Dheb",
+    "postCode": "12014",
+    "wilayaId": "12"
+  },
+  {
+    "id": "378",
+    "name": "El Ogla",
+    "postCode": "12015",
+    "wilayaId": "12"
+  },
+  {
+    "id": "379",
+    "name": "Gorriguer",
+    "postCode": "12016",
+    "wilayaId": "12"
+  },
+  {
+    "id": "380",
+    "name": "Bekkaria",
+    "postCode": "12017",
+    "wilayaId": "12"
+  },
+  {
+    "id": "381",
+    "name": "Boukhadra",
+    "postCode": "12018",
+    "wilayaId": "12"
+  },
+  {
+    "id": "382",
+    "name": "Ouenza",
+    "postCode": "12019",
+    "wilayaId": "12"
+  },
+  {
+    "id": "383",
+    "name": "El Ma El Biodh",
+    "postCode": "12020",
+    "wilayaId": "12"
+  },
+  {
+    "id": "384",
+    "name": "Oum Ali",
+    "postCode": "12021",
+    "wilayaId": "12"
+  },
+  {
+    "id": "385",
+    "name": "Tlidjene",
+    "postCode": "12022",
+    "wilayaId": "12"
+  },
+  {
+    "id": "386",
+    "name": "Ain Zerga",
+    "postCode": "12023",
+    "wilayaId": "12"
+  },
+  {
+    "id": "387",
+    "name": "El Meridj",
+    "postCode": "12024",
+    "wilayaId": "12"
+  },
+  {
+    "id": "388",
+    "name": "Boulhaf Dyr",
+    "postCode": "12025",
+    "wilayaId": "12"
+  },
+  {
+    "id": "389",
+    "name": "Bedjene",
+    "postCode": "12026",
+    "wilayaId": "12"
+  },
+  {
+    "id": "390",
+    "name": "El Mazeraa",
+    "postCode": "12027",
+    "wilayaId": "12"
+  },
+  {
+    "id": "391",
+    "name": "Ferkane",
+    "postCode": "62028",
+    "wilayaId": "62"
+  },
+  {
+    "id": "392",
+    "name": "Tlemcen",
+    "postCode": "13001",
+    "wilayaId": "13"
+  },
+  {
+    "id": "393",
+    "name": "Beni Mester",
+    "postCode": "13002",
+    "wilayaId": "13"
+  },
+  {
+    "id": "394",
+    "name": "Ain Tallout",
+    "postCode": "13003",
+    "wilayaId": "13"
+  },
+  {
+    "id": "395",
+    "name": "Remchi",
+    "postCode": "13004",
+    "wilayaId": "13"
+  },
+  {
+    "id": "396",
+    "name": "El Fehoul",
+    "postCode": "13005",
+    "wilayaId": "13"
+  },
+  {
+    "id": "397",
+    "name": "Sabra",
+    "postCode": "13006",
+    "wilayaId": "13"
+  },
+  {
+    "id": "398",
+    "name": "Ghazaouet",
+    "postCode": "13007",
+    "wilayaId": "13"
+  },
+  {
+    "id": "399",
+    "name": "Souani",
+    "postCode": "13008",
+    "wilayaId": "13"
+  },
+  {
+    "id": "400",
+    "name": "Djebala",
+    "postCode": "13009",
+    "wilayaId": "13"
+  },
+  {
+    "id": "401",
+    "name": "El Gor",
+    "postCode": "63010",
+    "wilayaId": "63"
+  },
+  {
+    "id": "402",
+    "name": "Oued Chouly",
+    "postCode": "13011",
+    "wilayaId": "13"
+  },
+  {
+    "id": "403",
+    "name": "Ain Fezza",
+    "postCode": "13012",
+    "wilayaId": "13"
+  },
+  {
+    "id": "404",
+    "name": "Ouled Mimoun",
+    "postCode": "13013",
+    "wilayaId": "13"
+  },
+  {
+    "id": "405",
+    "name": "Amieur",
+    "postCode": "13014",
+    "wilayaId": "13"
+  },
+  {
+    "id": "406",
+    "name": "Ain Youcef",
+    "postCode": "13015",
+    "wilayaId": "13"
+  },
+  {
+    "id": "407",
+    "name": "Zenata",
+    "postCode": "13016",
+    "wilayaId": "13"
+  },
+  {
+    "id": "408",
+    "name": "Beni Snous",
+    "postCode": "13017",
+    "wilayaId": "13"
+  },
+  {
+    "id": "409",
+    "name": "Bab El Assa",
+    "postCode": "13018",
+    "wilayaId": "13"
+  },
+  {
+    "id": "410",
+    "name": "Dar Yaghmouracene",
+    "postCode": "13019",
+    "wilayaId": "13"
+  },
+  {
+    "id": "411",
+    "name": "Fellaoucene",
+    "postCode": "13020",
+    "wilayaId": "13"
+  },
+  {
+    "id": "412",
+    "name": "Azails",
+    "postCode": "13021",
+    "wilayaId": "13"
+  },
+  {
+    "id": "413",
+    "name": "Sebbaa Chioukh",
+    "postCode": "13022",
+    "wilayaId": "13"
+  },
+  {
+    "id": "414",
+    "name": "Terni Beni Hediel",
+    "postCode": "13023",
+    "wilayaId": "13"
+  },
+  {
+    "id": "415",
+    "name": "Bensekrane",
+    "postCode": "13024",
+    "wilayaId": "13"
+  },
+  {
+    "id": "416",
+    "name": "Ain Nehala",
+    "postCode": "13025",
+    "wilayaId": "13"
+  },
+  {
+    "id": "417",
+    "name": "Hennaya",
+    "postCode": "13026",
+    "wilayaId": "13"
+  },
+  {
+    "id": "418",
+    "name": "Maghnia",
+    "postCode": "13027",
+    "wilayaId": "13"
+  },
+  {
+    "id": "419",
+    "name": "Hammam Boughrara",
+    "postCode": "13028",
+    "wilayaId": "13"
+  },
+  {
+    "id": "420",
+    "name": "Souahlia",
+    "postCode": "13029",
+    "wilayaId": "13"
+  },
+  {
+    "id": "421",
+    "name": "Msirda Fouaga",
+    "postCode": "13030",
+    "wilayaId": "13"
+  },
+  {
+    "id": "422",
+    "name": "Ain Fetah",
+    "postCode": "13031",
+    "wilayaId": "13"
+  },
+  {
+    "id": "423",
+    "name": "El Aricha",
+    "postCode": "63032",
+    "wilayaId": "63"
+  },
+  {
+    "id": "424",
+    "name": "Souk Thlata",
+    "postCode": "13033",
+    "wilayaId": "13"
+  },
+  {
+    "id": "425",
+    "name": "Sidi Abdelli",
+    "postCode": "13034",
+    "wilayaId": "13"
+  },
+  {
+    "id": "426",
+    "name": "Sebdou",
+    "postCode": "13035",
+    "wilayaId": "13"
+  },
+  {
+    "id": "427",
+    "name": "Beni Ouarsous",
+    "postCode": "13036",
+    "wilayaId": "13"
+  },
+  {
+    "id": "428",
+    "name": "Sidi Medjahed",
+    "postCode": "13037",
+    "wilayaId": "13"
+  },
+  {
+    "id": "429",
+    "name": "Beni Boussaid",
+    "postCode": "13038",
+    "wilayaId": "13"
+  },
+  {
+    "id": "430",
+    "name": "Marsa Ben Mhidi",
+    "postCode": "13039",
+    "wilayaId": "13"
+  },
+  {
+    "id": "431",
+    "name": "Nedroma",
+    "postCode": "13040",
+    "wilayaId": "13"
+  },
+  {
+    "id": "432",
+    "name": "Sidi Djillali",
+    "postCode": "13041",
+    "wilayaId": "13"
+  },
+  {
+    "id": "433",
+    "name": "Beni Bahdel",
+    "postCode": "13042",
+    "wilayaId": "13"
+  },
+  {
+    "id": "434",
+    "name": "El Bouihi",
+    "postCode": "13043",
+    "wilayaId": "13"
+  },
+  {
+    "id": "435",
+    "name": "Honaine",
+    "postCode": "13044",
+    "wilayaId": "13"
+  },
+  {
+    "id": "436",
+    "name": "Tianet",
+    "postCode": "13045",
+    "wilayaId": "13"
+  },
+  {
+    "id": "437",
+    "name": "Ouled Riyah",
+    "postCode": "13046",
+    "wilayaId": "13"
+  },
+  {
+    "id": "438",
+    "name": "Bouhlou",
+    "postCode": "13047",
+    "wilayaId": "13"
+  },
+  {
+    "id": "439",
+    "name": "Souk El Khemis",
+    "postCode": "13048",
+    "wilayaId": "13"
+  },
+  {
+    "id": "440",
+    "name": "Ain Ghoraba",
+    "postCode": "13049",
+    "wilayaId": "13"
+  },
+  {
+    "id": "441",
+    "name": "Chetouane",
+    "postCode": "13050",
+    "wilayaId": "13"
+  },
+  {
+    "id": "442",
+    "name": "Mansourah",
+    "postCode": "13051",
+    "wilayaId": "13"
+  },
+  {
+    "id": "443",
+    "name": "Beni Semiel",
+    "postCode": "13052",
+    "wilayaId": "13"
+  },
+  {
+    "id": "444",
+    "name": "Ain Kebira",
+    "postCode": "13053",
+    "wilayaId": "13"
+  },
+  {
+    "id": "445",
+    "name": "Tiaret",
+    "postCode": "14001",
+    "wilayaId": "14"
+  },
+  {
+    "id": "446",
+    "name": "Medroussa",
+    "postCode": "14002",
+    "wilayaId": "14"
+  },
+  {
+    "id": "447",
+    "name": "Ain Bouchekif",
+    "postCode": "14003",
+    "wilayaId": "14"
+  },
+  {
+    "id": "448",
+    "name": "Sidi Ali Mellal",
+    "postCode": "14004",
+    "wilayaId": "14"
+  },
+  {
+    "id": "449",
+    "name": "Ain Zarit",
+    "postCode": "14005",
+    "wilayaId": "14"
+  },
+  {
+    "id": "450",
+    "name": "Ain Deheb",
+    "postCode": "14006",
+    "wilayaId": "14"
+  },
+  {
+    "id": "451",
+    "name": "Sidi Bakhti",
+    "postCode": "14007",
+    "wilayaId": "14"
+  },
+  {
+    "id": "452",
+    "name": "Medrissa",
+    "postCode": "14008",
+    "wilayaId": "14"
+  },
+  {
+    "id": "453",
+    "name": "Zmalet El Emir Aek",
+    "postCode": "14009",
+    "wilayaId": "14"
+  },
+  {
+    "id": "454",
+    "name": "Madna",
+    "postCode": "14010",
+    "wilayaId": "14"
+  },
+  {
+    "id": "455",
+    "name": "Sebt",
+    "postCode": "14011",
+    "wilayaId": "14"
+  },
+  {
+    "id": "456",
+    "name": "Mellakou",
+    "postCode": "14012",
+    "wilayaId": "14"
+  },
+  {
+    "id": "457",
+    "name": "Dahmouni",
+    "postCode": "14013",
+    "wilayaId": "14"
+  },
+  {
+    "id": "458",
+    "name": "Rahouia",
+    "postCode": "14014",
+    "wilayaId": "14"
+  },
+  {
+    "id": "459",
+    "name": "Mahdia",
+    "postCode": "14015",
+    "wilayaId": "14"
+  },
+  {
+    "id": "460",
+    "name": "Sougueur",
+    "postCode": "14016",
+    "wilayaId": "14"
+  },
+  {
+    "id": "461",
+    "name": "Sidi Abdelghani",
+    "postCode": "64017",
+    "wilayaId": "64"
+  },
+  {
+    "id": "462",
+    "name": "Ain El Hadid",
+    "postCode": "14018",
+    "wilayaId": "14"
+  },
+  {
+    "id": "463",
+    "name": "Ouled Djerad",
+    "postCode": "14019",
+    "wilayaId": "14"
+  },
+  {
+    "id": "464",
+    "name": "Naima",
+    "postCode": "14020",
+    "wilayaId": "14"
+  },
+  {
+    "id": "465",
+    "name": "Meghila",
+    "postCode": "14021",
+    "wilayaId": "14"
+  },
+  {
+    "id": "466",
+    "name": "Guertoufa",
+    "postCode": "14022",
+    "wilayaId": "14"
+  },
+  {
+    "id": "467",
+    "name": "Sidi Hosni",
+    "postCode": "14023",
+    "wilayaId": "14"
+  },
+  {
+    "id": "468",
+    "name": "Djillali Ben Amar",
+    "postCode": "14024",
+    "wilayaId": "14"
+  },
+  {
+    "id": "469",
+    "name": "Sebaine",
+    "postCode": "14025",
+    "wilayaId": "14"
+  },
+  {
+    "id": "470",
+    "name": "Tousnina",
+    "postCode": "14026",
+    "wilayaId": "14"
+  },
+  {
+    "id": "471",
+    "name": "Frenda",
+    "postCode": "14027",
+    "wilayaId": "14"
+  },
+  {
+    "id": "472",
+    "name": "Ain Kermes",
+    "postCode": "14028",
+    "wilayaId": "14"
+  },
+  {
+    "id": "473",
+    "name": "Ksar Chellala",
+    "postCode": "64029",
+    "wilayaId": "64"
+  },
+  {
+    "id": "474",
+    "name": "Rechaiga",
+    "postCode": "64030",
+    "wilayaId": "64"
+  },
+  {
+    "id": "475",
+    "name": "Nadorah",
+    "postCode": "14031",
+    "wilayaId": "14"
+  },
+  {
+    "id": "476",
+    "name": "Tagdemt",
+    "postCode": "14032",
+    "wilayaId": "14"
+  },
+  {
+    "id": "477",
+    "name": "Oued Lilli",
+    "postCode": "14033",
+    "wilayaId": "14"
+  },
+  {
+    "id": "478",
+    "name": "Mechraa Safa",
+    "postCode": "14034",
+    "wilayaId": "14"
+  },
+  {
+    "id": "479",
+    "name": "Hamadia",
+    "postCode": "64035",
+    "wilayaId": "64"
+  },
+  {
+    "id": "480",
+    "name": "Chehaima",
+    "postCode": "14036",
+    "wilayaId": "14"
+  },
+  {
+    "id": "481",
+    "name": "Takhemaret",
+    "postCode": "14037",
+    "wilayaId": "14"
+  },
+  {
+    "id": "482",
+    "name": "Sidi Abderrahmane",
+    "postCode": "14038",
+    "wilayaId": "14"
+  },
+  {
+    "id": "483",
+    "name": "Serghine",
+    "postCode": "64039",
+    "wilayaId": "64"
+  },
+  {
+    "id": "484",
+    "name": "Bougara",
+    "postCode": "64040",
+    "wilayaId": "64"
+  },
+  {
+    "id": "485",
+    "name": "Faidja",
+    "postCode": "14041",
+    "wilayaId": "14"
+  },
+  {
+    "id": "486",
+    "name": "Tidda",
+    "postCode": "14042",
+    "wilayaId": "14"
+  },
+  {
+    "id": "487",
+    "name": "Tizi Ouzou",
+    "postCode": "15001",
+    "wilayaId": "15"
+  },
+  {
+    "id": "488",
+    "name": "Ain El Hammam",
+    "postCode": "15002",
+    "wilayaId": "15"
+  },
+  {
+    "id": "489",
+    "name": "Akbil",
+    "postCode": "15003",
+    "wilayaId": "15"
+  },
+  {
+    "id": "490",
+    "name": "Freha",
+    "postCode": "15004",
+    "wilayaId": "15"
+  },
+  {
+    "id": "491",
+    "name": "Souamaa",
+    "postCode": "15005",
+    "wilayaId": "15"
+  },
+  {
+    "id": "492",
+    "name": "Mechtrass",
+    "postCode": "15006",
+    "wilayaId": "15"
+  },
+  {
+    "id": "493",
+    "name": "Irdjen",
+    "postCode": "15007",
+    "wilayaId": "15"
+  },
+  {
+    "id": "494",
+    "name": "Timizart",
+    "postCode": "15008",
+    "wilayaId": "15"
+  },
+  {
+    "id": "495",
+    "name": "Makouda",
+    "postCode": "15009",
+    "wilayaId": "15"
+  },
+  {
+    "id": "496",
+    "name": "Draa El Mizan",
+    "postCode": "15010",
+    "wilayaId": "15"
+  },
+  {
+    "id": "497",
+    "name": "Tizi Ghenif",
+    "postCode": "15011",
+    "wilayaId": "15"
+  },
+  {
+    "id": "498",
+    "name": "Bounouh",
+    "postCode": "15012",
+    "wilayaId": "15"
+  },
+  {
+    "id": "499",
+    "name": "Ait Chaffaa",
+    "postCode": "15013",
+    "wilayaId": "15"
+  },
+  {
+    "id": "500",
+    "name": "Frikat",
+    "postCode": "15014",
+    "wilayaId": "15"
+  },
+  {
+    "id": "501",
+    "name": "Beni Aissi",
+    "postCode": "15015",
+    "wilayaId": "15"
+  },
+  {
+    "id": "502",
+    "name": "Beni Zmenzer",
+    "postCode": "15016",
+    "wilayaId": "15"
+  },
+  {
+    "id": "503",
+    "name": "Iferhounene",
+    "postCode": "15017",
+    "wilayaId": "15"
+  },
+  {
+    "id": "504",
+    "name": "Azazga",
+    "postCode": "15018",
+    "wilayaId": "15"
+  },
+  {
+    "id": "505",
+    "name": "Iloula Oumalou",
+    "postCode": "15019",
+    "wilayaId": "15"
+  },
+  {
+    "id": "506",
+    "name": "Yakouren",
+    "postCode": "15020",
+    "wilayaId": "15"
+  },
+  {
+    "id": "507",
+    "name": "Larba Nait Irathen",
+    "postCode": "15021",
+    "wilayaId": "15"
+  },
+  {
+    "id": "508",
+    "name": "Tizi Rached",
+    "postCode": "15022",
+    "wilayaId": "15"
+  },
+  {
+    "id": "509",
+    "name": "Zekri",
+    "postCode": "15023",
+    "wilayaId": "15"
+  },
+  {
+    "id": "510",
+    "name": "Ouaguenoun",
+    "postCode": "15024",
+    "wilayaId": "15"
+  },
+  {
+    "id": "511",
+    "name": "Ain Zaouia",
+    "postCode": "15025",
+    "wilayaId": "15"
+  },
+  {
+    "id": "512",
+    "name": "Mkira",
+    "postCode": "15026",
+    "wilayaId": "15"
+  },
+  {
+    "id": "513",
+    "name": "Ait Yahia",
+    "postCode": "15027",
+    "wilayaId": "15"
+  },
+  {
+    "id": "514",
+    "name": "Ait Mahmoud",
+    "postCode": "15028",
+    "wilayaId": "15"
+  },
+  {
+    "id": "515",
+    "name": "Maatka",
+    "postCode": "15029",
+    "wilayaId": "15"
+  },
+  {
+    "id": "516",
+    "name": "Ait Boumehdi",
+    "postCode": "15030",
+    "wilayaId": "15"
+  },
+  {
+    "id": "517",
+    "name": "Abi Youcef",
+    "postCode": "15031",
+    "wilayaId": "15"
+  },
+  {
+    "id": "518",
+    "name": "Beni Douala",
+    "postCode": "15032",
+    "wilayaId": "15"
+  },
+  {
+    "id": "519",
+    "name": "Illilten",
+    "postCode": "15033",
+    "wilayaId": "15"
+  },
+  {
+    "id": "520",
+    "name": "Bouzguen",
+    "postCode": "15034",
+    "wilayaId": "15"
+  },
+  {
+    "id": "521",
+    "name": "Ait Aggouacha",
+    "postCode": "15035",
+    "wilayaId": "15"
+  },
+  {
+    "id": "522",
+    "name": "Ouadhia",
+    "postCode": "15036",
+    "wilayaId": "15"
+  },
+  {
+    "id": "523",
+    "name": "Azzefoun",
+    "postCode": "15037",
+    "wilayaId": "15"
+  },
+  {
+    "id": "524",
+    "name": "Tigzirt",
+    "postCode": "15038",
+    "wilayaId": "15"
+  },
+  {
+    "id": "525",
+    "name": "Ait Aissa Mimoun",
+    "postCode": "15039",
+    "wilayaId": "15"
+  },
+  {
+    "id": "526",
+    "name": "Boghni",
+    "postCode": "15040",
+    "wilayaId": "15"
+  },
+  {
+    "id": "527",
+    "name": "Ifigha",
+    "postCode": "15041",
+    "wilayaId": "15"
+  },
+  {
+    "id": "528",
+    "name": "Ait Oumalou",
+    "postCode": "15042",
+    "wilayaId": "15"
+  },
+  {
+    "id": "529",
+    "name": "Tirmitine",
+    "postCode": "15043",
+    "wilayaId": "15"
+  },
+  {
+    "id": "530",
+    "name": "Akerrou",
+    "postCode": "15044",
+    "wilayaId": "15"
+  },
+  {
+    "id": "531",
+    "name": "Yatafen",
+    "postCode": "15045",
+    "wilayaId": "15"
+  },
+  {
+    "id": "532",
+    "name": "Beni Ziki",
+    "postCode": "15046",
+    "wilayaId": "15"
+  },
+  {
+    "id": "533",
+    "name": "Draa Ben Khedda",
+    "postCode": "15047",
+    "wilayaId": "15"
+  },
+  {
+    "id": "534",
+    "name": "Ouacif",
+    "postCode": "15048",
+    "wilayaId": "15"
+  },
+  {
+    "id": "535",
+    "name": "Idjeur",
+    "postCode": "15049",
+    "wilayaId": "15"
+  },
+  {
+    "id": "536",
+    "name": "Mekla",
+    "postCode": "15050",
+    "wilayaId": "15"
+  },
+  {
+    "id": "537",
+    "name": "Tizi Nthlata",
+    "postCode": "15051",
+    "wilayaId": "15"
+  },
+  {
+    "id": "538",
+    "name": "Beni Yenni",
+    "postCode": "15052",
+    "wilayaId": "15"
+  },
+  {
+    "id": "539",
+    "name": "Aghrib",
+    "postCode": "15053",
+    "wilayaId": "15"
+  },
+  {
+    "id": "540",
+    "name": "Iflissen",
+    "postCode": "15054",
+    "wilayaId": "15"
+  },
+  {
+    "id": "541",
+    "name": "Boudjima",
+    "postCode": "15055",
+    "wilayaId": "15"
+  },
+  {
+    "id": "542",
+    "name": "Ait Yahia Moussa",
+    "postCode": "15056",
+    "wilayaId": "15"
+  },
+  {
+    "id": "543",
+    "name": "Souk El Thenine",
+    "postCode": "15057",
+    "wilayaId": "15"
+  },
+  {
+    "id": "544",
+    "name": "Ait Khelil",
+    "postCode": "15058",
+    "wilayaId": "15"
+  },
+  {
+    "id": "545",
+    "name": "Sidi Naamane",
+    "postCode": "15059",
+    "wilayaId": "15"
+  },
+  {
+    "id": "546",
+    "name": "Iboudraren",
+    "postCode": "15060",
+    "wilayaId": "15"
+  },
+  {
+    "id": "547",
+    "name": "Agouni Gueghrane",
+    "postCode": "15061",
+    "wilayaId": "15"
+  },
+  {
+    "id": "548",
+    "name": "Mizrana",
+    "postCode": "15062",
+    "wilayaId": "15"
+  },
+  {
+    "id": "549",
+    "name": "Imsouhal",
+    "postCode": "15063",
+    "wilayaId": "15"
+  },
+  {
+    "id": "550",
+    "name": "Tadmait",
+    "postCode": "15064",
+    "wilayaId": "15"
+  },
+  {
+    "id": "551",
+    "name": "Ait Bouadou",
+    "postCode": "15065",
+    "wilayaId": "15"
+  },
+  {
+    "id": "552",
+    "name": "Assi Youcef",
+    "postCode": "15066",
+    "wilayaId": "15"
+  },
+  {
+    "id": "553",
+    "name": "Ait Toudert",
+    "postCode": "15067",
+    "wilayaId": "15"
+  },
+  {
+    "id": "554",
+    "name": "Alger Centre",
+    "postCode": "16001",
+    "wilayaId": "16"
+  },
+  {
+    "id": "555",
+    "name": "Sidi Mhamed",
+    "postCode": "16002",
+    "wilayaId": "16"
+  },
+  {
+    "id": "556",
+    "name": "El Madania",
+    "postCode": "16003",
+    "wilayaId": "16"
+  },
+  {
+    "id": "557",
+    "name": "Belouizdad",
+    "postCode": "16004",
+    "wilayaId": "16"
+  },
+  {
+    "id": "558",
+    "name": "Bab El Oued",
+    "postCode": "16005",
+    "wilayaId": "16"
+  },
+  {
+    "id": "559",
+    "name": "Bologhine",
+    "postCode": "16006",
+    "wilayaId": "16"
+  },
+  {
+    "id": "560",
+    "name": "Casbah",
+    "postCode": "16007",
+    "wilayaId": "16"
+  },
+  {
+    "id": "561",
+    "name": "Oued Koriche",
+    "postCode": "16008",
+    "wilayaId": "16"
+  },
+  {
+    "id": "562",
+    "name": "Bir Mourad Rais",
+    "postCode": "16009",
+    "wilayaId": "16"
+  },
+  {
+    "id": "563",
+    "name": "El Biar",
+    "postCode": "16010",
+    "wilayaId": "16"
+  },
+  {
+    "id": "564",
+    "name": "Bouzareah",
+    "postCode": "16011",
+    "wilayaId": "16"
+  },
+  {
+    "id": "565",
+    "name": "Birkhadem",
+    "postCode": "16012",
+    "wilayaId": "16"
+  },
+  {
+    "id": "566",
+    "name": "El Harrach",
+    "postCode": "16013",
+    "wilayaId": "16"
+  },
+  {
+    "id": "567",
+    "name": "Baraki",
+    "postCode": "16014",
+    "wilayaId": "16"
+  },
+  {
+    "id": "568",
+    "name": "Oued Smar",
+    "postCode": "16015",
+    "wilayaId": "16"
+  },
+  {
+    "id": "569",
+    "name": "Bourouba",
+    "postCode": "16016",
+    "wilayaId": "16"
+  },
+  {
+    "id": "570",
+    "name": "Hussein Dey",
+    "postCode": "16017",
+    "wilayaId": "16"
+  },
+  {
+    "id": "571",
+    "name": "Kouba",
+    "postCode": "16018",
+    "wilayaId": "16"
+  },
+  {
+    "id": "572",
+    "name": "Bachedjerah",
+    "postCode": "16019",
+    "wilayaId": "16"
+  },
+  {
+    "id": "573",
+    "name": "Dar El Beida",
+    "postCode": "16020",
+    "wilayaId": "16"
+  },
+  {
+    "id": "574",
+    "name": "Bab Azzouar",
+    "postCode": "16021",
+    "wilayaId": "16"
+  },
+  {
+    "id": "575",
+    "name": "Ben Aknoun",
+    "postCode": "16022",
+    "wilayaId": "16"
+  },
+  {
+    "id": "576",
+    "name": "Dely Ibrahim",
+    "postCode": "16023",
+    "wilayaId": "16"
+  },
+  {
+    "id": "577",
+    "name": "El Hammamet",
+    "postCode": "16024",
+    "wilayaId": "16"
+  },
+  {
+    "id": "578",
+    "name": "Rais Hamidou",
+    "postCode": "16025",
+    "wilayaId": "16"
+  },
+  {
+    "id": "579",
+    "name": "Djasr Kasentina",
+    "postCode": "16026",
+    "wilayaId": "16"
+  },
+  {
+    "id": "580",
+    "name": "El Mouradia",
+    "postCode": "16027",
+    "wilayaId": "16"
+  },
+  {
+    "id": "581",
+    "name": "Hydra",
+    "postCode": "16028",
+    "wilayaId": "16"
+  },
+  {
+    "id": "582",
+    "name": "Mohammadia",
+    "postCode": "16029",
+    "wilayaId": "16"
+  },
+  {
+    "id": "583",
+    "name": "Bordj El Kiffan",
+    "postCode": "16030",
+    "wilayaId": "16"
+  },
+  {
+    "id": "584",
+    "name": "El Magharia",
+    "postCode": "16031",
+    "wilayaId": "16"
+  },
+  {
+    "id": "585",
+    "name": "Beni Messous",
+    "postCode": "16032",
+    "wilayaId": "16"
+  },
+  {
+    "id": "586",
+    "name": "Les Eucalyptus",
+    "postCode": "16033",
+    "wilayaId": "16"
+  },
+  {
+    "id": "587",
+    "name": "Birtouta",
+    "postCode": "16034",
+    "wilayaId": "16"
+  },
+  {
+    "id": "588",
+    "name": "Tassala El Merdja",
+    "postCode": "16035",
+    "wilayaId": "16"
+  },
+  {
+    "id": "589",
+    "name": "Ouled Chebel",
+    "postCode": "16036",
+    "wilayaId": "16"
+  },
+  {
+    "id": "590",
+    "name": "Sidi Moussa",
+    "postCode": "16037",
+    "wilayaId": "16"
+  },
+  {
+    "id": "591",
+    "name": "Ain Taya",
+    "postCode": "16038",
+    "wilayaId": "16"
+  },
+  {
+    "id": "592",
+    "name": "Bordj El Bahri",
+    "postCode": "16039",
+    "wilayaId": "16"
+  },
+  {
+    "id": "593",
+    "name": "Marsa",
+    "postCode": "16040",
+    "wilayaId": "16"
+  },
+  {
+    "id": "594",
+    "name": "Haraoua",
+    "postCode": "16041",
+    "wilayaId": "16"
+  },
+  {
+    "id": "595",
+    "name": "Rouiba",
+    "postCode": "16042",
+    "wilayaId": "16"
+  },
+  {
+    "id": "596",
+    "name": "Reghaia",
+    "postCode": "16043",
+    "wilayaId": "16"
+  },
+  {
+    "id": "597",
+    "name": "Ain Benian",
+    "postCode": "16044",
+    "wilayaId": "16"
+  },
+  {
+    "id": "598",
+    "name": "Staoueli",
+    "postCode": "16045",
+    "wilayaId": "16"
+  },
+  {
+    "id": "599",
+    "name": "Zeralda",
+    "postCode": "16046",
+    "wilayaId": "16"
+  },
+  {
+    "id": "600",
+    "name": "Mahelma",
+    "postCode": "16047",
+    "wilayaId": "16"
+  },
+  {
+    "id": "601",
+    "name": "Rahmania",
+    "postCode": "16048",
+    "wilayaId": "16"
+  },
+  {
+    "id": "602",
+    "name": "Souidania",
+    "postCode": "16049",
+    "wilayaId": "16"
+  },
+  {
+    "id": "603",
+    "name": "Cheraga",
+    "postCode": "16050",
+    "wilayaId": "16"
+  },
+  {
+    "id": "604",
+    "name": "Ouled Fayet",
+    "postCode": "16051",
+    "wilayaId": "16"
+  },
+  {
+    "id": "605",
+    "name": "El Achour",
+    "postCode": "16052",
+    "wilayaId": "16"
+  },
+  {
+    "id": "606",
+    "name": "Draria",
+    "postCode": "16053",
+    "wilayaId": "16"
+  },
+  {
+    "id": "607",
+    "name": "Douera",
+    "postCode": "16054",
+    "wilayaId": "16"
+  },
+  {
+    "id": "608",
+    "name": "Baba Hassen",
+    "postCode": "16055",
+    "wilayaId": "16"
+  },
+  {
+    "id": "609",
+    "name": "Khracia",
+    "postCode": "16056",
+    "wilayaId": "16"
+  },
+  {
+    "id": "610",
+    "name": "Saoula",
+    "postCode": "16057",
+    "wilayaId": "16"
+  },
+  {
+    "id": "611",
+    "name": "Djelfa",
+    "postCode": "17001",
+    "wilayaId": "17"
+  },
+  {
+    "id": "612",
+    "name": "Moudjebara",
+    "postCode": "17002",
+    "wilayaId": "17"
+  },
+  {
+    "id": "613",
+    "name": "El Guedid",
+    "postCode": "17003",
+    "wilayaId": "17"
+  },
+  {
+    "id": "614",
+    "name": "Hassi Bahbah",
+    "postCode": "17004",
+    "wilayaId": "17"
+  },
+  {
+    "id": "615",
+    "name": "Ain Maabed",
+    "postCode": "17005",
+    "wilayaId": "17"
+  },
+  {
+    "id": "616",
+    "name": "Sed Rahal",
+    "postCode": "66006",
+    "wilayaId": "66"
+  },
+  {
+    "id": "617",
+    "name": "Feidh El Botma",
+    "postCode": "17007",
+    "wilayaId": "17"
+  },
+  {
+    "id": "618",
+    "name": "Birine",
+    "postCode": "65008",
+    "wilayaId": "65"
+  },
+  {
+    "id": "619",
+    "name": "Bouira Lahdeb",
+    "postCode": "17009",
+    "wilayaId": "17"
+  },
+  {
+    "id": "620",
+    "name": "Zaccar",
+    "postCode": "17010",
+    "wilayaId": "17"
+  },
+  {
+    "id": "621",
+    "name": "El Khemis",
+    "postCode": "17011",
+    "wilayaId": "17"
+  },
+  {
+    "id": "622",
+    "name": "Sidi Baizid",
+    "postCode": "17012",
+    "wilayaId": "17"
+  },
+  {
+    "id": "623",
+    "name": "M'Liliha",
+    "postCode": "17013",
+    "wilayaId": "17"
+  },
+  {
+    "id": "624",
+    "name": "El Idrissia",
+    "postCode": "17014",
+    "wilayaId": "17"
+  },
+  {
+    "id": "625",
+    "name": "Douis",
+    "postCode": "17015",
+    "wilayaId": "17"
+  },
+  {
+    "id": "626",
+    "name": "Hassi El Euch",
+    "postCode": "17016",
+    "wilayaId": "17"
+  },
+  {
+    "id": "627",
+    "name": "Messaad",
+    "postCode": "66017",
+    "wilayaId": "66"
+  },
+  {
+    "id": "628",
+    "name": "Guettara",
+    "postCode": "17018",
+    "wilayaId": "17"
+  },
+  {
+    "id": "629",
+    "name": "Sidi Ladjel",
+    "postCode": "65019",
+    "wilayaId": "65"
+  },
+  {
+    "id": "630",
+    "name": "Had Sahary",
+    "postCode": "65020",
+    "wilayaId": "65"
+  },
+  {
+    "id": "631",
+    "name": "Guernini",
+    "postCode": "65021",
+    "wilayaId": "65"
+  },
+  {
+    "id": "632",
+    "name": "Selmana",
+    "postCode": "66022",
+    "wilayaId": "66"
+  },
+  {
+    "id": "633",
+    "name": "Ain Chouhada",
+    "postCode": "17023",
+    "wilayaId": "17"
+  },
+  {
+    "id": "634",
+    "name": "Oum Laadham",
+    "postCode": "17024",
+    "wilayaId": "17"
+  },
+  {
+    "id": "635",
+    "name": "Dar Chouikh",
+    "postCode": "17025",
+    "wilayaId": "17"
+  },
+  {
+    "id": "636",
+    "name": "Charef",
+    "postCode": "17026",
+    "wilayaId": "17"
+  },
+  {
+    "id": "637",
+    "name": "Beni Yacoub",
+    "postCode": "17027",
+    "wilayaId": "17"
+  },
+  {
+    "id": "638",
+    "name": "Zaafrane",
+    "postCode": "17028",
+    "wilayaId": "17"
+  },
+  {
+    "id": "639",
+    "name": "Deldoul",
+    "postCode": "66029",
+    "wilayaId": "66"
+  },
+  {
+    "id": "640",
+    "name": "Ain El Ibel",
+    "postCode": "17030",
+    "wilayaId": "17"
+  },
+  {
+    "id": "641",
+    "name": "Ain Oussera",
+    "postCode": "65031",
+    "wilayaId": "65"
+  },
+  {
+    "id": "642",
+    "name": "Benhar",
+    "postCode": "65032",
+    "wilayaId": "65"
+  },
+  {
+    "id": "643",
+    "name": "Hassi Fedoul",
+    "postCode": "65033",
+    "wilayaId": "65"
+  },
+  {
+    "id": "644",
+    "name": "Amourah",
+    "postCode": "17034",
+    "wilayaId": "17"
+  },
+  {
+    "id": "645",
+    "name": "Ain Fekka",
+    "postCode": "65035",
+    "wilayaId": "65"
+  },
+  {
+    "id": "646",
+    "name": "Tadmit",
+    "postCode": "17036",
+    "wilayaId": "17"
+  },
+  {
+    "id": "647",
+    "name": "Jijel",
+    "postCode": "18001",
+    "wilayaId": "18"
+  },
+  {
+    "id": "648",
+    "name": "Erraguene",
+    "postCode": "18002",
+    "wilayaId": "18"
+  },
+  {
+    "id": "649",
+    "name": "El Aouana",
+    "postCode": "18003",
+    "wilayaId": "18"
+  },
+  {
+    "id": "650",
+    "name": "Ziamma Mansouriah",
+    "postCode": "18004",
+    "wilayaId": "18"
+  },
+  {
+    "id": "651",
+    "name": "Taher",
+    "postCode": "18005",
+    "wilayaId": "18"
+  },
+  {
+    "id": "652",
+    "name": "Emir Abdelkader",
+    "postCode": "18006",
+    "wilayaId": "18"
+  },
+  {
+    "id": "653",
+    "name": "Chekfa",
+    "postCode": "18007",
+    "wilayaId": "18"
+  },
+  {
+    "id": "654",
+    "name": "Chahna",
+    "postCode": "18008",
+    "wilayaId": "18"
+  },
+  {
+    "id": "655",
+    "name": "El Milia",
+    "postCode": "18009",
+    "wilayaId": "18"
+  },
+  {
+    "id": "656",
+    "name": "Sidi Maarouf",
+    "postCode": "18010",
+    "wilayaId": "18"
+  },
+  {
+    "id": "657",
+    "name": "Settara",
+    "postCode": "18011",
+    "wilayaId": "18"
+  },
+  {
+    "id": "658",
+    "name": "El Ancer",
+    "postCode": "18012",
+    "wilayaId": "18"
+  },
+  {
+    "id": "659",
+    "name": "Sidi Abdelaziz",
+    "postCode": "18013",
+    "wilayaId": "18"
+  },
+  {
+    "id": "660",
+    "name": "Kaous",
+    "postCode": "18014",
+    "wilayaId": "18"
+  },
+  {
+    "id": "661",
+    "name": "Ghebala",
+    "postCode": "18015",
+    "wilayaId": "18"
+  },
+  {
+    "id": "662",
+    "name": "Bouraoui Belhadef",
+    "postCode": "18016",
+    "wilayaId": "18"
+  },
+  {
+    "id": "663",
+    "name": "Djmila",
+    "postCode": "18017",
+    "wilayaId": "18"
+  },
+  {
+    "id": "664",
+    "name": "Selma Benziada",
+    "postCode": "18018",
+    "wilayaId": "18"
+  },
+  {
+    "id": "665",
+    "name": "Boussif Ouled Askeur",
+    "postCode": "18019",
+    "wilayaId": "18"
+  },
+  {
+    "id": "666",
+    "name": "El Kennar Nouchfi",
+    "postCode": "18020",
+    "wilayaId": "18"
+  },
+  {
+    "id": "667",
+    "name": "Ouled Yahia Khadrouch",
+    "postCode": "18021",
+    "wilayaId": "18"
+  },
+  {
+    "id": "668",
+    "name": "Boudria Beni Yadjis",
+    "postCode": "18022",
+    "wilayaId": "18"
+  },
+  {
+    "id": "669",
+    "name": "Kemir Oued Adjoul",
+    "postCode": "18023",
+    "wilayaId": "18"
+  },
+  {
+    "id": "670",
+    "name": "Texena",
+    "postCode": "18024",
+    "wilayaId": "18"
+  },
+  {
+    "id": "671",
+    "name": "Djemaa Beni Habibi",
+    "postCode": "18025",
+    "wilayaId": "18"
+  },
+  {
+    "id": "672",
+    "name": "Bordj T'her",
+    "postCode": "18026",
+    "wilayaId": "18"
+  },
+  {
+    "id": "673",
+    "name": "Ouled Rabah",
+    "postCode": "18027",
+    "wilayaId": "18"
+  },
+  {
+    "id": "674",
+    "name": "Ouadjana",
+    "postCode": "18028",
+    "wilayaId": "18"
+  },
+  {
+    "id": "675",
+    "name": "Setif",
+    "postCode": "19001",
+    "wilayaId": "19"
+  },
+  {
+    "id": "676",
+    "name": "Ain El Kebira",
+    "postCode": "19002",
+    "wilayaId": "19"
+  },
+  {
+    "id": "677",
+    "name": "Beni Aziz",
+    "postCode": "19003",
+    "wilayaId": "19"
+  },
+  {
+    "id": "678",
+    "name": "Ouled Sidi Ahmed",
+    "postCode": "19004",
+    "wilayaId": "19"
+  },
+  {
+    "id": "679",
+    "name": "Boutaleb",
+    "postCode": "19005",
+    "wilayaId": "19"
+  },
+  {
+    "id": "680",
+    "name": "Ain Roua",
+    "postCode": "19006",
+    "wilayaId": "19"
+  },
+  {
+    "id": "681",
+    "name": "Draa Kebila",
+    "postCode": "19007",
+    "wilayaId": "19"
+  },
+  {
+    "id": "682",
+    "name": "Bir El Arch",
+    "postCode": "19008",
+    "wilayaId": "19"
+  },
+  {
+    "id": "683",
+    "name": "Beni Chebana",
+    "postCode": "19009",
+    "wilayaId": "19"
+  },
+  {
+    "id": "684",
+    "name": "Ouled Tebben",
+    "postCode": "19010",
+    "wilayaId": "19"
+  },
+  {
+    "id": "685",
+    "name": "Hamma",
+    "postCode": "19011",
+    "wilayaId": "19"
+  },
+  {
+    "id": "686",
+    "name": "Maaouia",
+    "postCode": "19012",
+    "wilayaId": "19"
+  },
+  {
+    "id": "687",
+    "name": "Ain Legraj",
+    "postCode": "19013",
+    "wilayaId": "19"
+  },
+  {
+    "id": "688",
+    "name": "Ain Abessa",
+    "postCode": "19014",
+    "wilayaId": "19"
+  },
+  {
+    "id": "689",
+    "name": "Dehamcha",
+    "postCode": "19015",
+    "wilayaId": "19"
+  },
+  {
+    "id": "690",
+    "name": "Babor",
+    "postCode": "19016",
+    "wilayaId": "19"
+  },
+  {
+    "id": "691",
+    "name": "Guidjel",
+    "postCode": "19017",
+    "wilayaId": "19"
+  },
+  {
+    "id": "692",
+    "name": "Ain Lahdjar",
+    "postCode": "19018",
+    "wilayaId": "19"
+  },
+  {
+    "id": "693",
+    "name": "Bousselam",
+    "postCode": "19019",
+    "wilayaId": "19"
+  },
+  {
+    "id": "694",
+    "name": "El Eulma",
+    "postCode": "19020",
+    "wilayaId": "19"
+  },
+  {
+    "id": "695",
+    "name": "Djemila",
+    "postCode": "19021",
+    "wilayaId": "19"
+  },
+  {
+    "id": "696",
+    "name": "Beni Ouartilane",
+    "postCode": "19022",
+    "wilayaId": "19"
+  },
+  {
+    "id": "697",
+    "name": "Rosfa",
+    "postCode": "19023",
+    "wilayaId": "19"
+  },
+  {
+    "id": "698",
+    "name": "Ouled Addouane",
+    "postCode": "19024",
+    "wilayaId": "19"
+  },
+  {
+    "id": "699",
+    "name": "Belaa",
+    "postCode": "19025",
+    "wilayaId": "19"
+  },
+  {
+    "id": "700",
+    "name": "Ain Arnat",
+    "postCode": "19026",
+    "wilayaId": "19"
+  },
+  {
+    "id": "701",
+    "name": "Amoucha",
+    "postCode": "19027",
+    "wilayaId": "19"
+  },
+  {
+    "id": "702",
+    "name": "Ain Oulmane",
+    "postCode": "19028",
+    "wilayaId": "19"
+  },
+  {
+    "id": "703",
+    "name": "Beidha Bordj",
+    "postCode": "19029",
+    "wilayaId": "19"
+  },
+  {
+    "id": "704",
+    "name": "Bouandas",
+    "postCode": "19030",
+    "wilayaId": "19"
+  },
+  {
+    "id": "705",
+    "name": "Bazer Sakhra",
+    "postCode": "19031",
+    "wilayaId": "19"
+  },
+  {
+    "id": "706",
+    "name": "Hammam Essokhna",
+    "postCode": "19032",
+    "wilayaId": "19"
+  },
+  {
+    "id": "707",
+    "name": "Mezloug",
+    "postCode": "19033",
+    "wilayaId": "19"
+  },
+  {
+    "id": "708",
+    "name": "Bir Haddada",
+    "postCode": "19034",
+    "wilayaId": "19"
+  },
+  {
+    "id": "709",
+    "name": "Serdj El Ghoul",
+    "postCode": "19035",
+    "wilayaId": "19"
+  },
+  {
+    "id": "710",
+    "name": "Harbil",
+    "postCode": "19036",
+    "wilayaId": "19"
+  },
+  {
+    "id": "711",
+    "name": "El Ouricia",
+    "postCode": "19037",
+    "wilayaId": "19"
+  },
+  {
+    "id": "712",
+    "name": "Tizi Nbechar",
+    "postCode": "19038",
+    "wilayaId": "19"
+  },
+  {
+    "id": "713",
+    "name": "Salah Bey",
+    "postCode": "19039",
+    "wilayaId": "19"
+  },
+  {
+    "id": "714",
+    "name": "Ain Azal",
+    "postCode": "19040",
+    "wilayaId": "19"
+  },
+  {
+    "id": "715",
+    "name": "Guenzet",
+    "postCode": "19041",
+    "wilayaId": "19"
+  },
+  {
+    "id": "716",
+    "name": "Talaifacene",
+    "postCode": "19042",
+    "wilayaId": "19"
+  },
+  {
+    "id": "717",
+    "name": "Bougaa",
+    "postCode": "19043",
+    "wilayaId": "19"
+  },
+  {
+    "id": "718",
+    "name": "Beni Fouda",
+    "postCode": "19044",
+    "wilayaId": "19"
+  },
+  {
+    "id": "719",
+    "name": "Tachouda",
+    "postCode": "19045",
+    "wilayaId": "19"
+  },
+  {
+    "id": "720",
+    "name": "Beni Mouhli",
+    "postCode": "19046",
+    "wilayaId": "19"
+  },
+  {
+    "id": "721",
+    "name": "Ouled Sabor",
+    "postCode": "19047",
+    "wilayaId": "19"
+  },
+  {
+    "id": "722",
+    "name": "Guellal",
+    "postCode": "19048",
+    "wilayaId": "19"
+  },
+  {
+    "id": "723",
+    "name": "Ain Sebt",
+    "postCode": "19049",
+    "wilayaId": "19"
+  },
+  {
+    "id": "724",
+    "name": "Hammam Guergour",
+    "postCode": "19050",
+    "wilayaId": "19"
+  },
+  {
+    "id": "725",
+    "name": "Ait Naoual Mezada",
+    "postCode": "19051",
+    "wilayaId": "19"
+  },
+  {
+    "id": "726",
+    "name": "Ksar El Abtal",
+    "postCode": "19052",
+    "wilayaId": "19"
+  },
+  {
+    "id": "727",
+    "name": "Beni Hocine",
+    "postCode": "19053",
+    "wilayaId": "19"
+  },
+  {
+    "id": "728",
+    "name": "Ait Tizi",
+    "postCode": "19054",
+    "wilayaId": "19"
+  },
+  {
+    "id": "729",
+    "name": "Maouklane",
+    "postCode": "19055",
+    "wilayaId": "19"
+  },
+  {
+    "id": "730",
+    "name": "Guelta Zerka",
+    "postCode": "19056",
+    "wilayaId": "19"
+  },
+  {
+    "id": "731",
+    "name": "Oued El Barad",
+    "postCode": "19057",
+    "wilayaId": "19"
+  },
+  {
+    "id": "732",
+    "name": "Taya",
+    "postCode": "19058",
+    "wilayaId": "19"
+  },
+  {
+    "id": "733",
+    "name": "El Ouldja",
+    "postCode": "19059",
+    "wilayaId": "19"
+  },
+  {
+    "id": "734",
+    "name": "Tella",
+    "postCode": "19060",
+    "wilayaId": "19"
+  },
+  {
+    "id": "735",
+    "name": "Saida",
+    "postCode": "20001",
+    "wilayaId": "20"
+  },
+  {
+    "id": "736",
+    "name": "Doui Thabet",
+    "postCode": "20002",
+    "wilayaId": "20"
+  },
+  {
+    "id": "737",
+    "name": "Ain El Hadjar",
+    "postCode": "20003",
+    "wilayaId": "20"
+  },
+  {
+    "id": "738",
+    "name": "Ouled Khaled",
+    "postCode": "20004",
+    "wilayaId": "20"
+  },
+  {
+    "id": "739",
+    "name": "Moulay Larbi",
+    "postCode": "20005",
+    "wilayaId": "20"
+  },
+  {
+    "id": "740",
+    "name": "Youb",
+    "postCode": "20006",
+    "wilayaId": "20"
+  },
+  {
+    "id": "741",
+    "name": "Hounet",
+    "postCode": "20007",
+    "wilayaId": "20"
+  },
+  {
+    "id": "742",
+    "name": "Sidi Amar",
+    "postCode": "20008",
+    "wilayaId": "20"
+  },
+  {
+    "id": "743",
+    "name": "Sidi Boubekeur",
+    "postCode": "20009",
+    "wilayaId": "20"
+  },
+  {
+    "id": "744",
+    "name": "El Hassasna",
+    "postCode": "20010",
+    "wilayaId": "20"
+  },
+  {
+    "id": "745",
+    "name": "Maamora",
+    "postCode": "20011",
+    "wilayaId": "20"
+  },
+  {
+    "id": "746",
+    "name": "Sidi Ahmed",
+    "postCode": "20012",
+    "wilayaId": "20"
+  },
+  {
+    "id": "747",
+    "name": "Ain Sekhouna",
+    "postCode": "20013",
+    "wilayaId": "20"
+  },
+  {
+    "id": "748",
+    "name": "Ouled Brahim",
+    "postCode": "20014",
+    "wilayaId": "20"
+  },
+  {
+    "id": "749",
+    "name": "Tircine",
+    "postCode": "20015",
+    "wilayaId": "20"
+  },
+  {
+    "id": "750",
+    "name": "Ain Soltane",
+    "postCode": "20016",
+    "wilayaId": "20"
+  },
+  {
+    "id": "751",
+    "name": "Skikda",
+    "postCode": "21001",
+    "wilayaId": "21"
+  },
+  {
+    "id": "752",
+    "name": "Ain Zouit",
+    "postCode": "21002",
+    "wilayaId": "21"
+  },
+  {
+    "id": "753",
+    "name": "El Hadaik",
+    "postCode": "21003",
+    "wilayaId": "21"
+  },
+  {
+    "id": "754",
+    "name": "Azzaba",
+    "postCode": "21004",
+    "wilayaId": "21"
+  },
+  {
+    "id": "755",
+    "name": "Djendel",
+    "postCode": "21005",
+    "wilayaId": "21"
+  },
+  {
+    "id": "756",
+    "name": "Ain Cherchar",
+    "postCode": "21006",
+    "wilayaId": "21"
+  },
+  {
+    "id": "757",
+    "name": "Bekkouche Lakhdar",
+    "postCode": "21007",
+    "wilayaId": "21"
+  },
+  {
+    "id": "758",
+    "name": "Ben Azzouz",
+    "postCode": "21008",
+    "wilayaId": "21"
+  },
+  {
+    "id": "759",
+    "name": "Es Sebt",
+    "postCode": "21009",
+    "wilayaId": "21"
+  },
+  {
+    "id": "760",
+    "name": "Collo",
+    "postCode": "21010",
+    "wilayaId": "21"
+  },
+  {
+    "id": "761",
+    "name": "Beni Zid",
+    "postCode": "21011",
+    "wilayaId": "21"
+  },
+  {
+    "id": "762",
+    "name": "Kerkera",
+    "postCode": "21012",
+    "wilayaId": "21"
+  },
+  {
+    "id": "763",
+    "name": "Ouled Attia",
+    "postCode": "21013",
+    "wilayaId": "21"
+  },
+  {
+    "id": "764",
+    "name": "Oued Zehour",
+    "postCode": "21014",
+    "wilayaId": "21"
+  },
+  {
+    "id": "765",
+    "name": "Zitouna",
+    "postCode": "21015",
+    "wilayaId": "21"
+  },
+  {
+    "id": "766",
+    "name": "El Harrouch",
+    "postCode": "21016",
+    "wilayaId": "21"
+  },
+  {
+    "id": "767",
+    "name": "Zerdazas",
+    "postCode": "21017",
+    "wilayaId": "21"
+  },
+  {
+    "id": "768",
+    "name": "Ouled Hebaba",
+    "postCode": "21018",
+    "wilayaId": "21"
+  },
+  {
+    "id": "769",
+    "name": "Sidi Mezghiche",
+    "postCode": "21019",
+    "wilayaId": "21"
+  },
+  {
+    "id": "770",
+    "name": "Emdjez Edchich",
+    "postCode": "21020",
+    "wilayaId": "21"
+  },
+  {
+    "id": "771",
+    "name": "Beni Oulbane",
+    "postCode": "21021",
+    "wilayaId": "21"
+  },
+  {
+    "id": "772",
+    "name": "Ain Bouziane",
+    "postCode": "21022",
+    "wilayaId": "21"
+  },
+  {
+    "id": "773",
+    "name": "Ramdane Djamel",
+    "postCode": "21023",
+    "wilayaId": "21"
+  },
+  {
+    "id": "774",
+    "name": "Beni Bachir",
+    "postCode": "21024",
+    "wilayaId": "21"
+  },
+  {
+    "id": "775",
+    "name": "Salah Bouchaour",
+    "postCode": "21025",
+    "wilayaId": "21"
+  },
+  {
+    "id": "776",
+    "name": "Tamalous",
+    "postCode": "21026",
+    "wilayaId": "21"
+  },
+  {
+    "id": "777",
+    "name": "Ain Kechra",
+    "postCode": "21027",
+    "wilayaId": "21"
+  },
+  {
+    "id": "778",
+    "name": "Oum Toub",
+    "postCode": "21028",
+    "wilayaId": "21"
+  },
+  {
+    "id": "779",
+    "name": "Bein El Ouiden",
+    "postCode": "21029",
+    "wilayaId": "21"
+  },
+  {
+    "id": "780",
+    "name": "Filfila",
+    "postCode": "21030",
+    "wilayaId": "21"
+  },
+  {
+    "id": "781",
+    "name": "Cheraia",
+    "postCode": "21031",
+    "wilayaId": "21"
+  },
+  {
+    "id": "782",
+    "name": "Kanoua",
+    "postCode": "21032",
+    "wilayaId": "21"
+  },
+  {
+    "id": "783",
+    "name": "El Ghedir",
+    "postCode": "21033",
+    "wilayaId": "21"
+  },
+  {
+    "id": "784",
+    "name": "Bouchtata",
+    "postCode": "21034",
+    "wilayaId": "21"
+  },
+  {
+    "id": "785",
+    "name": "Ouldja Boulbalout",
+    "postCode": "21035",
+    "wilayaId": "21"
+  },
+  {
+    "id": "786",
+    "name": "Kheneg Mayoum",
+    "postCode": "21036",
+    "wilayaId": "21"
+  },
+  {
+    "id": "787",
+    "name": "Hamadi Krouma",
+    "postCode": "21037",
+    "wilayaId": "21"
+  },
+  {
+    "id": "788",
+    "name": "El Marsa",
+    "postCode": "21038",
+    "wilayaId": "21"
+  },
+  {
+    "id": "789",
+    "name": "Sidi Bel Abbes",
+    "postCode": "22001",
+    "wilayaId": "22"
+  },
+  {
+    "id": "790",
+    "name": "Tessala",
+    "postCode": "22002",
+    "wilayaId": "22"
+  },
+  {
+    "id": "791",
+    "name": "Sidi Brahim",
+    "postCode": "22003",
+    "wilayaId": "22"
+  },
+  {
+    "id": "792",
+    "name": "Mostefa Ben Brahim",
+    "postCode": "22004",
+    "wilayaId": "22"
+  },
+  {
+    "id": "793",
+    "name": "Telagh",
+    "postCode": "22005",
+    "wilayaId": "22"
+  },
+  {
+    "id": "794",
+    "name": "Mezaourou",
+    "postCode": "22006",
+    "wilayaId": "22"
+  },
+  {
+    "id": "795",
+    "name": "Boukhanafis",
+    "postCode": "22007",
+    "wilayaId": "22"
+  },
+  {
+    "id": "796",
+    "name": "Sidi Ali Boussidi",
+    "postCode": "22008",
+    "wilayaId": "22"
+  },
+  {
+    "id": "797",
+    "name": "Badredine El Mokrani",
+    "postCode": "22009",
+    "wilayaId": "22"
+  },
+  {
+    "id": "798",
+    "name": "Marhoum",
+    "postCode": "22010",
+    "wilayaId": "22"
+  },
+  {
+    "id": "799",
+    "name": "Tafissour",
+    "postCode": "22011",
+    "wilayaId": "22"
+  },
+  {
+    "id": "800",
+    "name": "Amarnas",
+    "postCode": "22012",
+    "wilayaId": "22"
+  },
+  {
+    "id": "801",
+    "name": "Tilmouni",
+    "postCode": "22013",
+    "wilayaId": "22"
+  },
+  {
+    "id": "802",
+    "name": "Sidi Lahcene",
+    "postCode": "22014",
+    "wilayaId": "22"
+  },
+  {
+    "id": "803",
+    "name": "Ain Thrid",
+    "postCode": "22015",
+    "wilayaId": "22"
+  },
+  {
+    "id": "804",
+    "name": "Makedra",
+    "postCode": "22016",
+    "wilayaId": "22"
+  },
+  {
+    "id": "805",
+    "name": "Tenira",
+    "postCode": "22017",
+    "wilayaId": "22"
+  },
+  {
+    "id": "806",
+    "name": "Moulay Slissen",
+    "postCode": "22018",
+    "wilayaId": "22"
+  },
+  {
+    "id": "807",
+    "name": "El Hacaiba",
+    "postCode": "22019",
+    "wilayaId": "22"
+  },
+  {
+    "id": "808",
+    "name": "Hassi Zehana",
+    "postCode": "22020",
+    "wilayaId": "22"
+  },
+  {
+    "id": "809",
+    "name": "Tabia",
+    "postCode": "22021",
+    "wilayaId": "22"
+  },
+  {
+    "id": "810",
+    "name": "Merine",
+    "postCode": "22022",
+    "wilayaId": "22"
+  },
+  {
+    "id": "811",
+    "name": "Ras El Ma",
+    "postCode": "22023",
+    "wilayaId": "22"
+  },
+  {
+    "id": "812",
+    "name": "Ain Tindamine",
+    "postCode": "22024",
+    "wilayaId": "22"
+  },
+  {
+    "id": "813",
+    "name": "Ain Kada",
+    "postCode": "22025",
+    "wilayaId": "22"
+  },
+  {
+    "id": "814",
+    "name": "Mcid",
+    "postCode": "22026",
+    "wilayaId": "22"
+  },
+  {
+    "id": "815",
+    "name": "Sidi Khaled",
+    "postCode": "22027",
+    "wilayaId": "22"
+  },
+  {
+    "id": "816",
+    "name": "Ain El Berd",
+    "postCode": "22028",
+    "wilayaId": "22"
+  },
+  {
+    "id": "817",
+    "name": "Sfissef",
+    "postCode": "22029",
+    "wilayaId": "22"
+  },
+  {
+    "id": "818",
+    "name": "Ain Adden",
+    "postCode": "22030",
+    "wilayaId": "22"
+  },
+  {
+    "id": "819",
+    "name": "Oued Taourira",
+    "postCode": "22031",
+    "wilayaId": "22"
+  },
+  {
+    "id": "820",
+    "name": "Dhaya",
+    "postCode": "22032",
+    "wilayaId": "22"
+  },
+  {
+    "id": "821",
+    "name": "Zerouala",
+    "postCode": "22033",
+    "wilayaId": "22"
+  },
+  {
+    "id": "822",
+    "name": "Lamtar",
+    "postCode": "22034",
+    "wilayaId": "22"
+  },
+  {
+    "id": "823",
+    "name": "Sidi Chaib",
+    "postCode": "22035",
+    "wilayaId": "22"
+  },
+  {
+    "id": "824",
+    "name": "Sidi Dahou",
+    "postCode": "22036",
+    "wilayaId": "22"
+  },
+  {
+    "id": "825",
+    "name": "Oued Sbaa",
+    "postCode": "22037",
+    "wilayaId": "22"
+  },
+  {
+    "id": "826",
+    "name": "Boudjebaa El Bordj",
+    "postCode": "22038",
+    "wilayaId": "22"
+  },
+  {
+    "id": "827",
+    "name": "Sehala Thaoura",
+    "postCode": "22039",
+    "wilayaId": "22"
+  },
+  {
+    "id": "828",
+    "name": "Sidi Yacoub",
+    "postCode": "22040",
+    "wilayaId": "22"
+  },
+  {
+    "id": "829",
+    "name": "Sidi Hamadouche",
+    "postCode": "22041",
+    "wilayaId": "22"
+  },
+  {
+    "id": "830",
+    "name": "Belarbi",
+    "postCode": "22042",
+    "wilayaId": "22"
+  },
+  {
+    "id": "831",
+    "name": "Oued Sefioun",
+    "postCode": "22043",
+    "wilayaId": "22"
+  },
+  {
+    "id": "832",
+    "name": "Teghalimet",
+    "postCode": "22044",
+    "wilayaId": "22"
+  },
+  {
+    "id": "833",
+    "name": "Ben Badis",
+    "postCode": "22045",
+    "wilayaId": "22"
+  },
+  {
+    "id": "834",
+    "name": "Sidi Ali Benyoub",
+    "postCode": "22046",
+    "wilayaId": "22"
+  },
+  {
+    "id": "835",
+    "name": "Chetouane Belaila",
+    "postCode": "22047",
+    "wilayaId": "22"
+  },
+  {
+    "id": "836",
+    "name": "Bir El Hammam",
+    "postCode": "22048",
+    "wilayaId": "22"
+  },
+  {
+    "id": "837",
+    "name": "Taoudmout",
+    "postCode": "22049",
+    "wilayaId": "22"
+  },
+  {
+    "id": "838",
+    "name": "Redjem Demouche",
+    "postCode": "22050",
+    "wilayaId": "22"
+  },
+  {
+    "id": "839",
+    "name": "Benachiba Chelia",
+    "postCode": "22051",
+    "wilayaId": "22"
+  },
+  {
+    "id": "840",
+    "name": "Hassi Dahou",
+    "postCode": "22052",
+    "wilayaId": "22"
+  },
+  {
+    "id": "841",
+    "name": "Annaba",
+    "postCode": "23001",
+    "wilayaId": "23"
+  },
+  {
+    "id": "842",
+    "name": "Berrahel",
+    "postCode": "23002",
+    "wilayaId": "23"
+  },
+  {
+    "id": "843",
+    "name": "El Hadjar",
+    "postCode": "23003",
+    "wilayaId": "23"
+  },
+  {
+    "id": "844",
+    "name": "Eulma",
+    "postCode": "23004",
+    "wilayaId": "23"
+  },
+  {
+    "id": "845",
+    "name": "El Bouni",
+    "postCode": "23005",
+    "wilayaId": "23"
+  },
+  {
+    "id": "846",
+    "name": "Oued El Aneb",
+    "postCode": "23006",
+    "wilayaId": "23"
+  },
+  {
+    "id": "847",
+    "name": "Cheurfa",
+    "postCode": "23007",
+    "wilayaId": "23"
+  },
+  {
+    "id": "848",
+    "name": "Seraidi",
+    "postCode": "23008",
+    "wilayaId": "23"
+  },
+  {
+    "id": "849",
+    "name": "Ain Berda",
+    "postCode": "23009",
+    "wilayaId": "23"
+  },
+  {
+    "id": "850",
+    "name": "Chetaibi",
+    "postCode": "23010",
+    "wilayaId": "23"
+  },
+  {
+    "id": "851",
+    "name": "Sidi Amer",
+    "postCode": "23011",
+    "wilayaId": "23"
+  },
+  {
+    "id": "852",
+    "name": "Treat",
+    "postCode": "23012",
+    "wilayaId": "23"
+  },
+  {
+    "id": "853",
+    "name": "Guelma",
+    "postCode": "24001",
+    "wilayaId": "24"
+  },
+  {
+    "id": "854",
+    "name": "Nechmaya",
+    "postCode": "24002",
+    "wilayaId": "24"
+  },
+  {
+    "id": "855",
+    "name": "Bouati Mahmoud",
+    "postCode": "24003",
+    "wilayaId": "24"
+  },
+  {
+    "id": "856",
+    "name": "Oued Zenati",
+    "postCode": "24004",
+    "wilayaId": "24"
+  },
+  {
+    "id": "857",
+    "name": "Tamlouka",
+    "postCode": "24005",
+    "wilayaId": "24"
+  },
+  {
+    "id": "858",
+    "name": "Oued Fragha",
+    "postCode": "24006",
+    "wilayaId": "24"
+  },
+  {
+    "id": "859",
+    "name": "Ain Sandel",
+    "postCode": "24007",
+    "wilayaId": "24"
+  },
+  {
+    "id": "860",
+    "name": "Ras El Agba",
+    "postCode": "24008",
+    "wilayaId": "24"
+  },
+  {
+    "id": "861",
+    "name": "Dahouara",
+    "postCode": "24009",
+    "wilayaId": "24"
+  },
+  {
+    "id": "862",
+    "name": "Belkhir",
+    "postCode": "24010",
+    "wilayaId": "24"
+  },
+  {
+    "id": "863",
+    "name": "Ben Djarah",
+    "postCode": "24011",
+    "wilayaId": "24"
+  },
+  {
+    "id": "864",
+    "name": "Bou Hamdane",
+    "postCode": "24012",
+    "wilayaId": "24"
+  },
+  {
+    "id": "865",
+    "name": "Ain Makhlouf",
+    "postCode": "24013",
+    "wilayaId": "24"
+  },
+  {
+    "id": "866",
+    "name": "Ain Ben Beida",
+    "postCode": "24014",
+    "wilayaId": "24"
+  },
+  {
+    "id": "867",
+    "name": "Khezara",
+    "postCode": "24015",
+    "wilayaId": "24"
+  },
+  {
+    "id": "868",
+    "name": "Beni Mezline",
+    "postCode": "24016",
+    "wilayaId": "24"
+  },
+  {
+    "id": "869",
+    "name": "Bou Hachana",
+    "postCode": "24017",
+    "wilayaId": "24"
+  },
+  {
+    "id": "870",
+    "name": "Guelaat Bou Sbaa",
+    "postCode": "24018",
+    "wilayaId": "24"
+  },
+  {
+    "id": "871",
+    "name": "Hammam Maskhoutine",
+    "postCode": "24019",
+    "wilayaId": "24"
+  },
+  {
+    "id": "872",
+    "name": "El Fedjoudj",
+    "postCode": "24020",
+    "wilayaId": "24"
+  },
+  {
+    "id": "873",
+    "name": "Bordj Sabat",
+    "postCode": "24021",
+    "wilayaId": "24"
+  },
+  {
+    "id": "874",
+    "name": "Hamman Nbail",
+    "postCode": "24022",
+    "wilayaId": "24"
+  },
+  {
+    "id": "875",
+    "name": "Ain Larbi",
+    "postCode": "24023",
+    "wilayaId": "24"
+  },
+  {
+    "id": "876",
+    "name": "Medjez Amar",
+    "postCode": "24024",
+    "wilayaId": "24"
+  },
+  {
+    "id": "877",
+    "name": "Bouchegouf",
+    "postCode": "24025",
+    "wilayaId": "24"
+  },
+  {
+    "id": "878",
+    "name": "Heliopolis",
+    "postCode": "24026",
+    "wilayaId": "24"
+  },
+  {
+    "id": "879",
+    "name": "Houari Boumediene",
+    "postCode": "24027",
+    "wilayaId": "24"
+  },
+  {
+    "id": "880",
+    "name": "Roknia",
+    "postCode": "24028",
+    "wilayaId": "24"
+  },
+  {
+    "id": "881",
+    "name": "Salaoua Announa",
+    "postCode": "24029",
+    "wilayaId": "24"
+  },
+  {
+    "id": "882",
+    "name": "Medjez Sfa",
+    "postCode": "24030",
+    "wilayaId": "24"
+  },
+  {
+    "id": "883",
+    "name": "Boumahra Ahmed",
+    "postCode": "24031",
+    "wilayaId": "24"
+  },
+  {
+    "id": "884",
+    "name": "Ain Reggada",
+    "postCode": "24032",
+    "wilayaId": "24"
+  },
+  {
+    "id": "885",
+    "name": "Oued Cheham",
+    "postCode": "24033",
+    "wilayaId": "24"
+  },
+  {
+    "id": "886",
+    "name": "Djeballah Khemissi",
+    "postCode": "24034",
+    "wilayaId": "24"
+  },
+  {
+    "id": "887",
+    "name": "Constantine",
+    "postCode": "25001",
+    "wilayaId": "25"
+  },
+  {
+    "id": "888",
+    "name": "Hamma Bouziane",
+    "postCode": "25002",
+    "wilayaId": "25"
+  },
+  {
+    "id": "889",
+    "name": "Ibn Badis",
+    "postCode": "25003",
+    "wilayaId": "25"
+  },
+  {
+    "id": "890",
+    "name": "Zighoud Youcef",
+    "postCode": "25004",
+    "wilayaId": "25"
+  },
+  {
+    "id": "891",
+    "name": "Didouche Mourad",
+    "postCode": "25005",
+    "wilayaId": "25"
+  },
+  {
+    "id": "892",
+    "name": "El Khroub",
+    "postCode": "25006",
+    "wilayaId": "25"
+  },
+  {
+    "id": "893",
+    "name": "Ain Abid",
+    "postCode": "25007",
+    "wilayaId": "25"
+  },
+  {
+    "id": "894",
+    "name": "Beni Hamiden",
+    "postCode": "25008",
+    "wilayaId": "25"
+  },
+  {
+    "id": "895",
+    "name": "Ouled Rahmoune",
+    "postCode": "25009",
+    "wilayaId": "25"
+  },
+  {
+    "id": "896",
+    "name": "Ain Smara",
+    "postCode": "25010",
+    "wilayaId": "25"
+  },
+  {
+    "id": "897",
+    "name": "Mesaoud Boudjeriou",
+    "postCode": "25011",
+    "wilayaId": "25"
+  },
+  {
+    "id": "898",
+    "name": "Ibn Ziad",
+    "postCode": "25012",
+    "wilayaId": "25"
+  },
+  {
+    "id": "899",
+    "name": "Medea",
+    "postCode": "26001",
+    "wilayaId": "26"
+  },
+  {
+    "id": "900",
+    "name": "Ouzera",
+    "postCode": "26002",
+    "wilayaId": "26"
+  },
+  {
+    "id": "901",
+    "name": "Ouled Maaref",
+    "postCode": "26003",
+    "wilayaId": "26"
+  },
+  {
+    "id": "902",
+    "name": "Ain Boucif",
+    "postCode": "26004",
+    "wilayaId": "26"
+  },
+  {
+    "id": "903",
+    "name": "Aissaouia",
+    "postCode": "26005",
+    "wilayaId": "26"
+  },
+  {
+    "id": "904",
+    "name": "Ouled Deide",
+    "postCode": "26006",
+    "wilayaId": "26"
+  },
+  {
+    "id": "905",
+    "name": "El Omaria",
+    "postCode": "67007",
+    "wilayaId": "67"
+  },
+  {
+    "id": "906",
+    "name": "Derrag",
+    "postCode": "26008",
+    "wilayaId": "26"
+  },
+  {
+    "id": "907",
+    "name": "El Guelbelkebir",
+    "postCode": "26009",
+    "wilayaId": "26"
+  },
+  {
+    "id": "908",
+    "name": "Bouaiche",
+    "postCode": "26010",
+    "wilayaId": "26"
+  },
+  {
+    "id": "909",
+    "name": "Mezerena",
+    "postCode": "26011",
+    "wilayaId": "26"
+  },
+  {
+    "id": "910",
+    "name": "Ouled Brahim",
+    "postCode": "26012",
+    "wilayaId": "26"
+  },
+  {
+    "id": "911",
+    "name": "Tizi Mahdi",
+    "postCode": "26013",
+    "wilayaId": "26"
+  },
+  {
+    "id": "912",
+    "name": "Sidi Ziane",
+    "postCode": "26014",
+    "wilayaId": "26"
+  },
+  {
+    "id": "913",
+    "name": "Tamesguida",
+    "postCode": "26015",
+    "wilayaId": "26"
+  },
+  {
+    "id": "914",
+    "name": "El Hamdania",
+    "postCode": "26016",
+    "wilayaId": "26"
+  },
+  {
+    "id": "915",
+    "name": "Kef Lakhdar",
+    "postCode": "26017",
+    "wilayaId": "26"
+  },
+  {
+    "id": "916",
+    "name": "Chelalet El Adhaoura",
+    "postCode": "26018",
+    "wilayaId": "26"
+  },
+  {
+    "id": "917",
+    "name": "Bouskene",
+    "postCode": "26019",
+    "wilayaId": "26"
+  },
+  {
+    "id": "918",
+    "name": "Rebaia",
+    "postCode": "26020",
+    "wilayaId": "26"
+  },
+  {
+    "id": "919",
+    "name": "Bouchrahil",
+    "postCode": "26021",
+    "wilayaId": "26"
+  },
+  {
+    "id": "920",
+    "name": "Ouled Hellal",
+    "postCode": "26022",
+    "wilayaId": "26"
+  },
+  {
+    "id": "921",
+    "name": "Tafraout",
+    "postCode": "26023",
+    "wilayaId": "26"
+  },
+  {
+    "id": "922",
+    "name": "Baata",
+    "postCode": "26024",
+    "wilayaId": "26"
+  },
+  {
+    "id": "923",
+    "name": "Boghar",
+    "postCode": "26025",
+    "wilayaId": "26"
+  },
+  {
+    "id": "924",
+    "name": "Sidi Naamane",
+    "postCode": "26026",
+    "wilayaId": "26"
+  },
+  {
+    "id": "925",
+    "name": "Ouled Bouachra",
+    "postCode": "26027",
+    "wilayaId": "26"
+  },
+  {
+    "id": "926",
+    "name": "Sidi Zahar",
+    "postCode": "26028",
+    "wilayaId": "26"
+  },
+  {
+    "id": "927",
+    "name": "Oued Harbil",
+    "postCode": "26029",
+    "wilayaId": "26"
+  },
+  {
+    "id": "928",
+    "name": "Benchicao",
+    "postCode": "26030",
+    "wilayaId": "26"
+  },
+  {
+    "id": "929",
+    "name": "Sidi Damed",
+    "postCode": "26031",
+    "wilayaId": "26"
+  },
+  {
+    "id": "930",
+    "name": "Aziz",
+    "postCode": "67032",
+    "wilayaId": "67"
+  },
+  {
+    "id": "931",
+    "name": "Souagui",
+    "postCode": "26033",
+    "wilayaId": "26"
+  },
+  {
+    "id": "932",
+    "name": "Zoubiria",
+    "postCode": "26034",
+    "wilayaId": "26"
+  },
+  {
+    "id": "933",
+    "name": "Ksar El Boukhari",
+    "postCode": "67035",
+    "wilayaId": "67"
+  },
+  {
+    "id": "934",
+    "name": "El Azizia",
+    "postCode": "26036",
+    "wilayaId": "26"
+  },
+  {
+    "id": "935",
+    "name": "Djouab",
+    "postCode": "26037",
+    "wilayaId": "26"
+  },
+  {
+    "id": "936",
+    "name": "Chahbounia",
+    "postCode": "67038",
+    "wilayaId": "67"
+  },
+  {
+    "id": "937",
+    "name": "Meghraoua",
+    "postCode": "26039",
+    "wilayaId": "26"
+  },
+  {
+    "id": "938",
+    "name": "Cheniguel",
+    "postCode": "26040",
+    "wilayaId": "26"
+  },
+  {
+    "id": "939",
+    "name": "Ain Ouksir",
+    "postCode": "26041",
+    "wilayaId": "26"
+  },
+  {
+    "id": "940",
+    "name": "Oum El Djalil",
+    "postCode": "26042",
+    "wilayaId": "26"
+  },
+  {
+    "id": "941",
+    "name": "Ouamri",
+    "postCode": "26043",
+    "wilayaId": "26"
+  },
+  {
+    "id": "942",
+    "name": "Si Mahdjoub",
+    "postCode": "26044",
+    "wilayaId": "26"
+  },
+  {
+    "id": "943",
+    "name": "Tlatet Eddouair",
+    "postCode": "26045",
+    "wilayaId": "26"
+  },
+  {
+    "id": "944",
+    "name": "Beni Slimane",
+    "postCode": "26046",
+    "wilayaId": "26"
+  },
+  {
+    "id": "945",
+    "name": "Berrouaghia",
+    "postCode": "26047",
+    "wilayaId": "26"
+  },
+  {
+    "id": "946",
+    "name": "Seghouane",
+    "postCode": "26048",
+    "wilayaId": "26"
+  },
+  {
+    "id": "947",
+    "name": "Meftaha",
+    "postCode": "26049",
+    "wilayaId": "26"
+  },
+  {
+    "id": "948",
+    "name": "Mihoub",
+    "postCode": "26050",
+    "wilayaId": "26"
+  },
+  {
+    "id": "949",
+    "name": "Boughezoul",
+    "postCode": "26051",
+    "wilayaId": "26"
+  },
+  {
+    "id": "950",
+    "name": "Tablat",
+    "postCode": "26052",
+    "wilayaId": "26"
+  },
+  {
+    "id": "951",
+    "name": "Deux Bassins",
+    "postCode": "26053",
+    "wilayaId": "26"
+  },
+  {
+    "id": "952",
+    "name": "Draa Essamar",
+    "postCode": "26054",
+    "wilayaId": "26"
+  },
+  {
+    "id": "953",
+    "name": "Sidi Errabia",
+    "postCode": "26055",
+    "wilayaId": "26"
+  },
+  {
+    "id": "954",
+    "name": "Bir Ben Laabed",
+    "postCode": "26056",
+    "wilayaId": "26"
+  },
+  {
+    "id": "955",
+    "name": "El Ouinet",
+    "postCode": "26057",
+    "wilayaId": "26"
+  },
+  {
+    "id": "956",
+    "name": "Ouled Antar",
+    "postCode": "67058",
+    "wilayaId": "67"
+  },
+  {
+    "id": "957",
+    "name": "Bouaichoune",
+    "postCode": "26059",
+    "wilayaId": "26"
+  },
+  {
+    "id": "958",
+    "name": "Hannacha",
+    "postCode": "26060",
+    "wilayaId": "26"
+  },
+  {
+    "id": "959",
+    "name": "Sedraia",
+    "postCode": "26061",
+    "wilayaId": "26"
+  },
+  {
+    "id": "960",
+    "name": "Medjebar",
+    "postCode": "26062",
+    "wilayaId": "26"
+  },
+  {
+    "id": "961",
+    "name": "Khams Djouamaa",
+    "postCode": "26063",
+    "wilayaId": "26"
+  },
+  {
+    "id": "962",
+    "name": "Saneg",
+    "postCode": "67064",
+    "wilayaId": "67"
+  },
+  {
+    "id": "963",
+    "name": "Mostaganem",
+    "postCode": "27001",
+    "wilayaId": "27"
+  },
+  {
+    "id": "964",
+    "name": "Sayada",
+    "postCode": "27002",
+    "wilayaId": "27"
+  },
+  {
+    "id": "965",
+    "name": "Fornaka",
+    "postCode": "27003",
+    "wilayaId": "27"
+  },
+  {
+    "id": "966",
+    "name": "Stidia",
+    "postCode": "27004",
+    "wilayaId": "27"
+  },
+  {
+    "id": "967",
+    "name": "Ain Nouissy",
+    "postCode": "27005",
+    "wilayaId": "27"
+  },
+  {
+    "id": "968",
+    "name": "Hassi Maameche",
+    "postCode": "27006",
+    "wilayaId": "27"
+  },
+  {
+    "id": "969",
+    "name": "Ain Tadles",
+    "postCode": "27007",
+    "wilayaId": "27"
+  },
+  {
+    "id": "970",
+    "name": "Sour",
+    "postCode": "27008",
+    "wilayaId": "27"
+  },
+  {
+    "id": "971",
+    "name": "Oued El Kheir",
+    "postCode": "27009",
+    "wilayaId": "27"
+  },
+  {
+    "id": "972",
+    "name": "Sidi Bellater",
+    "postCode": "27010",
+    "wilayaId": "27"
+  },
+  {
+    "id": "973",
+    "name": "Kheiredine",
+    "postCode": "27011",
+    "wilayaId": "27"
+  },
+  {
+    "id": "974",
+    "name": "Sidi Ali",
+    "postCode": "27012",
+    "wilayaId": "27"
+  },
+  {
+    "id": "975",
+    "name": "Abdelmalek Ramdane",
+    "postCode": "27013",
+    "wilayaId": "27"
+  },
+  {
+    "id": "976",
+    "name": "Hadjadj",
+    "postCode": "27014",
+    "wilayaId": "27"
+  },
+  {
+    "id": "977",
+    "name": "Nekmaria",
+    "postCode": "27015",
+    "wilayaId": "27"
+  },
+  {
+    "id": "978",
+    "name": "Sidi Lakhdar",
+    "postCode": "27016",
+    "wilayaId": "27"
+  },
+  {
+    "id": "979",
+    "name": "Achaacha",
+    "postCode": "27017",
+    "wilayaId": "27"
+  },
+  {
+    "id": "980",
+    "name": "Khadra",
+    "postCode": "27018",
+    "wilayaId": "27"
+  },
+  {
+    "id": "981",
+    "name": "Bouguirat",
+    "postCode": "27019",
+    "wilayaId": "27"
+  },
+  {
+    "id": "982",
+    "name": "Sirat",
+    "postCode": "27020",
+    "wilayaId": "27"
+  },
+  {
+    "id": "983",
+    "name": "Ain Sidi Cherif",
+    "postCode": "27021",
+    "wilayaId": "27"
+  },
+  {
+    "id": "984",
+    "name": "Mesra",
+    "postCode": "27022",
+    "wilayaId": "27"
+  },
+  {
+    "id": "985",
+    "name": "Mansourah",
+    "postCode": "27023",
+    "wilayaId": "27"
+  },
+  {
+    "id": "986",
+    "name": "Souaflia",
+    "postCode": "27024",
+    "wilayaId": "27"
+  },
+  {
+    "id": "987",
+    "name": "Ouled Boughalem",
+    "postCode": "27025",
+    "wilayaId": "27"
+  },
+  {
+    "id": "988",
+    "name": "Ouled Maallah",
+    "postCode": "27026",
+    "wilayaId": "27"
+  },
+  {
+    "id": "989",
+    "name": "Mezghrane",
+    "postCode": "27027",
+    "wilayaId": "27"
+  },
+  {
+    "id": "990",
+    "name": "Ain Boudinar",
+    "postCode": "27028",
+    "wilayaId": "27"
+  },
+  {
+    "id": "991",
+    "name": "Tazgait",
+    "postCode": "27029",
+    "wilayaId": "27"
+  },
+  {
+    "id": "992",
+    "name": "Safsaf",
+    "postCode": "27030",
+    "wilayaId": "27"
+  },
+  {
+    "id": "993",
+    "name": "Touahria",
+    "postCode": "27031",
+    "wilayaId": "27"
+  },
+  {
+    "id": "994",
+    "name": "El Hassiane",
+    "postCode": "27032",
+    "wilayaId": "27"
+  },
+  {
+    "id": "995",
+    "name": "Msila",
+    "postCode": "28001",
+    "wilayaId": "28"
+  },
+  {
+    "id": "996",
+    "name": "Maadid",
+    "postCode": "28002",
+    "wilayaId": "28"
+  },
+  {
+    "id": "997",
+    "name": "Hammam Dhalaa",
+    "postCode": "68003",
+    "wilayaId": "68"
+  },
+  {
+    "id": "998",
+    "name": "Ouled Derradj",
+    "postCode": "28004",
+    "wilayaId": "28"
+  },
+  {
+    "id": "999",
+    "name": "Tarmount",
+    "postCode": "28005",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1000",
+    "name": "Mtarfa",
+    "postCode": "28006",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1001",
+    "name": "Khoubana",
+    "postCode": "28007",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1002",
+    "name": "M'cif",
+    "postCode": "28008",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1003",
+    "name": "Chellal",
+    "postCode": "28009",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1004",
+    "name": "Ouled Madhi",
+    "postCode": "68010",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1005",
+    "name": "Magra",
+    "postCode": "68011",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1006",
+    "name": "Berhoum",
+    "postCode": "28012",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1007",
+    "name": "Ain Khadra",
+    "postCode": "28013",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1008",
+    "name": "Ouled Addi Guebala",
+    "postCode": "28014",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1009",
+    "name": "Belaiba",
+    "postCode": "68015",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1010",
+    "name": "Sidi Aissa",
+    "postCode": "28016",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1011",
+    "name": "Ain El Hadjel",
+    "postCode": "68017",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1012",
+    "name": "Sidi Hadjeres",
+    "postCode": "28018",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1013",
+    "name": "Ouanougha",
+    "postCode": "28019",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1014",
+    "name": "Bou Saada",
+    "postCode": "68020",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1015",
+    "name": "Ouled Sidi Brahim",
+    "postCode": "68021",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1016",
+    "name": "Sidi Ameur",
+    "postCode": "68022",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1017",
+    "name": "Tamsa",
+    "postCode": "68023",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1018",
+    "name": "Ben Srour",
+    "postCode": "68024",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1019",
+    "name": "Ouled Slimane",
+    "postCode": "28025",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1020",
+    "name": "El Houamed",
+    "postCode": "28026",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1021",
+    "name": "El Hamel",
+    "postCode": "28027",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1022",
+    "name": "Ouled Mansour",
+    "postCode": "28028",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1023",
+    "name": "Maarif",
+    "postCode": "68029",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1024",
+    "name": "Dehahna",
+    "postCode": "68030",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1025",
+    "name": "Bouti Sayah",
+    "postCode": "68031",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1026",
+    "name": "Khettouti Sed Djir",
+    "postCode": "68032",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1027",
+    "name": "Zarzour",
+    "postCode": "28033",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1028",
+    "name": "Oued Chair",
+    "postCode": "28034",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1029",
+    "name": "Benzouh",
+    "postCode": "28035",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1030",
+    "name": "Bir Foda",
+    "postCode": "28036",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1031",
+    "name": "Ain Fares",
+    "postCode": "28037",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1032",
+    "name": "Sidi Mhamed",
+    "postCode": "28038",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1033",
+    "name": "Ouled Atia",
+    "postCode": "28039",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1034",
+    "name": "Souamaa",
+    "postCode": "28040",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1035",
+    "name": "Ain El Melh",
+    "postCode": "68041",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1036",
+    "name": "Medjedel",
+    "postCode": "28042",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1037",
+    "name": "Slim",
+    "postCode": "68043",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1038",
+    "name": "Ain Errich",
+    "postCode": "68044",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1039",
+    "name": "Beni Ilmane",
+    "postCode": "28045",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1040",
+    "name": "Oultene",
+    "postCode": "28046",
+    "wilayaId": "28"
+  },
+  {
+    "id": "1041",
+    "name": "Djebel Messaad",
+    "postCode": "68047",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1042",
+    "name": "Mascara",
+    "postCode": "29001",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1043",
+    "name": "Bou Hanifia",
+    "postCode": "29002",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1044",
+    "name": "Tizi",
+    "postCode": "29003",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1045",
+    "name": "Hacine",
+    "postCode": "29004",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1046",
+    "name": "Maoussa",
+    "postCode": "29005",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1047",
+    "name": "Teghennif",
+    "postCode": "29006",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1048",
+    "name": "El Hachem",
+    "postCode": "29007",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1049",
+    "name": "Sidi Kada",
+    "postCode": "29008",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1050",
+    "name": "Zelmata",
+    "postCode": "29009",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1051",
+    "name": "Oued El Abtal",
+    "postCode": "29010",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1052",
+    "name": "Ain Ferah",
+    "postCode": "29011",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1053",
+    "name": "Ghriss",
+    "postCode": "29012",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1054",
+    "name": "Froha",
+    "postCode": "29013",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1055",
+    "name": "Matemore",
+    "postCode": "29014",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1056",
+    "name": "Makdha",
+    "postCode": "29015",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1057",
+    "name": "Sidi Boussaid",
+    "postCode": "29016",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1058",
+    "name": "El Bordj",
+    "postCode": "29017",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1059",
+    "name": "Ain Fekan",
+    "postCode": "29018",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1060",
+    "name": "Benian",
+    "postCode": "29019",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1061",
+    "name": "Khalouia",
+    "postCode": "29020",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1062",
+    "name": "El Menaouer",
+    "postCode": "29021",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1063",
+    "name": "Oued Taria",
+    "postCode": "29022",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1064",
+    "name": "Aouf",
+    "postCode": "29023",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1065",
+    "name": "Ain Fares",
+    "postCode": "29024",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1066",
+    "name": "Ain Frass",
+    "postCode": "29025",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1067",
+    "name": "Sig",
+    "postCode": "29026",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1068",
+    "name": "Oggaz",
+    "postCode": "29027",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1069",
+    "name": "Alaimia",
+    "postCode": "29028",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1070",
+    "name": "El Gaada",
+    "postCode": "29029",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1071",
+    "name": "Zahana",
+    "postCode": "29030",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1072",
+    "name": "Mohammadia",
+    "postCode": "29031",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1073",
+    "name": "Sidi Abdelmoumene",
+    "postCode": "29032",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1074",
+    "name": "Ferraguig",
+    "postCode": "29033",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1075",
+    "name": "El Ghomri",
+    "postCode": "29034",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1076",
+    "name": "Sedjerara",
+    "postCode": "29035",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1077",
+    "name": "Moctadouz",
+    "postCode": "29036",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1078",
+    "name": "Bou Henni",
+    "postCode": "29037",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1079",
+    "name": "Guettena",
+    "postCode": "29038",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1080",
+    "name": "El Mamounia",
+    "postCode": "29039",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1081",
+    "name": "El Keurt",
+    "postCode": "29040",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1082",
+    "name": "Gharrous",
+    "postCode": "29041",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1083",
+    "name": "Gherdjoum",
+    "postCode": "29042",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1084",
+    "name": "Chorfa",
+    "postCode": "29043",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1085",
+    "name": "Ras Ain Amirouche",
+    "postCode": "29044",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1086",
+    "name": "Nesmot",
+    "postCode": "29045",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1087",
+    "name": "Sidi Abdeldjebar",
+    "postCode": "29046",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1088",
+    "name": "Sehailia",
+    "postCode": "29047",
+    "wilayaId": "29"
+  },
+  {
+    "id": "1089",
+    "name": "Ouargla",
+    "postCode": "30001",
+    "wilayaId": "30"
+  },
+  {
+    "id": "1090",
+    "name": "Ain Beida",
+    "postCode": "30002",
+    "wilayaId": "30"
+  },
+  {
+    "id": "1091",
+    "name": "Ngoussa",
+    "postCode": "30003",
+    "wilayaId": "30"
+  },
+  {
+    "id": "1092",
+    "name": "Hassi Messaoud",
+    "postCode": "30004",
+    "wilayaId": "30"
+  },
+  {
+    "id": "1093",
+    "name": "Rouissat",
+    "postCode": "30005",
+    "wilayaId": "30"
+  },
+  {
+    "id": "1094",
+    "name": "Balidat Ameur",
+    "postCode": "30006",
+    "wilayaId": "30"
+  },
+  {
+    "id": "1095",
+    "name": "Tebesbest",
+    "postCode": "55007",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1096",
+    "name": "Nezla",
+    "postCode": "55008",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1097",
+    "name": "Zaouia El Abidia",
+    "postCode": "55009",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1098",
+    "name": "Sidi Slimane",
+    "postCode": "55010",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1099",
+    "name": "Sidi Khouiled",
+    "postCode": "30011",
+    "wilayaId": "30"
+  },
+  {
+    "id": "1100",
+    "name": "Hassi Ben Abdellah",
+    "postCode": "30012",
+    "wilayaId": "30"
+  },
+  {
+    "id": "1101",
+    "name": "Touggourt",
+    "postCode": "55013",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1102",
+    "name": "El Hadjira",
+    "postCode": "55014",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1103",
+    "name": "Taibet",
+    "postCode": "55015",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1104",
+    "name": "Tamacine",
+    "postCode": "55016",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1105",
+    "name": "Benaceur",
+    "postCode": "55017",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1106",
+    "name": "Mnaguer",
+    "postCode": "55018",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1107",
+    "name": "Megarine",
+    "postCode": "55019",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1108",
+    "name": "El Allia",
+    "postCode": "55020",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1109",
+    "name": "El Borma",
+    "postCode": "30021",
+    "wilayaId": "30"
+  },
+  {
+    "id": "1110",
+    "name": "Oran",
+    "postCode": "31001",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1111",
+    "name": "Gdyel",
+    "postCode": "31002",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1112",
+    "name": "Bir El Djir",
+    "postCode": "31003",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1113",
+    "name": "Hassi Bounif",
+    "postCode": "31004",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1114",
+    "name": "Es Senia",
+    "postCode": "31005",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1115",
+    "name": "Arzew",
+    "postCode": "31006",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1116",
+    "name": "Bethioua",
+    "postCode": "31007",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1117",
+    "name": "Marsat El Hadjadj",
+    "postCode": "31008",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1118",
+    "name": "Ain Turk",
+    "postCode": "31009",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1119",
+    "name": "El Ancar",
+    "postCode": "31010",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1120",
+    "name": "Oued Tlelat",
+    "postCode": "31011",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1121",
+    "name": "Tafraoui",
+    "postCode": "31012",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1122",
+    "name": "Sidi Chami",
+    "postCode": "31013",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1123",
+    "name": "Boufatis",
+    "postCode": "31014",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1124",
+    "name": "Mers El Kebir",
+    "postCode": "31015",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1125",
+    "name": "Bousfer",
+    "postCode": "31016",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1126",
+    "name": "El Karma",
+    "postCode": "31017",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1127",
+    "name": "El Braya",
+    "postCode": "31018",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1128",
+    "name": "Hassi Ben Okba",
+    "postCode": "31019",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1129",
+    "name": "Ben Freha",
+    "postCode": "31020",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1130",
+    "name": "Hassi Mefsoukh",
+    "postCode": "31021",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1131",
+    "name": "Sidi Ben Yabka",
+    "postCode": "31022",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1132",
+    "name": "Messerghin",
+    "postCode": "31023",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1133",
+    "name": "Boutlelis",
+    "postCode": "31024",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1134",
+    "name": "Ain Kerma",
+    "postCode": "31025",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1135",
+    "name": "Ain Biya",
+    "postCode": "31026",
+    "wilayaId": "31"
+  },
+  {
+    "id": "1136",
+    "name": "El Bayadh",
+    "postCode": "32001",
+    "wilayaId": "32"
+  },
+  {
+    "id": "1137",
+    "name": "Rogassa",
+    "postCode": "32002",
+    "wilayaId": "32"
+  },
+  {
+    "id": "1138",
+    "name": "Stitten",
+    "postCode": "32003",
+    "wilayaId": "32"
+  },
+  {
+    "id": "1139",
+    "name": "Brezina",
+    "postCode": "32004",
+    "wilayaId": "32"
+  },
+  {
+    "id": "1140",
+    "name": "Ghassoul",
+    "postCode": "32005",
+    "wilayaId": "32"
+  },
+  {
+    "id": "1141",
+    "name": "Boualem",
+    "postCode": "32006",
+    "wilayaId": "32"
+  },
+  {
+    "id": "1142",
+    "name": "El Abiodh Sidi Cheikh",
+    "postCode": "69007",
+    "wilayaId": "69"
+  },
+  {
+    "id": "1143",
+    "name": "Ain El Orak",
+    "postCode": "69008",
+    "wilayaId": "69"
+  },
+  {
+    "id": "1144",
+    "name": "Arbaouat",
+    "postCode": "69009",
+    "wilayaId": "69"
+  },
+  {
+    "id": "1145",
+    "name": "Bougtoub",
+    "postCode": "32010",
+    "wilayaId": "32"
+  },
+  {
+    "id": "1146",
+    "name": "El Kheither",
+    "postCode": "32011",
+    "wilayaId": "32"
+  },
+  {
+    "id": "1147",
+    "name": "Kef El Ahmar",
+    "postCode": "32012",
+    "wilayaId": "32"
+  },
+  {
+    "id": "1148",
+    "name": "Boussemghoun",
+    "postCode": "69013",
+    "wilayaId": "69"
+  },
+  {
+    "id": "1149",
+    "name": "Chellala",
+    "postCode": "69014",
+    "wilayaId": "69"
+  },
+  {
+    "id": "1150",
+    "name": "Krakda",
+    "postCode": "32015",
+    "wilayaId": "32"
+  },
+  {
+    "id": "1151",
+    "name": "El Bnoud",
+    "postCode": "32016",
+    "wilayaId": "32"
+  },
+  {
+    "id": "1152",
+    "name": "Cheguig",
+    "postCode": "32017",
+    "wilayaId": "32"
+  },
+  {
+    "id": "1153",
+    "name": "Sidi Ameur",
+    "postCode": "32018",
+    "wilayaId": "32"
+  },
+  {
+    "id": "1154",
+    "name": "El Mehara",
+    "postCode": "69019",
+    "wilayaId": "69"
+  },
+  {
+    "id": "1155",
+    "name": "Tousmouline",
+    "postCode": "32020",
+    "wilayaId": "32"
+  },
+  {
+    "id": "1156",
+    "name": "Sidi Slimane",
+    "postCode": "32021",
+    "wilayaId": "32"
+  },
+  {
+    "id": "1157",
+    "name": "Sidi Tifour",
+    "postCode": "32022",
+    "wilayaId": "32"
+  },
+  {
+    "id": "1158",
+    "name": "Illizi",
+    "postCode": "33001",
+    "wilayaId": "33"
+  },
+  {
+    "id": "1159",
+    "name": "Djanet",
+    "postCode": "56002",
+    "wilayaId": "56"
+  },
+  {
+    "id": "1160",
+    "name": "Debdeb",
+    "postCode": "33003",
+    "wilayaId": "33"
+  },
+  {
+    "id": "1161",
+    "name": "Bordj Omar Driss",
+    "postCode": "33004",
+    "wilayaId": "33"
+  },
+  {
+    "id": "1162",
+    "name": "Bordj El Haouasse",
+    "postCode": "56005",
+    "wilayaId": "56"
+  },
+  {
+    "id": "1163",
+    "name": "In Amenas",
+    "postCode": "33006",
+    "wilayaId": "33"
+  },
+  {
+    "id": "1164",
+    "name": "Bordj Bou Arreridj",
+    "postCode": "34001",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1165",
+    "name": "Ras El Oued",
+    "postCode": "34002",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1166",
+    "name": "Bordj Zemoura",
+    "postCode": "34003",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1167",
+    "name": "Mansoura",
+    "postCode": "34004",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1168",
+    "name": "El Mhir",
+    "postCode": "34005",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1169",
+    "name": "Ben Daoud",
+    "postCode": "34006",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1170",
+    "name": "El Achir",
+    "postCode": "34007",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1171",
+    "name": "Ain Taghrout",
+    "postCode": "34008",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1172",
+    "name": "Bordj Ghdir",
+    "postCode": "34009",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1173",
+    "name": "Sidi Embarek",
+    "postCode": "34010",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1174",
+    "name": "El Hamadia",
+    "postCode": "34011",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1175",
+    "name": "Belimour",
+    "postCode": "34012",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1176",
+    "name": "Medjana",
+    "postCode": "34013",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1177",
+    "name": "Teniet En Nasr",
+    "postCode": "34014",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1178",
+    "name": "Djaafra",
+    "postCode": "34015",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1179",
+    "name": "El Main",
+    "postCode": "34016",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1180",
+    "name": "Ouled Brahem",
+    "postCode": "34017",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1181",
+    "name": "Ouled Dahmane",
+    "postCode": "34018",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1182",
+    "name": "Hasnaoua",
+    "postCode": "34019",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1183",
+    "name": "Khelil",
+    "postCode": "34020",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1184",
+    "name": "Taglait",
+    "postCode": "34021",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1185",
+    "name": "Ksour",
+    "postCode": "34022",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1186",
+    "name": "Ouled Sidi Brahim",
+    "postCode": "34023",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1187",
+    "name": "Tafreg",
+    "postCode": "34024",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1188",
+    "name": "Colla",
+    "postCode": "34025",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1189",
+    "name": "Tixter",
+    "postCode": "34026",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1190",
+    "name": "El Ach",
+    "postCode": "34027",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1191",
+    "name": "El Anseur",
+    "postCode": "34028",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1192",
+    "name": "Tesmart",
+    "postCode": "34029",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1193",
+    "name": "Ain Tesra",
+    "postCode": "34030",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1194",
+    "name": "Bir Kasdali",
+    "postCode": "34031",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1195",
+    "name": "Ghilassa",
+    "postCode": "34032",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1196",
+    "name": "Rabta",
+    "postCode": "34033",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1197",
+    "name": "Haraza",
+    "postCode": "34034",
+    "wilayaId": "34"
+  },
+  {
+    "id": "1198",
+    "name": "Boumerdes",
+    "postCode": "35001",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1199",
+    "name": "Boudouaou",
+    "postCode": "35002",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1200",
+    "name": "Afir",
+    "postCode": "35004",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1201",
+    "name": "Bordj Menaiel",
+    "postCode": "35005",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1202",
+    "name": "Baghlia",
+    "postCode": "35006",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1203",
+    "name": "Sidi Daoud",
+    "postCode": "35007",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1204",
+    "name": "Naciria",
+    "postCode": "35008",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1205",
+    "name": "Djinet",
+    "postCode": "35009",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1206",
+    "name": "Isser",
+    "postCode": "35010",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1207",
+    "name": "Zemmouri",
+    "postCode": "35011",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1208",
+    "name": "Si Mustapha",
+    "postCode": "35012",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1209",
+    "name": "Tidjelabine",
+    "postCode": "35013",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1210",
+    "name": "Chabet El Ameur",
+    "postCode": "35014",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1211",
+    "name": "Thenia",
+    "postCode": "35015",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1212",
+    "name": "Timezrit",
+    "postCode": "35018",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1213",
+    "name": "Corso",
+    "postCode": "35019",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1214",
+    "name": "Ouled Moussa",
+    "postCode": "35020",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1215",
+    "name": "Larbatache",
+    "postCode": "35021",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1216",
+    "name": "Bouzegza Keddara",
+    "postCode": "35022",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1217",
+    "name": "Taourga",
+    "postCode": "35025",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1218",
+    "name": "Ouled Aissa",
+    "postCode": "35026",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1219",
+    "name": "Ben Choud",
+    "postCode": "35027",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1220",
+    "name": "Dellys",
+    "postCode": "35028",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1221",
+    "name": "Ammal",
+    "postCode": "35029",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1222",
+    "name": "Beni Amrane",
+    "postCode": "35030",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1223",
+    "name": "Souk El Had",
+    "postCode": "35031",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1224",
+    "name": "Boudouaou El Bahri",
+    "postCode": "35032",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1225",
+    "name": "Ouled Hedadj",
+    "postCode": "35033",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1226",
+    "name": "Laghata",
+    "postCode": "35035",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1227",
+    "name": "Hammedi",
+    "postCode": "35036",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1228",
+    "name": "Khemis El Khechna",
+    "postCode": "35037",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1229",
+    "name": "El Kharrouba",
+    "postCode": "35038",
+    "wilayaId": "35"
+  },
+  {
+    "id": "1230",
+    "name": "El Tarf",
+    "postCode": "36001",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1231",
+    "name": "Bouhadjar",
+    "postCode": "36002",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1232",
+    "name": "Ben Mhidi",
+    "postCode": "36003",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1233",
+    "name": "Bougous",
+    "postCode": "36004",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1234",
+    "name": "El Kala",
+    "postCode": "36005",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1235",
+    "name": "Ain El Assel",
+    "postCode": "36006",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1236",
+    "name": "El Aioun",
+    "postCode": "36007",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1237",
+    "name": "Bouteldja",
+    "postCode": "36008",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1238",
+    "name": "Souarekh",
+    "postCode": "36009",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1239",
+    "name": "Berrihane",
+    "postCode": "36010",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1240",
+    "name": "Lac Des Oiseaux",
+    "postCode": "36011",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1241",
+    "name": "Chefia",
+    "postCode": "36012",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1242",
+    "name": "Drean",
+    "postCode": "36013",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1243",
+    "name": "Chihani",
+    "postCode": "36014",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1244",
+    "name": "Chebaita Mokhtar",
+    "postCode": "36015",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1245",
+    "name": "Besbes",
+    "postCode": "36016",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1246",
+    "name": "Asfour",
+    "postCode": "36017",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1247",
+    "name": "Echatt",
+    "postCode": "36018",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1248",
+    "name": "Zerizer",
+    "postCode": "36019",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1249",
+    "name": "Zitouna",
+    "postCode": "36020",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1250",
+    "name": "Ain Kerma",
+    "postCode": "36021",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1251",
+    "name": "Oued Zitoun",
+    "postCode": "36022",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1252",
+    "name": "Hammam Beni Salah",
+    "postCode": "36023",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1253",
+    "name": "Raml Souk",
+    "postCode": "36024",
+    "wilayaId": "36"
+  },
+  {
+    "id": "1254",
+    "name": "Tindouf",
+    "postCode": "37001",
+    "wilayaId": "37"
+  },
+  {
+    "id": "1255",
+    "name": "Oum El Assel",
+    "postCode": "37002",
+    "wilayaId": "37"
+  },
+  {
+    "id": "1256",
+    "name": "Tissemsilt",
+    "postCode": "38001",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1257",
+    "name": "Bordj Bou Naama",
+    "postCode": "38002",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1258",
+    "name": "Theniet El Had",
+    "postCode": "38003",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1259",
+    "name": "Lazharia",
+    "postCode": "38004",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1260",
+    "name": "Beni Chaib",
+    "postCode": "38005",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1261",
+    "name": "Lardjem",
+    "postCode": "38006",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1262",
+    "name": "Melaab",
+    "postCode": "38007",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1263",
+    "name": "Sidi Lantri",
+    "postCode": "38008",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1264",
+    "name": "Bordj El Emir Abdelkader",
+    "postCode": "38009",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1265",
+    "name": "Layoune",
+    "postCode": "38010",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1266",
+    "name": "Khemisti",
+    "postCode": "38011",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1267",
+    "name": "Ouled Bessem",
+    "postCode": "38012",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1268",
+    "name": "Ammari",
+    "postCode": "38013",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1269",
+    "name": "Youssoufia",
+    "postCode": "38014",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1270",
+    "name": "Sidi Boutouchent",
+    "postCode": "38015",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1271",
+    "name": "Larbaa",
+    "postCode": "38016",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1272",
+    "name": "Maasem",
+    "postCode": "38017",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1273",
+    "name": "Sidi Abed",
+    "postCode": "38018",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1274",
+    "name": "Tamalaht",
+    "postCode": "38019",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1275",
+    "name": "Sidi Slimane",
+    "postCode": "38020",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1276",
+    "name": "Boucaid",
+    "postCode": "38021",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1277",
+    "name": "Beni Lahcene",
+    "postCode": "38022",
+    "wilayaId": "38"
+  },
+  {
+    "id": "1278",
+    "name": "El Oued",
+    "postCode": "39001",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1279",
+    "name": "Robbah",
+    "postCode": "39002",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1280",
+    "name": "Oued El Alenda",
+    "postCode": "39003",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1281",
+    "name": "Bayadha",
+    "postCode": "39004",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1282",
+    "name": "Nakhla",
+    "postCode": "39005",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1283",
+    "name": "Guemar",
+    "postCode": "39006",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1284",
+    "name": "Kouinine",
+    "postCode": "39007",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1285",
+    "name": "Reguiba",
+    "postCode": "39008",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1286",
+    "name": "Hamraia",
+    "postCode": "39009",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1287",
+    "name": "Taghzout",
+    "postCode": "39010",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1288",
+    "name": "Debila",
+    "postCode": "39011",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1289",
+    "name": "Hassani Abdelkrim",
+    "postCode": "39012",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1290",
+    "name": "Hassi Khelifa",
+    "postCode": "39013",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1291",
+    "name": "Taleb Larbi",
+    "postCode": "39014",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1292",
+    "name": "Douar El Ma",
+    "postCode": "39015",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1293",
+    "name": "Sidi Aoun",
+    "postCode": "39016",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1294",
+    "name": "Trifaoui",
+    "postCode": "39017",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1295",
+    "name": "Magrane",
+    "postCode": "39018",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1296",
+    "name": "Beni Guecha",
+    "postCode": "39019",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1297",
+    "name": "Ourmas",
+    "postCode": "39020",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1298",
+    "name": "Still",
+    "postCode": "57021",
+    "wilayaId": "57"
+  },
+  {
+    "id": "1299",
+    "name": "Mrara",
+    "postCode": "39022",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1300",
+    "name": "Sidi Khellil",
+    "postCode": "39023",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1301",
+    "name": "Tendla",
+    "postCode": "57024",
+    "wilayaId": "57"
+  },
+  {
+    "id": "1302",
+    "name": "El Ogla",
+    "postCode": "39025",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1303",
+    "name": "Mih Ouansa",
+    "postCode": "39026",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1304",
+    "name": "El Mghair",
+    "postCode": "39027",
+    "wilayaId": "39"
+  },
+  {
+    "id": "1305",
+    "name": "Djamaa",
+    "postCode": "57028",
+    "wilayaId": "57"
+  },
+  {
+    "id": "1306",
+    "name": "Oum Touyour",
+    "postCode": "57029",
+    "wilayaId": "57"
+  },
+  {
+    "id": "1307",
+    "name": "Sidi Amrane",
+    "postCode": "57030",
+    "wilayaId": "57"
+  },
+  {
+    "id": "1308",
+    "name": "Khenchela",
+    "postCode": "40001",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1309",
+    "name": "Mtoussa",
+    "postCode": "40002",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1310",
+    "name": "Kais",
+    "postCode": "40003",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1311",
+    "name": "Baghai",
+    "postCode": "40004",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1312",
+    "name": "El Hamma",
+    "postCode": "40005",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1313",
+    "name": "Ain Touila",
+    "postCode": "40006",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1314",
+    "name": "Taouzianat",
+    "postCode": "40007",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1315",
+    "name": "Bouhmama",
+    "postCode": "40008",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1316",
+    "name": "El Oueldja",
+    "postCode": "40009",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1317",
+    "name": "Remila",
+    "postCode": "40010",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1318",
+    "name": "Cherchar",
+    "postCode": "40011",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1319",
+    "name": "Djellal",
+    "postCode": "40012",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1320",
+    "name": "Babar",
+    "postCode": "40013",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1321",
+    "name": "Tamza",
+    "postCode": "40014",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1322",
+    "name": "Ensigha",
+    "postCode": "40015",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1323",
+    "name": "Ouled Rechache",
+    "postCode": "40016",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1324",
+    "name": "El Mahmal",
+    "postCode": "40017",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1325",
+    "name": "Msara",
+    "postCode": "40018",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1326",
+    "name": "Yabous",
+    "postCode": "40019",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1327",
+    "name": "Khirane",
+    "postCode": "40020",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1328",
+    "name": "Chelia",
+    "postCode": "40021",
+    "wilayaId": "40"
+  },
+  {
+    "id": "1329",
+    "name": "Souk Ahras",
+    "postCode": "41001",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1330",
+    "name": "Sedrata",
+    "postCode": "41002",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1331",
+    "name": "Hanancha",
+    "postCode": "41003",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1332",
+    "name": "Mechroha",
+    "postCode": "41004",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1333",
+    "name": "Ouled Driss",
+    "postCode": "41005",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1334",
+    "name": "Tiffech",
+    "postCode": "41006",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1335",
+    "name": "Zaarouria",
+    "postCode": "41007",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1336",
+    "name": "Taoura",
+    "postCode": "41008",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1337",
+    "name": "Drea",
+    "postCode": "41009",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1338",
+    "name": "Haddada",
+    "postCode": "41010",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1339",
+    "name": "Khedara",
+    "postCode": "41011",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1340",
+    "name": "Merahna",
+    "postCode": "41012",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1341",
+    "name": "Ouled Moumen",
+    "postCode": "41013",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1342",
+    "name": "Bir Bouhouche",
+    "postCode": "41014",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1343",
+    "name": "Mdaourouche",
+    "postCode": "41015",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1344",
+    "name": "Oum El Adhaim",
+    "postCode": "41016",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1345",
+    "name": "Ain Zana",
+    "postCode": "41017",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1346",
+    "name": "Ain Soltane",
+    "postCode": "41018",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1347",
+    "name": "Quillen",
+    "postCode": "41019",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1348",
+    "name": "Sidi Fredj",
+    "postCode": "41020",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1349",
+    "name": "Safel El Ouiden",
+    "postCode": "41021",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1350",
+    "name": "Ragouba",
+    "postCode": "41022",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1351",
+    "name": "Khemissa",
+    "postCode": "41023",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1352",
+    "name": "Oued Keberit",
+    "postCode": "41024",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1353",
+    "name": "Terraguelt",
+    "postCode": "41025",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1354",
+    "name": "Zouabi",
+    "postCode": "41026",
+    "wilayaId": "41"
+  },
+  {
+    "id": "1355",
+    "name": "Tipaza",
+    "postCode": "42001",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1356",
+    "name": "Menaceur",
+    "postCode": "42002",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1357",
+    "name": "Larhat",
+    "postCode": "42003",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1358",
+    "name": "Douaouda",
+    "postCode": "42004",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1359",
+    "name": "Bourkika",
+    "postCode": "42005",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1360",
+    "name": "Khemisti",
+    "postCode": "42006",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1361",
+    "name": "Aghabal",
+    "postCode": "42010",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1362",
+    "name": "Hadjout",
+    "postCode": "42012",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1363",
+    "name": "Sidi Amar",
+    "postCode": "42013",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1364",
+    "name": "Gouraya",
+    "postCode": "42014",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1365",
+    "name": "Nodor",
+    "postCode": "42015",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1366",
+    "name": "Chaiba",
+    "postCode": "42016",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1367",
+    "name": "Ain Tagourait",
+    "postCode": "42017",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1368",
+    "name": "Cherchel",
+    "postCode": "42022",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1369",
+    "name": "Damous",
+    "postCode": "42023",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1370",
+    "name": "Meurad",
+    "postCode": "42024",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1371",
+    "name": "Fouka",
+    "postCode": "42025",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1372",
+    "name": "Bou Ismail",
+    "postCode": "42026",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1373",
+    "name": "Ahmer El Ain",
+    "postCode": "42027",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1374",
+    "name": "Bou Haroun",
+    "postCode": "42030",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1375",
+    "name": "Sidi Ghiles",
+    "postCode": "42032",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1376",
+    "name": "Messelmoun",
+    "postCode": "42033",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1377",
+    "name": "Sidi Rached",
+    "postCode": "42034",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1378",
+    "name": "Kolea",
+    "postCode": "42035",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1379",
+    "name": "Attatba",
+    "postCode": "42036",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1380",
+    "name": "Sidi Semiane",
+    "postCode": "42040",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1381",
+    "name": "Beni Milleuk",
+    "postCode": "42041",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1382",
+    "name": "Hadjerat Ennous",
+    "postCode": "42042",
+    "wilayaId": "42"
+  },
+  {
+    "id": "1383",
+    "name": "Mila",
+    "postCode": "43001",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1384",
+    "name": "Ferdjioua",
+    "postCode": "43002",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1385",
+    "name": "Chelghoum Laid",
+    "postCode": "43003",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1386",
+    "name": "Oued Athmenia",
+    "postCode": "43004",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1387",
+    "name": "Ain Mellouk",
+    "postCode": "43005",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1388",
+    "name": "Telerghma",
+    "postCode": "43006",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1389",
+    "name": "Oued Seguen",
+    "postCode": "43007",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1390",
+    "name": "Tadjenanet",
+    "postCode": "43008",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1391",
+    "name": "Benyahia Abderrahmane",
+    "postCode": "43009",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1392",
+    "name": "Oued Endja",
+    "postCode": "43010",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1393",
+    "name": "Ahmed Rachedi",
+    "postCode": "43011",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1394",
+    "name": "Ouled Khalouf",
+    "postCode": "43012",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1395",
+    "name": "Tiberguent",
+    "postCode": "43013",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1396",
+    "name": "Bouhatem",
+    "postCode": "43014",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1397",
+    "name": "Rouached",
+    "postCode": "43015",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1398",
+    "name": "Tessala Lamatai",
+    "postCode": "43016",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1399",
+    "name": "Grarem Gouga",
+    "postCode": "43017",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1400",
+    "name": "Sidi Merouane",
+    "postCode": "43018",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1401",
+    "name": "Tassadane Haddada",
+    "postCode": "43019",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1402",
+    "name": "Derradji Bousselah",
+    "postCode": "43020",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1403",
+    "name": "Minar Zarza",
+    "postCode": "43021",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1404",
+    "name": "Amira Arras",
+    "postCode": "43022",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1405",
+    "name": "Terrai Bainen",
+    "postCode": "43023",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1406",
+    "name": "Hamala",
+    "postCode": "43024",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1407",
+    "name": "Ain Tine",
+    "postCode": "43025",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1408",
+    "name": "El Mechira",
+    "postCode": "43026",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1409",
+    "name": "Sidi Khelifa",
+    "postCode": "43027",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1410",
+    "name": "Zeghaia",
+    "postCode": "43028",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1411",
+    "name": "Elayadi Barbes",
+    "postCode": "43029",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1412",
+    "name": "Ain Beida Harriche",
+    "postCode": "43030",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1413",
+    "name": "Yahia Beniguecha",
+    "postCode": "43031",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1414",
+    "name": "Chigara",
+    "postCode": "43032",
+    "wilayaId": "43"
+  },
+  {
+    "id": "1415",
+    "name": "Ain Defla",
+    "postCode": "44001",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1416",
+    "name": "Miliana",
+    "postCode": "44002",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1417",
+    "name": "Boumedfaa",
+    "postCode": "44003",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1418",
+    "name": "Khemis Miliana",
+    "postCode": "44004",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1419",
+    "name": "Hammam Righa",
+    "postCode": "44005",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1420",
+    "name": "Arib",
+    "postCode": "44006",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1421",
+    "name": "Djelida",
+    "postCode": "44007",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1422",
+    "name": "El Amra",
+    "postCode": "44008",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1423",
+    "name": "Bourached",
+    "postCode": "44009",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1424",
+    "name": "El Attaf",
+    "postCode": "44010",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1425",
+    "name": "El Abadia",
+    "postCode": "44011",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1426",
+    "name": "Djendel",
+    "postCode": "44012",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1427",
+    "name": "Oued Chorfa",
+    "postCode": "44013",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1428",
+    "name": "Ain Lechiakh",
+    "postCode": "44014",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1429",
+    "name": "Oued Djemaa",
+    "postCode": "44015",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1430",
+    "name": "Rouina",
+    "postCode": "44016",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1431",
+    "name": "Zeddine",
+    "postCode": "44017",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1432",
+    "name": "El Hassania",
+    "postCode": "44018",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1433",
+    "name": "Bir Ouled Khelifa",
+    "postCode": "44019",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1434",
+    "name": "Ain Soltane",
+    "postCode": "44020",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1435",
+    "name": "Tarik Ibn Ziad",
+    "postCode": "44021",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1436",
+    "name": "Bordj Emir Khaled",
+    "postCode": "44022",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1437",
+    "name": "Ain Torki",
+    "postCode": "44023",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1438",
+    "name": "Sidi Lakhdar",
+    "postCode": "44024",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1439",
+    "name": "Ben Allal",
+    "postCode": "44025",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1440",
+    "name": "Ain Benian",
+    "postCode": "44026",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1441",
+    "name": "Hoceinia",
+    "postCode": "44027",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1442",
+    "name": "Barbouche",
+    "postCode": "44028",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1443",
+    "name": "Djemaa Ouled Chikh",
+    "postCode": "44029",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1444",
+    "name": "Mekhatria",
+    "postCode": "44030",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1445",
+    "name": "Bathia",
+    "postCode": "44031",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1446",
+    "name": "Tachta Zegagha",
+    "postCode": "44032",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1447",
+    "name": "Ain Bouyahia",
+    "postCode": "44033",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1448",
+    "name": "El Maine",
+    "postCode": "44034",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1449",
+    "name": "Tiberkanine",
+    "postCode": "44035",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1450",
+    "name": "Belaas",
+    "postCode": "44036",
+    "wilayaId": "44"
+  },
+  {
+    "id": "1451",
+    "name": "Naama",
+    "postCode": "45001",
+    "wilayaId": "45"
+  },
+  {
+    "id": "1452",
+    "name": "Mechria",
+    "postCode": "45002",
+    "wilayaId": "45"
+  },
+  {
+    "id": "1453",
+    "name": "Ain Sefra",
+    "postCode": "45003",
+    "wilayaId": "45"
+  },
+  {
+    "id": "1454",
+    "name": "Tiout",
+    "postCode": "45004",
+    "wilayaId": "45"
+  },
+  {
+    "id": "1455",
+    "name": "Sfissifa",
+    "postCode": "45005",
+    "wilayaId": "45"
+  },
+  {
+    "id": "1456",
+    "name": "Moghrar",
+    "postCode": "45006",
+    "wilayaId": "45"
+  },
+  {
+    "id": "1457",
+    "name": "Assela",
+    "postCode": "45007",
+    "wilayaId": "45"
+  },
+  {
+    "id": "1458",
+    "name": "Djeniane Bourzeg",
+    "postCode": "45008",
+    "wilayaId": "45"
+  },
+  {
+    "id": "1459",
+    "name": "Ain Ben Khelil",
+    "postCode": "45009",
+    "wilayaId": "45"
+  },
+  {
+    "id": "1460",
+    "name": "Makman Ben Amer",
+    "postCode": "45010",
+    "wilayaId": "45"
+  },
+  {
+    "id": "1461",
+    "name": "Kasdir",
+    "postCode": "45011",
+    "wilayaId": "45"
+  },
+  {
+    "id": "1462",
+    "name": "El Biod",
+    "postCode": "45012",
+    "wilayaId": "45"
+  },
+  {
+    "id": "1463",
+    "name": "Ain Temouchent",
+    "postCode": "46001",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1464",
+    "name": "Chaabet El Ham",
+    "postCode": "46002",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1465",
+    "name": "Ain Kihal",
+    "postCode": "46003",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1466",
+    "name": "Hammam Bouhadjar",
+    "postCode": "46004",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1467",
+    "name": "Bou Zedjar",
+    "postCode": "46005",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1468",
+    "name": "Oued Berkeche",
+    "postCode": "46006",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1469",
+    "name": "Aghlal",
+    "postCode": "46007",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1470",
+    "name": "Terga",
+    "postCode": "46008",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1471",
+    "name": "Ain El Arbaa",
+    "postCode": "46009",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1472",
+    "name": "Tamzoura",
+    "postCode": "46010",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1473",
+    "name": "Chentouf",
+    "postCode": "46011",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1474",
+    "name": "Sidi Ben Adda",
+    "postCode": "46012",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1475",
+    "name": "Aoubellil",
+    "postCode": "46013",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1476",
+    "name": "El Malah",
+    "postCode": "46014",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1477",
+    "name": "Sidi Boumediene",
+    "postCode": "46015",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1478",
+    "name": "Oued Sabah",
+    "postCode": "46016",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1479",
+    "name": "Ouled Boudjemaa",
+    "postCode": "46017",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1480",
+    "name": "Ain Tolba",
+    "postCode": "46018",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1481",
+    "name": "El Amria",
+    "postCode": "46019",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1482",
+    "name": "Hassi El Ghella",
+    "postCode": "46020",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1483",
+    "name": "Hassasna",
+    "postCode": "46021",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1484",
+    "name": "Ouled Kihal",
+    "postCode": "46022",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1485",
+    "name": "Beni Saf",
+    "postCode": "46023",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1486",
+    "name": "Sidi Safi",
+    "postCode": "46024",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1487",
+    "name": "Oulhaca El Gheraba",
+    "postCode": "46025",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1488",
+    "name": "Sidi Ouriache",
+    "postCode": "46026",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1489",
+    "name": "El Emir Abdelkader",
+    "postCode": "46027",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1490",
+    "name": "El Messaid",
+    "postCode": "46028",
+    "wilayaId": "46"
+  },
+  {
+    "id": "1491",
+    "name": "Ghardaia",
+    "postCode": "47001",
+    "wilayaId": "47"
+  },
+  {
+    "id": "1492",
+    "name": "El Meniaa",
+    "postCode": "47002",
+    "wilayaId": "47"
+  },
+  {
+    "id": "1493",
+    "name": "Dhayet Bendhahoua",
+    "postCode": "47003",
+    "wilayaId": "47"
+  },
+  {
+    "id": "1494",
+    "name": "Berriane",
+    "postCode": "47004",
+    "wilayaId": "47"
+  },
+  {
+    "id": "1495",
+    "name": "Metlili",
+    "postCode": "47005",
+    "wilayaId": "47"
+  },
+  {
+    "id": "1496",
+    "name": "El Guerrara",
+    "postCode": "47006",
+    "wilayaId": "47"
+  },
+  {
+    "id": "1497",
+    "name": "El Atteuf",
+    "postCode": "47007",
+    "wilayaId": "47"
+  },
+  {
+    "id": "1498",
+    "name": "Zelfana",
+    "postCode": "47008",
+    "wilayaId": "47"
+  },
+  {
+    "id": "1499",
+    "name": "Sebseb",
+    "postCode": "47009",
+    "wilayaId": "47"
+  },
+  {
+    "id": "1500",
+    "name": "Bounoura",
+    "postCode": "47010",
+    "wilayaId": "47"
+  },
+  {
+    "id": "1501",
+    "name": "Hassi Fehal",
+    "postCode": "58011",
+    "wilayaId": "58"
+  },
+  {
+    "id": "1502",
+    "name": "Hassi Gara",
+    "postCode": "58012",
+    "wilayaId": "58"
+  },
+  {
+    "id": "1503",
+    "name": "Mansoura",
+    "postCode": "47013",
+    "wilayaId": "47"
+  },
+  {
+    "id": "1504",
+    "name": "Relizane",
+    "postCode": "48001",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1505",
+    "name": "Oued Rhiou",
+    "postCode": "48002",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1506",
+    "name": "Belaassel Bouzegza",
+    "postCode": "48003",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1507",
+    "name": "Sidi Saada",
+    "postCode": "48004",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1508",
+    "name": "Ouled Aiche",
+    "postCode": "48005",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1509",
+    "name": "Sidi Lazreg",
+    "postCode": "48006",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1510",
+    "name": "El Hamadna",
+    "postCode": "48007",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1511",
+    "name": "Sidi Mhamed Ben Ali",
+    "postCode": "48008",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1512",
+    "name": "Mediouna",
+    "postCode": "48009",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1513",
+    "name": "Sidi Khettab",
+    "postCode": "48010",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1514",
+    "name": "Ammi Moussa",
+    "postCode": "48011",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1515",
+    "name": "Zemmoura",
+    "postCode": "48012",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1516",
+    "name": "Beni Dergoun",
+    "postCode": "48013",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1517",
+    "name": "Djidiouia",
+    "postCode": "48014",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1518",
+    "name": "El Guettar",
+    "postCode": "48015",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1519",
+    "name": "Hamri",
+    "postCode": "48016",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1520",
+    "name": "El Matmar",
+    "postCode": "48017",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1521",
+    "name": "Sidi Mhamed Ben Aouda",
+    "postCode": "48018",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1522",
+    "name": "Ain Tarek",
+    "postCode": "48019",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1523",
+    "name": "Oued Essalem",
+    "postCode": "48020",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1524",
+    "name": "Ouarizane",
+    "postCode": "48021",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1525",
+    "name": "Mazouna",
+    "postCode": "48022",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1526",
+    "name": "Kalaa",
+    "postCode": "48023",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1527",
+    "name": "Ain Rahma",
+    "postCode": "48024",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1528",
+    "name": "Yellel",
+    "postCode": "48025",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1529",
+    "name": "Oued El Djemaa",
+    "postCode": "48026",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1530",
+    "name": "Ramka",
+    "postCode": "48027",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1531",
+    "name": "Mendes",
+    "postCode": "48028",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1532",
+    "name": "Lahlef",
+    "postCode": "48029",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1533",
+    "name": "Beni Zentis",
+    "postCode": "48030",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1534",
+    "name": "Souk El Haad",
+    "postCode": "48031",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1535",
+    "name": "Dar Ben Abdellah",
+    "postCode": "48032",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1536",
+    "name": "El Hassi",
+    "postCode": "48033",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1537",
+    "name": "Had Echkalla",
+    "postCode": "48034",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1538",
+    "name": "Bendaoud",
+    "postCode": "48035",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1539",
+    "name": "El Ouldja",
+    "postCode": "48036",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1540",
+    "name": "Merdja Sidi Abed",
+    "postCode": "48037",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1541",
+    "name": "Ouled Sidi Mihoub",
+    "postCode": "48038",
+    "wilayaId": "48"
+  },
+  {
+    "id": "1542",
+    "name": "Timimoun",
+    "postCode": "49001",
+    "wilayaId": "49"
+  },
+  {
+    "id": "1543",
+    "name": "Ouled Said",
+    "postCode": "49002",
+    "wilayaId": "49"
+  },
+  {
+    "id": "1544",
+    "name": "Aougrout",
+    "postCode": "49008",
+    "wilayaId": "49"
+  },
+  {
+    "id": "1545",
+    "name": "Deldoul",
+    "postCode": "49009",
+    "wilayaId": "49"
+  },
+  {
+    "id": "1546",
+    "name": "Metarfa",
+    "postCode": "49010",
+    "wilayaId": "49"
+  },
+  {
+    "id": "1547",
+    "name": "Tinerkouk",
+    "postCode": "49004",
+    "wilayaId": "49"
+  },
+  {
+    "id": "1548",
+    "name": "Ksar Kaddour",
+    "postCode": "49005",
+    "wilayaId": "49"
+  },
+  {
+    "id": "1549",
+    "name": "Charouine",
+    "postCode": "49006",
+    "wilayaId": "49"
+  },
+  {
+    "id": "1550",
+    "name": "Talmine",
+    "postCode": "49007",
+    "wilayaId": "49"
+  },
+  {
+    "id": "1551",
+    "name": "Ouled Aissa",
+    "postCode": "49003",
+    "wilayaId": "49"
+  },
+  {
+    "id": "1552",
+    "name": "Bordj Badji Mokhtar",
+    "postCode": "50001",
+    "wilayaId": "50"
+  },
+  {
+    "id": "1553",
+    "name": "Timiaouine",
+    "postCode": "50002",
+    "wilayaId": "50"
+  },
+  {
+    "id": "1554",
+    "name": "Ouled Djellal",
+    "postCode": "51001",
+    "wilayaId": "51"
+  },
+  {
+    "id": "1555",
+    "name": "Sidi Khaled",
+    "postCode": "51002",
+    "wilayaId": "51"
+  },
+  {
+    "id": "1556",
+    "name": "Ras El Miad",
+    "postCode": "51003",
+    "wilayaId": "51"
+  },
+  {
+    "id": "1557",
+    "name": "Besbes",
+    "postCode": "51004",
+    "wilayaId": "51"
+  },
+  {
+    "id": "1558",
+    "name": "Chaiba",
+    "postCode": "51005",
+    "wilayaId": "51"
+  },
+  {
+    "id": "1559",
+    "name": "Doucen",
+    "postCode": "51006",
+    "wilayaId": "51"
+  },
+  {
+    "id": "1560",
+    "name": "Beni Abbes",
+    "postCode": "52001",
+    "wilayaId": "52"
+  },
+  {
+    "id": "1561",
+    "name": "Tamtert",
+    "postCode": "52002",
+    "wilayaId": "52"
+  },
+  {
+    "id": "1562",
+    "name": "Kerzaz",
+    "postCode": "52004",
+    "wilayaId": "52"
+  },
+  {
+    "id": "1563",
+    "name": "Timoudi",
+    "postCode": "52005",
+    "wilayaId": "52"
+  },
+  {
+    "id": "1564",
+    "name": "Beni Ikhlef",
+    "postCode": "52003",
+    "wilayaId": "52"
+  },
+  {
+    "id": "1565",
+    "name": "El Ouata",
+    "postCode": "52006",
+    "wilayaId": "52"
+  },
+  {
+    "id": "1566",
+    "name": "Tabelbala",
+    "postCode": "52010",
+    "wilayaId": "52"
+  },
+  {
+    "id": "1567",
+    "name": "Ouled Khoudir",
+    "postCode": "52007",
+    "wilayaId": "52"
+  },
+  {
+    "id": "1568",
+    "name": "Ksabi",
+    "postCode": "52008",
+    "wilayaId": "52"
+  },
+  {
+    "id": "1569",
+    "name": "Igli",
+    "postCode": "52009",
+    "wilayaId": "52"
+  },
+  {
+    "id": "1570",
+    "name": "In Salah",
+    "postCode": "53001",
+    "wilayaId": "53"
+  },
+  {
+    "id": "1571",
+    "name": "Foggaret Ezzaouia",
+    "postCode": "53002",
+    "wilayaId": "53"
+  },
+  {
+    "id": "1572",
+    "name": "In Ghar",
+    "postCode": "53003",
+    "wilayaId": "53"
+  },
+  {
+    "id": "1573",
+    "name": "In Guezzam",
+    "postCode": "54001",
+    "wilayaId": "54"
+  },
+  {
+    "id": "1574",
+    "name": "Tin Zaouatine",
+    "postCode": "54002",
+    "wilayaId": "54"
+  },
+  {
+    "id": "1575",
+    "name": "Touggourt",
+    "postCode": "55001",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1576",
+    "name": "Nezla",
+    "postCode": "55002",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1577",
+    "name": "Tebesbest",
+    "postCode": "55003",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1578",
+    "name": "Zaouia El Abidia",
+    "postCode": "55004",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1579",
+    "name": "Temacine",
+    "postCode": "55005",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1580",
+    "name": "Blidet Amor",
+    "postCode": "55006",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1581",
+    "name": "Megarine",
+    "postCode": "55007",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1582",
+    "name": "Sidi Slimane",
+    "postCode": "55008",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1583",
+    "name": "Taibet",
+    "postCode": "55009",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1584",
+    "name": "Benaceur",
+    "postCode": "55010",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1585",
+    "name": "Mnaguer",
+    "postCode": "55011",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1586",
+    "name": "Hadjira",
+    "postCode": "55012",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1587",
+    "name": "El Allia",
+    "postCode": "55013",
+    "wilayaId": "55"
+  },
+  {
+    "id": "1588",
+    "name": "Djanet",
+    "postCode": "56001",
+    "wilayaId": "56"
+  },
+  {
+    "id": "1589",
+    "name": "Bordj El Haouas",
+    "postCode": "56002",
+    "wilayaId": "56"
+  },
+  {
+    "id": "1590",
+    "name": "El M'Ghair",
+    "postCode": "57001",
+    "wilayaId": "57"
+  },
+  {
+    "id": "1591",
+    "name": "Oum Touyour",
+    "postCode": "57002",
+    "wilayaId": "57"
+  },
+  {
+    "id": "1592",
+    "name": "Sidi Khelil",
+    "postCode": "57003",
+    "wilayaId": "57"
+  },
+  {
+    "id": "1593",
+    "name": "Still",
+    "postCode": "57004",
+    "wilayaId": "57"
+  },
+  {
+    "id": "1594",
+    "name": "Djamaa",
+    "postCode": "57005",
+    "wilayaId": "57"
+  },
+  {
+    "id": "1595",
+    "name": "Sidi Amrane",
+    "postCode": "57006",
+    "wilayaId": "57"
+  },
+  {
+    "id": "1596",
+    "name": "Tenedla",
+    "postCode": "57007",
+    "wilayaId": "57"
+  },
+  {
+    "id": "1597",
+    "name": "M'Rara",
+    "postCode": "57008",
+    "wilayaId": "57"
+  },
+  {
+    "id": "1598",
+    "name": "El Meniaa",
+    "postCode": "58001",
+    "wilayaId": "58"
+  },
+  {
+    "id": "1599",
+    "name": "Hassi Gara",
+    "postCode": "58002",
+    "wilayaId": "58"
+  },
+  {
+    "id": "1600",
+    "name": "Hassi Fehal",
+    "postCode": "58003",
+    "wilayaId": "58"
+  },
+  {
+    "id": "1601",
+    "name": "Aflou",
+    "postCode": "59001",
+    "wilayaId": "59"
+  },
+  {
+    "id": "1602",
+    "name": "Gueltat Sidi Saad",
+    "postCode": "59002",
+    "wilayaId": "59"
+  },
+  {
+    "id": "1603",
+    "name": "Ain Sidi Ali",
+    "postCode": "59003",
+    "wilayaId": "59"
+  },
+  {
+    "id": "1604",
+    "name": "Beidha",
+    "postCode": "59004",
+    "wilayaId": "59"
+  },
+  {
+    "id": "1605",
+    "name": "Brida",
+    "postCode": "59005",
+    "wilayaId": "59"
+  },
+  {
+    "id": "1606",
+    "name": "El Ghicha",
+    "postCode": "59006",
+    "wilayaId": "59"
+  },
+  {
+    "id": "1607",
+    "name": "Hadj Mechri",
+    "postCode": "59007",
+    "wilayaId": "59"
+  },
+  {
+    "id": "1608",
+    "name": "Sebgag",
+    "postCode": "59008",
+    "wilayaId": "59"
+  },
+  {
+    "id": "1609",
+    "name": "Taouiala",
+    "postCode": "59009",
+    "wilayaId": "59"
+  },
+  {
+    "id": "1610",
+    "name": "Oued Morra",
+    "postCode": "59010",
+    "wilayaId": "59"
+  },
+  {
+    "id": "1611",
+    "name": "Oued M'Zi",
+    "postCode": "59011",
+    "wilayaId": "59"
+  },
+  {
+    "id": "1612",
+    "name": "Sidi Bouzid",
+    "postCode": "59012",
+    "wilayaId": "59"
+  },
+  {
+    "id": "1613",
+    "name": "Barika",
+    "postCode": "60001",
+    "wilayaId": "60"
+  },
+  {
+    "id": "1614",
+    "name": "Bitam",
+    "postCode": "60002",
+    "wilayaId": "60"
+  },
+  {
+    "id": "1615",
+    "name": "Abdelkader Azil",
+    "postCode": "60003",
+    "wilayaId": "60"
+  },
+  {
+    "id": "1616",
+    "name": "Tilatou",
+    "postCode": "60004",
+    "wilayaId": "60"
+  },
+  {
+    "id": "1617",
+    "name": "Seggana",
+    "postCode": "60005",
+    "wilayaId": "60"
+  },
+  {
+    "id": "1618",
+    "name": "El Djazzar",
+    "postCode": "60006",
+    "wilayaId": "60"
+  },
+  {
+    "id": "1619",
+    "name": "Mdoukal",
+    "postCode": "60007",
+    "wilayaId": "60"
+  },
+  {
+    "id": "1620",
+    "name": "Ouled Ammar",
+    "postCode": "60008",
+    "wilayaId": "60"
+  },
+  {
+    "id": "1621",
+    "name": "El Kantara",
+    "postCode": "61001",
+    "wilayaId": "61"
+  },
+  {
+    "id": "1622",
+    "name": "Ain Zaatout",
+    "postCode": "61002",
+    "wilayaId": "61"
+  },
+  {
+    "id": "1623",
+    "name": "Branis",
+    "postCode": "61003",
+    "wilayaId": "61"
+  },
+  {
+    "id": "1624",
+    "name": "El Outaya",
+    "postCode": "61004",
+    "wilayaId": "61"
+  },
+  {
+    "id": "1625",
+    "name": "Djemourah",
+    "postCode": "61005",
+    "wilayaId": "61"
+  },
+  {
+    "id": "1626",
+    "name": "Bir El Ater",
+    "postCode": "62001",
+    "wilayaId": "62"
+  },
+  {
+    "id": "1627",
+    "name": "Negrine",
+    "postCode": "62002",
+    "wilayaId": "62"
+  },
+  {
+    "id": "1628",
+    "name": "Ogla Melha",
+    "postCode": "62003",
+    "wilayaId": "62"
+  },
+  {
+    "id": "1629",
+    "name": "Ferkane",
+    "postCode": "62004",
+    "wilayaId": "62"
+  },
+  {
+    "id": "1630",
+    "name": "El Aricha",
+    "postCode": "63001",
+    "wilayaId": "63"
+  },
+  {
+    "id": "1631",
+    "name": "El Gor",
+    "postCode": "63002",
+    "wilayaId": "63"
+  },
+  {
+    "id": "1632",
+    "name": "Sidi Djillali",
+    "postCode": "63003",
+    "wilayaId": "63"
+  },
+  {
+    "id": "1633",
+    "name": "El Bouihi",
+    "postCode": "63004",
+    "wilayaId": "63"
+  },
+  {
+    "id": "1634",
+    "name": "Ksar Chellala",
+    "postCode": "64001",
+    "wilayaId": "64"
+  },
+  {
+    "id": "1635",
+    "name": "Zmalet El Emir Abdelkader",
+    "postCode": "64002",
+    "wilayaId": "64"
+  },
+  {
+    "id": "1636",
+    "name": "Rechaiga",
+    "postCode": "64003",
+    "wilayaId": "64"
+  },
+  {
+    "id": "1637",
+    "name": "Hamadia",
+    "postCode": "64004",
+    "wilayaId": "64"
+  },
+  {
+    "id": "1638",
+    "name": "Serghine",
+    "postCode": "64005",
+    "wilayaId": "64"
+  },
+  {
+    "id": "1639",
+    "name": "Bougara",
+    "postCode": "64006",
+    "wilayaId": "64"
+  },
+  {
+    "id": "1640",
+    "name": "Ain Oussera",
+    "postCode": "65001",
+    "wilayaId": "65"
+  },
+  {
+    "id": "1641",
+    "name": "Birine",
+    "postCode": "65002",
+    "wilayaId": "65"
+  },
+  {
+    "id": "1642",
+    "name": "Bouira Lahdab",
+    "postCode": "65003",
+    "wilayaId": "65"
+  },
+  {
+    "id": "1643",
+    "name": "El Khemis",
+    "postCode": "65004",
+    "wilayaId": "65"
+  },
+  {
+    "id": "1644",
+    "name": "Sidi Ladjel",
+    "postCode": "65005",
+    "wilayaId": "65"
+  },
+  {
+    "id": "1645",
+    "name": "Had Sahary",
+    "postCode": "65006",
+    "wilayaId": "65"
+  },
+  {
+    "id": "1646",
+    "name": "Guernini",
+    "postCode": "65007",
+    "wilayaId": "65"
+  },
+  {
+    "id": "1647",
+    "name": "Benhar",
+    "postCode": "65008",
+    "wilayaId": "65"
+  },
+  {
+    "id": "1648",
+    "name": "Hassi Fedoul",
+    "postCode": "65009",
+    "wilayaId": "65"
+  },
+  {
+    "id": "1649",
+    "name": "Ain Fekka",
+    "postCode": "65010",
+    "wilayaId": "65"
+  },
+  {
+    "id": "1650",
+    "name": "Messad",
+    "postCode": "66001",
+    "wilayaId": "66"
+  },
+  {
+    "id": "1651",
+    "name": "Sed Rahal",
+    "postCode": "66002",
+    "wilayaId": "66"
+  },
+  {
+    "id": "1652",
+    "name": "Faydh El Botma",
+    "postCode": "66003",
+    "wilayaId": "66"
+  },
+  {
+    "id": "1653",
+    "name": "Guettara",
+    "postCode": "66004",
+    "wilayaId": "66"
+  },
+  {
+    "id": "1654",
+    "name": "Selmana",
+    "postCode": "66005",
+    "wilayaId": "66"
+  },
+  {
+    "id": "1655",
+    "name": "Amourah",
+    "postCode": "66006",
+    "wilayaId": "66"
+  },
+  {
+    "id": "1656",
+    "name": "Deldoul",
+    "postCode": "66007",
+    "wilayaId": "66"
+  },
+  {
+    "id": "1657",
+    "name": "Om El Adham",
+    "postCode": "66008",
+    "wilayaId": "66"
+  },
+  {
+    "id": "1658",
+    "name": "Ksar El Boukhari",
+    "postCode": "67001",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1659",
+    "name": "Ouled Maaref",
+    "postCode": "67002",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1660",
+    "name": "Ain Boucif",
+    "postCode": "67003",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1661",
+    "name": "Derrag",
+    "postCode": "67004",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1662",
+    "name": "Bouaiche",
+    "postCode": "67005",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1663",
+    "name": "Kef Lakhdar",
+    "postCode": "67006",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1664",
+    "name": "Chellalet El Adhaoura",
+    "postCode": "67007",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1665",
+    "name": "Ouled Hellal",
+    "postCode": "67008",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1666",
+    "name": "Tafraout",
+    "postCode": "67009",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1667",
+    "name": "Boghar",
+    "postCode": "67010",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1668",
+    "name": "Sidi Damed",
+    "postCode": "67011",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1669",
+    "name": "Aziz",
+    "postCode": "67012",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1670",
+    "name": "Chahbounia",
+    "postCode": "67013",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1671",
+    "name": "Cheniguel",
+    "postCode": "67014",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1672",
+    "name": "Ain El Kessir",
+    "postCode": "67015",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1673",
+    "name": "Oum El Djellil",
+    "postCode": "67016",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1674",
+    "name": "M'fatha",
+    "postCode": "67017",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1675",
+    "name": "Boughezoul",
+    "postCode": "67018",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1676",
+    "name": "El Ouinet",
+    "postCode": "67019",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1677",
+    "name": "Ouled Antar",
+    "postCode": "67020",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1678",
+    "name": "Saneg",
+    "postCode": "67021",
+    "wilayaId": "67"
+  },
+  {
+    "id": "1679",
+    "name": "Bou Saada",
+    "postCode": "68001",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1680",
+    "name": "El Hamel",
+    "postCode": "68002",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1681",
+    "name": "Oultene",
+    "postCode": "68003",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1682",
+    "name": "Khoubana",
+    "postCode": "68004",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1683",
+    "name": "M'Sif",
+    "postCode": "68005",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1684",
+    "name": "Houamed",
+    "postCode": "68006",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1685",
+    "name": "Ben Srour",
+    "postCode": "68007",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1686",
+    "name": "Ouled Slimane",
+    "postCode": "68008",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1687",
+    "name": "Zarzour",
+    "postCode": "68009",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1688",
+    "name": "Mohammed Boudiaf",
+    "postCode": "68010",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1689",
+    "name": "Ain El Melh",
+    "postCode": "68011",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1690",
+    "name": "Bir El Fodda",
+    "postCode": "68012",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1691",
+    "name": "Ain Fares",
+    "postCode": "68013",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1692",
+    "name": "Sidi M'hamed",
+    "postCode": "68014",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1693",
+    "name": "Ain Rich",
+    "postCode": "68015",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1694",
+    "name": "Amjedel",
+    "postCode": "68016",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1695",
+    "name": "Ouled Atia",
+    "postCode": "68017",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1696",
+    "name": "Djebel M'saad",
+    "postCode": "68018",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1697",
+    "name": "Slim",
+    "postCode": "68019",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1698",
+    "name": "Sidi Ameur",
+    "postCode": "68020",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1699",
+    "name": "Tamsa",
+    "postCode": "68021",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1700",
+    "name": "Ouled Sidi Brahim",
+    "postCode": "68022",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1701",
+    "name": "Benzouh",
+    "postCode": "68023",
+    "wilayaId": "68"
+  },
+  {
+    "id": "1702",
+    "name": "El Abiodh Sidi Cheikh",
+    "postCode": "69001",
+    "wilayaId": "69"
+  },
+  {
+    "id": "1703",
+    "name": "Ain El Orak",
+    "postCode": "69002",
+    "wilayaId": "69"
+  },
+  {
+    "id": "1704",
+    "name": "Arbaouat",
+    "postCode": "69003",
+    "wilayaId": "69"
+  },
+  {
+    "id": "1705",
+    "name": "Boussemghoun",
+    "postCode": "69004",
+    "wilayaId": "69"
+  },
+  {
+    "id": "1706",
+    "name": "Chellala",
+    "postCode": "69005",
+    "wilayaId": "69"
+  },
+  {
+    "id": "1707",
+    "name": "El Bnoud",
+    "postCode": "69006",
+    "wilayaId": "69"
+  },
+  {
+    "id": "1708",
+    "name": "El Mahra",
+    "postCode": "69007",
+    "wilayaId": "69"
+  }
+]

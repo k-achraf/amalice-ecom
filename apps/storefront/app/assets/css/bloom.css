@@ -1,0 +1,189 @@
+/*
+ * Bloom template — a soft "beauty & cosmetics" system, scoped to .tpl-bloom.
+ * Like Nova/Atelier, Bloom renders ZERO @nuxt/ui components — every
+ * interactive element (components/bloom/ui/*) is hand-built from plain
+ * Tailwind, so there is nothing to re-skin via Nuxt UI's --ui-* tokens for
+ * component internals. This file only needs to: (1) point the shared
+ * bg-primary-* / text-primary-* / bg-neutral-* utilities at Bloom's
+ * bubblegum-pink + blush-cream ramps, since those utility classes already
+ * exist globally (generated once in packages/ui/main.css) and Bloom's own
+ * components use them directly, (2) re-tint the handful of Nuxt UI semantic
+ * aliases (bg-default / text-highlighted / etc.) that the already-created
+ * bloom.vue layout root uses directly, and (3) register the new tokens
+ * Bloom introduces (blush surface, "blooming" glow shadows, display font).
+ *
+ * Design: airy, light, friendly, youthful — Glossier/Sephora energy, the
+ * opposite mood from Atelier's dark-velvet fine-jewelry drama. NO dark
+ * surfaces anywhere: even the header/footer/hero stay on the light blush
+ * surface (a soft pink-to-cream gradient wash stands in for Atelier's
+ * "velvet panel" moments). Fully rounded shapes throughout — rounded-3xl
+ * cards/panels, fully pill buttons/badges/inputs — the softest radius
+ * language of any template in the system. Shadows are soft, pink-tinted,
+ * large-blur, low-opacity "glow" — dreamier and gentler than Atelier's
+ * rose-gold glow. Poppins at a semibold weight for display type — rounded
+ * and bubbly, not thin/delicate like Atelier's Cormorant.
+ *
+ * NOTE on lessons from Nova/Atelier's build: no top-level @theme block here
+ * (an app-level css:[] entry's @theme directive silently doesn't get
+ * processed the same way the shared layer's own main.css does — confirmed
+ * by testing). Every custom token is a plain property scoped to .tpl-bloom,
+ * and any color used as a named utility elsewhere gets its --ui-color-*
+ * twin (below) since Tailwind's generated primary-* / neutral-* utilities
+ * compile straight through to --ui-color-primary-* / --ui-color-neutral-*,
+ * bypassing a --color-primary-* -only override entirely.
+ */
+
+.tpl-bloom {
+  /* Bubblegum pink — the one accent. 500 is the hero tone used for CTAs,
+     active states, and the signature glow shadow tint. */
+  --color-primary-50: #fef1f6;
+  --color-primary-100: #fde3ee;
+  --color-primary-200: #fbc7dd;
+  --color-primary-300: #f5a3c6;
+  --color-primary-400: #ec81ac;
+  --color-primary-500: #e05a92;
+  --color-primary-600: #c23f76;
+  --color-primary-700: #9c2f5c;
+  --color-primary-800: #742346;
+  --color-primary-900: #4d172e;
+  --color-primary-950: #2b0d1a;
+
+  /* Warm blush-cream neutral ramp — pinker and lighter than Atelier's
+     brown-cream, this IS the airy shopping surface. */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #fdf3f6;
+  --color-neutral-100: #faeaef;
+  --color-neutral-200: #f3d7e0;
+  --color-neutral-300: #e6b9c8;
+  --color-neutral-400: #cf93a8;
+  --color-neutral-500: #a96f83;
+  --color-neutral-600: #855468;
+  --color-neutral-700: #654052;
+  --color-neutral-800: #452c38;
+  --color-neutral-900: #2c1c23;
+  --color-neutral-950: #180f13;
+
+  /* CRITICAL (lesson from Nova/Atelier): Tailwind's @theme default inline
+     (packages/ui/main.css) compiles bg-primary-600 / bg-neutral-100 / etc.
+     straight to background-color: var(--ui-color-primary-600) — it inlines
+     through the --color-primary-* / --color-neutral-* indirection at build
+     time, so overriding those alone never reaches the generated utility
+     classes. Every bg-primary-* / text-neutral-* / border-neutral-*
+     utility Bloom's own components use needs the --ui-color-* twin too. */
+  --ui-color-primary-50: #fef1f6;
+  --ui-color-primary-100: #fde3ee;
+  --ui-color-primary-200: #fbc7dd;
+  --ui-color-primary-300: #f5a3c6;
+  --ui-color-primary-400: #ec81ac;
+  --ui-color-primary-500: #e05a92;
+  --ui-color-primary-600: #c23f76;
+  --ui-color-primary-700: #9c2f5c;
+  --ui-color-primary-800: #742346;
+  --ui-color-primary-900: #4d172e;
+  --ui-color-primary-950: #2b0d1a;
+  --ui-color-neutral-0: #ffffff;
+  --ui-color-neutral-50: #fdf3f6;
+  --ui-color-neutral-100: #faeaef;
+  --ui-color-neutral-200: #f3d7e0;
+  --ui-color-neutral-300: #e6b9c8;
+  --ui-color-neutral-400: #cf93a8;
+  --ui-color-neutral-500: #a96f83;
+  --ui-color-neutral-600: #855468;
+  --ui-color-neutral-700: #654052;
+  --ui-color-neutral-800: #452c38;
+  --ui-color-neutral-900: #2c1c23;
+  --ui-color-neutral-950: #180f13;
+
+  --ui-primary: var(--color-primary-500);
+
+  /* The bloom.vue layout root (already wired up) uses Nuxt UI's semantic
+     aliases directly (bg-default / text-highlighted) rather than arbitrary
+     values, so those need re-tinting too — otherwise the outer page shell
+     would still read as stark Polaris white/near-black under the pink
+     accent swap above. Same fix Boutique applied for the same reason. */
+  --ui-text-dimmed: var(--color-neutral-400);
+  --ui-text-muted: var(--color-neutral-500);
+  --ui-text-toned: var(--color-neutral-600);
+  --ui-text: var(--color-neutral-700);
+  --ui-text-highlighted: var(--color-neutral-900);
+  --ui-text-inverted: var(--color-neutral-50);
+  --ui-bg: var(--color-neutral-50);
+  --ui-bg-muted: var(--color-neutral-100);
+  --ui-bg-elevated: #ffffff;
+  --ui-bg-accented: var(--color-neutral-200);
+  --ui-bg-inverted: var(--color-primary-600);
+  --ui-border: var(--color-neutral-200);
+  --ui-border-muted: var(--color-neutral-100);
+  --ui-border-accented: var(--color-neutral-300);
+  --ui-border-inverted: var(--color-primary-600);
+
+  /* Page-level tokens Bloom's own components reference directly (not part
+     of the primary/neutral utility-class machinery — consumed only via
+     arbitrary-value classes, e.g. bg-[var(--color-bloom-blush)], same
+     proven-safe pattern as Atelier's --color-atelier-cream). */
+  --color-bloom-blush: #fdf3f6;
+  --color-bloom-ink: #2c1c23;
+  --color-bloom-hero-from: #fbe4ec;
+  --color-bloom-hero-to: #fdf3f6;
+
+  /* Soft "blooming" glow shadows — larger blur, lower opacity than
+     Atelier's rose-gold glow (dreamier, less jewelry-dramatic). Consumed
+     only via arbitrary-value syntax (shadow-[var(--shadow-bloom-sm)]),
+     never a named utility, so a plain scoped property is all this needs. */
+  --shadow-bloom-sm: 0 8px 24px -6px rgba(224, 90, 146, 0.18);
+  --shadow-bloom-md: 0 16px 40px -10px rgba(224, 90, 146, 0.22);
+  --shadow-bloom-lg: 0 28px 60px -14px rgba(224, 90, 146, 0.26);
+
+  --font-bloom-display: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Display type — Poppins at a friendly semibold weight, tight-ish tracking.
+   Rounded and bubbly — distinct from Atelier's thin, high-contrast
+   Cormorant and Boutique's warm Fraunces. */
+.tpl-bloom h1,
+.tpl-bloom h2,
+.tpl-bloom h3,
+.tpl-bloom .font-display {
+  font-family: var(--font-bloom-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Glow card — the recurring blush-surface card: rounded-3xl, soft
+   pink-tinted shadow that blooms further on hover with a slight lift.
+   NOTHING sharp-cornered anywhere in Bloom. */
+.tpl-bloom .glow-card {
+  border-radius: 1.5rem;
+  background-color: #fff;
+  box-shadow: var(--shadow-bloom-sm);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.tpl-bloom .glow-card:hover {
+  box-shadow: var(--shadow-bloom-md);
+  transform: translateY(-3px);
+}
+
+/* Glow dot — a small filled-circle + label badge (New / ingredient
+   callouts), the recurring "blooming" motif in miniature. */
+.tpl-bloom .glow-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  border-radius: 9999px;
+  padding: 0.3rem 0.85rem 0.3rem 0.65rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-primary-700);
+  background-color: var(--color-primary-50);
+}
+.tpl-bloom .glow-dot::before {
+  content: '';
+  display: inline-block;
+  width: 0.4rem;
+  height: 0.4rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background-color: var(--color-primary-500);
+}

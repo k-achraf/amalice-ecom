@@ -1,0 +1,154 @@
+/*
+ * Editorial template — Atlassian Design System's structural language (not
+ * Polaris), reinterpreted at magazine scale. Scoped to .tpl-editorial so it
+ * never leaks into minimal/boutique/promify (same isolation discipline as
+ * promify.css/boutique.css/admin.css). ADS blue #0C66E4 replaces the
+ * uppercase-tracked neutral chrome the template used to share with minimal;
+ * dark navy ink (#172B4D, ADS's own text-color token) for headings; a small,
+ * tight --ui-radius (ADS's signature "not quite square, not soft" corner);
+ * ADS's exact elevation shadow recipe; and the lozenge (fully-rounded pill)
+ * as the one recurring badge/kicker shape, regardless of the tighter base
+ * radius everything else uses.
+ */
+
+.tpl-editorial {
+  /* Atlassian primary blue (B400 #0C66E4 / pressed B500 #0055CC) */
+  --color-primary-50: #e9f2ff;
+  --color-primary-100: #cfe1ff;
+  --color-primary-200: #9dc3ff;
+  --color-primary-300: #6ba5ff;
+  --color-primary-400: #3d86fa;
+  --color-primary-500: #0c66e4;
+  --color-primary-600: #0055cc;
+  --color-primary-700: #0043a6;
+  --color-primary-800: #033273;
+  --color-primary-900: #06234a;
+  --color-primary-950: #04162e;
+
+  /* Atlassian's neutral ramp — bg #F7F8F9, border #DCDFE4, text #172B4D
+     (N800, ADS's real default text color) at the 800 stop. */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f7f8f9;
+  --color-neutral-100: #f1f2f4;
+  --color-neutral-200: #dcdfe4;
+  --color-neutral-300: #b3b9c4;
+  --color-neutral-400: #8590a2;
+  --color-neutral-500: #626f86;
+  --color-neutral-600: #44546f;
+  --color-neutral-700: #2c3e5d;
+  --color-neutral-800: #172b4d;
+  --color-neutral-900: #0e1b32;
+  --color-neutral-950: #060d1a;
+
+  /* CRITICAL: Tailwind's `@theme default inline` (packages/ui/main.css)
+     compiles `bg-primary-600`/`bg-neutral-100`/etc. straight to
+     `background-color: var(--ui-color-primary-600)` — it inlines through
+     the --color-primary-* / --color-neutral-* indirection at build time, so
+     overriding those alone (above) never reaches the generated utility
+     classes. Confirmed by inspecting the compiled CSS output. Every
+     bg-primary-* / text-neutral-* / border-neutral-* utility this template's
+     own components use needs the --ui-color-* twin overridden too. */
+  --ui-color-primary-50: #e9f2ff;
+  --ui-color-primary-100: #cfe1ff;
+  --ui-color-primary-200: #9dc3ff;
+  --ui-color-primary-300: #6ba5ff;
+  --ui-color-primary-400: #3d86fa;
+  --ui-color-primary-500: #0c66e4;
+  --ui-color-primary-600: #0055cc;
+  --ui-color-primary-700: #0043a6;
+  --ui-color-primary-800: #033273;
+  --ui-color-primary-900: #06234a;
+  --ui-color-primary-950: #04162e;
+  --ui-color-neutral-0: #ffffff;
+  --ui-color-neutral-50: #f7f8f9;
+  --ui-color-neutral-100: #f1f2f4;
+  --ui-color-neutral-200: #dcdfe4;
+  --ui-color-neutral-300: #b3b9c4;
+  --ui-color-neutral-400: #8590a2;
+  --ui-color-neutral-500: #626f86;
+  --ui-color-neutral-600: #44546f;
+  --ui-color-neutral-700: #2c3e5d;
+  --ui-color-neutral-800: #172b4d;
+  --ui-color-neutral-900: #0e1b32;
+  --ui-color-neutral-950: #060d1a;
+
+  --ui-primary: var(--color-primary-500);
+
+  /* Nuxt UI's semantic aliases (bg-default, border-default, text-muted,
+     text-highlighted, ...) are what this template's header/footer/hero
+     actually use, not --color-neutral-* directly — override these too so
+     the ADS palette actually reaches the page instead of Polaris's white
+     bg / stone text showing through underneath. */
+  --ui-text-dimmed: var(--color-neutral-400);
+  --ui-text-muted: var(--color-neutral-500);
+  --ui-text-toned: var(--color-neutral-600);
+  --ui-text: var(--color-neutral-700);
+  --ui-text-highlighted: var(--color-neutral-800);
+  --ui-text-inverted: #ffffff;
+  --ui-bg: #ffffff;
+  --ui-bg-muted: var(--color-neutral-50);
+  --ui-bg-elevated: var(--color-neutral-50);
+  --ui-bg-accented: var(--color-neutral-100);
+  --ui-bg-inverted: var(--color-neutral-800);
+  --ui-border: var(--color-neutral-200);
+  --ui-border-muted: var(--color-neutral-100);
+  --ui-border-accented: var(--color-neutral-300);
+  --ui-border-inverted: var(--color-neutral-800);
+
+  /* ADS's tight small-radius signature — noticeably crisper than Polaris's
+     default (4px) or Promify's Stripe-soft (6px), short of Boutique's 0.
+     Drives the whole Nuxt UI radius scale in one var. */
+  --ui-radius: 0.1875rem;
+
+  /* Atlassian's actual elevation recipe — navy-tinted, two-layer. */
+  --shadow-editorial-raised: 0 1px 1px rgba(9, 30, 66, 0.25), 0 0 1px rgba(9, 30, 66, 0.31);
+  --shadow-editorial-overlay: 0 4px 8px -2px rgba(9, 30, 66, 0.25), 0 0 1px rgba(9, 30, 66, 0.31);
+}
+
+/* Lozenge — ADS's pill-shaped tag/kicker, always fully rounded regardless of
+   the base --ui-radius. Used for "New", "Sale", section eyebrows/kickers. */
+.tpl-editorial .lozenge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-600);
+}
+.tpl-editorial .lozenge-neutral {
+  background-color: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+.tpl-editorial .lozenge-success {
+  background-color: var(--color-success-50);
+  color: var(--color-success-700);
+}
+.tpl-editorial .lozenge-warning {
+  background-color: var(--color-warning-50);
+  color: var(--color-warning-700);
+}
+
+/* Kicker — small-caps-style blue label above a headline, ADS's structural
+   substitute for the old uppercase-tracked-everything treatment. */
+.tpl-editorial .kicker {
+  color: var(--color-primary-600);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Raised card — the recurring ADS surface: white on #F7F8F9, hairline
+   border, the two-layer elevation shadow above. */
+.tpl-editorial .card-raised {
+  background-color: #fff;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-editorial-raised);
+}
+

@@ -1,0 +1,160 @@
+/*
+ * Boutique template — a bespoke "quiet luxury" system, scoped to
+ * .tpl-boutique so it never leaks into minimal/editorial/promify (same
+ * isolation discipline as promify.css/admin.css). This is not a Polaris
+ * borrow: warm ivory + near-black ink (no chromatic brand hue at all —
+ * restraint IS the brand), a hairline-thin neutral ramp, ZERO radius
+ * (sharp corners read as considered/precise rather than friendly-rounded),
+ * no drop shadows (whitespace and rules carry hierarchy, not elevation),
+ * and Fraunces for display type where Inter alone would feel too "app UI."
+ * A single gold accent exists and is used sparingly — as an underline, a
+ * dot, a price emphasis — never as a large fill, per luxury-retail
+ * convention (accent marks a detail, it doesn't shout).
+ */
+
+.tpl-boutique {
+  /* Near-black warm ink — the achromatic "primary." Anchored at the 900
+     stop (can't go darker than near-black), same technique DS-08 used for
+     Polaris's own achromatic brand ramp. */
+  --color-primary-50: #f7f5f1;
+  --color-primary-100: #efeae2;
+  --color-primary-200: #ddd4c4;
+  --color-primary-300: #c5b7a0;
+  --color-primary-400: #a08d6d;
+  --color-primary-500: #7c6a4d;
+  --color-primary-600: #5c4d36;
+  --color-primary-700: #423728;
+  --color-primary-800: #2a231a;
+  --color-primary-900: #161412;
+  --color-primary-950: #0a0908;
+
+  /* Warm ivory neutral ramp — lighter and warmer than Polaris's stone, this
+     IS the "surface" of the template (page bg #FAF7F2, hairline #E8E1D6). */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #faf7f2;
+  --color-neutral-100: #f3eee4;
+  --color-neutral-200: #e8e1d6;
+  --color-neutral-300: #d8cdba;
+  --color-neutral-400: #b8a98e;
+  --color-neutral-500: #8a8275;
+  --color-neutral-600: #6b6153;
+  --color-neutral-700: #4d473d;
+  --color-neutral-800: #302b24;
+  --color-neutral-900: #1f1c17;
+  --color-neutral-950: #100e0b;
+
+  /* CRITICAL: Tailwind's `@theme default inline` (packages/ui/main.css)
+     compiles `bg-primary-600`/`bg-neutral-100`/etc. straight to
+     `background-color: var(--ui-color-primary-600)` — it inlines through
+     the --color-primary-* / --color-neutral-* indirection at build time, so
+     overriding those alone (above) never reaches the generated utility
+     classes. Confirmed by inspecting the compiled CSS output. Every
+     bg-primary-* / text-neutral-* / border-neutral-* utility this template's
+     own components use needs the --ui-color-* twin overridden too. */
+  --ui-color-primary-50: #f7f5f1;
+  --ui-color-primary-100: #efeae2;
+  --ui-color-primary-200: #ddd4c4;
+  --ui-color-primary-300: #c5b7a0;
+  --ui-color-primary-400: #a08d6d;
+  --ui-color-primary-500: #7c6a4d;
+  --ui-color-primary-600: #5c4d36;
+  --ui-color-primary-700: #423728;
+  --ui-color-primary-800: #2a231a;
+  --ui-color-primary-900: #161412;
+  --ui-color-primary-950: #0a0908;
+  --ui-color-neutral-0: #ffffff;
+  --ui-color-neutral-50: #faf7f2;
+  --ui-color-neutral-100: #f3eee4;
+  --ui-color-neutral-200: #e8e1d6;
+  --ui-color-neutral-300: #d8cdba;
+  --ui-color-neutral-400: #b8a98e;
+  --ui-color-neutral-500: #8a8275;
+  --ui-color-neutral-600: #6b6153;
+  --ui-color-neutral-700: #4d473d;
+  --ui-color-neutral-800: #302b24;
+  --ui-color-neutral-900: #1f1c17;
+  --ui-color-neutral-950: #100e0b;
+
+  --ui-primary: var(--color-primary-900);
+
+  /* Nuxt UI's semantic aliases (bg-default, border-default, text-muted,
+     text-highlighted, ...) are what most components — including this
+     template's own header/footer/hero — actually use, not --color-neutral-*
+     directly. Without overriding these too, "boutique" would still render
+     Polaris's white bg / stone text underneath the primary-color swap above,
+     which is exactly the "still looks like default Nuxt UI" problem this
+     re-theme exists to fix. */
+  --ui-text-dimmed: var(--color-neutral-400);
+  --ui-text-muted: var(--color-neutral-500);
+  --ui-text-toned: var(--color-neutral-600);
+  --ui-text: var(--color-neutral-700);
+  --ui-text-highlighted: var(--color-primary-900);
+  --ui-text-inverted: var(--color-neutral-50);
+  --ui-bg: var(--color-neutral-50);
+  --ui-bg-muted: var(--color-neutral-100);
+  --ui-bg-elevated: #ffffff;
+  --ui-bg-accented: var(--color-neutral-200);
+  --ui-bg-inverted: var(--color-primary-900);
+  --ui-border: var(--color-neutral-200);
+  --ui-border-muted: var(--color-neutral-100);
+  --ui-border-accented: var(--color-neutral-300);
+  --ui-border-inverted: var(--color-primary-900);
+
+  /* Sharp corners everywhere. Drives Nuxt UI's whole radius scale (xs..3xl
+     all derive from --ui-radius), so UButton/UInput/UBadge/UModal go square
+     under .tpl-boutique without touching each component's classes. */
+  --ui-radius: 0px;
+
+  /* The one accent — warm brass/gold, used only for underlines, dots, and
+     price emphasis. Never a button fill or a large block. */
+  --color-boutique-accent: #9c7a3c;
+  --color-boutique-accent-soft: #cdb583;
+
+  /* Barely-there hover lift — no ambient shadow, restraint is the point. */
+  --shadow-boutique-hover: 0 1px 2px rgba(22, 20, 18, 0.06);
+
+  --font-boutique-display: 'Fraunces', ui-serif, Georgia, 'Times New Roman', serif;
+}
+
+/* Display type — headings and anything opting into `.font-display` render in
+   Fraunces at a light weight with slightly open tracking. Body text stays
+   Inter (inherited from packages/ui); mixing exactly one serif accent face
+   with the sans body is the whole trick, not serif-everywhere. */
+.tpl-boutique h1,
+.tpl-boutique h2,
+.tpl-boutique h3,
+.tpl-boutique .font-display {
+  font-family: var(--font-boutique-display);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+/* The gold underline — Boutique's signature interactive accent, used on nav
+   links, active states and "view all" affordances instead of a filled
+   pill/button. */
+.tpl-boutique .accent-link {
+  position: relative;
+  color: inherit;
+  text-decoration: none;
+}
+.tpl-boutique .accent-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: -2px;
+  height: 1px;
+  background-color: var(--color-boutique-accent);
+  transition: right 0.25s ease;
+}
+.tpl-boutique .accent-link:hover::after,
+.tpl-boutique .accent-link.is-active::after {
+  right: 0;
+}
+
+/* Product price emphasis — gold, tabular, no bold weight (restraint again). */
+.tpl-boutique .price-accent {
+  color: var(--color-boutique-accent);
+  font-variant-numeric: tabular-nums;
+}
+

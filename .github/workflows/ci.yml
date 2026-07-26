@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  ci:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          # turbo's --affected needs real git history to diff the PR base
+          # against HEAD — a shallow checkout makes it treat every package
+          # as changed, silently defeating the point of this flag.
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        # No version pinned here — it's read from package.json's
+        # "packageManager" field via Corepack, the same source of truth
+        # every dev machine and the app containers use.
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Each step scoped to --affected (packages changed since the PR base,
+      # or since the previous push on main — turbo auto-detects which via
+      # GitHub's own GITHUB_BASE_REF/GITHUB_SHA env vars) rather than the
+      # root `pnpm lint`/etc. scripts, which intentionally run everything
+      # for local full-repo checks.
+      - name: Lint
+        run: pnpm exec turbo run lint --affected
+
+      - name: Typecheck
+        run: pnpm exec turbo run typecheck --affected
+
+      - name: Test
+        run: pnpm exec turbo run test --affected
+
+      - name: Build
+        run: pnpm exec turbo run build --affected

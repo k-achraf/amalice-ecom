@@ -1,0 +1,123 @@
+/*
+ * Lumiere template — a bold, loud, high-fashion beauty-EDITORIAL system,
+ * scoped to .tpl-lumiere. Like nova/atelier/drop, Lumiere renders ZERO
+ * @nuxt/ui components — every interactive element (components/lumiere/ui/*)
+ * is hand-built from plain Tailwind, so there is nothing to re-skin via
+ * Nuxt UI's --ui-* semantic tokens here. This file only needs to: (1) point
+ * the shared bg-primary-* / text-primary-* / bg-neutral-* / text-neutral-*
+ * utilities at Lumiere's crimson + stark-neutral ramps, since those utility
+ * classes already exist globally (generated once in packages/ui/main.css)
+ * and Lumiere's own components use them directly, and (2) register the new
+ * tokens Lumiere introduces (display font, diagonal hero clip) that nothing
+ * else needs.
+ *
+ * Vogue Beauty spread, not a soft cosmetics shelf: stark black-and-white
+ * surface, ONE loud crimson/lipstick-red accent used as bold color-blocking,
+ * oversized Bodoni Moda didone display type, sharp minimal radius (never
+ * rounded/pill — the single exception is the shade-swatch dot), and — the
+ * key differentiator from every other template — NO shadow anywhere.
+ * Hierarchy comes purely from black/white/crimson color-blocking and scale
+ * contrast, never elevation.
+ */
+
+.tpl-lumiere {
+  /* Crimson / lipstick-red — the one loud accent. 500 is the hero crimson
+     used for CTAs/color-blocking; 600/700 are the pressed/hover stops. */
+  --color-primary-50: #fdeef2;
+  --color-primary-100: #fad9e2;
+  --color-primary-200: #f4b0c4;
+  --color-primary-300: #ea7ea0;
+  --color-primary-400: #dc4c7c;
+  --color-primary-500: #c81854;
+  --color-primary-600: #a80f45;
+  --color-primary-700: #850c37;
+  --color-primary-800: #630929;
+  --color-primary-900: #42061b;
+  --color-primary-950: #26030f;
+
+  /* CRITICAL: Tailwind's `@theme default inline` (packages/ui/main.css)
+     compiles `bg-primary-600` etc. straight to
+     `background-color: var(--ui-color-primary-600)` — it inlines through
+     the --color-primary-* indirection at build time, so overriding
+     --color-primary-* alone (above) never reaches the generated utility
+     classes actually used on the page. Confirmed on drop/nova/volt. Every
+     bg-primary-* / text-primary-* / border-primary-* utility Lumiere's own
+     components use needs --ui-color-primary-* overridden too. */
+  --ui-color-primary-50: #fdeef2;
+  --ui-color-primary-100: #fad9e2;
+  --ui-color-primary-200: #f4b0c4;
+  --ui-color-primary-300: #ea7ea0;
+  --ui-color-primary-400: #dc4c7c;
+  --ui-color-primary-500: #c81854;
+  --ui-color-primary-600: #a80f45;
+  --ui-color-primary-700: #850c37;
+  --ui-color-primary-800: #630929;
+  --ui-color-primary-900: #42061b;
+  --ui-color-primary-950: #26030f;
+
+  /* True stark grayscale — no warm or cool tint, pure black/white/gray.
+     Used directly via bg-neutral-* / text-neutral-* / border-neutral-*
+     utilities across every Lumiere component for panels, dividers and
+     muted text on the white surface. */
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f0f0f0;
+  --color-neutral-200: #dcdcdc;
+  --color-neutral-300: #bdbdbd;
+  --color-neutral-400: #8f8f8f;
+  --color-neutral-500: #6b6b6b;
+  --color-neutral-600: #4d4d4d;
+  --color-neutral-700: #363636;
+  --color-neutral-800: #222222;
+  --color-neutral-900: #121212;
+  --color-neutral-950: #050505;
+
+  --ui-color-neutral-50: #fafafa;
+  --ui-color-neutral-100: #f0f0f0;
+  --ui-color-neutral-200: #dcdcdc;
+  --ui-color-neutral-300: #bdbdbd;
+  --ui-color-neutral-400: #8f8f8f;
+  --ui-color-neutral-500: #6b6b6b;
+  --ui-color-neutral-600: #4d4d4d;
+  --ui-color-neutral-700: #363636;
+  --ui-color-neutral-800: #222222;
+  --ui-color-neutral-900: #121212;
+  --ui-color-neutral-950: #050505;
+
+  --font-lumiere-display: 'Bodoni Moda', ui-serif, Georgia, serif;
+}
+
+/* Display type — headings and anything opting into `.font-display` render
+   in Bodoni Moda, a dramatic high-contrast didone serif: big, normal-weight,
+   tight-to-normal tracking, mixed case (never uppercase-locked — that reads
+   as streetwear, not high fashion). Body text stays Inter (inherited from
+   packages/ui). */
+.tpl-lumiere h1,
+.tpl-lumiere h2,
+.tpl-lumiere h3,
+.tpl-lumiere .font-display {
+  font-family: var(--font-lumiere-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+/* The diagonal angled-cut hero block — a bold black polygon clipped behind
+   the headline, Lumiere's signature motif (see the admin picker preview's
+   `tpl === 'lumiere'` SVG branch for the exact diagonal reference). Only
+   ever consumed on the hero's visual panel, never as a named radius/shadow
+   utility — this is layout geometry, not a color token, so it stays a plain
+   scoped class rather than a --theme variable. */
+.tpl-lumiere .lumiere-diagonal {
+  clip-path: polygon(0 0, 78% 0, 46% 100%, 0 100%);
+}
+.tpl-lumiere .lumiere-diagonal-reverse {
+  clip-path: polygon(22% 0, 100% 0, 100% 100%, 54% 100%);
+}
+
+/* Shade-swatch dot — the ONE fully-rounded shape allowed anywhere in the
+   template, used only for color/shade pickers (never for buttons, cards or
+   images, which all stay sharp-cornered by contrast). Selection state is a
+   ring border, never a box-shadow, per the "no shadow anywhere" rule. */
+.tpl-lumiere .lumiere-swatch {
+  border-radius: 9999px;
+}

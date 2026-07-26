@@ -1,0 +1,199 @@
+/*
+ * Pulse template — a bright glossy "consumer-tech/gadgets" system, scoped
+ * to .tpl-pulse. Like Nova/Atelier, Pulse renders ZERO @nuxt/ui components —
+ * every interactive element (components/pulse/ui/*) is hand-built from
+ * plain Tailwind, so there is nothing to re-skin via Nuxt UI's --ui-* tokens
+ * here. This file only needs to: (1) point the shared bg-primary-* /
+ * text-primary-* / bg-neutral-* utilities at Pulse's indigo-violet + cool
+ * neutral ramps, since those utility classes already exist globally
+ * (generated once in packages/ui/main.css) and Pulse's own components use
+ * them directly, and (2) register the new tokens Pulse introduces (cyan
+ * accent, glow shadows, gradient-mesh stops, display font).
+ *
+ * Design: a WHITE surface throughout (never dark) — the deliberate light-mode
+ * opposite of the near-black/cyan/monospace "Volt" tech template. One vivid
+ * indigo-violet accent, a small cyan accent reserved for the gradient-mesh
+ * decoration and a few highlight moments, generously rounded-2xl cards, and
+ * a colorful "glow" shadow tinted with the violet accent (not gray/black
+ * like an ordinary shadow) — reads glossy/techy rather than Bloom's dreamy
+ * pink glow or Atelier's rose-gold one. Outfit at semibold/bold for display
+ * type — a rounded geometric sans, friendlier than Volt's monospace.
+ *
+ * NOTE on lessons from Nova/Atelier's build: no top-level @theme block here
+ * (an app-level css:[] entry's @theme directive silently doesn't get
+ * processed the same way the shared layer's own main.css does — confirmed
+ * by testing). Every custom token is a plain property scoped to .tpl-pulse,
+ * and any color used as a named utility elsewhere gets its --ui-color-*
+ * twin (below) since Tailwind's generated primary-* / neutral-* utilities
+ * compile straight through to --ui-color-primary-* / --ui-color-neutral-*,
+ * bypassing a --color-primary-* -only override entirely.
+ */
+
+.tpl-pulse {
+  /* Vivid indigo-violet — the one full accent ramp. 500 is the hero tone
+     used for CTAs, focus rings, and the signature glow shadow tint. */
+  --color-primary-50: #f1effe;
+  --color-primary-100: #e3defd;
+  --color-primary-200: #c8bdfb;
+  --color-primary-300: #a795f8;
+  --color-primary-400: #8b70f7;
+  --color-primary-500: #6d5ef5;
+  --color-primary-600: #5641e0;
+  --color-primary-700: #4530b8;
+  --color-primary-800: #362590;
+  --color-primary-900: #271a66;
+  --color-primary-950: #180f40;
+
+  /* Clean cool-neutral ramp — close to true gray, not warm. Used for the
+     white shopping surface, borders, and muted text. */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f7f7fb;
+  --color-neutral-100: #eeeef5;
+  --color-neutral-200: #dcdce8;
+  --color-neutral-300: #b8b8cc;
+  --color-neutral-400: #8f8fa8;
+  --color-neutral-500: #6b6b85;
+  --color-neutral-600: #4f4f66;
+  --color-neutral-700: #3a3a4d;
+  --color-neutral-800: #262633;
+  --color-neutral-900: #17171f;
+  --color-neutral-950: #0c0c10;
+
+  /* CRITICAL (lesson from Nova/Atelier): Tailwind's @theme default inline
+     (packages/ui/main.css) compiles bg-primary-600 / bg-neutral-100 / etc.
+     straight to background-color: var(--ui-color-primary-600) — it inlines
+     through the --color-primary-* / --color-neutral-* indirection at build
+     time, so overriding those alone never reaches the generated utility
+     classes. Every bg-primary-* / text-neutral-* / border-neutral-*
+     utility Pulse's own components use needs the --ui-color-* twin too. */
+  --ui-color-primary-50: #f1effe;
+  --ui-color-primary-100: #e3defd;
+  --ui-color-primary-200: #c8bdfb;
+  --ui-color-primary-300: #a795f8;
+  --ui-color-primary-400: #8b70f7;
+  --ui-color-primary-500: #6d5ef5;
+  --ui-color-primary-600: #5641e0;
+  --ui-color-primary-700: #4530b8;
+  --ui-color-primary-800: #362590;
+  --ui-color-primary-900: #271a66;
+  --ui-color-primary-950: #180f40;
+  --ui-color-neutral-0: #ffffff;
+  --ui-color-neutral-50: #f7f7fb;
+  --ui-color-neutral-100: #eeeef5;
+  --ui-color-neutral-200: #dcdce8;
+  --ui-color-neutral-300: #b8b8cc;
+  --ui-color-neutral-400: #8f8fa8;
+  --ui-color-neutral-500: #6b6b85;
+  --ui-color-neutral-600: #4f4f66;
+  --ui-color-neutral-700: #3a3a4d;
+  --ui-color-neutral-800: #262633;
+  --ui-color-neutral-900: #17171f;
+  --ui-color-neutral-950: #0c0c10;
+
+  /* Cyan — a plain custom property, NOT a full ramp. Reserved for the
+     gradient-mesh decoration and a few small accent moments (spec chips,
+     highlight underlines). Consumed only via arbitrary-value syntax, e.g.
+     bg-[var(--color-pulse-cyan)], never a named utility. */
+  --color-pulse-cyan: #67e8f9;
+  --color-pulse-cyan-soft: #c8f4fa;
+
+  /* Soft glowing (blurred, violet-tinted) "glow" shadow — the recurring
+     glossy-surface signature. Consumed only via arbitrary-value syntax
+     (shadow-[var(--shadow-pulse-sm)]), never a named utility, so a plain
+     scoped property is all this needs. */
+  --shadow-pulse-sm: 0 8px 20px -6px rgba(109, 94, 245, 0.18);
+  --shadow-pulse-md: 0 16px 36px -10px rgba(109, 94, 245, 0.24);
+  --shadow-pulse-lg: 0 28px 56px -14px rgba(109, 94, 245, 0.28);
+
+  --font-pulse-display: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Display type — Outfit at semibold/bold, normal tracking. A rounded
+   geometric sans, friendly and glossy — distinct from Volt's monospace and
+   Atelier's thin serif. */
+.tpl-pulse h1,
+.tpl-pulse h2,
+.tpl-pulse h3,
+.tpl-pulse .font-display {
+  font-family: var(--font-pulse-display);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+/* Gradient-mesh background — 3 layered radial gradients (violet blending
+   into cyan, low opacity) on a white base. Used in the hero and occasional
+   feature callouts, never as the default page surface. */
+.tpl-pulse .mesh-bg {
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(109, 94, 245, 0.16), transparent 42%),
+    radial-gradient(circle at 88% 12%, rgba(103, 232, 249, 0.18), transparent 48%),
+    radial-gradient(circle at 50% 100%, rgba(139, 112, 247, 0.14), transparent 55%);
+  background-color: #ffffff;
+}
+
+/* A darker variant of the mesh for decorative panels that want more
+   saturation (e.g. a feature callout strip), still light — never a dark
+   surface. */
+.tpl-pulse .mesh-bg-strong {
+  background-image:
+    radial-gradient(circle at 10% 15%, rgba(109, 94, 245, 0.30), transparent 45%),
+    radial-gradient(circle at 90% 10%, rgba(103, 232, 249, 0.28), transparent 50%),
+    radial-gradient(circle at 50% 100%, rgba(139, 112, 247, 0.22), transparent 60%);
+  background-color: #f7f7fb;
+}
+
+/* Glow card — the recurring white-surface card: rounded-2xl, soft violet
+   glow shadow that blooms further on hover with a slight lift, plus a
+   glossy highlight — a subtle white-to-transparent gradient overlay on the
+   top edge to suggest a glass/glossy surface. */
+.tpl-pulse .glow-card {
+  position: relative;
+  border-radius: 1rem;
+  background-color: #fff;
+  box-shadow: var(--shadow-pulse-sm);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+  overflow: hidden;
+}
+.tpl-pulse .glow-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+  pointer-events: none;
+}
+.tpl-pulse .glow-card:hover {
+  box-shadow: var(--shadow-pulse-md);
+  transform: translateY(-3px);
+}
+
+/* Glossy highlight overlay — a standalone utility for elements that need
+   the glass-highlight treatment without the full glow-card shadow/hover
+   behavior (e.g. the hero visual panel). */
+.tpl-pulse .glossy-highlight {
+  position: relative;
+  overflow: hidden;
+}
+.tpl-pulse .glossy-highlight::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent 40%);
+  pointer-events: none;
+}
+
+/* Spec chip — a small, colorful, pill-shaped badge used for gadget spec
+   callouts (e.g. "5G", "USB-C", "24h battery") in decorative moments
+   outside the PulseBadge component. */
+.tpl-pulse .spec-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-primary-700);
+  background-color: var(--color-primary-50);
+}

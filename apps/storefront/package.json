@@ -1,0 +1,33 @@
+{
+  "name": "storefront",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "typecheck": "nuxt typecheck",
+    "lint": "eslint . && prettier --check .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@amalice/shared": "workspace:*",
+    "@amalice/ui": "workspace:*",
+    "@nuxt/image": "^2.0.0",
+    "@nuxt/ui": "4.10.0",
+    "@nuxtjs/sitemap": "^8.2.2",
+    "@pinia/nuxt": "1.0.1",
+    "pinia": "4.0.2",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "1.16.0",
+    "eslint": "10.7.0",
+    "nuxt": "4.4.8",
+    "typescript": "6.0.3",
+    "vue-tsc": "3.3.7"
+  }
+}

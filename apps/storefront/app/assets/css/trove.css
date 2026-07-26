@@ -1,0 +1,191 @@
+/*
+ * Trove template — a warm "collected treasures" accessories & everyday-carry
+ * system, scoped to .tpl-trove. Like Nova, Atelier, Hearth and Volt, Trove
+ * renders ZERO @nuxt/ui components — every interactive element
+ * (components/trove/ui/*) is hand-built from plain Tailwind, so there is
+ * nothing to re-skin via Nuxt UI's --ui-* tokens directly. This file only
+ * needs to: (1) point the shared bg-primary-* / text-primary-* /
+ * bg-neutral-* / text-neutral-* utilities (generated once in
+ * packages/ui/main.css) at Trove's mustard + warm-cream ramps, since
+ * Trove's own components consume those utilities directly, and (2) register
+ * the new tokens Trove introduces (deep-teal secondary accent, warm shadows,
+ * cream/ink surfaces, display font).
+ *
+ * Design: a light warm-cream surface throughout (never dark), a mustard /
+ * ochre + deep-teal DUO-TONE accent working together (unlike every other
+ * template's single restrained accent), a quirky bold display face
+ * (Bricolage Grotesque) — a completely different personality from Atelier's
+ * delicate thin serif. Trove's own signature is MIXED radius: product
+ * photos are always cropped to a perfect circle — like a collected trinket
+ * or charm pinned to a board — while the card frames, buttons and inputs
+ * around them stay sharp/minimal. No other template mixes radius languages
+ * like this.
+ *
+ * NOTE on lessons from Nova/Atelier/Hearth/Volt's build: no top-level
+ * @theme block here (an app-level css:[] entry's @theme directive silently
+ * doesn't get processed the same way the shared layer's own main.css does —
+ * confirmed by testing). Every custom token is a plain property scoped to
+ * .tpl-trove, and any color used as a named utility elsewhere gets its
+ * --ui-color- prefixed twin (below) since Tailwind's generated primary-* /
+ * neutral-* utilities compile straight through to --ui-color-primary-* /
+ * --ui-color-neutral-*, bypassing a --color-primary- only override
+ * entirely.
+ */
+
+.tpl-trove {
+  /* Mustard / ochre — the primary accent. 500 is the hero tone used for
+     CTAs (paired with dark ink text, not white — see TroveButton — since
+     500 does not have enough contrast against white for body text). */
+  --color-primary-50: #fdf6e3;
+  --color-primary-100: #fbebc0;
+  --color-primary-200: #f6d582;
+  --color-primary-300: #eebb42;
+  --color-primary-400: #e2a81f;
+  --color-primary-500: #d9a017;
+  --color-primary-600: #b37f0f;
+  --color-primary-700: #8a620d;
+  --color-primary-800: #664a0c;
+  --color-primary-900: #423008;
+  --color-primary-950: #261c05;
+
+  /* Warm cream / golden-taupe neutral ramp — lighter and more golden than
+     Hearth's olive-sand. The shopping-surface scale (borders, muted text,
+     card backgrounds). */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #faf6ee;
+  --color-neutral-100: #f3ead8;
+  --color-neutral-200: #e6d6b4;
+  --color-neutral-300: #d3ba86;
+  --color-neutral-400: #b99a5c;
+  --color-neutral-500: #9a7d43;
+  --color-neutral-600: #7a6234;
+  --color-neutral-700: #5c4a28;
+  --color-neutral-800: #40331b;
+  --color-neutral-900: #2a2110;
+  --color-neutral-950: #17130a;
+
+  /* CRITICAL (lesson from Nova/Atelier/Hearth): Tailwind's @theme default
+     inline (packages/ui/main.css) compiles bg-primary-600 / bg-neutral-100
+     etc. straight to background-color: var(--ui-color-primary-600) — it
+     inlines through the --color-primary- / --color-neutral- indirection at
+     build time, so overriding those alone never reaches the generated
+     utility classes. Every bg-primary- / text-neutral- / border-neutral-
+     utility Trove's own components use needs the --ui-color- prefixed twin
+     too. */
+  --ui-color-primary-50: #fdf6e3;
+  --ui-color-primary-100: #fbebc0;
+  --ui-color-primary-200: #f6d582;
+  --ui-color-primary-300: #eebb42;
+  --ui-color-primary-400: #e2a81f;
+  --ui-color-primary-500: #d9a017;
+  --ui-color-primary-600: #b37f0f;
+  --ui-color-primary-700: #8a620d;
+  --ui-color-primary-800: #664a0c;
+  --ui-color-primary-900: #423008;
+  --ui-color-primary-950: #261c05;
+  --ui-color-neutral-0: #ffffff;
+  --ui-color-neutral-50: #faf6ee;
+  --ui-color-neutral-100: #f3ead8;
+  --ui-color-neutral-200: #e6d6b4;
+  --ui-color-neutral-300: #d3ba86;
+  --ui-color-neutral-400: #b99a5c;
+  --ui-color-neutral-500: #9a7d43;
+  --ui-color-neutral-600: #7a6234;
+  --ui-color-neutral-700: #5c4a28;
+  --ui-color-neutral-800: #40331b;
+  --ui-color-neutral-900: #2a2110;
+  --ui-color-neutral-950: #17130a;
+
+  /* Secondary accent — deep teal, the second half of Trove's duo-tone
+     pairing. Used for the "collected" outline tag badges and secondary
+     callouts only, never the main CTA color. Plain custom properties (not a
+     full ramp), consumed only via arbitrary-value syntax e.g.
+     bg-[var(--color-trove-teal)]. */
+  --color-trove-teal: #1f6f6b;
+  --color-trove-teal-light: #7fb3b0;
+  --color-trove-teal-dark: #124542;
+
+  /* Page-level surface tokens the layout root and card frames reference
+     directly, same proven-safe pattern as Hearth's --color-hearth-linen /
+     --color-hearth-ink. */
+  --color-trove-cream: #faf6ee;
+  --color-trove-ink: #2a2110;
+  --color-trove-paper: #ffffff;
+
+  /* Warm soft shadow — similar weight to Hearth's grounded shadow but with
+     a slightly warmer/goldish tint. Consumed only via arbitrary-value
+     syntax (shadow-[var(--shadow-trove-md)]), never a named utility. */
+  --shadow-trove-sm: 0 3px 10px -3px rgba(64, 51, 27, 0.14);
+  --shadow-trove-md: 0 8px 22px -6px rgba(64, 51, 27, 0.18);
+  --shadow-trove-lg: 0 18px 40px -10px rgba(64, 51, 27, 0.22);
+
+  --font-trove-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Display type — Bricolage Grotesque at a bold weight, normal tracking. A
+   quirky, geometric-humanist grotesque with real personality — the
+   opposite mood from Atelier's ultra-thin catalog serif. */
+.tpl-trove h1,
+.tpl-trove h2,
+.tpl-trove h3,
+.tpl-trove .font-display {
+  font-family: var(--font-trove-display);
+  font-weight: 700;
+  letter-spacing: normal;
+}
+
+/* Trove card — the recurring sharp-cornered "display case" surface: flat 0
+   radius, a thin hairline border, a barely-there warm shadow that deepens
+   slightly on hover with a gentle lift. This sharp frame is deliberately
+   the visual opposite of the circular photos it contains. */
+.tpl-trove .trove-card {
+  border-radius: 0;
+  background-color: var(--color-trove-paper);
+  border: 1px solid var(--color-neutral-200);
+  box-shadow: var(--shadow-trove-sm);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.tpl-trove .trove-card:hover {
+  box-shadow: var(--shadow-trove-md);
+  transform: translateY(-2px);
+}
+
+/* Trove mount — the square, sharp-cornered backdrop panel a circular photo
+   sits inside (the "pegboard" the trinket is pinned to). Sits flush inside
+   the card's own sharp edge — no rounding at all, reinforcing the
+   circle-vs-square contrast. */
+.tpl-trove .trove-mount {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: var(--color-neutral-100);
+}
+
+/* Trove photo — the signature circular crop. A white ring around the image
+   separates it from the mount behind it, like a charm lifted off a board. */
+.tpl-trove .trove-photo {
+  border-radius: 9999px;
+  overflow: hidden;
+  background-color: var(--color-trove-paper);
+  box-shadow: 0 0 0 4px var(--color-trove-paper), var(--shadow-trove-sm);
+}
+
+/* Collected tag — a small outline "collected" badge in the teal secondary
+   accent, bordered not filled. Sharp minimal radius, matching the rest of
+   Trove's chrome — only photos get to be round. */
+.tpl-trove .trove-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--color-trove-teal);
+  padding: 0.1875rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-trove-teal-dark);
+  background-color: var(--color-trove-paper);
+}

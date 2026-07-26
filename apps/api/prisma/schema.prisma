@@ -1,0 +1,593 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Every state from the order lifecycle state machine (cod-platform-plan.md
+// §7) — kept in sync with packages/shared's OrderState Zod enum by hand;
+// there is no single source of truth across Prisma and Zod, so changing one
+// means changing both.
+enum OrderState {
+  PendingOTP
+  Cancelled
+  Confirmed
+  Packed
+  HandedToCourier
+  OutForDelivery
+  DeliveryFailed
+  Delivered
+  ReturnedToOrigin
+  Restocked
+  CashCollected
+  Reconciled
+  Settled
+}
+
+// The five roles from cod-platform-plan.md §8.
+enum AdminRoleName {
+  SuperAdmin
+  OpsManager
+  Finance
+  Support
+  Warehouse
+}
+
+model Customer {
+  id        String    @id @default(uuid())
+  phone     String    @unique
+  name      String?
+  addresses Address[]
+  orders    Order[]
+  reviews   Review[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("customers")
+}
+
+model Address {
+  id         String   @id @default(uuid())
+  customerId String   @map("customer_id")
+  customer   Customer @relation(fields: [customerId], references: [id])
+  line1      String
+  line2      String?
+  city       String
+  region     String
+  postalCode String   @map("postal_code")
+  country    String   @db.Char(2)
+  orders     Order[]
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([customerId])
+  @@map("addresses")
+}
+
+// SF-17 — collection/category landing pages need a real source (name,
+// description, image) beyond the flat `Product.category` tag. Kept optional
+// on Product so existing seeded products keep working without a backfill.
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  imageUrl    String?   @map("image_url")
+  // Curated storefront placement flags — used by SF-18 marketing home, not
+  // a separate marketing table (per SF-18's v1 scope decision).
+  featured    Boolean   @default(false)
+  sortOrder   Int       @default(0) @map("sort_order")
+  products    Product[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("categories")
+}
+
+model Product {
+  id                String           @id @default(uuid())
+  name              String
+  slug              String           @unique
+  description       String?
+  // Flat tag kept for back-compat with seeded data and the existing
+  // ?category= filter; categoryId is the normalized FK (SF-17). Both can
+  // coexist — categoryId is authoritative when set.
+  category          String?
+  categoryId        String?          @map("category_id")
+  categoryRef       Category?        @relation(fields: [categoryId], references: [id])
+  // SF-15: primary image (gallery's first/hero). The ProductImage rows are
+  // the full gallery; this denormalized field is the fast path for cards.
+  imageUrl          String?          @map("image_url")
+  images            ProductImage[]
+  // SF-15: variants (size/color/etc.). A product with no variants is
+  // single-SKU and behaves exactly as before — variant rows are optional.
+  variants          ProductVariant[]
+  // Which attributes apply to this product (the product "uses" Color + Size).
+  // Drives the variant-manager UI: before creating variants, you apply the
+  // attributes the variants will vary on.
+  productAttributes ProductAttribute[]
+  // Curated "featured/best-seller" flags for SF-18 marketing home, not a
+  // separate marketing table.
+  featured          Boolean          @default(false)
+  bestSeller        Boolean          @default(false) @map("best_seller")
+  priceCents        Int              @map("price_cents")
+  stockQuantity     Int              @default(0) @map("stock_quantity")
+  lowStockThreshold Int              @default(5) @map("low_stock_threshold")
+  orderItems        OrderItem[]
+  reviews           Review[]
+  stockAdjustments  StockAdjustment[]
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  @@index([category])
+  @@index([categoryId])
+  @@map("products")
+}
+
+// SF-15 — multi-image gallery, ordered. Falls back to Product.imageUrl when
+// a product has no gallery rows (single-image behavior unchanged).
+model ProductImage {
+  id        String   @id @default(uuid())
+  productId String   @map("product_id")
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  altText   String?  @map("alt_text")
+  sortOrder Int      @default(0) @map("sort_order")
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+// SF-15 — variants. Each carries its own price/stock/sku; selecting one
+// updates the PDP and the add-to-cart payload. Product.stockQuantity is the
+// aggregate for single-SKU products; when variants exist, per-variant stock
+// is authoritative.
+model ProductVariant {
+  id            String   @id @default(uuid())
+  productId     String   @map("product_id")
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku           String   @unique
+  // Legacy free-form JSON attribute map, kept for back-compat. Superseded by
+  // the normalized VariantOption relation below — new code reads options[]
+  // and builds the same {key: value} shape. This field is no longer the
+  // source of truth but remains populated for older variants.
+  attributes    Json
+  priceCents    Int      @map("price_cents")
+  stockQuantity Int      @default(0) @map("stock_quantity")
+  // Normalized: which option this variant picked for each of its attributes.
+  options       VariantOption[]
+
+  @@index([productId])
+  @@map("product_variants")
+}
+
+// ADM-07 — stock adjustments with a reason code, audit-tracked. Every
+// stockQuantity change writes a row here; the admin inventory screen reads
+// it as the adjustment history.
+enum StockAdjustmentReason {
+  Restock
+  Correction
+  Damage
+  Sale
+  Return
+}
+
+model StockAdjustment {
+  id        String                @id @default(uuid())
+  productId String                @map("product_id")
+  product   Product               @relation(fields: [productId], references: [id])
+  // Signed delta — positive for stock-in, negative for stock-out. The
+  // absolute quantity is |delta|; sign carries direction.
+  delta     Int
+  reason    StockAdjustmentReason
+  note      String?
+  // Who made the change — nullable so the seed/initial stock doesn't require
+  // a fake admin actor, but every real admin action is attributed.
+  actorId   String?               @map("actor_id")
+  createdAt DateTime              @default(now()) @map("created_at")
+
+  @@index([productId])
+  @@index([actorId])
+  @@map("stock_adjustments")
+}
+
+// Full product management — normalized attribute/option system.
+// Attribute is a store-wide definition (Color, Size); AttributeOption is its
+// allowed values (Red, Blue, M, L). ProductAttribute links a product to the
+// attributes it varies on. VariantOption links a variant to its chosen option
+// per attribute. This replaces the free-form JSON `attributes` blob on
+// ProductVariant as the source of truth — structured, validated, reusable.
+
+enum AttributeType {
+  Text
+  Color
+  Number
+  Swatch
+  Size
+  Boolean
+  Measurement
+}
+
+model Attribute {
+  id        String            @id @default(uuid())
+  name      String            @unique
+  type      AttributeType     @default(Text)
+  sortOrder Int               @default(0) @map("sort_order")
+  options   AttributeOption[]
+  products  ProductAttribute[]
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @updatedAt @map("updated_at")
+
+  @@map("attributes")
+}
+
+model AttributeOption {
+  id           String            @id @default(uuid())
+  attributeId  String            @map("attribute_id")
+  attribute    Attribute         @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  value        String
+  displayValue String?           @map("display_value")
+  // For Color-type attributes: the hex swatch. Null for non-color attributes.
+  colorHex     String?           @map("color_hex")
+  sortOrder    Int               @default(0) @map("sort_order")
+  variants     VariantOption[]
+
+  @@unique([attributeId, value])
+  @@index([attributeId])
+  @@map("attribute_options")
+}
+
+// Which attributes a product uses (the product "varies on" these).
+// A product must have ProductAttribute rows before variants can be created —
+// the variant manager shows these as option selectors.
+model ProductAttribute {
+  id          String    @id @default(uuid())
+  productId   String    @map("product_id")
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  attributeId String    @map("attribute_id")
+  attribute   Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@unique([productId, attributeId])
+  @@index([productId])
+  @@index([attributeId])
+  @@map("product_attributes")
+}
+
+// Which option a variant picked for each of its product's attributes.
+// One row per (variant, option). The unique pair prevents a variant from
+// picking the same option twice.
+model VariantOption {
+  id        String          @id @default(uuid())
+  variantId String          @map("variant_id")
+  variant   ProductVariant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  optionId  String          @map("option_id")
+  option    AttributeOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@unique([variantId, optionId])
+  @@index([variantId])
+  @@index([optionId])
+  @@map("variant_options")
+}
+
+// SF-16 — reviews. Phone-OTP gated, one per customer+product, moderation
+// via the `approved` flag (no auto-publish). Anti-spam: only customers with
+// a delivered order for this product can review (checked in service, not
+// schema-enforceable).
+model Review {
+  id         String   @id @default(uuid())
+  productId  String   @map("product_id")
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customerId String   @map("customer_id")
+  customer   Customer @relation(fields: [customerId], references: [id])
+  rating     Int // 1–5
+  title      String?
+  body       String?
+  approved   Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // One review per customer+product — enforced structurally, not just app-level.
+  @@unique([productId, customerId])
+  @@index([productId, approved])
+  @@map("reviews")
+}
+
+model Courier {
+  id              String            @id @default(uuid())
+  name            String
+  slug            String            @unique
+  shipments       Shipment[]
+  remittanceBatches RemittanceBatch[]
+  createdAt       DateTime          @default(now()) @map("created_at")
+
+  @@map("couriers")
+}
+
+model Order {
+  id                 String               @id @default(uuid())
+  customerId         String               @map("customer_id")
+  customer           Customer             @relation(fields: [customerId], references: [id])
+  addressId          String               @map("address_id")
+  address            Address              @relation(fields: [addressId], references: [id])
+  state              OrderState           @default(PendingOTP)
+  totalCents         Int                  @map("total_cents")
+  items              OrderItem[]
+  shipment           Shipment?
+  cashReconciliation CashReconciliation?
+  ledgerEntries      LedgerEntry[]
+  notifications      Notification[]
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+
+  @@index([customerId])
+  @@index([state])
+  @@map("orders")
+}
+
+model OrderItem {
+  id             String  @id @default(uuid())
+  orderId        String  @map("order_id")
+  order          Order   @relation(fields: [orderId], references: [id])
+  productId      String  @map("product_id")
+  product        Product @relation(fields: [productId], references: [id])
+  quantity       Int
+  unitPriceCents Int     @map("unit_price_cents")
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model Shipment {
+  id                String   @id @default(uuid())
+  orderId           String   @unique @map("order_id")
+  order             Order    @relation(fields: [orderId], references: [id])
+  courierId         String   @map("courier_id")
+  courier           Courier  @relation(fields: [courierId], references: [id])
+  trackingReference String?  @map("tracking_reference")
+  courierStatus     String?  @map("courier_status")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([courierId])
+  @@map("shipments")
+}
+
+// One row per order — the per-order reconciliation state. FIN-01's
+// RemittanceBatch/LedgerEntry (below) is the richer batch/ledger model on
+// top; this stays as the fast per-order "is this reconciled" flag.
+model CashReconciliation {
+  id             String    @id @default(uuid())
+  orderId        String    @unique @map("order_id")
+  order          Order     @relation(fields: [orderId], references: [id])
+  expectedCents  Int       @map("expected_cents")
+  collectedCents Int?      @map("collected_cents")
+  matched        Boolean   @default(false)
+  reconciledAt   DateTime? @map("reconciled_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@map("cash_reconciliations")
+}
+
+// FIN-01 — one per courier cash handover (a remittance batch). Immutable
+// once created; corrections happen via a new adjustment LedgerEntry, not an
+// edit (the immutable-ledger rule from plan §7 — nobody hard-deletes from
+// this chain).
+enum RemittanceBatchStatus {
+  Imported
+  Matched
+  Settled
+  Discrepancy
+}
+
+model RemittanceBatch {
+  id             String                 @id @default(uuid())
+  courierId      String                 @map("courier_id")
+  courier        Courier                @relation(fields: [courierId], references: [id])
+  // The courier's own reference for this cash handover (date range, batch id).
+  reference      String
+  // Period the batch covers — the dates the cash was collected over.
+  periodStart    DateTime               @map("period_start")
+  periodEnd      DateTime               @map("period_end")
+  totalCents     Int                    @map("total_cents")
+  status         RemittanceBatchStatus  @default(Imported)
+  ledgerEntries  LedgerEntry[]
+  createdAt      DateTime               @default(now()) @map("created_at")
+
+  @@unique([courierId, reference])
+  @@index([courierId])
+  @@map("remittance_batches")
+}
+
+// FIN-01 — one per order within a batch. The unique constraint on
+// order↔batch makes double-counting an order structurally hard, not just an
+// app-level check (per FIN-01's acceptance criteria).
+enum LedgerEntryStatus {
+  Matched
+  Mismatch
+  Unmatched
+  Resolved
+}
+
+model LedgerEntry {
+  id              String           @id @default(uuid())
+  batchId         String           @map("batch_id")
+  batch           RemittanceBatch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  orderId         String?          @map("order_id")
+  order           Order?           @relation(fields: [orderId], references: [id])
+  // The courier's reference for this line (tracking id, order ref) — what
+  // auto-matching joins on.
+  courierRef      String           @map("courier_ref")
+  expectedCents   Int?             @map("expected_cents") // resolved when matched to an order
+  collectedCents  Int              @map("collected_cents")
+  status          LedgerEntryStatus @default(Unmatched)
+  resolutionNote  String?          @map("resolution_note")
+  createdAt       DateTime         @default(now()) @map("created_at")
+
+  // One order per batch — structural double-count prevention.
+  @@unique([batchId, orderId])
+  @@index([batchId])
+  @@index([status])
+  @@map("ledger_entries")
+}
+
+model Role {
+  id         String        @id @default(uuid())
+  name       AdminRoleName @unique
+  adminUsers AdminUser[]
+
+  @@map("roles")
+}
+
+model AdminUser {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  roleId       String   @map("role_id")
+  role         Role     @relation(fields: [roleId], references: [id])
+  // ADM-06 — deactivated users can't log in (AdminAuthService.login checks
+  // this). Existing JWT session invalidation on deactivate is SEC-track.
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([roleId])
+  @@map("admin_users")
+}
+
+enum NotificationChannel {
+  SMS
+  WhatsApp
+  Email
+}
+
+enum NotificationStatus {
+  Pending
+  Sent
+  Failed
+}
+
+model Notification {
+  id        String              @id @default(uuid())
+  channel   NotificationChannel
+  recipient String
+  message   String
+  status    NotificationStatus  @default(Pending)
+  orderId   String?             @map("order_id")
+  order     Order?              @relation(fields: [orderId], references: [id])
+  attempts  Int                 @default(0)
+  lastError String?             @map("last_error")
+  createdAt DateTime            @default(now()) @map("created_at")
+  updatedAt DateTime            @updatedAt @map("updated_at")
+
+  @@index([orderId])
+  @@index([status])
+  @@map("notifications")
+}
+
+// SEC-03 — the immutable audit log. Every order-status change, stock
+// adjustment, and reconciliation edit writes a row here. This is the one
+// table in the system nobody gets to hard-delete from (plan §7) — there is
+// no delete affordance anywhere, and the admin viewer (ADM-08) is read-only.
+// `metadata` is JSON for the before/after payload — the shape varies per
+// entity type, a fixed column set would fight that.
+enum AuditAction {
+  Create
+  Update
+  Delete
+  StateTransition
+}
+
+model AuditLog {
+  id        String      @id @default(uuid())
+  actorId   String?     @map("actor_id") // nullable: system/seed events have no human actor
+  actorEmail String?    @map("actor_email")
+  action    AuditAction
+  // "Order", "Product", "CashReconciliation", etc. — not a polymorphic FK
+  // (Prisma doesn't do those cleanly), just a typed entity discriminator +
+  // the target's id. The viewer joins in code by (entity, entityId).
+  entity    String
+  entityId  String      @map("entity_id")
+  // Structured before/after — e.g. { from: "Confirmed", to: "Packed" } for a
+  // state transition, or { field: "stockQuantity", from: 5, to: 40 } for a
+  // stock adjustment.
+  metadata  Json?
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  @@index([entity, entityId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// Single-row store configuration — the storefront template picker and
+// store-name/announcement that the admin controls and the storefront reads.
+// Singleton row (id = "singleton"); upserted, never deleted. Template changes
+// are audit-logged like every other operator mutation (SEC-03).
+model StoreSettings {
+  id               String   @id @default("singleton")
+  // One of STORE_TEMPLATES (packages/shared): "minimal" | "editorial" | "boutique" | "promify".
+  // Validated server-side against the registry; drives the storefront's layout.
+  activeTemplate   String   @default("minimal") @map("active_template")
+  storeName        String   @default("Amalice") @map("store_name")
+  // Drives the header announcement bar (nullable = no announcement shown).
+  announcementText String?  @map("announcement_text")
+  // When true: cart icon + cart page + OTP checkout (default). When false:
+  // hide cart, show a lead-capture form directly on the PDP instead.
+  displayCart      Boolean  @default(true) @map("display_cart")
+  // Admin-configurable lead form fields (JSON array of LeadFormField). Null =
+  // use the default 4 fields (name, phone, wilaya, commune). When set, the
+  // storefront renders these dynamically on the PDP lead form.
+  leadFormConfig   Json?    @map("lead_form_config")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("store_settings")
+}
+
+// Installable storefront "apps" (Meta Pixel is the first). One row per app,
+// keyed by a stable slug from the APP_IDS registry (packages/shared/apps.ts)
+// rather than an app-specific table — new apps are new rows, not new
+// migrations. `config` is a per-app JSON blob validated server-side against
+// that app's own Zod schema before being written (e.g. MetaPixelConfigSchema
+// for appId "meta-pixel"). Enable/disable + config changes are audit-logged
+// like every other operator mutation (SEC-03).
+model AppInstallation {
+  id        String   @id @default(uuid())
+  appId     String   @unique @map("app_id")
+  enabled   Boolean  @default(false)
+  config    Json?
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("app_installations")
+}
+
+// Algeria administrative divisions — reference data imported from
+// github.com/Kenandarabeh/algeria-wilayas-communes-2026 (apps/api/prisma/data/,
+// vendored rather than fetched at seed time so seeding never depends on
+// network access). Read-only lookup tables: no admin CRUD, seeded once and
+// re-synced only via a fresh vendor + reseed. `id` is the source dataset's
+// own id/code (a small stable string, "1".."69" for wilayas) rather than a
+// generated uuid — natural key for reference data with a single external
+// source of truth. Backs the storefront lead form's wilaya/commune selects
+// (GET /wilayas, GET /communes?wilayaId=) — Address.region/city stay plain
+// strings (the commune/wilaya *name*), so no FK from Address into these.
+model Wilaya {
+  id       String    @id
+  name     String
+  communes Commune[]
+
+  @@map("wilayas")
+}
+
+model Commune {
+  id       String @id
+  name     String
+  postCode String @map("post_code")
+  wilayaId String @map("wilaya_id")
+  wilaya   Wilaya @relation(fields: [wilayaId], references: [id])
+
+  @@index([wilayaId])
+  @@map("communes")
+}

@@ -1,0 +1,168 @@
+/*
+ * Atelier template — a fully custom "fine jewelry & accessories" system,
+ * scoped to .tpl-atelier. Like Nova, Atelier renders ZERO @nuxt/ui
+ * components — every interactive element (components/atelier/ui/*) is
+ * hand-built from plain Tailwind, so there is nothing to re-skin via
+ * Nuxt UI's --ui-* tokens here. This file only needs to: (1) point the
+ * shared bg-primary-* / text-primary-* utilities at Atelier's rose-gold
+ * ramp, since those utility classes already exist globally (generated once
+ * in packages/ui/main.css) and Atelier's own components use them directly,
+ * and (2) register the new tokens Atelier introduces (velvet surfaces, glow
+ * shadows, display font).
+ *
+ * Design: a warm cream shopping surface (product listing, cart, checkout —
+ * kept light and legible, unlike a dark-mode-everywhere jewelry site) with
+ * deep emerald-black "velvet" moments reserved for the header, hero,
+ * footer, and product-photo mats — jewelry photographs best on a dark
+ * backdrop, so that contrast is deliberate, not incidental. One accent:
+ * rose gold. Soft glowing (blurred, tinted) shadows instead of Nova's hard
+ * offset or Boutique's none. Fully rounded/circular shapes throughout
+ * (buttons, badges, image crops) echo gemstone and ring curves — the
+ * opposite radius language from Boutique (sharp) and a softer one than
+ * Nova's mixed sharp/pill. Cormorant at a light weight for display type —
+ * a thin, high-contrast catalog serif, distinct from Boutique's warmer
+ * Fraunces and Nova's geometric Space Grotesk.
+ *
+ * NOTE on lessons from Nova's build: no top-level @theme block here (an
+ * app-level css:[] entry's @theme directive silently doesn't get processed
+ * the same way the shared layer's own main.css does — confirmed by testing,
+ * see nova.css's own note). Every custom token is a plain property scoped to
+ * .tpl-atelier, and any color used as a named utility elsewhere gets its
+ * --ui-color-* twin (below) since Tailwind's generated primary-* / neutral-*
+ * utilities compile straight through to --ui-color-primary-* / --ui-color-
+ * neutral-*, bypassing a --color-primary-* -only override entirely.
+ */
+
+.tpl-atelier {
+  /* Rose gold — the one accent. 500 is the hero tone used for CTAs, hairline
+     borders on hover, and the signature glow shadow tint. */
+  --color-primary-50: #fbf1ee;
+  --color-primary-100: #f5e0da;
+  --color-primary-200: #eac2b9;
+  --color-primary-300: #dda195;
+  --color-primary-400: #c88a7d;
+  --color-primary-500: #b76e79;
+  --color-primary-600: #9c5560;
+  --color-primary-700: #7d414a;
+  --color-primary-800: #5e2f37;
+  --color-primary-900: #401f26;
+  --color-primary-950: #251117;
+
+  /* Warm cream-to-charcoal neutral ramp — the shopping-surface scale
+     (borders, muted text, card backgrounds on the light pages). */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #faf3ef;
+  --color-neutral-100: #f3e8e1;
+  --color-neutral-200: #e8d5cb;
+  --color-neutral-300: #d6b8a8;
+  --color-neutral-400: #b6907c;
+  --color-neutral-500: #8f6b58;
+  --color-neutral-600: #6e5142;
+  --color-neutral-700: #533d32;
+  --color-neutral-800: #392a23;
+  --color-neutral-900: #241a16;
+  --color-neutral-950: #140e0c;
+
+  /* CRITICAL (lesson from Nova): Tailwind's @theme default inline
+     (packages/ui/main.css) compiles bg-primary-600 / bg-neutral-100 / etc.
+     straight to background-color: var(--ui-color-primary-600) — it inlines
+     through the --color-primary-* / --color-neutral-* indirection at build
+     time, so overriding those alone never reaches the generated utility
+     classes. Every bg-primary-* / text-neutral-* / border-neutral-*
+     utility Atelier's own components use needs the --ui-color-* twin too. */
+  --ui-color-primary-50: #fbf1ee;
+  --ui-color-primary-100: #f5e0da;
+  --ui-color-primary-200: #eac2b9;
+  --ui-color-primary-300: #dda195;
+  --ui-color-primary-400: #c88a7d;
+  --ui-color-primary-500: #b76e79;
+  --ui-color-primary-600: #9c5560;
+  --ui-color-primary-700: #7d414a;
+  --ui-color-primary-800: #5e2f37;
+  --ui-color-primary-900: #401f26;
+  --ui-color-primary-950: #251117;
+  --ui-color-neutral-0: #ffffff;
+  --ui-color-neutral-50: #faf3ef;
+  --ui-color-neutral-100: #f3e8e1;
+  --ui-color-neutral-200: #e8d5cb;
+  --ui-color-neutral-300: #d6b8a8;
+  --ui-color-neutral-400: #b6907c;
+  --ui-color-neutral-500: #8f6b58;
+  --ui-color-neutral-600: #6e5142;
+  --ui-color-neutral-700: #533d32;
+  --ui-color-neutral-800: #392a23;
+  --ui-color-neutral-900: #241a16;
+  --ui-color-neutral-950: #140e0c;
+
+  /* Page-level tokens the layout root and velvet surfaces reference
+     directly (not part of the primary/neutral utility-class machinery —
+     these are consumed only via arbitrary-value classes, e.g.
+     bg-[var(--color-atelier-velvet)], same proven-safe pattern as Nova's
+     --color-nova-pop). */
+  --color-atelier-cream: #faf3ef;
+  --color-atelier-ink: #241a16;
+  --color-atelier-velvet: #12211c;
+  --color-atelier-velvet-deep: #0b1512;
+
+  /* Soft glowing (blurred, rose-gold-tinted) shadows — the "catching the
+     light" signature. Consumed only via arbitrary-value syntax
+     (shadow-[var(--shadow-atelier-sm)]), never a named utility, so a plain
+     scoped property is all this needs. */
+  --shadow-atelier-sm: 0 4px 16px -4px rgba(183, 110, 121, 0.25);
+  --shadow-atelier-md: 0 10px 30px -8px rgba(183, 110, 121, 0.35);
+  --shadow-atelier-lg: 0 20px 50px -12px rgba(183, 110, 121, 0.4);
+  /* Dark drop shadow for elements sitting on the cream surface where a
+     rose-gold glow would be too subtle to read. */
+  --shadow-atelier-velvet: 0 10px 30px -8px rgba(18, 33, 28, 0.45);
+
+  --font-atelier-display: 'Cormorant', ui-serif, Georgia, 'Times New Roman', serif;
+}
+
+/* Display type — Cormorant at a light weight, wide tracking. A thin,
+   high-contrast catalog serif — distinct from Boutique's warmer Fraunces
+   and Nova's geometric Space Grotesk. */
+.tpl-atelier h1,
+.tpl-atelier h2,
+.tpl-atelier h3,
+.tpl-atelier .font-display {
+  font-family: var(--font-atelier-display);
+  font-weight: 300;
+  letter-spacing: 0.02em;
+}
+
+/* Velvet panel — the deep emerald-black surface reserved for the header,
+   hero, footer, and product-photo mats. Cream text on top. */
+.tpl-atelier .velvet-panel {
+  background-color: var(--color-atelier-velvet);
+  color: var(--color-atelier-cream);
+}
+
+/* Ring badge — a small circular outline tag (New / limited / material
+   callouts), the jewelry-curve motif repeated in miniature. */
+.tpl-atelier .ring-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 9999px;
+  border: 1px solid var(--color-primary-400);
+  padding: 0.25rem 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-primary-600);
+  background-color: var(--color-primary-50);
+}
+
+/* Glow card — the recurring cream-surface card: rounded, soft rose-gold
+   shadow that blooms further on hover with a slight lift. */
+.tpl-atelier .glow-card {
+  border-radius: 1.5rem;
+  background-color: #fff;
+  box-shadow: var(--shadow-atelier-sm);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.tpl-atelier .glow-card:hover {
+  box-shadow: var(--shadow-atelier-md);
+  transform: translateY(-3px);
+}

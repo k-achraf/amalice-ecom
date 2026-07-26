@@ -1,0 +1,134 @@
+/*
+ * Nova template — a fully custom "modern shop" system, scoped to .tpl-nova.
+ * Unlike editorial/boutique/promify, Nova renders ZERO @nuxt/ui components —
+ * every interactive element (components/nova/ui/*) is hand-built from plain
+ * Tailwind, so there is nothing to re-skin via Nuxt UI's --ui-* tokens here.
+ * This file only needs to: (1) point the shared bg-primary-* / text-primary-*
+ * utilities at Nova's lime ramp, since those utility classes already exist
+ * globally (generated once in packages/ui/main.css) and Nova's own
+ * components use them directly, and (2) register the new tokens Nova
+ * introduces (hard offset shadows, display font) that nothing else needs.
+ *
+ * Neubrutalist commerce: thick 2px black borders, hard NON-blurred offset
+ * shadows (the signature — most "modern shop" templates use soft blurred
+ * shadows; Nova deliberately doesn't), one loud lime accent plus a hot-pink
+ * pop color used sparingly (sale tags, wishlist heart), heavy-weight Space
+ * Grotesk display type, and a deliberate radius contrast — sharp corners on
+ * structural elements (cards/buttons/inputs), full-pill on badges/stickers.
+ */
+
+.tpl-nova {
+  /* Hard, non-blurred offset shadows — no blur-radius at all, just a flat
+     offset. This IS the neubrutalist tell; every other template in this
+     project uses a soft/blurred shadow recipe. Only ever consumed via
+     arbitrary-value syntax (shadow-[var(--shadow-nova-sm)]) in components,
+     never as a named shadow-nova-sm utility, so a plain scoped custom
+     property (not @theme) is all this needs. */
+  --shadow-nova-sm: 3px 3px 0 0 #000000;
+  --shadow-nova-md: 5px 5px 0 0 #000000;
+  --shadow-nova-lg: 8px 8px 0 0 #000000;
+  /* Lime-tinted variant for elements sitting on a dark/lime surface where a
+     black shadow would disappear. */
+  --shadow-nova-pop: 5px 5px 0 0 #ff3d6e;
+
+  /* The one secondary pop — hot pink/coral. NOTE: this used to live in a
+     top-level `@theme static {}` block to auto-generate bg-nova-pop/
+     text-nova-pop utilities, but an app-level css:[] entry's @theme block
+     (as opposed to the shared layer's own main.css) silently doesn't get
+     processed — confirmed by testing (the custom property never resolved
+     at :root in the running app, dev or prod). Fixed by scoping it here
+     like everything else and using arbitrary-value classes
+     (text-[var(--color-nova-pop)], bg-[var(--color-nova-pop)]) at every
+     call site instead of a named utility. */
+  --color-nova-pop: #ff3d6e;
+  --color-nova-pop-ink: #7a0026;
+
+  /* Lime — the loud primary. 500 is the hero lime used for CTAs/accents;
+     600/700 are the pressed/hover stops. */
+  --color-primary-50: #fbffe0;
+  --color-primary-100: #f5ffb8;
+  --color-primary-200: #ecff8a;
+  --color-primary-300: #e0ff5c;
+  --color-primary-400: #d4ff3d;
+  --color-primary-500: #ccff00;
+  --color-primary-600: #a8d600;
+  --color-primary-700: #82a600;
+  --color-primary-800: #5c7700;
+  --color-primary-900: #384700;
+  --color-primary-950: #1c2400;
+
+  /* CRITICAL: Tailwind's `@theme default inline` (packages/ui/main.css)
+     compiles `bg-primary-600` etc. straight to
+     `background-color: var(--ui-color-primary-600)` — it inlines through
+     the --color-primary-* indirection at build time, so overriding
+     --color-primary-* alone (above) never reaches the generated utility
+     classes. Confirmed by inspecting the compiled CSS output. Every
+     bg-primary-* / text-primary-* / border-primary-* utility Nova's own
+     components use needs --ui-color-primary-* overridden too. */
+  --ui-color-primary-50: #fbffe0;
+  --ui-color-primary-100: #f5ffb8;
+  --ui-color-primary-200: #ecff8a;
+  --ui-color-primary-300: #e0ff5c;
+  --ui-color-primary-400: #d4ff3d;
+  --ui-color-primary-500: #ccff00;
+  --ui-color-primary-600: #a8d600;
+  --ui-color-primary-700: #82a600;
+  --ui-color-primary-800: #5c7700;
+  --ui-color-primary-900: #384700;
+  --ui-color-primary-950: #1c2400;
+
+  --font-nova-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Display type — headings and anything opting into `.font-display` render in
+   Space Grotesk at a heavy weight with tight tracking. Body text stays
+   Inter (inherited from packages/ui). */
+.tpl-nova h1,
+.tpl-nova h2,
+.tpl-nova h3,
+.tpl-nova .font-display {
+  font-family: var(--font-nova-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* The sticker badge — rotated pill, used for New/Sale/Best-seller tags.
+   Deliberately the ONLY fully-rounded shape in the template; everything
+   structural (cards, buttons, inputs) stays sharp-cornered by contrast. */
+.tpl-nova .sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 9999px;
+  border: 2px solid #000;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transform: rotate(-3deg);
+  background-color: var(--color-primary-500);
+  color: #000;
+}
+.tpl-nova .sticker-pop {
+  background-color: var(--color-nova-pop);
+  color: #fff;
+  transform: rotate(3deg);
+}
+
+/* Marquee — the scrolling announcement strip, Nova's header signature.
+   Respects reduced-motion (falls back to a static centered line). */
+.tpl-nova .nova-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: nova-marquee 22s linear infinite;
+}
+@keyframes nova-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tpl-nova .nova-marquee-track {
+    animation: none;
+  }
+}

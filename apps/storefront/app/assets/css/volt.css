@@ -1,0 +1,161 @@
+/*
+ * Volt template — a dark-mode-first "tech & gadgets" system, scoped to
+ * .tpl-volt. Like Nova/Atelier, Volt renders ZERO @nuxt/ui components —
+ * every interactive element (components/volt/ui/*) is hand-built from plain
+ * Tailwind, so there is nothing to re-skin via Nuxt UI's --ui-* tokens here.
+ * This file only needs to: (1) point the shared bg-primary-* / text-primary-*
+ * and bg-neutral-* / text-neutral-* utilities at Volt's cyan + cool-neutral
+ * ramps, since those utility classes already exist globally (generated once
+ * in packages/ui/main.css) and Volt's own components use them directly, and
+ * (2) register the new tokens Volt introduces (the cyan glow "shadow", the
+ * blueprint grid background, the display font) that nothing else needs.
+ *
+ * Apple / Anker / Nothing mood: near-black cool-toned surface, an electric
+ * cyan accent, geometric Sora display type paired with tabular JetBrains
+ * Mono for spec numbers/prices, tight small radius, thin 1px hairline
+ * borders (NOT thick 2px like Nova), essentially no ambient shadow — the
+ * only "shadow-like" effect is a tight cyan glow OUTLINE on hover/focus.
+ */
+
+.tpl-volt {
+  /* Electric cyan — the accent ramp. 400/500 are the hero cyan used for
+     CTAs/accents/glow; 600/700 are pressed/hover stops. */
+  --color-primary-50: #e6feff;
+  --color-primary-100: #ccfdff;
+  --color-primary-200: #99fbff;
+  --color-primary-300: #5ff2f7;
+  --color-primary-400: #2fe6e6;
+  --color-primary-500: #14c9cc;
+  --color-primary-600: #0da3a8;
+  --color-primary-700: #0a7f84;
+  --color-primary-800: #086265;
+  --color-primary-900: #054345;
+  --color-primary-950: #032829;
+
+  /* CRITICAL: Tailwind's `@theme default inline` (packages/ui/main.css)
+     compiles `bg-primary-600` etc. straight to
+     `background-color: var(--ui-color-primary-600)` — it inlines through
+     the --color-primary-* indirection at build time, so overriding
+     --color-primary-* alone (above) never reaches the generated utility
+     classes. Every bg-primary-* / text-primary-* / border-primary-*
+     utility Volt's own components use needs --ui-color-primary-* overridden
+     too — identical values, duplicated on purpose. */
+  --ui-color-primary-50: #e6feff;
+  --ui-color-primary-100: #ccfdff;
+  --ui-color-primary-200: #99fbff;
+  --ui-color-primary-300: #5ff2f7;
+  --ui-color-primary-400: #2fe6e6;
+  --ui-color-primary-500: #14c9cc;
+  --ui-color-primary-600: #0da3a8;
+  --ui-color-primary-700: #0a7f84;
+  --ui-color-primary-800: #086265;
+  --ui-color-primary-900: #054345;
+  --ui-color-primary-950: #032829;
+
+  /* Cool-toned neutral ramp (blue-tinted grays, not warm) — used for
+     surfaces, borders, and body text since Volt's whole tree is dark. */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #eef1f2;
+  --color-neutral-100: #dde2e4;
+  --color-neutral-200: #b8c1c4;
+  --color-neutral-300: #8d989c;
+  --color-neutral-400: #647074;
+  --color-neutral-500: #465054;
+  --color-neutral-600: #333c3f;
+  --color-neutral-700: #23292b;
+  --color-neutral-800: #171b1c;
+  --color-neutral-900: #0c1113;
+  --color-neutral-950: #050708;
+
+  --ui-color-neutral-0: #ffffff;
+  --ui-color-neutral-50: #eef1f2;
+  --ui-color-neutral-100: #dde2e4;
+  --ui-color-neutral-200: #b8c1c4;
+  --ui-color-neutral-300: #8d989c;
+  --ui-color-neutral-400: #647074;
+  --ui-color-neutral-500: #465054;
+  --ui-color-neutral-600: #333c3f;
+  --ui-color-neutral-700: #23292b;
+  --ui-color-neutral-800: #171b1c;
+  --ui-color-neutral-900: #0c1113;
+  --ui-color-neutral-950: #050708;
+
+  /* The ONE shadow token — a tight, non-blurred cyan glow outline used
+     sparingly on hover/focus for interactive elements. Never a soft/blurred
+     drop shadow (that would read as ambient elevation, which Volt avoids —
+     hierarchy comes from hairline borders instead). Only ever consumed via
+     arbitrary-value syntax (shadow-[var(--shadow-volt-glow)]), never as a
+     bare named utility, so a plain scoped custom property (not @theme) is
+     all this needs. */
+  --shadow-volt-glow: 0 0 0 3px rgba(47, 230, 230, 0.25);
+
+  --font-volt-display: 'Sora', ui-sans-serif, system-ui, sans-serif;
+  --font-volt-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+/* Display type — headings and anything opting into `.font-display` render
+   in Sora at a semibold/bold weight with tight tracking. Body text stays
+   Inter (inherited from packages/ui). */
+.tpl-volt h1,
+.tpl-volt h2,
+.tpl-volt h3,
+.tpl-volt .font-display {
+  font-family: var(--font-volt-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Spec/price numbers — tabular JetBrains Mono, the "spec sheet" data-dense
+   feel. Applied via .font-mono-spec at every price/spec call site. */
+.tpl-volt .font-mono-spec {
+  font-family: var(--font-volt-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* Bracket-style spec badge motif — CSS-drawn brackets around monospace
+   uppercase text, e.g. [ NEW ] / [ IN STOCK ]. The ONE badge shape Volt
+   uses for tags/status callouts. */
+.tpl-volt .spec-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: var(--font-volt-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-primary-400);
+  padding: 0.125rem 0;
+}
+.tpl-volt .spec-badge::before {
+  content: '[';
+  color: var(--color-primary-600);
+}
+.tpl-volt .spec-badge::after {
+  content: ']';
+  color: var(--color-primary-600);
+}
+/* Solid badges are a filled chip instead of the bracket motif — brackets
+   read best against the bare dark surface, not a filled block. */
+.tpl-volt .spec-badge.spec-badge-solid::before,
+.tpl-volt .spec-badge.spec-badge-solid::after {
+  content: none;
+}
+
+/* Blueprint / circuit-board grid-line background — a subtle 1px grid, low
+   opacity, signature touch for the hero section. Consumed via the
+   .volt-grid-bg utility class. */
+.tpl-volt .volt-grid-bg {
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 48px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 48px);
+}
+
+/* Thin cyan accent-line/rule used under section headlines. */
+.tpl-volt .volt-rule {
+  display: block;
+  width: 2.5rem;
+  height: 2px;
+  background-color: var(--color-primary-400);
+}

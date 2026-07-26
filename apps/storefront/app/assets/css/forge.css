@@ -1,0 +1,178 @@
+/*
+ * Forge template — a raw industrial workshop / tools & hardware system,
+ * scoped to .tpl-forge. Like nova/atelier/drop/bloom/hearth/volt, Forge
+ * renders ZERO @nuxt/ui components — every interactive element
+ * (components/forge/ui/*) is hand-built from plain Tailwind, so there is
+ * nothing to re-skin via Nuxt UI's --ui-* tokens beyond pointing the shared
+ * bg-primary-* / bg-neutral-* utilities at Forge's own ramps.
+ *
+ * Concrete-gray poured-workshop-floor surface (light, not dark), a
+ * deliberate safety-yellow accent used like hazard signage, condensed
+ * utilitarian uppercase Oswald display type, sharp corners everywhere (0
+ * radius, no exceptions), thick 3px borders on every structural element
+ * (heavier than Nova's 2px), a repeating diagonal black/yellow hazard-stripe
+ * motif used sparingly as an accent (top bars, badge edges), and NO shadow
+ * anywhere — hierarchy comes from the thick borders and stripe accents, not
+ * elevation.
+ */
+
+.tpl-forge {
+  /* Safety-yellow accent ramp — construction/hazard-sign yellow, not a soft
+     gold. 500 is the workhorse CTA stop. */
+  --color-primary-50: #fff8e1;
+  --color-primary-100: #ffedb3;
+  --color-primary-200: #ffdc70;
+  --color-primary-300: #ffc933;
+  --color-primary-400: #f7b800;
+  --color-primary-500: #f2a900;
+  --color-primary-600: #cc8f00;
+  --color-primary-700: #a17000;
+  --color-primary-800: #765200;
+  --color-primary-900: #4d3600;
+  --color-primary-950: #2b1e00;
+
+  /* CRITICAL: Tailwind's `@theme default inline` (packages/ui/main.css)
+     compiles `bg-primary-600` etc. straight to
+     `background-color: var(--ui-color-primary-600)` — it inlines through
+     the --color-primary-* indirection at build time, so overriding
+     --color-primary-* alone (above) never reaches the generated utility
+     classes. Every bg-primary-* / text-primary-* / border-primary-*
+     utility Forge's own components use needs --ui-color-primary-*
+     overridden too, with IDENTICAL values.  */
+  --ui-color-primary-50: #fff8e1;
+  --ui-color-primary-100: #ffedb3;
+  --ui-color-primary-200: #ffdc70;
+  --ui-color-primary-300: #ffc933;
+  --ui-color-primary-400: #f7b800;
+  --ui-color-primary-500: #f2a900;
+  --ui-color-primary-600: #cc8f00;
+  --ui-color-primary-700: #a17000;
+  --ui-color-primary-800: #765200;
+  --ui-color-primary-900: #4d3600;
+  --ui-color-primary-950: #2b1e00;
+
+  /* True cool concrete gray — genuinely neutral, no warm or cool tint, like
+     poured concrete. Same duplication requirement as primary above: both
+     --color-neutral-* (raw Tailwind utility resolution) and
+     --ui-color-neutral-* (everything Nuxt UI derives — bg-elevated,
+     text-highlighted, border-default, etc. — all key off this one) need
+     the override, or half the utilities Forge's markup and the shared
+     EmptyState/layout root use silently stay on Tailwind's default gray. */
+  --color-neutral-50: #f5f5f4;
+  --color-neutral-100: #e7e5e2;
+  --color-neutral-200: #d1cdc7;
+  --color-neutral-300: #b0aaa1;
+  --color-neutral-400: #8a8377;
+  --color-neutral-500: #6b6459;
+  --color-neutral-600: #524c43;
+  --color-neutral-700: #3d3830;
+  --color-neutral-800: #2a2622;
+  --color-neutral-900: #1a1714;
+  --color-neutral-950: #100e0c;
+
+  --ui-color-neutral-50: #f5f5f4;
+  --ui-color-neutral-100: #e7e5e2;
+  --ui-color-neutral-200: #d1cdc7;
+  --ui-color-neutral-300: #b0aaa1;
+  --ui-color-neutral-400: #8a8377;
+  --ui-color-neutral-500: #6b6459;
+  --ui-color-neutral-600: #524c43;
+  --ui-color-neutral-700: #3d3830;
+  --ui-color-neutral-800: #2a2622;
+  --ui-color-neutral-900: #1a1714;
+  --ui-color-neutral-950: #100e0c;
+
+  /* forge.vue (the layout, already wired up) uses `bg-default` for the page
+     root — Nuxt UI's --ui-bg is hardcoded to a flat #fff in its own theme
+     (not derived from --ui-color-neutral-*), so it needs an explicit
+     override here to land on Forge's light concrete-gray page floor
+     instead of white. Card/panel surfaces stay literal bg-white in
+     components, giving the white-card-on-gray-floor contrast the brief
+     calls for. */
+  --ui-bg: var(--color-neutral-100);
+
+  /* Near-black "ink" — borders, text, the dark half of the hazard stripe.
+     Not part of the neutral ramp on purpose (kept as its own token so the
+     hazard-stripe gradient below stays pinned to the exact spec value even
+     if the neutral ramp is retuned later). Only ever consumed via
+     arbitrary-value syntax (border-[var(--color-forge-ink)] etc) or the
+     scoped classes below, never as a bare named color utility. */
+  --color-forge-ink: #171412;
+
+  /* Repeating diagonal hazard stripe — the signature Forge motif. Used
+     SPARINGLY (thin accent bars, badge edges), never as a large fill. A
+     plain scoped custom property, not @theme, per the CSS file structure
+     rule above. */
+  --forge-hazard-gradient: repeating-linear-gradient(45deg, #171412 0 6px, #f2a900 6px 12px);
+
+  --font-forge-display: 'Oswald', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Display type — condensed, uppercase, semibold Oswald. Distinct from
+   Anton's ultra-heavy poster weight (Drop) by staying lighter and more
+   "stencil/signage" than "poster." Body text stays Inter (inherited from
+   packages/ui). */
+.tpl-forge h1,
+.tpl-forge h2,
+.tpl-forge h3,
+.tpl-forge .font-display {
+  font-family: var(--font-forge-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.015em;
+}
+
+/* Hazard-stripe accent bar — apply to a thin fixed-height/width element
+   (a top bar, a badge edge, a corner flourish). Never a background fill on
+   a large surface. */
+.tpl-forge .hazard-stripe {
+  background-image: var(--forge-hazard-gradient);
+}
+
+/* Sticker tag — Forge's flat, sharp-cornered take on a callout label (New /
+   Sale / Best seller / Sold out). No rotation (that's Nova's neubrutalist
+   tell) — Forge stays square and stacked, with a hazard-stripe tab fused to
+   its left edge instead. */
+.tpl-forge .sticker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: 3px solid var(--color-forge-ink);
+  padding: 0.3rem 0.65rem 0.3rem 0.95rem;
+  font-family: var(--font-forge-display);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: var(--color-primary-500);
+  color: var(--color-forge-ink);
+}
+.tpl-forge .sticker::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 7px;
+  background-image: var(--forge-hazard-gradient);
+  background-size: 200% 200%;
+}
+.tpl-forge .sticker-danger {
+  background-color: var(--color-forge-ink);
+  color: var(--color-primary-500);
+}
+
+/* Bracket/box-style SKU + spec label — tabular JetBrains Mono, boxed in a
+   thin border. Used inline for part numbers / spec callouts on product
+   cards and the PDP. */
+.tpl-forge .sku-tag {
+  display: inline-flex;
+  align-items: center;
+  border: 2px solid var(--color-forge-ink);
+  padding: 0.1rem 0.45rem;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--color-forge-ink);
+  background-color: #fff;
+}
