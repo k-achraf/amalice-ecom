@@ -7,7 +7,16 @@ useHead({ title: 'Storefront' })
 const api = useAdminApi()
 const toast = useToast()
 
-const { data: settings, pending } = await useAdminFetch<StoreSettings>('/admin/settings', { key: 'admin-settings' })
+const { data: settings, pending, error: settingsError } = await useAdminFetch<StoreSettings>('/admin/settings', { key: 'admin-settings' })
+
+// A failed load leaves `settings` null, which makes `dirty` permanently
+// false (see below) — the Apply button would otherwise just sit disabled
+// forever with no indication why. Surface it instead.
+watchEffect(() => {
+  if (settingsError.value) {
+    toast.add({ title: 'Failed to load storefront settings', description: settingsError.value.message, color: 'error' })
+  }
+})
 
 // Local editable copies — apply on save, not on click.
 const selectedTemplate = ref<StoreTemplate>('minimal')
@@ -133,6 +142,10 @@ const showFieldModalBool = computed({
 
     <template #body>
       <div v-if="pending" class="py-24 text-center text-muted">Loading…</div>
+      <div v-else-if="settingsError" class="py-24 text-center">
+        <p class="text-error">Failed to load storefront settings.</p>
+        <p class="mt-1 text-sm text-muted">{{ settingsError.message }}</p>
+      </div>
       <div v-else class="max-w-4xl space-y-10">
         <!-- Template picker -->
         <section class="space-y-4">

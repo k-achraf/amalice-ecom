@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import {
   StoreSettingsSchema,
   StoreTemplateSchema,
@@ -25,10 +25,17 @@ export class StoreSettingsService {
     return parsed.success ? parsed.data : { activeTemplate: 'minimal', storeName: raw.storeName, announcementText: raw.announcementText, displayCart: true }
   }
 
+  // A singleton settings row conceptually always exists — on a fresh
+  // production database (never seeded, correctly, per DEPLOYMENT.md) it
+  // just hasn't been written yet. Lazily create it with the same defaults
+  // getPublic() falls back to, rather than 404ing and leaving the admin UI
+  // with no way to ever reach the PUT that would create it.
   async getForAdmin() {
-    const row = await this.prisma.storeSettings.findUnique({ where: { id: 'singleton' } })
-    if (!row) throw new NotFoundException('Store settings not initialized')
-    return row
+    return this.prisma.storeSettings.upsert({
+      where: { id: 'singleton' },
+      update: {},
+      create: { id: 'singleton', activeTemplate: 'minimal', storeName: 'Amalice', displayCart: true }
+    })
   }
 
   async update(input: UpdateStoreSettings, actor: AuditActor): Promise<StoreSettings> {

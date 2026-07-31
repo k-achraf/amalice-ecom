@@ -216,28 +216,67 @@ mkdir -p /home/amalice/app/apps/api/uploads
 
 ## 8. Start everything with PM2
 
+> **Why this file parses `.env` itself:** `apps/api` boots through Nest's
+> `ConfigModule.forRoot()`, which loads `apps/api/.env` on its own — no
+> extra wiring needed there. But `apps/admin` and `apps/storefront` are
+> Nuxt/Nitro apps, and the **built, standalone `.output/server/index.mjs`
+> does not read `.env` files at runtime** (that auto-loading only happens
+> during `nuxt dev`/`nuxt build`, confirmed by direct testing). Since
+> `runtimeConfig.public.apiBase` is only overridden by an actual env var
+> already present in the process's environment when Nitro boots, the value
+> from `apps/admin/.env` / `apps/storefront/.env` has to be read here and
+> injected into PM2's `env` block — otherwise it silently falls back to
+> `nuxt.config.ts`'s hardcoded default (`http://localhost:3333`), which is
+> exactly the bug this replaced.
+
 ```bash
 cd /home/amalice/app
 cat > ecosystem.config.cjs <<'EOF'
+const fs = require('fs')
+const path = require('path')
+
+// Minimal dependency-free ".env" parser (KEY=value per line, '#' comments,
+// optional quotes) — deliberately not requiring the `dotenv` package here,
+// since pnpm's strict node_modules layout doesn't guarantee it's resolvable
+// from this repo-root script.
+function loadEnvFile(relPath) {
+  const fullPath = path.join(__dirname, relPath)
+  if (!fs.existsSync(fullPath)) return {}
+  const out = {}
+  for (const line of fs.readFileSync(fullPath, 'utf-8').split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const eq = trimmed.indexOf('=')
+    if (eq === -1) continue
+    const key = trimmed.slice(0, eq).trim()
+    let value = trimmed.slice(eq + 1).trim()
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1)
+    }
+    out[key] = value
+  }
+  return out
+}
+
 module.exports = {
   apps: [
     {
       name: 'amalice-api',
       cwd: './apps/api',
       script: 'dist/main.js',
-      env: { NODE_ENV: 'production' }
+      env: { NODE_ENV: 'production', ...loadEnvFile('apps/api/.env') }
     },
     {
       name: 'amalice-admin',
       cwd: './apps/admin',
       script: '.output/server/index.mjs',
-      env: { NODE_ENV: 'production', PORT: 3001, HOST: '0.0.0.0' }
+      env: { NODE_ENV: 'production', PORT: 3001, HOST: '0.0.0.0', ...loadEnvFile('apps/admin/.env') }
     },
     {
       name: 'amalice-storefront',
       cwd: './apps/storefront',
       script: '.output/server/index.mjs',
-      env: { NODE_ENV: 'production', PORT: 3000, HOST: '0.0.0.0' }
+      env: { NODE_ENV: 'production', PORT: 3000, HOST: '0.0.0.0', ...loadEnvFile('apps/storefront/.env') }
     }
   ]
 }
@@ -246,6 +285,17 @@ EOF
 pm2 start ecosystem.config.cjs
 pm2 save
 pm2 startup   # run the command it prints (as the user it tells you to)
+```
+
+If you already have an `ecosystem.config.cjs` from before this fix, replace
+it with the version above, then re-apply it — a plain `restart` isn't
+enough because PM2 caches the `env` block from when the process was *first
+started* with that config; you need PM2 to re-read the file:
+
+```bash
+pm2 delete amalice-admin amalice-storefront
+pm2 start ecosystem.config.cjs --only amalice-admin,amalice-storefront
+pm2 save
 ```
 
 Verify:
