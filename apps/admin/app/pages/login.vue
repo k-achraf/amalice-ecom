@@ -8,7 +8,7 @@ useHead({ title: 'Sign in' })
 const auth = useAuthStore()
 const route = useRoute()
 
-const email = ref('superadmin@amalice.dev')
+const email = ref('')
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
@@ -52,14 +52,6 @@ async function onSubmit() {
 
         <UButton type="submit" block :loading="loading">Sign in</UButton>
       </form>
-
-      <!-- Dev fixture hint — the seeded admins all share dev-password-123.
-           Removed in production builds (this is an internal tool, not a hint
-           an attacker can reach). -->
-      <p class="border-t border-default pt-4 text-center text-xs text-muted">
-        Dev admins: <code class="tabular">superadmin@amalice.dev</code> ·
-        <code class="tabular">opsmanager@amalice.dev</code> · <code class="tabular">dev-password-123</code>
-      </p>
     </div>
   </div>
 </template>
