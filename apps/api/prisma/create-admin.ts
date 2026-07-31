@@ -16,7 +16,11 @@ import { PrismaClient, AdminRoleName } from '../src/generated/prisma/client'
 // password/role rather than failing on a duplicate.
 
 async function main() {
-  const [email, password, roleArg] = process.argv.slice(2)
+  // pnpm forwards the "--" separator itself into argv on some versions
+  // instead of stripping it, which would otherwise shift every arg over
+  // one slot (email landing in the "--" position).
+  const args = process.argv.slice(2).filter((a) => a !== '--')
+  const [email, password, roleArg] = args
   if (!email || !password) {
     console.error('Usage: pnpm --filter api create-admin -- <email> <password> [role]')
     console.error(`Roles: ${Object.values(AdminRoleName).join(', ')} (default: SuperAdmin)`)
