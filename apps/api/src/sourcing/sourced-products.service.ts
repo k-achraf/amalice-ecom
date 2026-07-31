@@ -3,14 +3,21 @@ import type {
   CreateProductAdTest,
   CreateProductSourcingRequest,
   CreateSourcedProduct,
+  CreateSourcedProductLink,
+  CreateSourcedProductMedia,
   LinkSourcedProduct,
   ProductAdTestView,
   ProductSourcingRequestView,
+  ReorderSourcedProductMedia,
   SourcedProductDetail,
+  SourcedProductLinkView,
   SourcedProductListItem,
+  SourcedProductMediaView,
   UpdateProductAdTest,
   UpdateProductSourcingRequest,
-  UpdateSourcedProduct
+  UpdateSourcedProduct,
+  UpdateSourcedProductLink,
+  UpdateSourcedProductMedia
 } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
@@ -18,7 +25,31 @@ import { AuditService, type AuditActor } from '../common/audit.service'
 const detailInclude = {
   linkedProduct: { select: { id: true, name: true, slug: true } },
   adTests: { orderBy: { createdAt: 'desc' as const } },
-  sourcingRequests: { include: { wholesaler: { select: { id: true, name: true } } }, orderBy: { createdAt: 'desc' as const } }
+  sourcingRequests: { include: { wholesaler: { select: { id: true, name: true } } }, orderBy: { createdAt: 'desc' as const } },
+  media: { orderBy: { sortOrder: 'asc' as const } },
+  links: { orderBy: { createdAt: 'asc' as const } }
+}
+
+function toMediaView(row: { id: string; sourcedProductId: string; type: string; url: string; caption: string | null; sortOrder: number; createdAt: Date }): SourcedProductMediaView {
+  return {
+    id: row.id,
+    sourcedProductId: row.sourcedProductId,
+    type: row.type as SourcedProductMediaView['type'],
+    url: row.url,
+    caption: row.caption,
+    sortOrder: row.sortOrder,
+    createdAt: row.createdAt.toISOString()
+  }
+}
+
+function toLinkView(row: { id: string; sourcedProductId: string; label: string; url: string; createdAt: Date }): SourcedProductLinkView {
+  return {
+    id: row.id,
+    sourcedProductId: row.sourcedProductId,
+    label: row.label,
+    url: row.url,
+    createdAt: row.createdAt.toISOString()
+  }
 }
 
 function toAdTestView(row: {
@@ -146,6 +177,8 @@ export class SourcedProductsService {
       linkedProduct: row.linkedProduct,
       adTests: row.adTests.map(toAdTestView),
       sourcingRequests: row.sourcingRequests.map(toRequestView),
+      media: row.media.map(toMediaView),
+      links: row.links.map(toLinkView),
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString()
     }
@@ -282,5 +315,81 @@ export class SourcedProductsService {
     if (!existing) throw new NotFoundException('Sourcing request not found')
     await this.prisma.productSourcingRequest.delete({ where: { id } })
     await this.audit.log({ actor, action: 'Delete', entity: 'ProductSourcingRequest', entityId: id })
+  }
+
+  // ---- Media (images/videos) ----
+  // URLs come from the same generic /admin/upload and /admin/upload-from-url
+  // endpoints the real Product Images tab uses (see UploadController) —
+  // this service just records them against the sourced product.
+
+  async addMedia(sourcedProductId: string, input: CreateSourcedProductMedia, actor: AuditActor): Promise<SourcedProductMediaView> {
+    await this.ensureExists(sourcedProductId)
+    const maxSortOrder = await this.prisma.sourcedProductMedia.aggregate({
+      where: { sourcedProductId },
+      _max: { sortOrder: true }
+    })
+    const row = await this.prisma.sourcedProductMedia.create({
+      data: {
+        sourcedProductId,
+        type: input.type,
+        url: input.url,
+        caption: input.caption,
+        sortOrder: (maxSortOrder._max.sortOrder ?? -1) + 1
+      }
+    })
+    await this.audit.log({ actor, action: 'Create', entity: 'SourcedProductMedia', entityId: row.id, metadata: input })
+    return toMediaView(row)
+  }
+
+  async updateMedia(id: string, input: UpdateSourcedProductMedia, actor: AuditActor): Promise<SourcedProductMediaView> {
+    const existing = await this.prisma.sourcedProductMedia.findUnique({ where: { id } })
+    if (!existing) throw new NotFoundException('Media item not found')
+    const row = await this.prisma.sourcedProductMedia.update({ where: { id }, data: input })
+    await this.audit.log({ actor, action: 'Update', entity: 'SourcedProductMedia', entityId: id, metadata: input })
+    return toMediaView(row)
+  }
+
+  async removeMedia(id: string, actor: AuditActor): Promise<void> {
+    const existing = await this.prisma.sourcedProductMedia.findUnique({ where: { id } })
+    if (!existing) throw new NotFoundException('Media item not found')
+    await this.prisma.sourcedProductMedia.delete({ where: { id } })
+    await this.audit.log({ actor, action: 'Delete', entity: 'SourcedProductMedia', entityId: id })
+  }
+
+  // Same "send the full ordered id list" pattern as products' reorder-images.
+  async reorderMedia(sourcedProductId: string, input: ReorderSourcedProductMedia, actor: AuditActor): Promise<SourcedProductMediaView[]> {
+    await this.ensureExists(sourcedProductId)
+    await this.prisma.$transaction(
+      input.orderedIds.map((id, index) =>
+        this.prisma.sourcedProductMedia.updateMany({ where: { id, sourcedProductId }, data: { sortOrder: index } })
+      )
+    )
+    await this.audit.log({ actor, action: 'Update', entity: 'SourcedProductMedia', entityId: sourcedProductId, metadata: { reordered: input.orderedIds } })
+    const rows = await this.prisma.sourcedProductMedia.findMany({ where: { sourcedProductId }, orderBy: { sortOrder: 'asc' } })
+    return rows.map(toMediaView)
+  }
+
+  // ---- Links (where this product is listed elsewhere) ----
+
+  async addLink(sourcedProductId: string, input: CreateSourcedProductLink, actor: AuditActor): Promise<SourcedProductLinkView> {
+    await this.ensureExists(sourcedProductId)
+    const row = await this.prisma.sourcedProductLink.create({ data: { sourcedProductId, label: input.label, url: input.url } })
+    await this.audit.log({ actor, action: 'Create', entity: 'SourcedProductLink', entityId: row.id, metadata: input })
+    return toLinkView(row)
+  }
+
+  async updateLink(id: string, input: UpdateSourcedProductLink, actor: AuditActor): Promise<SourcedProductLinkView> {
+    const existing = await this.prisma.sourcedProductLink.findUnique({ where: { id } })
+    if (!existing) throw new NotFoundException('Link not found')
+    const row = await this.prisma.sourcedProductLink.update({ where: { id }, data: input })
+    await this.audit.log({ actor, action: 'Update', entity: 'SourcedProductLink', entityId: id, metadata: input })
+    return toLinkView(row)
+  }
+
+  async removeLink(id: string, actor: AuditActor): Promise<void> {
+    const existing = await this.prisma.sourcedProductLink.findUnique({ where: { id } })
+    if (!existing) throw new NotFoundException('Link not found')
+    await this.prisma.sourcedProductLink.delete({ where: { id } })
+    await this.audit.log({ actor, action: 'Delete', entity: 'SourcedProductLink', entityId: id })
   }
 }

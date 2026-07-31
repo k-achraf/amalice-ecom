@@ -40,6 +40,7 @@ const route = useRoute()
 const id = route.params.id as string
 const api = useAdminApi()
 const toast = useToast()
+const runtimeConfig = useRuntimeConfig()
 
 const { data: sourced, pending, refresh } = await useAdminFetch<SourcedProductDetail>(`/admin/sourcing/products/${id}`, { key: `admin-sourcing-product-${id}` })
 const { data: wholesalers } = await useAdminFetch<WholesalerView[]>('/admin/sourcing/wholesalers', { key: 'admin-sourcing-wholesalers' })
@@ -47,7 +48,15 @@ const { data: products } = await useAdminFetch<{ items: Product[] }>('/products?
 
 useHead({ title: () => sourced.value?.name ?? 'Sourced product' })
 
-const activeTab = ref<'overview' | 'adTests' | 'requests'>('overview')
+const activeTab = ref<'overview' | 'media' | 'adTests' | 'requests'>('overview')
+
+// Local uploads are stored relative (/uploads/xxx) — resolve against the API
+// base for display, same pattern as products/[id].vue's Images tab.
+function resolveMediaUrl(url: string): string {
+  if (!url) return ''
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  return `${runtimeConfig.public.apiBase}${url}`
+}
 
 const statusOptions = SOURCED_PRODUCT_STATUSES.map((s) => ({ label: s, value: s }))
 const platformOptions: AdTestPlatform[] = ['Facebook', 'TikTok', 'Snapchat', 'Google', 'Other']
@@ -278,6 +287,166 @@ const requestStatusColor: Record<SourcingRequestStatus, 'neutral' | 'info' | 'wa
   Received: 'success',
   Cancelled: 'error'
 }
+
+// ---- Media tab (images/videos) ----
+const uploadingFile = ref(false)
+const downloadingUrl = ref(false)
+const downloadUrlInput = ref('')
+const newMediaUrl = ref('')
+const newMediaCaption = ref('')
+const savingMediaLink = ref(false)
+
+const fileInput = ref<HTMLInputElement | null>(null)
+function triggerFileUpload() {
+  fileInput.value?.click()
+}
+
+function guessMediaType(url: string): 'Image' | 'Video' {
+  return /\.(mp4|webm|mov)(\?|$)/i.test(url) ? 'Video' : 'Image'
+}
+
+async function onFileSelected(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+  uploadingFile.value = true
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    const auth = useAuthStore()
+    const res = await $fetch<{ url: string }>('/admin/upload', {
+      baseURL: runtimeConfig.public.apiBase,
+      method: 'POST',
+      body: formData,
+      headers: { Authorization: `Bearer ${auth.token}` }
+    })
+    await api(`/admin/sourcing/products/${id}/media`, {
+      method: 'POST',
+      body: { type: file.type.startsWith('video/') ? 'Video' : 'Image', url: res.url, caption: file.name }
+    })
+    await refresh()
+    toast.add({ title: 'Uploaded', color: 'success' })
+  } catch {
+    toast.add({ title: 'Upload failed', color: 'error' })
+  } finally {
+    uploadingFile.value = false
+    if (fileInput.value) fileInput.value.value = ''
+  }
+}
+
+async function downloadAndAddMedia() {
+  if (!downloadUrlInput.value) return
+  downloadingUrl.value = true
+  try {
+    const res = await api<{ url: string }>('/admin/upload-from-url', { method: 'POST', body: { url: downloadUrlInput.value } })
+    await api(`/admin/sourcing/products/${id}/media`, { method: 'POST', body: { type: guessMediaType(res.url), url: res.url } })
+    downloadUrlInput.value = ''
+    await refresh()
+    toast.add({ title: 'Downloaded and added', color: 'success' })
+  } catch {
+    toast.add({ title: 'Download failed — check the URL', color: 'error' })
+  } finally {
+    downloadingUrl.value = false
+  }
+}
+
+async function addMediaLink() {
+  if (!newMediaUrl.value) return
+  savingMediaLink.value = true
+  try {
+    await api(`/admin/sourcing/products/${id}/media`, {
+      method: 'POST',
+      body: { type: guessMediaType(newMediaUrl.value), url: newMediaUrl.value, caption: newMediaCaption.value || null }
+    })
+    newMediaUrl.value = ''
+    newMediaCaption.value = ''
+    await refresh()
+    toast.add({ title: 'Added', color: 'success' })
+  } catch {
+    toast.add({ title: 'Failed to add', color: 'error' })
+  } finally {
+    savingMediaLink.value = false
+  }
+}
+
+async function deleteMedia(mediaId: string) {
+  try {
+    await api(`/admin/sourcing/products/media/${mediaId}`, { method: 'DELETE' })
+    await refresh()
+  } catch {
+    toast.add({ title: 'Failed to remove', color: 'error' })
+  }
+}
+
+async function moveMedia(mediaId: string, direction: 'up' | 'down') {
+  if (!sourced.value) return
+  const items = [...sourced.value.media]
+  const idx = items.findIndex((m) => m.id === mediaId)
+  if (idx < 0) return
+  const swapIdx = direction === 'up' ? idx - 1 : idx + 1
+  if (swapIdx < 0 || swapIdx >= items.length) return
+  const a = items[idx]!
+  const b = items[swapIdx]!
+  items[idx] = b
+  items[swapIdx] = a
+  await api(`/admin/sourcing/products/${id}/media/reorder`, { method: 'POST', body: { orderedIds: items.map((m) => m.id) } })
+  await refresh()
+}
+
+// ---- Links tab (where this product is listed elsewhere) ----
+const newLinkLabel = ref('')
+const newLinkUrl = ref('')
+const savingLink = ref(false)
+const editingLinkId = ref<string | null>(null)
+const editLinkLabel = ref('')
+const editLinkUrl = ref('')
+
+async function addLink() {
+  if (!newLinkLabel.value.trim() || !newLinkUrl.value.trim()) return
+  savingLink.value = true
+  try {
+    await api(`/admin/sourcing/products/${id}/links`, { method: 'POST', body: { label: newLinkLabel.value, url: newLinkUrl.value } })
+    newLinkLabel.value = ''
+    newLinkUrl.value = ''
+    await refresh()
+    toast.add({ title: 'Link added', color: 'success' })
+  } catch {
+    toast.add({ title: 'Failed to add link', color: 'error' })
+  } finally {
+    savingLink.value = false
+  }
+}
+
+function openEditLink(l: SourcedProductDetail['links'][number]) {
+  editingLinkId.value = l.id
+  editLinkLabel.value = l.label
+  editLinkUrl.value = l.url
+}
+
+async function saveEditLink() {
+  if (!editingLinkId.value || !editLinkLabel.value.trim() || !editLinkUrl.value.trim()) return
+  savingLink.value = true
+  try {
+    await api(`/admin/sourcing/products/links/${editingLinkId.value}`, { method: 'PATCH', body: { label: editLinkLabel.value, url: editLinkUrl.value } })
+    editingLinkId.value = null
+    await refresh()
+    toast.add({ title: 'Link updated', color: 'success' })
+  } catch {
+    toast.add({ title: 'Failed to update link', color: 'error' })
+  } finally {
+    savingLink.value = false
+  }
+}
+
+async function deleteLink(linkId: string) {
+  try {
+    await api(`/admin/sourcing/products/links/${linkId}`, { method: 'DELETE' })
+    await refresh()
+    toast.add({ title: 'Link removed', color: 'success' })
+  } catch {
+    toast.add({ title: 'Failed to remove link', color: 'error' })
+  }
+}
 </script>
 
 <template>
@@ -299,6 +468,7 @@ const requestStatusColor: Record<SourcingRequestStatus, 'neutral' | 'info' | 'wa
           v-model="activeTab"
           :items="[
             { label: 'Overview', value: 'overview', icon: 'i-lucide-file-text' },
+            { label: 'Media & Links', value: 'media', icon: 'i-lucide-images' },
             { label: 'Ad Tests', value: 'adTests', icon: 'i-lucide-megaphone' },
             { label: 'Sourcing Requests', value: 'requests', icon: 'i-lucide-truck' }
           ]"
@@ -327,6 +497,90 @@ const requestStatusColor: Record<SourcingRequestStatus, 'neutral' | 'info' | 'wa
 
           <div class="flex justify-end">
             <UButton :loading="savingDetails" icon="i-lucide-save" color="primary" @click="saveDetails">Save</UButton>
+          </div>
+        </div>
+
+        <!-- Media & Links Tab -->
+        <div v-show="activeTab === 'media'" class="space-y-5">
+          <!-- Upload from computer -->
+          <div class="admin-kpi-card p-5">
+            <h3 class="mb-3 text-sm font-medium text-muted">Upload image or video</h3>
+            <div class="flex items-center gap-3">
+              <UButton icon="i-lucide-upload" color="primary" :loading="uploadingFile" label="Choose file" @click="triggerFileUpload" />
+              <p class="text-xs text-muted">Images (JPG/PNG/WebP/GIF/SVG/AVIF) or videos (MP4/WebM/MOV) — max 50 MB</p>
+              <input ref="fileInput" type="file" accept="image/*,video/*" class="hidden" @change="onFileSelected" />
+            </div>
+          </div>
+
+          <!-- Download from URL -->
+          <div class="admin-kpi-card p-5">
+            <h3 class="mb-3 text-sm font-medium text-muted">Download from URL</h3>
+            <p class="mb-3 text-xs text-muted">Paste an image or video URL — the server downloads and stores it locally.</p>
+            <div class="flex gap-3">
+              <UInput v-model="downloadUrlInput" placeholder="https://example.com/photo.jpg" class="flex-1" />
+              <UButton icon="i-lucide-download" :loading="downloadingUrl" color="primary" :disabled="!downloadUrlInput" @click="downloadAndAddMedia">Download</UButton>
+            </div>
+          </div>
+
+          <!-- Link external -->
+          <div class="admin-kpi-card p-5">
+            <h3 class="mb-3 text-sm font-medium text-muted">Link external image/video</h3>
+            <p class="mb-3 text-xs text-muted">Use a remote URL directly (not copied to our server) — e.g. a supplier's product photo/video CDN link.</p>
+            <div class="flex gap-3">
+              <UInput v-model="newMediaUrl" placeholder="https://…" class="flex-1" />
+              <UInput v-model="newMediaCaption" placeholder="Caption (optional)" class="w-48" />
+              <UButton icon="i-lucide-link" :loading="savingMediaLink" color="neutral" variant="outline" :disabled="!newMediaUrl" @click="addMediaLink">Link</UButton>
+            </div>
+          </div>
+
+          <!-- Gallery -->
+          <div class="admin-table-wrap">
+            <div class="border-b border-[var(--color-admin-border)] p-4">
+              <h3 class="text-sm font-medium text-muted">Gallery ({{ sourced.media.length }})</h3>
+            </div>
+            <div class="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3 md:grid-cols-4">
+              <div v-for="(m, idx) in sourced.media" :key="m.id" class="group relative overflow-hidden rounded-lg border border-[var(--color-admin-border)]">
+                <video v-if="m.type === 'Video'" :src="resolveMediaUrl(m.url)" class="aspect-square size-full object-cover" muted controls />
+                <img v-else :src="resolveMediaUrl(m.url)" :alt="m.caption ?? ''" class="aspect-square size-full object-cover" />
+                <div class="absolute inset-0 flex items-center justify-center gap-1 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                  <UButton icon="i-lucide-arrow-up" size="xs" variant="solid" color="neutral" :disabled="idx === 0" @click="moveMedia(m.id, 'up')" />
+                  <UButton icon="i-lucide-arrow-down" size="xs" variant="solid" color="neutral" :disabled="idx === sourced.media.length - 1" @click="moveMedia(m.id, 'down')" />
+                  <UButton icon="i-lucide-trash-2" size="xs" variant="solid" color="error" @click="deleteMedia(m.id)" />
+                </div>
+                <UBadge size="sm" :color="m.type === 'Video' ? 'primary' : 'neutral'" variant="solid" class="absolute left-1 top-1">{{ m.type }}</UBadge>
+              </div>
+            </div>
+            <p v-if="!sourced.media.length" class="px-4 py-12 text-center text-sm text-muted">No images or videos yet.</p>
+          </div>
+
+          <!-- External links -->
+          <div class="admin-table-wrap">
+            <div class="flex items-center justify-between border-b border-[var(--color-admin-border)] p-4">
+              <h3 class="text-sm font-medium text-muted">Links ({{ sourced.links.length }})</h3>
+            </div>
+            <p class="px-4 pt-3 text-xs text-muted">Where this product is listed elsewhere — the supplier's marketplace page, a competitor selling it, the ad post it was spotted in, etc.</p>
+            <div class="space-y-2 p-4">
+              <div v-for="l in sourced.links" :key="l.id" class="flex items-center gap-3 rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg)] p-3">
+                <template v-if="editingLinkId === l.id">
+                  <UInput v-model="editLinkLabel" placeholder="Label" class="w-40" />
+                  <UInput v-model="editLinkUrl" placeholder="https://…" class="flex-1" />
+                  <UButton icon="i-lucide-check" size="xs" color="primary" :loading="savingLink" @click="saveEditLink" />
+                  <UButton icon="i-lucide-x" size="xs" variant="ghost" color="neutral" @click="editingLinkId = null" />
+                </template>
+                <template v-else>
+                  <UBadge color="neutral" variant="subtle">{{ l.label }}</UBadge>
+                  <a :href="l.url" target="_blank" rel="noopener noreferrer" class="flex-1 truncate text-sm text-primary hover:underline">{{ l.url }}</a>
+                  <UButton icon="i-lucide-pencil" size="xs" variant="ghost" color="neutral" @click="openEditLink(l)" />
+                  <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="deleteLink(l.id)" />
+                </template>
+              </div>
+              <p v-if="!sourced.links.length" class="py-8 text-center text-sm text-muted">No links yet.</p>
+            </div>
+            <div class="flex gap-3 border-t border-[var(--color-admin-border)] p-4">
+              <UInput v-model="newLinkLabel" placeholder="Label (e.g. AliExpress)" class="w-48" />
+              <UInput v-model="newLinkUrl" placeholder="https://…" class="flex-1" />
+              <UButton icon="i-lucide-plus" :loading="savingLink" color="primary" :disabled="!newLinkLabel.trim() || !newLinkUrl.trim()" @click="addLink">Add link</UButton>
+            </div>
           </div>
         </div>
 

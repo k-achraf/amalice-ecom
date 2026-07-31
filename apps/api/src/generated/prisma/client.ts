@@ -225,6 +225,16 @@ export type ShippingCompanyTariff = Prisma.ShippingCompanyTariffModel
  */
 export type SourcedProduct = Prisma.SourcedProductModel
 /**
+ * Model SourcedProductMedia
+ * 
+ */
+export type SourcedProductMedia = Prisma.SourcedProductMediaModel
+/**
+ * Model SourcedProductLink
+ * 
+ */
+export type SourcedProductLink = Prisma.SourcedProductLinkModel
+/**
  * Model ProductAdTest
  * 
  */

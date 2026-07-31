@@ -225,6 +225,8 @@ export type SourcedProductWhereInput = {
   linkedProduct?: Prisma.XOR<Prisma.ProductNullableScalarRelationFilter, Prisma.ProductWhereInput> | null
   adTests?: Prisma.ProductAdTestListRelationFilter
   sourcingRequests?: Prisma.ProductSourcingRequestListRelationFilter
+  media?: Prisma.SourcedProductMediaListRelationFilter
+  links?: Prisma.SourcedProductLinkListRelationFilter
 }
 
 export type SourcedProductOrderByWithRelationInput = {
@@ -241,6 +243,8 @@ export type SourcedProductOrderByWithRelationInput = {
   linkedProduct?: Prisma.ProductOrderByWithRelationInput
   adTests?: Prisma.ProductAdTestOrderByRelationAggregateInput
   sourcingRequests?: Prisma.ProductSourcingRequestOrderByRelationAggregateInput
+  media?: Prisma.SourcedProductMediaOrderByRelationAggregateInput
+  links?: Prisma.SourcedProductLinkOrderByRelationAggregateInput
 }
 
 export type SourcedProductWhereUniqueInput = Prisma.AtLeast<{
@@ -260,6 +264,8 @@ export type SourcedProductWhereUniqueInput = Prisma.AtLeast<{
   linkedProduct?: Prisma.XOR<Prisma.ProductNullableScalarRelationFilter, Prisma.ProductWhereInput> | null
   adTests?: Prisma.ProductAdTestListRelationFilter
   sourcingRequests?: Prisma.ProductSourcingRequestListRelationFilter
+  media?: Prisma.SourcedProductMediaListRelationFilter
+  links?: Prisma.SourcedProductLinkListRelationFilter
 }, "id" | "linkedProductId">
 
 export type SourcedProductOrderByWithAggregationInput = {
@@ -307,6 +313,8 @@ export type SourcedProductCreateInput = {
   linkedProduct?: Prisma.ProductCreateNestedOneWithoutSourcedFromInput
   adTests?: Prisma.ProductAdTestCreateNestedManyWithoutSourcedProductInput
   sourcingRequests?: Prisma.ProductSourcingRequestCreateNestedManyWithoutSourcedProductInput
+  media?: Prisma.SourcedProductMediaCreateNestedManyWithoutSourcedProductInput
+  links?: Prisma.SourcedProductLinkCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductUncheckedCreateInput = {
@@ -322,6 +330,8 @@ export type SourcedProductUncheckedCreateInput = {
   updatedAt?: Date | string
   adTests?: Prisma.ProductAdTestUncheckedCreateNestedManyWithoutSourcedProductInput
   sourcingRequests?: Prisma.ProductSourcingRequestUncheckedCreateNestedManyWithoutSourcedProductInput
+  media?: Prisma.SourcedProductMediaUncheckedCreateNestedManyWithoutSourcedProductInput
+  links?: Prisma.SourcedProductLinkUncheckedCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductUpdateInput = {
@@ -337,6 +347,8 @@ export type SourcedProductUpdateInput = {
   linkedProduct?: Prisma.ProductUpdateOneWithoutSourcedFromNestedInput
   adTests?: Prisma.ProductAdTestUpdateManyWithoutSourcedProductNestedInput
   sourcingRequests?: Prisma.ProductSourcingRequestUpdateManyWithoutSourcedProductNestedInput
+  media?: Prisma.SourcedProductMediaUpdateManyWithoutSourcedProductNestedInput
+  links?: Prisma.SourcedProductLinkUpdateManyWithoutSourcedProductNestedInput
 }
 
 export type SourcedProductUncheckedUpdateInput = {
@@ -352,6 +364,8 @@ export type SourcedProductUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   adTests?: Prisma.ProductAdTestUncheckedUpdateManyWithoutSourcedProductNestedInput
   sourcingRequests?: Prisma.ProductSourcingRequestUncheckedUpdateManyWithoutSourcedProductNestedInput
+  media?: Prisma.SourcedProductMediaUncheckedUpdateManyWithoutSourcedProductNestedInput
+  links?: Prisma.SourcedProductLinkUncheckedUpdateManyWithoutSourcedProductNestedInput
 }
 
 export type SourcedProductCreateManyInput = {
@@ -477,6 +491,34 @@ export type EnumSourcedProductStatusFieldUpdateOperationsInput = {
   set?: $Enums.SourcedProductStatus
 }
 
+export type SourcedProductCreateNestedOneWithoutMediaInput = {
+  create?: Prisma.XOR<Prisma.SourcedProductCreateWithoutMediaInput, Prisma.SourcedProductUncheckedCreateWithoutMediaInput>
+  connectOrCreate?: Prisma.SourcedProductCreateOrConnectWithoutMediaInput
+  connect?: Prisma.SourcedProductWhereUniqueInput
+}
+
+export type SourcedProductUpdateOneRequiredWithoutMediaNestedInput = {
+  create?: Prisma.XOR<Prisma.SourcedProductCreateWithoutMediaInput, Prisma.SourcedProductUncheckedCreateWithoutMediaInput>
+  connectOrCreate?: Prisma.SourcedProductCreateOrConnectWithoutMediaInput
+  upsert?: Prisma.SourcedProductUpsertWithoutMediaInput
+  connect?: Prisma.SourcedProductWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SourcedProductUpdateToOneWithWhereWithoutMediaInput, Prisma.SourcedProductUpdateWithoutMediaInput>, Prisma.SourcedProductUncheckedUpdateWithoutMediaInput>
+}
+
+export type SourcedProductCreateNestedOneWithoutLinksInput = {
+  create?: Prisma.XOR<Prisma.SourcedProductCreateWithoutLinksInput, Prisma.SourcedProductUncheckedCreateWithoutLinksInput>
+  connectOrCreate?: Prisma.SourcedProductCreateOrConnectWithoutLinksInput
+  connect?: Prisma.SourcedProductWhereUniqueInput
+}
+
+export type SourcedProductUpdateOneRequiredWithoutLinksNestedInput = {
+  create?: Prisma.XOR<Prisma.SourcedProductCreateWithoutLinksInput, Prisma.SourcedProductUncheckedCreateWithoutLinksInput>
+  connectOrCreate?: Prisma.SourcedProductCreateOrConnectWithoutLinksInput
+  upsert?: Prisma.SourcedProductUpsertWithoutLinksInput
+  connect?: Prisma.SourcedProductWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SourcedProductUpdateToOneWithWhereWithoutLinksInput, Prisma.SourcedProductUpdateWithoutLinksInput>, Prisma.SourcedProductUncheckedUpdateWithoutLinksInput>
+}
+
 export type SourcedProductCreateNestedOneWithoutAdTestsInput = {
   create?: Prisma.XOR<Prisma.SourcedProductCreateWithoutAdTestsInput, Prisma.SourcedProductUncheckedCreateWithoutAdTestsInput>
   connectOrCreate?: Prisma.SourcedProductCreateOrConnectWithoutAdTestsInput
@@ -517,6 +559,8 @@ export type SourcedProductCreateWithoutLinkedProductInput = {
   updatedAt?: Date | string
   adTests?: Prisma.ProductAdTestCreateNestedManyWithoutSourcedProductInput
   sourcingRequests?: Prisma.ProductSourcingRequestCreateNestedManyWithoutSourcedProductInput
+  media?: Prisma.SourcedProductMediaCreateNestedManyWithoutSourcedProductInput
+  links?: Prisma.SourcedProductLinkCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductUncheckedCreateWithoutLinkedProductInput = {
@@ -531,6 +575,8 @@ export type SourcedProductUncheckedCreateWithoutLinkedProductInput = {
   updatedAt?: Date | string
   adTests?: Prisma.ProductAdTestUncheckedCreateNestedManyWithoutSourcedProductInput
   sourcingRequests?: Prisma.ProductSourcingRequestUncheckedCreateNestedManyWithoutSourcedProductInput
+  media?: Prisma.SourcedProductMediaUncheckedCreateNestedManyWithoutSourcedProductInput
+  links?: Prisma.SourcedProductLinkUncheckedCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductCreateOrConnectWithoutLinkedProductInput = {
@@ -561,6 +607,8 @@ export type SourcedProductUpdateWithoutLinkedProductInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   adTests?: Prisma.ProductAdTestUpdateManyWithoutSourcedProductNestedInput
   sourcingRequests?: Prisma.ProductSourcingRequestUpdateManyWithoutSourcedProductNestedInput
+  media?: Prisma.SourcedProductMediaUpdateManyWithoutSourcedProductNestedInput
+  links?: Prisma.SourcedProductLinkUpdateManyWithoutSourcedProductNestedInput
 }
 
 export type SourcedProductUncheckedUpdateWithoutLinkedProductInput = {
@@ -575,6 +623,168 @@ export type SourcedProductUncheckedUpdateWithoutLinkedProductInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   adTests?: Prisma.ProductAdTestUncheckedUpdateManyWithoutSourcedProductNestedInput
   sourcingRequests?: Prisma.ProductSourcingRequestUncheckedUpdateManyWithoutSourcedProductNestedInput
+  media?: Prisma.SourcedProductMediaUncheckedUpdateManyWithoutSourcedProductNestedInput
+  links?: Prisma.SourcedProductLinkUncheckedUpdateManyWithoutSourcedProductNestedInput
+}
+
+export type SourcedProductCreateWithoutMediaInput = {
+  id?: string
+  name: string
+  sourceUrl?: string | null
+  imageUrl?: string | null
+  niche?: string | null
+  notes?: string | null
+  status?: $Enums.SourcedProductStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  linkedProduct?: Prisma.ProductCreateNestedOneWithoutSourcedFromInput
+  adTests?: Prisma.ProductAdTestCreateNestedManyWithoutSourcedProductInput
+  sourcingRequests?: Prisma.ProductSourcingRequestCreateNestedManyWithoutSourcedProductInput
+  links?: Prisma.SourcedProductLinkCreateNestedManyWithoutSourcedProductInput
+}
+
+export type SourcedProductUncheckedCreateWithoutMediaInput = {
+  id?: string
+  name: string
+  sourceUrl?: string | null
+  imageUrl?: string | null
+  niche?: string | null
+  notes?: string | null
+  status?: $Enums.SourcedProductStatus
+  linkedProductId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  adTests?: Prisma.ProductAdTestUncheckedCreateNestedManyWithoutSourcedProductInput
+  sourcingRequests?: Prisma.ProductSourcingRequestUncheckedCreateNestedManyWithoutSourcedProductInput
+  links?: Prisma.SourcedProductLinkUncheckedCreateNestedManyWithoutSourcedProductInput
+}
+
+export type SourcedProductCreateOrConnectWithoutMediaInput = {
+  where: Prisma.SourcedProductWhereUniqueInput
+  create: Prisma.XOR<Prisma.SourcedProductCreateWithoutMediaInput, Prisma.SourcedProductUncheckedCreateWithoutMediaInput>
+}
+
+export type SourcedProductUpsertWithoutMediaInput = {
+  update: Prisma.XOR<Prisma.SourcedProductUpdateWithoutMediaInput, Prisma.SourcedProductUncheckedUpdateWithoutMediaInput>
+  create: Prisma.XOR<Prisma.SourcedProductCreateWithoutMediaInput, Prisma.SourcedProductUncheckedCreateWithoutMediaInput>
+  where?: Prisma.SourcedProductWhereInput
+}
+
+export type SourcedProductUpdateToOneWithWhereWithoutMediaInput = {
+  where?: Prisma.SourcedProductWhereInput
+  data: Prisma.XOR<Prisma.SourcedProductUpdateWithoutMediaInput, Prisma.SourcedProductUncheckedUpdateWithoutMediaInput>
+}
+
+export type SourcedProductUpdateWithoutMediaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  niche?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSourcedProductStatusFieldUpdateOperationsInput | $Enums.SourcedProductStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedProduct?: Prisma.ProductUpdateOneWithoutSourcedFromNestedInput
+  adTests?: Prisma.ProductAdTestUpdateManyWithoutSourcedProductNestedInput
+  sourcingRequests?: Prisma.ProductSourcingRequestUpdateManyWithoutSourcedProductNestedInput
+  links?: Prisma.SourcedProductLinkUpdateManyWithoutSourcedProductNestedInput
+}
+
+export type SourcedProductUncheckedUpdateWithoutMediaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  niche?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSourcedProductStatusFieldUpdateOperationsInput | $Enums.SourcedProductStatus
+  linkedProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  adTests?: Prisma.ProductAdTestUncheckedUpdateManyWithoutSourcedProductNestedInput
+  sourcingRequests?: Prisma.ProductSourcingRequestUncheckedUpdateManyWithoutSourcedProductNestedInput
+  links?: Prisma.SourcedProductLinkUncheckedUpdateManyWithoutSourcedProductNestedInput
+}
+
+export type SourcedProductCreateWithoutLinksInput = {
+  id?: string
+  name: string
+  sourceUrl?: string | null
+  imageUrl?: string | null
+  niche?: string | null
+  notes?: string | null
+  status?: $Enums.SourcedProductStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  linkedProduct?: Prisma.ProductCreateNestedOneWithoutSourcedFromInput
+  adTests?: Prisma.ProductAdTestCreateNestedManyWithoutSourcedProductInput
+  sourcingRequests?: Prisma.ProductSourcingRequestCreateNestedManyWithoutSourcedProductInput
+  media?: Prisma.SourcedProductMediaCreateNestedManyWithoutSourcedProductInput
+}
+
+export type SourcedProductUncheckedCreateWithoutLinksInput = {
+  id?: string
+  name: string
+  sourceUrl?: string | null
+  imageUrl?: string | null
+  niche?: string | null
+  notes?: string | null
+  status?: $Enums.SourcedProductStatus
+  linkedProductId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  adTests?: Prisma.ProductAdTestUncheckedCreateNestedManyWithoutSourcedProductInput
+  sourcingRequests?: Prisma.ProductSourcingRequestUncheckedCreateNestedManyWithoutSourcedProductInput
+  media?: Prisma.SourcedProductMediaUncheckedCreateNestedManyWithoutSourcedProductInput
+}
+
+export type SourcedProductCreateOrConnectWithoutLinksInput = {
+  where: Prisma.SourcedProductWhereUniqueInput
+  create: Prisma.XOR<Prisma.SourcedProductCreateWithoutLinksInput, Prisma.SourcedProductUncheckedCreateWithoutLinksInput>
+}
+
+export type SourcedProductUpsertWithoutLinksInput = {
+  update: Prisma.XOR<Prisma.SourcedProductUpdateWithoutLinksInput, Prisma.SourcedProductUncheckedUpdateWithoutLinksInput>
+  create: Prisma.XOR<Prisma.SourcedProductCreateWithoutLinksInput, Prisma.SourcedProductUncheckedCreateWithoutLinksInput>
+  where?: Prisma.SourcedProductWhereInput
+}
+
+export type SourcedProductUpdateToOneWithWhereWithoutLinksInput = {
+  where?: Prisma.SourcedProductWhereInput
+  data: Prisma.XOR<Prisma.SourcedProductUpdateWithoutLinksInput, Prisma.SourcedProductUncheckedUpdateWithoutLinksInput>
+}
+
+export type SourcedProductUpdateWithoutLinksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  niche?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSourcedProductStatusFieldUpdateOperationsInput | $Enums.SourcedProductStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedProduct?: Prisma.ProductUpdateOneWithoutSourcedFromNestedInput
+  adTests?: Prisma.ProductAdTestUpdateManyWithoutSourcedProductNestedInput
+  sourcingRequests?: Prisma.ProductSourcingRequestUpdateManyWithoutSourcedProductNestedInput
+  media?: Prisma.SourcedProductMediaUpdateManyWithoutSourcedProductNestedInput
+}
+
+export type SourcedProductUncheckedUpdateWithoutLinksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  niche?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSourcedProductStatusFieldUpdateOperationsInput | $Enums.SourcedProductStatus
+  linkedProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  adTests?: Prisma.ProductAdTestUncheckedUpdateManyWithoutSourcedProductNestedInput
+  sourcingRequests?: Prisma.ProductSourcingRequestUncheckedUpdateManyWithoutSourcedProductNestedInput
+  media?: Prisma.SourcedProductMediaUncheckedUpdateManyWithoutSourcedProductNestedInput
 }
 
 export type SourcedProductCreateWithoutAdTestsInput = {
@@ -589,6 +799,8 @@ export type SourcedProductCreateWithoutAdTestsInput = {
   updatedAt?: Date | string
   linkedProduct?: Prisma.ProductCreateNestedOneWithoutSourcedFromInput
   sourcingRequests?: Prisma.ProductSourcingRequestCreateNestedManyWithoutSourcedProductInput
+  media?: Prisma.SourcedProductMediaCreateNestedManyWithoutSourcedProductInput
+  links?: Prisma.SourcedProductLinkCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductUncheckedCreateWithoutAdTestsInput = {
@@ -603,6 +815,8 @@ export type SourcedProductUncheckedCreateWithoutAdTestsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   sourcingRequests?: Prisma.ProductSourcingRequestUncheckedCreateNestedManyWithoutSourcedProductInput
+  media?: Prisma.SourcedProductMediaUncheckedCreateNestedManyWithoutSourcedProductInput
+  links?: Prisma.SourcedProductLinkUncheckedCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductCreateOrConnectWithoutAdTestsInput = {
@@ -633,6 +847,8 @@ export type SourcedProductUpdateWithoutAdTestsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   linkedProduct?: Prisma.ProductUpdateOneWithoutSourcedFromNestedInput
   sourcingRequests?: Prisma.ProductSourcingRequestUpdateManyWithoutSourcedProductNestedInput
+  media?: Prisma.SourcedProductMediaUpdateManyWithoutSourcedProductNestedInput
+  links?: Prisma.SourcedProductLinkUpdateManyWithoutSourcedProductNestedInput
 }
 
 export type SourcedProductUncheckedUpdateWithoutAdTestsInput = {
@@ -647,6 +863,8 @@ export type SourcedProductUncheckedUpdateWithoutAdTestsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sourcingRequests?: Prisma.ProductSourcingRequestUncheckedUpdateManyWithoutSourcedProductNestedInput
+  media?: Prisma.SourcedProductMediaUncheckedUpdateManyWithoutSourcedProductNestedInput
+  links?: Prisma.SourcedProductLinkUncheckedUpdateManyWithoutSourcedProductNestedInput
 }
 
 export type SourcedProductCreateWithoutSourcingRequestsInput = {
@@ -661,6 +879,8 @@ export type SourcedProductCreateWithoutSourcingRequestsInput = {
   updatedAt?: Date | string
   linkedProduct?: Prisma.ProductCreateNestedOneWithoutSourcedFromInput
   adTests?: Prisma.ProductAdTestCreateNestedManyWithoutSourcedProductInput
+  media?: Prisma.SourcedProductMediaCreateNestedManyWithoutSourcedProductInput
+  links?: Prisma.SourcedProductLinkCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductUncheckedCreateWithoutSourcingRequestsInput = {
@@ -675,6 +895,8 @@ export type SourcedProductUncheckedCreateWithoutSourcingRequestsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   adTests?: Prisma.ProductAdTestUncheckedCreateNestedManyWithoutSourcedProductInput
+  media?: Prisma.SourcedProductMediaUncheckedCreateNestedManyWithoutSourcedProductInput
+  links?: Prisma.SourcedProductLinkUncheckedCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductCreateOrConnectWithoutSourcingRequestsInput = {
@@ -705,6 +927,8 @@ export type SourcedProductUpdateWithoutSourcingRequestsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   linkedProduct?: Prisma.ProductUpdateOneWithoutSourcedFromNestedInput
   adTests?: Prisma.ProductAdTestUpdateManyWithoutSourcedProductNestedInput
+  media?: Prisma.SourcedProductMediaUpdateManyWithoutSourcedProductNestedInput
+  links?: Prisma.SourcedProductLinkUpdateManyWithoutSourcedProductNestedInput
 }
 
 export type SourcedProductUncheckedUpdateWithoutSourcingRequestsInput = {
@@ -719,6 +943,8 @@ export type SourcedProductUncheckedUpdateWithoutSourcingRequestsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   adTests?: Prisma.ProductAdTestUncheckedUpdateManyWithoutSourcedProductNestedInput
+  media?: Prisma.SourcedProductMediaUncheckedUpdateManyWithoutSourcedProductNestedInput
+  links?: Prisma.SourcedProductLinkUncheckedUpdateManyWithoutSourcedProductNestedInput
 }
 
 
@@ -729,11 +955,15 @@ export type SourcedProductUncheckedUpdateWithoutSourcingRequestsInput = {
 export type SourcedProductCountOutputType = {
   adTests: number
   sourcingRequests: number
+  media: number
+  links: number
 }
 
 export type SourcedProductCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   adTests?: boolean | SourcedProductCountOutputTypeCountAdTestsArgs
   sourcingRequests?: boolean | SourcedProductCountOutputTypeCountSourcingRequestsArgs
+  media?: boolean | SourcedProductCountOutputTypeCountMediaArgs
+  links?: boolean | SourcedProductCountOutputTypeCountLinksArgs
 }
 
 /**
@@ -760,6 +990,20 @@ export type SourcedProductCountOutputTypeCountSourcingRequestsArgs<ExtArgs exten
   where?: Prisma.ProductSourcingRequestWhereInput
 }
 
+/**
+ * SourcedProductCountOutputType without action
+ */
+export type SourcedProductCountOutputTypeCountMediaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SourcedProductMediaWhereInput
+}
+
+/**
+ * SourcedProductCountOutputType without action
+ */
+export type SourcedProductCountOutputTypeCountLinksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SourcedProductLinkWhereInput
+}
+
 
 export type SourcedProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -775,6 +1019,8 @@ export type SourcedProductSelect<ExtArgs extends runtime.Types.Extensions.Intern
   linkedProduct?: boolean | Prisma.SourcedProduct$linkedProductArgs<ExtArgs>
   adTests?: boolean | Prisma.SourcedProduct$adTestsArgs<ExtArgs>
   sourcingRequests?: boolean | Prisma.SourcedProduct$sourcingRequestsArgs<ExtArgs>
+  media?: boolean | Prisma.SourcedProduct$mediaArgs<ExtArgs>
+  links?: boolean | Prisma.SourcedProduct$linksArgs<ExtArgs>
   _count?: boolean | Prisma.SourcedProductCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["sourcedProduct"]>
 
@@ -824,6 +1070,8 @@ export type SourcedProductInclude<ExtArgs extends runtime.Types.Extensions.Inter
   linkedProduct?: boolean | Prisma.SourcedProduct$linkedProductArgs<ExtArgs>
   adTests?: boolean | Prisma.SourcedProduct$adTestsArgs<ExtArgs>
   sourcingRequests?: boolean | Prisma.SourcedProduct$sourcingRequestsArgs<ExtArgs>
+  media?: boolean | Prisma.SourcedProduct$mediaArgs<ExtArgs>
+  links?: boolean | Prisma.SourcedProduct$linksArgs<ExtArgs>
   _count?: boolean | Prisma.SourcedProductCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SourcedProductIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -839,6 +1087,8 @@ export type $SourcedProductPayload<ExtArgs extends runtime.Types.Extensions.Inte
     linkedProduct: Prisma.$ProductPayload<ExtArgs> | null
     adTests: Prisma.$ProductAdTestPayload<ExtArgs>[]
     sourcingRequests: Prisma.$ProductSourcingRequestPayload<ExtArgs>[]
+    media: Prisma.$SourcedProductMediaPayload<ExtArgs>[]
+    links: Prisma.$SourcedProductLinkPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1248,6 +1498,8 @@ export interface Prisma__SourcedProductClient<T, Null = never, ExtArgs extends r
   linkedProduct<T extends Prisma.SourcedProduct$linkedProductArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SourcedProduct$linkedProductArgs<ExtArgs>>): Prisma.Prisma__ProductClient<runtime.Types.Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   adTests<T extends Prisma.SourcedProduct$adTestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SourcedProduct$adTestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductAdTestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sourcingRequests<T extends Prisma.SourcedProduct$sourcingRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SourcedProduct$sourcingRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductSourcingRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  media<T extends Prisma.SourcedProduct$mediaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SourcedProduct$mediaArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SourcedProductMediaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  links<T extends Prisma.SourcedProduct$linksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SourcedProduct$linksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SourcedProductLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1752,6 +2004,54 @@ export type SourcedProduct$sourcingRequestsArgs<ExtArgs extends runtime.Types.Ex
   take?: number
   skip?: number
   distinct?: Prisma.ProductSourcingRequestScalarFieldEnum | Prisma.ProductSourcingRequestScalarFieldEnum[]
+}
+
+/**
+ * SourcedProduct.media
+ */
+export type SourcedProduct$mediaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SourcedProductMedia
+   */
+  select?: Prisma.SourcedProductMediaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SourcedProductMedia
+   */
+  omit?: Prisma.SourcedProductMediaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SourcedProductMediaInclude<ExtArgs> | null
+  where?: Prisma.SourcedProductMediaWhereInput
+  orderBy?: Prisma.SourcedProductMediaOrderByWithRelationInput | Prisma.SourcedProductMediaOrderByWithRelationInput[]
+  cursor?: Prisma.SourcedProductMediaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SourcedProductMediaScalarFieldEnum | Prisma.SourcedProductMediaScalarFieldEnum[]
+}
+
+/**
+ * SourcedProduct.links
+ */
+export type SourcedProduct$linksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SourcedProductLink
+   */
+  select?: Prisma.SourcedProductLinkSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SourcedProductLink
+   */
+  omit?: Prisma.SourcedProductLinkOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SourcedProductLinkInclude<ExtArgs> | null
+  where?: Prisma.SourcedProductLinkWhereInput
+  orderBy?: Prisma.SourcedProductLinkOrderByWithRelationInput | Prisma.SourcedProductLinkOrderByWithRelationInput[]
+  cursor?: Prisma.SourcedProductLinkWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SourcedProductLinkScalarFieldEnum | Prisma.SourcedProductLinkScalarFieldEnum[]
 }
 
 /**

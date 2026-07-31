@@ -421,6 +421,8 @@ export const ModelName = {
   ShippingCompany: 'ShippingCompany',
   ShippingCompanyTariff: 'ShippingCompanyTariff',
   SourcedProduct: 'SourcedProduct',
+  SourcedProductMedia: 'SourcedProductMedia',
+  SourcedProductLink: 'SourcedProductLink',
   ProductAdTest: 'ProductAdTest',
   Wholesaler: 'Wholesaler',
   ProductSourcingRequest: 'ProductSourcingRequest'
@@ -439,7 +441,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "shippingCompanyTariff" | "sourcedProduct" | "productAdTest" | "wholesaler" | "productSourcingRequest"
+    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "productAdTest" | "wholesaler" | "productSourcingRequest"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3181,6 +3183,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SourcedProductMedia: {
+      payload: Prisma.$SourcedProductMediaPayload<ExtArgs>
+      fields: Prisma.SourcedProductMediaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SourcedProductMediaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductMediaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SourcedProductMediaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductMediaPayload>
+        }
+        findFirst: {
+          args: Prisma.SourcedProductMediaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductMediaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SourcedProductMediaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductMediaPayload>
+        }
+        findMany: {
+          args: Prisma.SourcedProductMediaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductMediaPayload>[]
+        }
+        create: {
+          args: Prisma.SourcedProductMediaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductMediaPayload>
+        }
+        createMany: {
+          args: Prisma.SourcedProductMediaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SourcedProductMediaCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductMediaPayload>[]
+        }
+        delete: {
+          args: Prisma.SourcedProductMediaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductMediaPayload>
+        }
+        update: {
+          args: Prisma.SourcedProductMediaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductMediaPayload>
+        }
+        deleteMany: {
+          args: Prisma.SourcedProductMediaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SourcedProductMediaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SourcedProductMediaUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductMediaPayload>[]
+        }
+        upsert: {
+          args: Prisma.SourcedProductMediaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductMediaPayload>
+        }
+        aggregate: {
+          args: Prisma.SourcedProductMediaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSourcedProductMedia>
+        }
+        groupBy: {
+          args: Prisma.SourcedProductMediaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SourcedProductMediaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SourcedProductMediaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SourcedProductMediaCountAggregateOutputType> | number
+        }
+      }
+    }
+    SourcedProductLink: {
+      payload: Prisma.$SourcedProductLinkPayload<ExtArgs>
+      fields: Prisma.SourcedProductLinkFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SourcedProductLinkFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductLinkPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SourcedProductLinkFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductLinkPayload>
+        }
+        findFirst: {
+          args: Prisma.SourcedProductLinkFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductLinkPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SourcedProductLinkFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductLinkPayload>
+        }
+        findMany: {
+          args: Prisma.SourcedProductLinkFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductLinkPayload>[]
+        }
+        create: {
+          args: Prisma.SourcedProductLinkCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductLinkPayload>
+        }
+        createMany: {
+          args: Prisma.SourcedProductLinkCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SourcedProductLinkCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductLinkPayload>[]
+        }
+        delete: {
+          args: Prisma.SourcedProductLinkDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductLinkPayload>
+        }
+        update: {
+          args: Prisma.SourcedProductLinkUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductLinkPayload>
+        }
+        deleteMany: {
+          args: Prisma.SourcedProductLinkDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SourcedProductLinkUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SourcedProductLinkUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductLinkPayload>[]
+        }
+        upsert: {
+          args: Prisma.SourcedProductLinkUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductLinkPayload>
+        }
+        aggregate: {
+          args: Prisma.SourcedProductLinkAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSourcedProductLink>
+        }
+        groupBy: {
+          args: Prisma.SourcedProductLinkGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SourcedProductLinkGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SourcedProductLinkCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SourcedProductLinkCountAggregateOutputType> | number
+        }
+      }
+    }
     ProductAdTest: {
       payload: Prisma.$ProductAdTestPayload<ExtArgs>
       fields: Prisma.ProductAdTestFieldRefs
@@ -3931,6 +4081,30 @@ export const SourcedProductScalarFieldEnum = {
 export type SourcedProductScalarFieldEnum = (typeof SourcedProductScalarFieldEnum)[keyof typeof SourcedProductScalarFieldEnum]
 
 
+export const SourcedProductMediaScalarFieldEnum = {
+  id: 'id',
+  sourcedProductId: 'sourcedProductId',
+  type: 'type',
+  url: 'url',
+  caption: 'caption',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt'
+} as const
+
+export type SourcedProductMediaScalarFieldEnum = (typeof SourcedProductMediaScalarFieldEnum)[keyof typeof SourcedProductMediaScalarFieldEnum]
+
+
+export const SourcedProductLinkScalarFieldEnum = {
+  id: 'id',
+  sourcedProductId: 'sourcedProductId',
+  label: 'label',
+  url: 'url',
+  createdAt: 'createdAt'
+} as const
+
+export type SourcedProductLinkScalarFieldEnum = (typeof SourcedProductLinkScalarFieldEnum)[keyof typeof SourcedProductLinkScalarFieldEnum]
+
+
 export const ProductAdTestScalarFieldEnum = {
   id: 'id',
   sourcedProductId: 'sourcedProductId',
@@ -4315,6 +4489,20 @@ export type ListEnumSourcedProductStatusFieldRefInput<$PrismaModel> = FieldRefIn
 
 
 /**
+ * Reference to a field of type 'SourcedProductMediaType'
+ */
+export type EnumSourcedProductMediaTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SourcedProductMediaType'>
+    
+
+
+/**
+ * Reference to a field of type 'SourcedProductMediaType[]'
+ */
+export type ListEnumSourcedProductMediaTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SourcedProductMediaType[]'>
+    
+
+
+/**
  * Reference to a field of type 'AdTestPlatform'
  */
 export type EnumAdTestPlatformFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AdTestPlatform'>
@@ -4530,6 +4718,8 @@ export type GlobalOmitConfig = {
   shippingCompany?: Prisma.ShippingCompanyOmit
   shippingCompanyTariff?: Prisma.ShippingCompanyTariffOmit
   sourcedProduct?: Prisma.SourcedProductOmit
+  sourcedProductMedia?: Prisma.SourcedProductMediaOmit
+  sourcedProductLink?: Prisma.SourcedProductLinkOmit
   productAdTest?: Prisma.ProductAdTestOmit
   wholesaler?: Prisma.WholesalerOmit
   productSourcingRequest?: Prisma.ProductSourcingRequestOmit

@@ -976,12 +976,56 @@ model SourcedProduct {
 
   adTests          ProductAdTest[]
   sourcingRequests ProductSourcingRequest[]
+  // Full image/video gallery — imageUrl above stays as the denormalized
+  // thumbnail for list views, same pattern as Product.imageUrl vs
+  // Product.images.
+  media            SourcedProductMedia[]
+  // Reference links to where this product is listed elsewhere (supplier
+  // marketplace pages, competitor stores, social ad posts, etc.) — distinct
+  // from sourceUrl above, which is just "where we first found it."
+  links            SourcedProductLink[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([status])
   @@map("sourced_products")
+}
+
+enum SourcedProductMediaType {
+  Image
+  Video
+}
+
+model SourcedProductMedia {
+  id               String                  @id @default(uuid())
+  sourcedProductId String                  @map("sourced_product_id")
+  sourcedProduct   SourcedProduct          @relation(fields: [sourcedProductId], references: [id], onDelete: Cascade)
+  type             SourcedProductMediaType
+  url              String
+  caption          String?
+  sortOrder        Int                     @default(0) @map("sort_order")
+  createdAt        DateTime                @default(now()) @map("created_at")
+
+  @@index([sourcedProductId])
+  @@map("sourced_product_media")
+}
+
+// A link to this product elsewhere on the web — the wholesaler's listing,
+// a competitor selling it, the ad creative it was spotted in, etc. `label`
+// is free-text (e.g. "AliExpress", "Competitor — MyShop") rather than an
+// enum: the set of places a product might be linked from is unbounded and
+// not worth modeling as a fixed platform list.
+model SourcedProductLink {
+  id               String         @id @default(uuid())
+  sourcedProductId String         @map("sourced_product_id")
+  sourcedProduct   SourcedProduct @relation(fields: [sourcedProductId], references: [id], onDelete: Cascade)
+  label            String
+  url              String
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  @@index([sourcedProductId])
+  @@map("sourced_product_links")
 }
 
 enum AdTestPlatform {

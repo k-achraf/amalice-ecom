@@ -36,12 +36,29 @@ ttq.page();
 
 // Same rationale as MetaPixelScript.vue: the base code only fires the
 // initial page's view; track subsequent client-side route changes
-// explicitly once ttq has loaded.
+// explicitly once ttq has loaded. Retries briefly instead of a single
+// direct window.ttq call — a route change firing before the async
+// pixel-config fetch above resolves would otherwise silently drop the
+// page-view (same race useMetaPixel.trackEvent guards against; ttq.page()
+// has no equivalent in that composable since it calls ttq.track(), a
+// different method, so the retry is duplicated here rather than shared).
 if (import.meta.client) {
   const route = useRoute()
-  watch(() => route.fullPath, () => {
+  function firePage() {
     const ttq = (window as unknown as { ttq?: { page?: (...args: unknown[]) => void } }).ttq
-    ttq?.page?.()
+    if (ttq?.page) {
+      ttq.page()
+      return true
+    }
+    return false
+  }
+  watch(() => route.fullPath, () => {
+    if (firePage()) return
+    let attempts = 0
+    const interval = setInterval(() => {
+      attempts++
+      if (firePage() || attempts >= 25) clearInterval(interval)
+    }, 200)
   })
 }
 </script>

@@ -116,8 +116,64 @@ export interface SourcedProductDetail {
   linkedProduct: { id: string; name: string; slug: string } | null
   adTests: ProductAdTestView[]
   sourcingRequests: ProductSourcingRequestView[]
+  media: SourcedProductMediaView[]
+  links: SourcedProductLinkView[]
   createdAt: string
   updatedAt: string
+}
+
+// ---- Media (images/videos) ----
+
+export const SourcedProductMediaType = z.enum(['Image', 'Video'])
+export type SourcedProductMediaType = z.infer<typeof SourcedProductMediaType>
+
+export const CreateSourcedProductMediaSchema = z.object({
+  type: SourcedProductMediaType,
+  url: z.string().trim().min(1).max(500),
+  caption: z.string().trim().max(200).nullable().optional()
+})
+export type CreateSourcedProductMedia = z.infer<typeof CreateSourcedProductMediaSchema>
+
+export const UpdateSourcedProductMediaSchema = z.object({
+  caption: z.string().trim().max(200).nullable().optional(),
+  sortOrder: z.number().int().optional()
+})
+export type UpdateSourcedProductMedia = z.infer<typeof UpdateSourcedProductMediaSchema>
+
+export interface SourcedProductMediaView {
+  id: string
+  sourcedProductId: string
+  type: SourcedProductMediaType
+  url: string
+  caption: string | null
+  sortOrder: number
+  createdAt: string
+}
+
+// Bulk reorder — same "send the full ordered id list" pattern as
+// products/:id/reorder-images.
+export const ReorderSourcedProductMediaSchema = z.object({
+  orderedIds: z.array(z.uuid())
+})
+export type ReorderSourcedProductMedia = z.infer<typeof ReorderSourcedProductMediaSchema>
+
+// ---- Links (where this product is listed elsewhere) ----
+
+export const CreateSourcedProductLinkSchema = z.object({
+  label: z.string().trim().min(1).max(100),
+  url: z.string().trim().min(1).max(500)
+})
+export type CreateSourcedProductLink = z.infer<typeof CreateSourcedProductLinkSchema>
+
+export const UpdateSourcedProductLinkSchema = CreateSourcedProductLinkSchema.partial()
+export type UpdateSourcedProductLink = z.infer<typeof UpdateSourcedProductLinkSchema>
+
+export interface SourcedProductLinkView {
+  id: string
+  sourcedProductId: string
+  label: string
+  url: string
+  createdAt: string
 }
 
 // ---- Ad tests ----

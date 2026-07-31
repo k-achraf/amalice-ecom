@@ -88,6 +88,8 @@ export const ModelName = {
   ShippingCompany: 'ShippingCompany',
   ShippingCompanyTariff: 'ShippingCompanyTariff',
   SourcedProduct: 'SourcedProduct',
+  SourcedProductMedia: 'SourcedProductMedia',
+  SourcedProductLink: 'SourcedProductLink',
   ProductAdTest: 'ProductAdTest',
   Wholesaler: 'Wholesaler',
   ProductSourcingRequest: 'ProductSourcingRequest'
@@ -596,6 +598,30 @@ export const SourcedProductScalarFieldEnum = {
 } as const
 
 export type SourcedProductScalarFieldEnum = (typeof SourcedProductScalarFieldEnum)[keyof typeof SourcedProductScalarFieldEnum]
+
+
+export const SourcedProductMediaScalarFieldEnum = {
+  id: 'id',
+  sourcedProductId: 'sourcedProductId',
+  type: 'type',
+  url: 'url',
+  caption: 'caption',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt'
+} as const
+
+export type SourcedProductMediaScalarFieldEnum = (typeof SourcedProductMediaScalarFieldEnum)[keyof typeof SourcedProductMediaScalarFieldEnum]
+
+
+export const SourcedProductLinkScalarFieldEnum = {
+  id: 'id',
+  sourcedProductId: 'sourcedProductId',
+  label: 'label',
+  url: 'url',
+  createdAt: 'createdAt'
+} as const
+
+export type SourcedProductLinkScalarFieldEnum = (typeof SourcedProductLinkScalarFieldEnum)[keyof typeof SourcedProductLinkScalarFieldEnum]
 
 
 export const ProductAdTestScalarFieldEnum = {

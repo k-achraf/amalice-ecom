@@ -171,6 +171,14 @@ export const SourcedProductStatus = {
 export type SourcedProductStatus = (typeof SourcedProductStatus)[keyof typeof SourcedProductStatus]
 
 
+export const SourcedProductMediaType = {
+  Image: 'Image',
+  Video: 'Video'
+} as const
+
+export type SourcedProductMediaType = (typeof SourcedProductMediaType)[keyof typeof SourcedProductMediaType]
+
+
 export const AdTestPlatform = {
   Facebook: 'Facebook',
   TikTok: 'TikTok',

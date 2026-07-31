@@ -559,6 +559,23 @@ export type EnumSourcedProductStatusWithAggregatesFilter<$PrismaModel = never> =
   _max?: Prisma.NestedEnumSourcedProductStatusFilter<$PrismaModel>
 }
 
+export type EnumSourcedProductMediaTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.SourcedProductMediaType | Prisma.EnumSourcedProductMediaTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.SourcedProductMediaType[] | Prisma.ListEnumSourcedProductMediaTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SourcedProductMediaType[] | Prisma.ListEnumSourcedProductMediaTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSourcedProductMediaTypeFilter<$PrismaModel> | $Enums.SourcedProductMediaType
+}
+
+export type EnumSourcedProductMediaTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SourcedProductMediaType | Prisma.EnumSourcedProductMediaTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.SourcedProductMediaType[] | Prisma.ListEnumSourcedProductMediaTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SourcedProductMediaType[] | Prisma.ListEnumSourcedProductMediaTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSourcedProductMediaTypeWithAggregatesFilter<$PrismaModel> | $Enums.SourcedProductMediaType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSourcedProductMediaTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSourcedProductMediaTypeFilter<$PrismaModel>
+}
+
 export type EnumAdTestPlatformFilter<$PrismaModel = never> = {
   equals?: $Enums.AdTestPlatform | Prisma.EnumAdTestPlatformFieldRefInput<$PrismaModel>
   in?: $Enums.AdTestPlatform[] | Prisma.ListEnumAdTestPlatformFieldRefInput<$PrismaModel>
@@ -1129,6 +1146,23 @@ export type NestedEnumSourcedProductStatusWithAggregatesFilter<$PrismaModel = ne
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumSourcedProductStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumSourcedProductStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumSourcedProductMediaTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.SourcedProductMediaType | Prisma.EnumSourcedProductMediaTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.SourcedProductMediaType[] | Prisma.ListEnumSourcedProductMediaTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SourcedProductMediaType[] | Prisma.ListEnumSourcedProductMediaTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSourcedProductMediaTypeFilter<$PrismaModel> | $Enums.SourcedProductMediaType
+}
+
+export type NestedEnumSourcedProductMediaTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SourcedProductMediaType | Prisma.EnumSourcedProductMediaTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.SourcedProductMediaType[] | Prisma.ListEnumSourcedProductMediaTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SourcedProductMediaType[] | Prisma.ListEnumSourcedProductMediaTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSourcedProductMediaTypeWithAggregatesFilter<$PrismaModel> | $Enums.SourcedProductMediaType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSourcedProductMediaTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSourcedProductMediaTypeFilter<$PrismaModel>
 }
 
 export type NestedEnumAdTestPlatformFilter<$PrismaModel = never> = {

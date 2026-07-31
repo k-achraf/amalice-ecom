@@ -87,13 +87,18 @@ const inStock = computed(() => effectiveStock.value > 0)
 
 // ViewContent (both pixels) — Meta/TikTok's standard "product/landing page
 // viewed" event, used for retargeting and catalog ad matching. Fires once
-// per page load, client-only (both pixel composables no-op on the server
-// anyway), guarded so this watchEffect re-running for an unrelated reactive
-// dependency change can't re-fire it for the same product.
-let viewContentFired = false
+// per DISTINCT product, client-only (both pixel composables no-op on the
+// server anyway). Keyed by product id rather than a plain boolean — Nuxt
+// reuses this same page component instance when navigating client-side
+// between two different products (same [slug].vue route, only the param
+// changes), so a one-time boolean flag would fire for the first product
+// viewed in a session and then silently never again for any other product
+// browsed afterwards without a full page reload. This was the actual cause
+// of "sometimes logged, sometimes not."
+const viewContentFiredForProductId = ref<string | null>(null)
 watchEffect(() => {
-  if (product.value && import.meta.client && !viewContentFired) {
-    viewContentFired = true
+  if (product.value && import.meta.client && viewContentFiredForProductId.value !== product.value.id) {
+    viewContentFiredForProductId.value = product.value.id
     useMetaPixel().trackEvent('ViewContent', {
       content_ids: [product.value.id],
       content_type: 'product',

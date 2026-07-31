@@ -43,12 +43,15 @@ fbq('track', 'PageView');`
 
 // The base code above only fires PageView on the initial (S)SR load — Nuxt's
 // client-side route changes don't reload the page, so track subsequent
-// navigations explicitly once fbq has loaded.
+// navigations explicitly once fbq has loaded. Goes through useMetaPixel's
+// trackEvent (not a direct window.fbq call) so a route change that happens
+// before the async pixel-config fetch above has resolved gets the same
+// retry-until-loaded behavior as every other event, instead of silently
+// dropping the PageView.
 if (import.meta.client) {
   const route = useRoute()
   watch(() => route.fullPath, () => {
-    const fbq = (window as unknown as { fbq?: (...args: unknown[]) => void }).fbq
-    fbq?.('track', 'PageView')
+    useMetaPixel().trackEvent('PageView')
   })
 }
 </script>
