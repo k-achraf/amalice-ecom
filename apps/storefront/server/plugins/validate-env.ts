@@ -3,7 +3,7 @@ import { z } from 'zod'
 // Fails fast at boot on a misconfigured environment, rather than surfacing
 // as a confusing runtime error three requests into a broken API call.
 const envSchema = z.object({
-  NUXT_PUBLIC_API_BASE_URL: z.url().default('http://localhost:3333')
+  NUXT_PUBLIC_API_BASE: z.url().default('http://localhost:3333')
 })
 
 export default defineNitroPlugin(() => {

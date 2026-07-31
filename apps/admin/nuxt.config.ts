@@ -22,7 +22,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      // NUXT_PUBLIC_API_BASE_URL overrides this at runtime.
+      // NUXT_PUBLIC_API_BASE overrides this at runtime.
       apiBase: 'http://localhost:3333'
     }
   },

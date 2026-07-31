@@ -146,10 +146,10 @@ the build — you can change this later without rebuilding, just restart the
 process):
 
 ```bash
-echo "NUXT_PUBLIC_API_BASE_URL=https://api.yourdomain.com" > apps/admin/.env
+echo "NUXT_PUBLIC_API_BASE=https://api.yourdomain.com" > apps/admin/.env
 
 cat > apps/storefront/.env <<'EOF'
-NUXT_PUBLIC_API_BASE_URL=https://api.yourdomain.com
+NUXT_PUBLIC_API_BASE=https://api.yourdomain.com
 NUXT_PUBLIC_SITE_URL=https://yourdomain.com
 EOF
 ```
@@ -390,7 +390,7 @@ pm2 reload ecosystem.config.cjs
 | Change                                   | What to do instead              |
 | ----------------------------------------- | -------------------------------- |
 | `apps/api/.env` value (secrets, DB URL)   | `pm2 restart amalice-api`       |
-| `NUXT_PUBLIC_API_BASE_URL` / site URL     | `pm2 restart amalice-admin` / `amalice-storefront` |
+| `NUXT_PUBLIC_API_BASE` / site URL         | `pm2 restart amalice-admin` / `amalice-storefront` |
 | Any `.ts`/`.vue` source change            | Rebuild that app, then `pm2 reload` |
 | Prisma schema change                      | Rebuild `apps/api`, then `prisma migrate deploy` |
 

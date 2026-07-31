@@ -85,7 +85,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      // NUXT_PUBLIC_API_BASE_URL overrides this at runtime (see
+      // NUXT_PUBLIC_API_BASE overrides this at runtime (see
       // server/plugins/validate-env.ts for the Zod validation on the same
       // var) — declaring it here explicitly rather than relying on Nuxt's
       // auto-detection of NUXT_PUBLIC_*-prefixed env vars.
