@@ -85,6 +85,30 @@ const effectivePriceCents = computed(() => selectedVariant.value?.priceCents ?? 
 const effectiveStock = computed(() => selectedVariant.value?.stockQuantity ?? product.value?.stockQuantity ?? 0)
 const inStock = computed(() => effectiveStock.value > 0)
 
+// ViewContent (both pixels) — Meta/TikTok's standard "product/landing page
+// viewed" event, used for retargeting and catalog ad matching. Fires once
+// per page load, client-only (both pixel composables no-op on the server
+// anyway), guarded so this watchEffect re-running for an unrelated reactive
+// dependency change can't re-fire it for the same product.
+let viewContentFired = false
+watchEffect(() => {
+  if (product.value && import.meta.client && !viewContentFired) {
+    viewContentFired = true
+    useMetaPixel().trackEvent('ViewContent', {
+      content_ids: [product.value.id],
+      content_type: 'product',
+      content_name: product.value.name,
+      value: effectivePriceCents.value / 100,
+      currency: 'DZD'
+    })
+    useTikTokPixel().trackEvent('ViewContent', {
+      contents: [{ content_id: product.value.id, content_name: product.value.name, price: effectivePriceCents.value / 100 }],
+      value: effectivePriceCents.value / 100,
+      currency: 'DZD'
+    })
+  }
+})
+
 const variantOptions = computed(() => {
   if (!product.value?.variants.length) return {} as Record<string, Set<string>>
   const opts: Record<string, Set<string>> = {}

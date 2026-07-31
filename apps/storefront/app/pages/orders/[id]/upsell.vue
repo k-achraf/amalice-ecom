@@ -52,12 +52,31 @@ async function acceptOffer() {
       method: 'POST',
       body: { phone: phone.value, upsellId: offer.value.upsellId, quantity: 1 }
     })
-    // The stashed confirmation payload is now stale (doesn't include the
-    // added item/new total) — drop it so confirmation.vue re-fetches fresh
-    // via its own "not found" path... actually simpler: just clear it and
-    // let confirmation show what it can; the order itself is already
-    // correct server-side regardless of what this cached copy says.
-    sessionStorage.removeItem(`amalice.order.${orderId}`)
+    // Merge the accepted upsell into the stashed confirmation payload rather
+    // than deleting it — confirmation.vue's Purchase pixel event depends on
+    // this sessionStorage key existing (see its onMounted). Deleting it here
+    // used to make confirmation.vue hit its "not found" branch and skip
+    // firing Purchase entirely for every order where the customer accepted
+    // the upsell — a real bug, not just a stale-total display quibble.
+    const rawOrder = sessionStorage.getItem(`amalice.order.${orderId}`)
+    if (rawOrder) {
+      try {
+        const cached = JSON.parse(rawOrder)
+        cached.items.push({
+          productId: offer.value.product.id,
+          name: offer.value.product.name,
+          quantity: 1,
+          unitPriceCents: offer.value.priceCents,
+          lineTotalCents: offer.value.priceCents
+        })
+        cached.totalCents += offer.value.priceCents
+        sessionStorage.setItem(`amalice.order.${orderId}`, JSON.stringify(cached))
+      } catch {
+        // Malformed cached payload — leave it as-is rather than lose the
+        // Purchase event by deleting it; confirmation.vue's own try/catch
+        // around JSON.parse handles this the same way it already does.
+      }
+    }
   } catch {
     // Best-effort — if accepting fails, just move on to confirmation rather
     // than trap the customer on this page.
