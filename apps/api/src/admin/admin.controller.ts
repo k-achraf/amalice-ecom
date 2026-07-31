@@ -102,7 +102,8 @@ export class AdminController {
     @Query('from') fromIso: string | undefined,
     @Query('to') toIso: string | undefined,
     @Query('page') page: string = '1',
-    @Query('pageSize') pageSize: string = '20'
+    @Query('pageSize') pageSize: string = '20',
+    @Query('abandoned') abandoned: 'only' | 'exclude' | undefined
   ) {
     return this.orders.list({
       state,
@@ -111,7 +112,8 @@ export class AdminController {
       from: fromIso ? new Date(fromIso) : undefined,
       to: toIso ? new Date(toIso) : undefined,
       page: Number(page),
-      pageSize: Number(pageSize)
+      pageSize: Number(pageSize),
+      abandoned
     })
   }
 

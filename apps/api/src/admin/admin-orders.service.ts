@@ -68,8 +68,14 @@ export class AdminOrdersService {
     to?: Date
     page: number
     pageSize: number
+    // Every existing caller (Orders/Call Center/Fulfillment/Shipping pages)
+    // omits this, which excludes abandoned-cart orders (see
+    // Order.isAbandoned's Prisma comment) so they don't pollute the real
+    // queue — only the dedicated Abandoned Carts page passes 'only'.
+    abandoned?: 'only' | 'exclude'
   }) {
     const where: Prisma.OrderWhereInput = {
+      isAbandoned: args.abandoned === 'only',
       ...(args.state && { state: args.state }),
       ...(args.courierId && { shipment: { courierId: args.courierId } }),
       ...((args.from || args.to) && {

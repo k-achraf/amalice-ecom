@@ -224,9 +224,28 @@ export const LeadOrderSchema = z.object({
   shippingType: ShippingTypeSchema,
   items: z.array(CheckoutItemSchema).min(1),
   // Optional Meta Pixel dedup/match-quality context — see CheckoutTrackingSchema.
-  tracking: CheckoutTrackingSchema.optional()
+  tracking: CheckoutTrackingSchema.optional(),
+  // Set when this submit is completing an order the storefront already
+  // auto-created as abandoned (see AbandonedLeadOrderSchema below) — the
+  // server updates that same row in place (clearing isAbandoned) instead of
+  // creating a second order for one funnel visit.
+  convertsAbandonedOrderId: z.uuid().optional()
 })
 export type LeadOrder = z.infer<typeof LeadOrderSchema>
+
+// Abandoned-cart order — fired by the storefront when a customer has typed a
+// phone number on a lead form and gone idle past the store's configured
+// abandonedCartDelaySeconds (StoreSettings) without submitting. Deliberately
+// far more lenient than LeadOrderSchema: wilaya/shipping/most fields may not
+// be filled in yet, only `fields` (must contain a phone) and the item being
+// viewed are guaranteed. See OrdersService.createAbandonedOrder.
+export const AbandonedLeadOrderSchema = z.object({
+  fields: z.record(z.string()),
+  wilayaId: z.string().optional(),
+  shippingType: ShippingTypeSchema.optional(),
+  items: z.array(CheckoutItemSchema).min(1)
+})
+export type AbandonedLeadOrder = z.infer<typeof AbandonedLeadOrderSchema>
 
 // Order ID is in the URL; phone is the shared secret that makes this a
 // legitimate public lookup instead of "guess a UUID, read anyone's order."
@@ -289,6 +308,8 @@ export interface AdminOrderListItem {
   address: { line1: string; line2: string | null; city: string; region: string; postalCode: string; country: string }
   items: AdminOrderLineItem[]
   shipment?: { courier: { name: string } } | null
+  // See Order.isAbandoned's Prisma comment.
+  isAbandoned: boolean
 }
 
 export interface OrderListResponse {
@@ -316,6 +337,8 @@ export interface AdminOrderDetail {
   items: AdminOrderLineItem[]
   shipment: { courier: { name: string }; trackingReference: string | null; courierStatus: string | null } | null
   cashReconciliation: { expectedCents: number; collectedCents: number | null } | null
+  // See Order.isAbandoned's Prisma comment.
+  isAbandoned: boolean
 }
 
 // Admin/call-center "add item to order" — covers the upsells system's

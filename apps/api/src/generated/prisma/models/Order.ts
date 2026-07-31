@@ -44,6 +44,7 @@ export type OrderMinAggregateOutputType = {
   totalCents: number | null
   shippingType: $Enums.ShippingType | null
   shippingPriceCents: number | null
+  isAbandoned: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +57,7 @@ export type OrderMaxAggregateOutputType = {
   totalCents: number | null
   shippingType: $Enums.ShippingType | null
   shippingPriceCents: number | null
+  isAbandoned: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -68,6 +70,7 @@ export type OrderCountAggregateOutputType = {
   totalCents: number
   shippingType: number
   shippingPriceCents: number
+  isAbandoned: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -92,6 +95,7 @@ export type OrderMinAggregateInputType = {
   totalCents?: true
   shippingType?: true
   shippingPriceCents?: true
+  isAbandoned?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -104,6 +108,7 @@ export type OrderMaxAggregateInputType = {
   totalCents?: true
   shippingType?: true
   shippingPriceCents?: true
+  isAbandoned?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -116,6 +121,7 @@ export type OrderCountAggregateInputType = {
   totalCents?: true
   shippingType?: true
   shippingPriceCents?: true
+  isAbandoned?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -215,6 +221,7 @@ export type OrderGroupByOutputType = {
   totalCents: number
   shippingType: $Enums.ShippingType | null
   shippingPriceCents: number
+  isAbandoned: boolean
   createdAt: Date
   updatedAt: Date
   _count: OrderCountAggregateOutputType | null
@@ -250,6 +257,7 @@ export type OrderWhereInput = {
   totalCents?: Prisma.IntFilter<"Order"> | number
   shippingType?: Prisma.EnumShippingTypeNullableFilter<"Order"> | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFilter<"Order"> | number
+  isAbandoned?: Prisma.BoolFilter<"Order"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
@@ -270,6 +278,7 @@ export type OrderOrderByWithRelationInput = {
   totalCents?: Prisma.SortOrder
   shippingType?: Prisma.SortOrderInput | Prisma.SortOrder
   shippingPriceCents?: Prisma.SortOrder
+  isAbandoned?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   customer?: Prisma.CustomerOrderByWithRelationInput
@@ -293,6 +302,7 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   totalCents?: Prisma.IntFilter<"Order"> | number
   shippingType?: Prisma.EnumShippingTypeNullableFilter<"Order"> | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFilter<"Order"> | number
+  isAbandoned?: Prisma.BoolFilter<"Order"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
@@ -313,6 +323,7 @@ export type OrderOrderByWithAggregationInput = {
   totalCents?: Prisma.SortOrder
   shippingType?: Prisma.SortOrderInput | Prisma.SortOrder
   shippingPriceCents?: Prisma.SortOrder
+  isAbandoned?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.OrderCountOrderByAggregateInput
@@ -333,6 +344,7 @@ export type OrderScalarWhereWithAggregatesInput = {
   totalCents?: Prisma.IntWithAggregatesFilter<"Order"> | number
   shippingType?: Prisma.EnumShippingTypeNullableWithAggregatesFilter<"Order"> | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntWithAggregatesFilter<"Order"> | number
+  isAbandoned?: Prisma.BoolWithAggregatesFilter<"Order"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
 }
@@ -343,6 +355,7 @@ export type OrderCreateInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -363,6 +376,7 @@ export type OrderUncheckedCreateInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
@@ -379,6 +393,7 @@ export type OrderUpdateInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -399,6 +414,7 @@ export type OrderUncheckedUpdateInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
@@ -417,6 +433,7 @@ export type OrderCreateManyInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -427,6 +444,7 @@ export type OrderUpdateManyMutationInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -439,6 +457,7 @@ export type OrderUncheckedUpdateManyInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -461,6 +480,7 @@ export type OrderCountOrderByAggregateInput = {
   totalCents?: Prisma.SortOrder
   shippingType?: Prisma.SortOrder
   shippingPriceCents?: Prisma.SortOrder
+  isAbandoned?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -478,6 +498,7 @@ export type OrderMaxOrderByAggregateInput = {
   totalCents?: Prisma.SortOrder
   shippingType?: Prisma.SortOrder
   shippingPriceCents?: Prisma.SortOrder
+  isAbandoned?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -490,6 +511,7 @@ export type OrderMinOrderByAggregateInput = {
   totalCents?: Prisma.SortOrder
   shippingType?: Prisma.SortOrder
   shippingPriceCents?: Prisma.SortOrder
+  isAbandoned?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -695,6 +717,7 @@ export type OrderCreateWithoutCustomerInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
@@ -713,6 +736,7 @@ export type OrderUncheckedCreateWithoutCustomerInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
@@ -760,6 +784,7 @@ export type OrderScalarWhereInput = {
   totalCents?: Prisma.IntFilter<"Order"> | number
   shippingType?: Prisma.EnumShippingTypeNullableFilter<"Order"> | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFilter<"Order"> | number
+  isAbandoned?: Prisma.BoolFilter<"Order"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
 }
@@ -770,6 +795,7 @@ export type OrderCreateWithoutAddressInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -788,6 +814,7 @@ export type OrderUncheckedCreateWithoutAddressInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
@@ -830,6 +857,7 @@ export type OrderCreateWithoutItemsInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -849,6 +877,7 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   shipment?: Prisma.ShipmentUncheckedCreateNestedOneWithoutOrderInput
@@ -880,6 +909,7 @@ export type OrderUpdateWithoutItemsInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -899,6 +929,7 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   shipment?: Prisma.ShipmentUncheckedUpdateOneWithoutOrderNestedInput
@@ -914,6 +945,7 @@ export type OrderCreateWithoutShipmentInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -933,6 +965,7 @@ export type OrderUncheckedCreateWithoutShipmentInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
@@ -964,6 +997,7 @@ export type OrderUpdateWithoutShipmentInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -983,6 +1017,7 @@ export type OrderUncheckedUpdateWithoutShipmentInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
@@ -998,6 +1033,7 @@ export type OrderCreateWithoutCashReconciliationInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -1017,6 +1053,7 @@ export type OrderUncheckedCreateWithoutCashReconciliationInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
@@ -1048,6 +1085,7 @@ export type OrderUpdateWithoutCashReconciliationInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -1067,6 +1105,7 @@ export type OrderUncheckedUpdateWithoutCashReconciliationInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
@@ -1082,6 +1121,7 @@ export type OrderCreateWithoutLedgerEntriesInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -1101,6 +1141,7 @@ export type OrderUncheckedCreateWithoutLedgerEntriesInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
@@ -1132,6 +1173,7 @@ export type OrderUpdateWithoutLedgerEntriesInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -1151,6 +1193,7 @@ export type OrderUncheckedUpdateWithoutLedgerEntriesInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
@@ -1166,6 +1209,7 @@ export type OrderCreateWithoutNotificationsInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -1185,6 +1229,7 @@ export type OrderUncheckedCreateWithoutNotificationsInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
@@ -1216,6 +1261,7 @@ export type OrderUpdateWithoutNotificationsInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -1235,6 +1281,7 @@ export type OrderUncheckedUpdateWithoutNotificationsInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
@@ -1250,6 +1297,7 @@ export type OrderCreateWithoutGoogleSheetRowsInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -1269,6 +1317,7 @@ export type OrderUncheckedCreateWithoutGoogleSheetRowsInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
@@ -1300,6 +1349,7 @@ export type OrderUpdateWithoutGoogleSheetRowsInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -1319,6 +1369,7 @@ export type OrderUncheckedUpdateWithoutGoogleSheetRowsInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
@@ -1335,6 +1386,7 @@ export type OrderCreateManyCustomerInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1345,6 +1397,7 @@ export type OrderUpdateWithoutCustomerInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
@@ -1363,6 +1416,7 @@ export type OrderUncheckedUpdateWithoutCustomerInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
@@ -1380,6 +1434,7 @@ export type OrderUncheckedUpdateManyWithoutCustomerInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1391,6 +1446,7 @@ export type OrderCreateManyAddressInput = {
   totalCents: number
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
+  isAbandoned?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1401,6 +1457,7 @@ export type OrderUpdateWithoutAddressInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -1419,6 +1476,7 @@ export type OrderUncheckedUpdateWithoutAddressInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
@@ -1436,6 +1494,7 @@ export type OrderUncheckedUpdateManyWithoutAddressInput = {
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1506,6 +1565,7 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   totalCents?: boolean
   shippingType?: boolean
   shippingPriceCents?: boolean
+  isAbandoned?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -1527,6 +1587,7 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   totalCents?: boolean
   shippingType?: boolean
   shippingPriceCents?: boolean
+  isAbandoned?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -1541,6 +1602,7 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   totalCents?: boolean
   shippingType?: boolean
   shippingPriceCents?: boolean
+  isAbandoned?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -1555,11 +1617,12 @@ export type OrderSelectScalar = {
   totalCents?: boolean
   shippingType?: boolean
   shippingPriceCents?: boolean
+  isAbandoned?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "addressId" | "state" | "totalCents" | "shippingType" | "shippingPriceCents" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "addressId" | "state" | "totalCents" | "shippingType" | "shippingPriceCents" | "isAbandoned" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
   address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
@@ -1600,6 +1663,7 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     totalCents: number
     shippingType: $Enums.ShippingType | null
     shippingPriceCents: number
+    isAbandoned: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["order"]>
@@ -2040,6 +2104,7 @@ export interface OrderFieldRefs {
   readonly totalCents: Prisma.FieldRef<"Order", 'Int'>
   readonly shippingType: Prisma.FieldRef<"Order", 'ShippingType'>
   readonly shippingPriceCents: Prisma.FieldRef<"Order", 'Int'>
+  readonly isAbandoned: Prisma.FieldRef<"Order", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Order", 'DateTime'>
 }

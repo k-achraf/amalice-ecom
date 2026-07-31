@@ -19,10 +19,19 @@ export class StoreSettingsService {
   async getPublic(): Promise<StoreSettings> {
     const row = await this.prisma.storeSettings.findUnique({ where: { id: 'singleton' } })
     const raw = row
-      ? { activeTemplate: row.activeTemplate, storeName: row.storeName, announcementText: row.announcementText, displayCart: row.displayCart, leadFormConfig: row.leadFormConfig as StoreSettings['leadFormConfig'] }
-      : { activeTemplate: 'minimal', storeName: 'Amalice', announcementText: null, displayCart: true }
+      ? {
+          activeTemplate: row.activeTemplate,
+          storeName: row.storeName,
+          announcementText: row.announcementText,
+          displayCart: row.displayCart,
+          leadFormConfig: row.leadFormConfig as StoreSettings['leadFormConfig'],
+          abandonedCartDelaySeconds: row.abandonedCartDelaySeconds
+        }
+      : { activeTemplate: 'minimal', storeName: 'Amalice', announcementText: null, displayCart: true, abandonedCartDelaySeconds: 60 }
     const parsed = StoreSettingsSchema.safeParse(raw)
-    return parsed.success ? parsed.data : { activeTemplate: 'minimal', storeName: raw.storeName, announcementText: raw.announcementText, displayCart: true }
+    return parsed.success
+      ? parsed.data
+      : { activeTemplate: 'minimal', storeName: raw.storeName, announcementText: raw.announcementText, displayCart: true, abandonedCartDelaySeconds: 60 }
   }
 
   // A singleton settings row conceptually always exists — on a fresh
@@ -34,7 +43,7 @@ export class StoreSettingsService {
     return this.prisma.storeSettings.upsert({
       where: { id: 'singleton' },
       update: {},
-      create: { id: 'singleton', activeTemplate: 'minimal', storeName: 'Amalice', displayCart: true }
+      create: { id: 'singleton', activeTemplate: 'minimal', storeName: 'Amalice', displayCart: true, abandonedCartDelaySeconds: 60 }
     })
   }
 
@@ -59,6 +68,9 @@ export class StoreSettingsService {
       if (before.displayCart !== input.displayCart) {
         changes.displayCart = { from: before.displayCart, to: input.displayCart }
       }
+      if (before.abandonedCartDelaySeconds !== input.abandonedCartDelaySeconds) {
+        changes.abandonedCartDelaySeconds = { from: before.abandonedCartDelaySeconds, to: input.abandonedCartDelaySeconds }
+      }
     }
 
     const row = await this.prisma.storeSettings.upsert({
@@ -68,7 +80,8 @@ export class StoreSettingsService {
         storeName: input.storeName,
         announcementText: input.announcementText ?? null,
         displayCart: input.displayCart,
-        leadFormConfig: input.leadFormConfig ? (input.leadFormConfig as object) : Prisma.JsonNull
+        leadFormConfig: input.leadFormConfig ? (input.leadFormConfig as object) : Prisma.JsonNull,
+        abandonedCartDelaySeconds: input.abandonedCartDelaySeconds
       },
       create: {
         id: 'singleton',
@@ -76,7 +89,8 @@ export class StoreSettingsService {
         storeName: input.storeName,
         announcementText: input.announcementText ?? null,
         displayCart: input.displayCart,
-        leadFormConfig: input.leadFormConfig ? (input.leadFormConfig as object) : Prisma.JsonNull
+        leadFormConfig: input.leadFormConfig ? (input.leadFormConfig as object) : Prisma.JsonNull,
+        abandonedCartDelaySeconds: input.abandonedCartDelaySeconds
       }
     })
 
@@ -95,7 +109,8 @@ export class StoreSettingsService {
       storeName: row.storeName,
       announcementText: row.announcementText,
       displayCart: row.displayCart,
-      leadFormConfig: row.leadFormConfig as StoreSettings['leadFormConfig']
+      leadFormConfig: row.leadFormConfig as StoreSettings['leadFormConfig'],
+      abandonedCartDelaySeconds: row.abandonedCartDelaySeconds
     })
   }
 }

@@ -24,6 +24,7 @@ const storeName = ref('')
 const announcementText = ref('')
 const displayCart = ref(true)
 const leadFormFields = ref<LeadFormField[]>([...DEFAULT_LEAD_FORM_FIELDS])
+const abandonedCartDelaySeconds = ref(60)
 
 // Sync from server once loaded.
 watchEffect(() => {
@@ -35,6 +36,7 @@ watchEffect(() => {
     leadFormFields.value = settings.value.leadFormConfig && settings.value.leadFormConfig.length > 0
       ? settings.value.leadFormConfig.map(f => ({ ...f }))
       : [...DEFAULT_LEAD_FORM_FIELDS]
+    abandonedCartDelaySeconds.value = settings.value.abandonedCartDelaySeconds ?? 60
   }
 })
 
@@ -44,7 +46,8 @@ const dirty = computed(() => !!settings.value && (
   storeName.value !== settings.value.storeName ||
   (announcementText.value || null) !== (settings.value.announcementText ?? null) ||
   displayCart.value !== (settings.value.displayCart ?? true) ||
-  JSON.stringify(leadFormFields.value) !== JSON.stringify(settings.value.leadFormConfig ?? DEFAULT_LEAD_FORM_FIELDS)
+  JSON.stringify(leadFormFields.value) !== JSON.stringify(settings.value.leadFormConfig ?? DEFAULT_LEAD_FORM_FIELDS) ||
+  abandonedCartDelaySeconds.value !== (settings.value.abandonedCartDelaySeconds ?? 60)
 ))
 
 async function apply() {
@@ -58,7 +61,8 @@ async function apply() {
         storeName: storeName.value,
         announcementText: announcementText.value || null,
         displayCart: displayCart.value,
-        leadFormConfig: leadFormFields.value
+        leadFormConfig: leadFormFields.value,
+        abandonedCartDelaySeconds: abandonedCartDelaySeconds.value
       }
     })
     settings.value = updated
@@ -436,6 +440,20 @@ const showFieldModalBool = computed({
           </UFormField>
           <UFormField label="Announcement bar text" help="Leave empty to hide the announcement bar. Shown across all templates.">
             <UTextarea v-model="announcementText" :rows="2" class="w-full max-w-md" />
+          </UFormField>
+        </section>
+
+        <!-- Abandoned carts -->
+        <section class="admin-kpi-card space-y-4 p-6">
+          <h2 class="text-lg font-semibold text-highlighted">Abandoned carts</h2>
+          <p class="text-sm text-muted">
+            On the Impulse template's lead form, if a customer types a phone number and then goes idle without
+            submitting, an order is created automatically and marked abandoned — visible on the
+            <NuxtLink to="/abandoned-carts" class="text-primary hover:underline">Abandoned Carts</NuxtLink> page for
+            follow-up.
+          </p>
+          <UFormField label="Idle delay before creating the abandoned order" help="10–3600 seconds.">
+            <UInputNumber v-model="abandonedCartDelaySeconds" :min="10" :max="3600" class="w-40" />
           </UFormField>
         </section>
 

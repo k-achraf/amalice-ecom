@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import type { AcceptOrderUpsell, Checkout, CheckoutItem, LeadOrder, ShippingType } from '@amalice/shared'
+import type { AbandonedLeadOrder, AcceptOrderUpsell, Checkout, CheckoutItem, LeadOrder, ShippingType } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import type { Product, ProductVariant, Prisma } from '../generated/prisma/client'
 import { NotificationsService } from '../notifications/notifications.service'
@@ -346,42 +346,145 @@ export class OrdersService {
       }
     })
 
-    try {
-      const order = await this.prisma.$transaction(async (tx) => {
-        // Atomic stock decrement for each item
-        for (const item of lead.items) {
-          await this.decrementStock(tx, item, variantById)
-        }
+    // If this submit is completing an order the storefront already
+    // auto-created as abandoned (see createAbandonedOrder), update that same
+    // row instead of creating a second one for one funnel visit — only if it
+    // still exists, is still abandoned (not already converted/handled by
+    // staff), and belongs to this same phone number (never let one phone's
+    // submit silently overwrite another customer's abandoned order).
+    const abandonedOrder = lead.convertsAbandonedOrderId
+      ? await this.prisma.order.findUnique({ where: { id: lead.convertsAbandonedOrderId }, include: { customer: true } })
+      : null
+    const convertingAbandoned = !!abandonedOrder && abandonedOrder.isAbandoned && abandonedOrder.customer.phone === phone
 
-        return tx.order.create({
+    const order = await this.prisma.$transaction(async (tx) => {
+      // Atomic stock decrement for each item
+      for (const item of lead.items) {
+        await this.decrementStock(tx, item, variantById)
+      }
+
+      if (convertingAbandoned) {
+        await tx.orderItem.deleteMany({ where: { orderId: abandonedOrder!.id } })
+        return tx.order.update({
+          where: { id: abandonedOrder!.id },
           data: {
-            customerId: customer.id,
             addressId: address.id,
-            state: 'PendingCallCenter',
             totalCents,
             shippingType: lead.shippingType,
             shippingPriceCents,
+            isAbandoned: false,
             items: { create: pricedItems }
           },
           include: { items: true }
         })
+      }
+
+      return tx.order.create({
+        data: {
+          customerId: customer.id,
+          addressId: address.id,
+          state: 'PendingCallCenter',
+          totalCents,
+          shippingType: lead.shippingType,
+          shippingPriceCents,
+          items: { create: pricedItems }
+        },
+        include: { items: true }
       })
+    })
 
-      // Enqueue notification
-      await this.notifications.enqueue({
-        channel: 'SMS',
-        recipient: phone,
-        message: `We've received your order! Our team will call you shortly to confirm the details. Total due on delivery: ${(totalCents / 100).toFixed(2)} DZD. Order ID: ${order.id}`,
-        orderId: order.id
-      })
+    // Enqueue notification
+    await this.notifications.enqueue({
+      channel: 'SMS',
+      recipient: phone,
+      message: `We've received your order! Our team will call you shortly to confirm the details. Total due on delivery: ${(totalCents / 100).toFixed(2)} DZD. Order ID: ${order.id}`,
+      orderId: order.id
+    })
 
-      this.sendPurchaseEvents(order.id, totalCents, phone, context, lead.tracking)
-      this.pushToGoogleSheets(order.id)
+    this.sendPurchaseEvents(order.id, totalCents, phone, context, lead.tracking)
+    this.pushToGoogleSheets(order.id)
 
-      return order
-    } catch (error) {
-      throw error
+    return order
+  }
+
+  // Abandoned-cart order — fired by the storefront when a customer typed a
+  // phone number on a lead form and went idle past the store's configured
+  // delay without submitting (see AbandonedLeadOrderSchema). Deliberately
+  // lighter-weight than createLeadOrder above: no stock decrement (nothing
+  // is actually reserved for an incomplete cart — see Order.isAbandoned's
+  // Prisma comment), no SMS ("we've received your order" would be premature
+  // and confusing for something the customer never finished), and no ad
+  // pixel Purchase events (would corrupt conversion/ROAS reporting for an
+  // action that didn't happen). Stock decrement and pixel events DO fire
+  // normally once/if createLeadOrder converts this row into a real order.
+  async createAbandonedOrder(lead: AbandonedLeadOrder) {
+    const productIds = lead.items.map((item) => item.productId)
+    const products = await this.prisma.product.findMany({ where: { id: { in: productIds } } })
+    const productById = new Map(products.map((p) => [p.id, p]))
+    const variantById = await this.loadVariants(lead.items)
+
+    for (const item of lead.items) {
+      if (!productById.get(item.productId)) throw new NotFoundException(`Product ${item.productId} not found`)
     }
+
+    const { pricedItems, totalCents: itemsTotalCents } = await this.priceCheckoutItems(lead.items, productById, variantById)
+
+    // wilaya/shipping may not be picked yet — price it if we have both,
+    // otherwise leave shipping unset rather than guessing.
+    let shippingPriceCents = 0
+    let wilayaName = ''
+    if (lead.wilayaId && lead.shippingType) {
+      const priced = await this.priceShipping(lead.wilayaId, lead.shippingType).catch(() => null)
+      if (priced) {
+        shippingPriceCents = priced.priceCents
+        wilayaName = priced.wilayaName
+      }
+    }
+    const totalCents = itemsTotalCents + shippingPriceCents
+
+    const f: Record<string, string> = lead.fields as Record<string, string>
+    const name: string = f.name || f.fullName || ''
+    const phone: string = f.phone || f.phoneNumber || ''
+    const commune: string = f.commune || f.city || ''
+    if (!phone) throw new ConflictException('Phone is required')
+
+    const coreKeys = new Set(['name', 'fullName', 'phone', 'phoneNumber', 'wilaya', 'region', 'commune', 'city'])
+    const extras: Record<string, string> = {}
+    for (const [key, val] of Object.entries(f)) {
+      if (!coreKeys.has(key) && val) extras[key] = String(val)
+    }
+
+    const customer = await this.prisma.customer.upsert({
+      where: { phone },
+      update: name ? { name } : {},
+      create: { phone, name: name || null }
+    })
+
+    const address = await this.prisma.address.create({
+      data: {
+        customerId: customer.id,
+        line1: commune || wilayaName || '(not provided)',
+        city: commune,
+        region: wilayaName,
+        postalCode: '00000',
+        country: 'DZ',
+        line2: Object.keys(extras).length > 0 ? JSON.stringify(extras) : null
+      }
+    })
+
+    return this.prisma.order.create({
+      data: {
+        customerId: customer.id,
+        addressId: address.id,
+        state: 'PendingCallCenter',
+        totalCents,
+        shippingType: lead.shippingType ?? null,
+        shippingPriceCents,
+        isAbandoned: true,
+        items: { create: pricedItems }
+      },
+      include: { items: true }
+    })
   }
 
   async trackOrder(orderId: string, phone: string) {

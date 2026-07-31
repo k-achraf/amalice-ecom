@@ -121,7 +121,11 @@ export const StoreSettingsSchema = z.object({
     options: z.array(z.string()).optional(),
     isCore: z.boolean().optional(),
     halfWidth: z.boolean().optional()
-  })).nullable().optional()
+  })).nullable().optional(),
+  // How long (seconds) a customer can go idle after typing a phone number on
+  // a lead form, without submitting, before the storefront auto-creates an
+  // abandoned-cart order (see AbandonedLeadOrderSchema in order.ts).
+  abandonedCartDelaySeconds: z.number().int().min(10).max(3600).default(60)
 })
 export type StoreSettings = z.infer<typeof StoreSettingsSchema>
 

@@ -1,13 +1,14 @@
 import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { Throttle } from '@nestjs/throttler'
-import { CheckoutSchema, LeadOrderSchema, TrackOrderQuerySchema, AcceptOrderUpsellSchema } from '@amalice/shared'
+import { CheckoutSchema, LeadOrderSchema, AbandonedLeadOrderSchema, TrackOrderQuerySchema, AcceptOrderUpsellSchema } from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
 import { OrdersService, type OrderRequestContext } from './orders.service'
 
 class CheckoutDto extends createZodDto(CheckoutSchema) {}
 class LeadOrderDto extends createZodDto(LeadOrderSchema) {}
+class AbandonedLeadOrderDto extends createZodDto(AbandonedLeadOrderSchema) {}
 class TrackOrderQueryDto extends createZodDto(TrackOrderQuerySchema) {}
 // Phone is the same shared-secret pattern as track — reused here for both
 // history lookup and the query DTO's validation (E.164 shape).
@@ -34,6 +35,17 @@ export class OrdersController {
   @Post('lead')
   createLead(@Body() body: LeadOrderDto, @Req() req: Request) {
     return this.orders.createLeadOrder(body, requestContext(req))
+  }
+
+  // Fired by the storefront lead form after the customer goes idle past the
+  // store's configured delay without submitting (see
+  // AbandonedLeadOrderSchema). Rate-limited like the other public,
+  // unauthenticated write endpoints below — a client-side timer firing
+  // repeatedly from a stuck tab shouldn't be able to hammer this.
+  @Post('abandoned')
+  @Throttle({ default: { limit: 20, ttl: 5 * 60 * 1000 } })
+  createAbandoned(@Body() body: AbandonedLeadOrderDto) {
+    return this.orders.createAbandonedOrder(body)
   }
 
   // Order id + phone together act as a shared secret — public and

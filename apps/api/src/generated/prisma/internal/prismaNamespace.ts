@@ -3631,6 +3631,7 @@ export const OrderScalarFieldEnum = {
   totalCents: 'totalCents',
   shippingType: 'shippingType',
   shippingPriceCents: 'shippingPriceCents',
+  isAbandoned: 'isAbandoned',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -3794,6 +3795,7 @@ export const StoreSettingsScalarFieldEnum = {
   announcementText: 'announcementText',
   displayCart: 'displayCart',
   leadFormConfig: 'leadFormConfig',
+  abandonedCartDelaySeconds: 'abandonedCartDelaySeconds',
   updatedAt: 'updatedAt'
 } as const
 

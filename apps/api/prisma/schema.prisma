@@ -393,6 +393,14 @@ model Order {
   totalCents         Int                   @map("total_cents")
   shippingType       ShippingType?         @map("shipping_type")
   shippingPriceCents Int                   @default(0) @map("shipping_price_cents")
+  // True for an order auto-created from an unfinished lead form (customer
+  // typed a phone number, then went idle past the store's configured
+  // abandoned-cart delay without submitting — see
+  // OrdersService.createAbandonedOrder). Lets call-center staff see this was
+  // never actually confirmed by the customer, not a fabricated real order.
+  // Cleared in place (never a second row) if the same customer goes on to
+  // actually submit the form — see createLeadOrder's convertsAbandonedOrderId.
+  isAbandoned        Boolean               @default(false) @map("is_abandoned")
   items              OrderItem[]
   shipment           Shipment?
   cashReconciliation CashReconciliation?
@@ -692,21 +700,25 @@ model AuditLog {
 // Singleton row (id = "singleton"); upserted, never deleted. Template changes
 // are audit-logged like every other operator mutation (SEC-03).
 model StoreSettings {
-  id               String   @id @default("singleton")
+  id                        String   @id @default("singleton")
   // One of STORE_TEMPLATES (packages/shared): "minimal" | "editorial" | "boutique" | "promify".
   // Validated server-side against the registry; drives the storefront's layout.
-  activeTemplate   String   @default("minimal") @map("active_template")
-  storeName        String   @default("Amalice") @map("store_name")
+  activeTemplate            String   @default("minimal") @map("active_template")
+  storeName                 String   @default("Amalice") @map("store_name")
   // Drives the header announcement bar (nullable = no announcement shown).
-  announcementText String?  @map("announcement_text")
+  announcementText          String?  @map("announcement_text")
   // When true: cart icon + cart page + OTP checkout (default). When false:
   // hide cart, show a lead-capture form directly on the PDP instead.
-  displayCart      Boolean  @default(true) @map("display_cart")
+  displayCart               Boolean  @default(true) @map("display_cart")
   // Admin-configurable lead form fields (JSON array of LeadFormField). Null =
   // use the default 4 fields (name, phone, wilaya, commune). When set, the
   // storefront renders these dynamically on the PDP lead form.
-  leadFormConfig   Json?    @map("lead_form_config")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  leadFormConfig            Json?    @map("lead_form_config")
+  // How long (seconds) a customer can sit idle after typing a phone number
+  // on the lead form, without submitting, before the storefront fires the
+  // abandoned-cart order creation. See OrdersService.createAbandonedOrder.
+  abandonedCartDelaySeconds Int      @default(60) @map("abandoned_cart_delay_seconds")
+  updatedAt                 DateTime @updatedAt @map("updated_at")
 
   @@map("store_settings")
 }

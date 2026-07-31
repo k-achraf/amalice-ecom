@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { StoreTemplate } from '@amalice/shared'
+
 // Resolves the active storefront template from /settings and binds it to
 // NuxtLayout. CRITICAL: the settings fetch is awaited here so the layout
 // name is resolved BEFORE <NuxtLayout> picks a layout file during SSR.
@@ -13,8 +15,8 @@
 const config = useRuntimeConfig()
 const { data: settings } = await useAsyncData(
   'store-settings',
-  () => $fetch('/settings', { baseURL: config.public.apiBase }),
-  { default: () => ({ activeTemplate: 'minimal', storeName: 'Amalice', announcementText: null }) }
+  () => $fetch<{ activeTemplate: StoreTemplate }>('/settings', { baseURL: config.public.apiBase }),
+  { default: () => ({ activeTemplate: 'minimal' as StoreTemplate, storeName: 'Amalice', announcementText: null }) }
 )
 const template = computed(() => settings.value?.activeTemplate ?? 'minimal')
 </script>

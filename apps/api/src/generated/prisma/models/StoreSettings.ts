@@ -20,8 +20,18 @@ export type StoreSettingsModel = runtime.Types.Result.DefaultSelection<Prisma.$S
 
 export type AggregateStoreSettings = {
   _count: StoreSettingsCountAggregateOutputType | null
+  _avg: StoreSettingsAvgAggregateOutputType | null
+  _sum: StoreSettingsSumAggregateOutputType | null
   _min: StoreSettingsMinAggregateOutputType | null
   _max: StoreSettingsMaxAggregateOutputType | null
+}
+
+export type StoreSettingsAvgAggregateOutputType = {
+  abandonedCartDelaySeconds: number | null
+}
+
+export type StoreSettingsSumAggregateOutputType = {
+  abandonedCartDelaySeconds: number | null
 }
 
 export type StoreSettingsMinAggregateOutputType = {
@@ -30,6 +40,7 @@ export type StoreSettingsMinAggregateOutputType = {
   storeName: string | null
   announcementText: string | null
   displayCart: boolean | null
+  abandonedCartDelaySeconds: number | null
   updatedAt: Date | null
 }
 
@@ -39,6 +50,7 @@ export type StoreSettingsMaxAggregateOutputType = {
   storeName: string | null
   announcementText: string | null
   displayCart: boolean | null
+  abandonedCartDelaySeconds: number | null
   updatedAt: Date | null
 }
 
@@ -49,10 +61,19 @@ export type StoreSettingsCountAggregateOutputType = {
   announcementText: number
   displayCart: number
   leadFormConfig: number
+  abandonedCartDelaySeconds: number
   updatedAt: number
   _all: number
 }
 
+
+export type StoreSettingsAvgAggregateInputType = {
+  abandonedCartDelaySeconds?: true
+}
+
+export type StoreSettingsSumAggregateInputType = {
+  abandonedCartDelaySeconds?: true
+}
 
 export type StoreSettingsMinAggregateInputType = {
   id?: true
@@ -60,6 +81,7 @@ export type StoreSettingsMinAggregateInputType = {
   storeName?: true
   announcementText?: true
   displayCart?: true
+  abandonedCartDelaySeconds?: true
   updatedAt?: true
 }
 
@@ -69,6 +91,7 @@ export type StoreSettingsMaxAggregateInputType = {
   storeName?: true
   announcementText?: true
   displayCart?: true
+  abandonedCartDelaySeconds?: true
   updatedAt?: true
 }
 
@@ -79,6 +102,7 @@ export type StoreSettingsCountAggregateInputType = {
   announcementText?: true
   displayCart?: true
   leadFormConfig?: true
+  abandonedCartDelaySeconds?: true
   updatedAt?: true
   _all?: true
 }
@@ -121,6 +145,18 @@ export type StoreSettingsAggregateArgs<ExtArgs extends runtime.Types.Extensions.
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: StoreSettingsAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: StoreSettingsSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: StoreSettingsMinAggregateInputType
@@ -151,6 +187,8 @@ export type StoreSettingsGroupByArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   _count?: StoreSettingsCountAggregateInputType | true
+  _avg?: StoreSettingsAvgAggregateInputType
+  _sum?: StoreSettingsSumAggregateInputType
   _min?: StoreSettingsMinAggregateInputType
   _max?: StoreSettingsMaxAggregateInputType
 }
@@ -162,8 +200,11 @@ export type StoreSettingsGroupByOutputType = {
   announcementText: string | null
   displayCart: boolean
   leadFormConfig: runtime.JsonValue | null
+  abandonedCartDelaySeconds: number
   updatedAt: Date
   _count: StoreSettingsCountAggregateOutputType | null
+  _avg: StoreSettingsAvgAggregateOutputType | null
+  _sum: StoreSettingsSumAggregateOutputType | null
   _min: StoreSettingsMinAggregateOutputType | null
   _max: StoreSettingsMaxAggregateOutputType | null
 }
@@ -193,6 +234,7 @@ export type StoreSettingsWhereInput = {
   announcementText?: Prisma.StringNullableFilter<"StoreSettings"> | string | null
   displayCart?: Prisma.BoolFilter<"StoreSettings"> | boolean
   leadFormConfig?: Prisma.JsonNullableFilter<"StoreSettings">
+  abandonedCartDelaySeconds?: Prisma.IntFilter<"StoreSettings"> | number
   updatedAt?: Prisma.DateTimeFilter<"StoreSettings"> | Date | string
 }
 
@@ -203,6 +245,7 @@ export type StoreSettingsOrderByWithRelationInput = {
   announcementText?: Prisma.SortOrderInput | Prisma.SortOrder
   displayCart?: Prisma.SortOrder
   leadFormConfig?: Prisma.SortOrderInput | Prisma.SortOrder
+  abandonedCartDelaySeconds?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
@@ -216,6 +259,7 @@ export type StoreSettingsWhereUniqueInput = Prisma.AtLeast<{
   announcementText?: Prisma.StringNullableFilter<"StoreSettings"> | string | null
   displayCart?: Prisma.BoolFilter<"StoreSettings"> | boolean
   leadFormConfig?: Prisma.JsonNullableFilter<"StoreSettings">
+  abandonedCartDelaySeconds?: Prisma.IntFilter<"StoreSettings"> | number
   updatedAt?: Prisma.DateTimeFilter<"StoreSettings"> | Date | string
 }, "id">
 
@@ -226,10 +270,13 @@ export type StoreSettingsOrderByWithAggregationInput = {
   announcementText?: Prisma.SortOrderInput | Prisma.SortOrder
   displayCart?: Prisma.SortOrder
   leadFormConfig?: Prisma.SortOrderInput | Prisma.SortOrder
+  abandonedCartDelaySeconds?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.StoreSettingsCountOrderByAggregateInput
+  _avg?: Prisma.StoreSettingsAvgOrderByAggregateInput
   _max?: Prisma.StoreSettingsMaxOrderByAggregateInput
   _min?: Prisma.StoreSettingsMinOrderByAggregateInput
+  _sum?: Prisma.StoreSettingsSumOrderByAggregateInput
 }
 
 export type StoreSettingsScalarWhereWithAggregatesInput = {
@@ -242,6 +289,7 @@ export type StoreSettingsScalarWhereWithAggregatesInput = {
   announcementText?: Prisma.StringNullableWithAggregatesFilter<"StoreSettings"> | string | null
   displayCart?: Prisma.BoolWithAggregatesFilter<"StoreSettings"> | boolean
   leadFormConfig?: Prisma.JsonNullableWithAggregatesFilter<"StoreSettings">
+  abandonedCartDelaySeconds?: Prisma.IntWithAggregatesFilter<"StoreSettings"> | number
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"StoreSettings"> | Date | string
 }
 
@@ -252,6 +300,7 @@ export type StoreSettingsCreateInput = {
   announcementText?: string | null
   displayCart?: boolean
   leadFormConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  abandonedCartDelaySeconds?: number
   updatedAt?: Date | string
 }
 
@@ -262,6 +311,7 @@ export type StoreSettingsUncheckedCreateInput = {
   announcementText?: string | null
   displayCart?: boolean
   leadFormConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  abandonedCartDelaySeconds?: number
   updatedAt?: Date | string
 }
 
@@ -272,6 +322,7 @@ export type StoreSettingsUpdateInput = {
   announcementText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   displayCart?: Prisma.BoolFieldUpdateOperationsInput | boolean
   leadFormConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  abandonedCartDelaySeconds?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -282,6 +333,7 @@ export type StoreSettingsUncheckedUpdateInput = {
   announcementText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   displayCart?: Prisma.BoolFieldUpdateOperationsInput | boolean
   leadFormConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  abandonedCartDelaySeconds?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -292,6 +344,7 @@ export type StoreSettingsCreateManyInput = {
   announcementText?: string | null
   displayCart?: boolean
   leadFormConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  abandonedCartDelaySeconds?: number
   updatedAt?: Date | string
 }
 
@@ -302,6 +355,7 @@ export type StoreSettingsUpdateManyMutationInput = {
   announcementText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   displayCart?: Prisma.BoolFieldUpdateOperationsInput | boolean
   leadFormConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  abandonedCartDelaySeconds?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -312,6 +366,7 @@ export type StoreSettingsUncheckedUpdateManyInput = {
   announcementText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   displayCart?: Prisma.BoolFieldUpdateOperationsInput | boolean
   leadFormConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  abandonedCartDelaySeconds?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -322,7 +377,12 @@ export type StoreSettingsCountOrderByAggregateInput = {
   announcementText?: Prisma.SortOrder
   displayCart?: Prisma.SortOrder
   leadFormConfig?: Prisma.SortOrder
+  abandonedCartDelaySeconds?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type StoreSettingsAvgOrderByAggregateInput = {
+  abandonedCartDelaySeconds?: Prisma.SortOrder
 }
 
 export type StoreSettingsMaxOrderByAggregateInput = {
@@ -331,6 +391,7 @@ export type StoreSettingsMaxOrderByAggregateInput = {
   storeName?: Prisma.SortOrder
   announcementText?: Prisma.SortOrder
   displayCart?: Prisma.SortOrder
+  abandonedCartDelaySeconds?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
@@ -340,7 +401,12 @@ export type StoreSettingsMinOrderByAggregateInput = {
   storeName?: Prisma.SortOrder
   announcementText?: Prisma.SortOrder
   displayCart?: Prisma.SortOrder
+  abandonedCartDelaySeconds?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type StoreSettingsSumOrderByAggregateInput = {
+  abandonedCartDelaySeconds?: Prisma.SortOrder
 }
 
 
@@ -352,6 +418,7 @@ export type StoreSettingsSelect<ExtArgs extends runtime.Types.Extensions.Interna
   announcementText?: boolean
   displayCart?: boolean
   leadFormConfig?: boolean
+  abandonedCartDelaySeconds?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["storeSettings"]>
 
@@ -362,6 +429,7 @@ export type StoreSettingsSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   announcementText?: boolean
   displayCart?: boolean
   leadFormConfig?: boolean
+  abandonedCartDelaySeconds?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["storeSettings"]>
 
@@ -372,6 +440,7 @@ export type StoreSettingsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   announcementText?: boolean
   displayCart?: boolean
   leadFormConfig?: boolean
+  abandonedCartDelaySeconds?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["storeSettings"]>
 
@@ -382,10 +451,11 @@ export type StoreSettingsSelectScalar = {
   announcementText?: boolean
   displayCart?: boolean
   leadFormConfig?: boolean
+  abandonedCartDelaySeconds?: boolean
   updatedAt?: boolean
 }
 
-export type StoreSettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "activeTemplate" | "storeName" | "announcementText" | "displayCart" | "leadFormConfig" | "updatedAt", ExtArgs["result"]["storeSettings"]>
+export type StoreSettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "activeTemplate" | "storeName" | "announcementText" | "displayCart" | "leadFormConfig" | "abandonedCartDelaySeconds" | "updatedAt", ExtArgs["result"]["storeSettings"]>
 
 export type $StoreSettingsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "StoreSettings"
@@ -397,6 +467,7 @@ export type $StoreSettingsPayload<ExtArgs extends runtime.Types.Extensions.Inter
     announcementText: string | null
     displayCart: boolean
     leadFormConfig: runtime.JsonValue | null
+    abandonedCartDelaySeconds: number
     updatedAt: Date
   }, ExtArgs["result"]["storeSettings"]>
   composites: {}
@@ -827,6 +898,7 @@ export interface StoreSettingsFieldRefs {
   readonly announcementText: Prisma.FieldRef<"StoreSettings", 'String'>
   readonly displayCart: Prisma.FieldRef<"StoreSettings", 'Boolean'>
   readonly leadFormConfig: Prisma.FieldRef<"StoreSettings", 'Json'>
+  readonly abandonedCartDelaySeconds: Prisma.FieldRef<"StoreSettings", 'Int'>
   readonly updatedAt: Prisma.FieldRef<"StoreSettings", 'DateTime'>
 }
     

@@ -154,6 +154,58 @@ watchEffect(() => {
 const leadPlacing = ref(false)
 const leadError = ref<string | null>(null)
 
+// ---- Abandoned-cart tracking (Impulse template only) ----
+// If the customer types a phone number on the lead form and goes idle past
+// the store's configured delay without submitting, auto-create the order as
+// abandoned so call-center can follow up (see AbandonedLeadOrderSchema /
+// OrdersService.createAbandonedOrder). Scoped to Impulse only per product
+// decision — this same leadFormData/[slug].vue page is shared by every
+// other template's lead-form flow too, but only Impulse's funnel design is
+// meant to trigger this.
+const abandonedOrderId = ref<string | null>(null)
+let abandonedTimer: ReturnType<typeof setTimeout> | undefined
+
+function stopAbandonedTimer() {
+  if (abandonedTimer) clearTimeout(abandonedTimer)
+  abandonedTimer = undefined
+}
+
+async function fireAbandonedOrder() {
+  if (!product.value || abandonedOrderId.value || leadPlacing.value) return
+  try {
+    const apiClient = useApiClient()
+    const created = await apiClient<{ id: string }>('/orders/abandoned', {
+      method: 'POST',
+      body: {
+        fields: leadFormData,
+        wilayaId: leadFormData.wilayaId || undefined,
+        shippingType: leadFormData.shippingType || undefined,
+        items: [{ productId: product.value.id, variantId: selectedVariantId.value ?? undefined, quantity: quantity.value, offerId: selectedOfferId.value ?? undefined }]
+      }
+    })
+    abandonedOrderId.value = created.id
+  } catch {
+    // Best-effort — a failed abandoned-cart capture must never surface to
+    // the customer or block them from still completing checkout normally.
+  }
+}
+
+watch(
+  () => ({ ...leadFormData }),
+  () => {
+    if (settings.value.activeTemplate !== 'impulse') return
+    if (abandonedOrderId.value || leadPlacing.value) return
+    const phone = leadFormData.phone || leadFormData.phoneNumber
+    stopAbandonedTimer()
+    if (!phone?.trim()) return
+    const delayMs = (settings.value.abandonedCartDelaySeconds || 60) * 1000
+    abandonedTimer = setTimeout(fireAbandonedOrder, delayMs)
+  },
+  { deep: true }
+)
+
+onBeforeUnmount(stopAbandonedTimer)
+
 // Priced client-side only for display (the "Total — cash on delivery" line);
 // the API re-prices from WilayaShippingRate server-side and never trusts this.
 const leadShippingPriceCents = computed(() => Number(leadFormData.shippingPriceCents) || 0)
@@ -171,6 +223,7 @@ async function onSubmitLead() {
     leadError.value = 'Please select a shipping method.'
     return
   }
+  stopAbandonedTimer()
   leadPlacing.value = true
   leadError.value = null
   try {
@@ -186,7 +239,11 @@ async function onSubmitLead() {
           items: [{ productId: product.value.id, variantId: selectedVariantId.value ?? undefined, quantity: quantity.value, offerId: selectedOfferId.value ?? undefined }],
           // Pixel match-quality context — see checkout.vue's placeOrder for
           // why no eventId is threaded through here either.
-          tracking: { ...useMetaPixel().getFbCookies(), ...useTikTokPixel().getTtCookie() }
+          tracking: { ...useMetaPixel().getFbCookies(), ...useTikTokPixel().getTtCookie() },
+          // If this same funnel visit already created an abandoned order
+          // (see fireAbandonedOrder above), update that row instead of
+          // creating a second one.
+          convertsAbandonedOrderId: abandonedOrderId.value ?? undefined
         }
       }
     )

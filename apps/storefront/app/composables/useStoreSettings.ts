@@ -11,7 +11,8 @@ const FALLBACK: StoreSettings = {
   activeTemplate: 'minimal',
   storeName: 'Amalice',
   announcementText: null,
-  displayCart: true
+  displayCart: true,
+  abandonedCartDelaySeconds: 60
 }
 
 export function useStoreSettings() {
