@@ -9,7 +9,10 @@ import { AppModule } from './app.module'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
-  app.enableCors()
+  app.enableCors({
+    origin: ['https://amalice.shop', 'https://www.amalice.shop', 'https://admin.amalice.shop'],
+    credentials: true
+  })
 
   // Ensure the uploads directory exists, then serve it statically at /uploads.
   // Product images uploaded by the admin (file picker or URL download) land here.
