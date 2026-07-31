@@ -13,10 +13,24 @@ export function useTikTokPixel() {
     return (window as unknown as { ttq?: { track?: (...args: unknown[]) => void } }).ttq
   }
 
-  function trackEvent(eventName: string, params?: Record<string, unknown>, eventId?: string) {
+  function fire(eventName: string, params?: Record<string, unknown>, eventId?: string) {
     const q = ttq()
-    if (!q?.track) return
+    if (!q?.track) return false
     q.track(eventName, eventId ? { ...params, event_id: eventId } : (params ?? {}))
+    return true
+  }
+
+  // Same rationale as useMetaPixel's retry — TikTokPixelScript.vue also
+  // injects ttq asynchronously, so an event fired immediately on page mount
+  // (ViewContent) can race ahead of it and find window.ttq still undefined.
+  function trackEvent(eventName: string, params?: Record<string, unknown>, eventId?: string) {
+    if (fire(eventName, params, eventId)) return
+    if (!import.meta.client) return
+    let attempts = 0
+    const interval = setInterval(() => {
+      attempts++
+      if (fire(eventName, params, eventId) || attempts >= 25) clearInterval(interval)
+    }, 200)
   }
 
   // TikTok's own first-party cookie — _ttp is set as soon as the pixel

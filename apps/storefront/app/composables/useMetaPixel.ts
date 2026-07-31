@@ -17,14 +17,35 @@ export function useMetaPixel() {
     return (window as unknown as { fbq?: (...args: unknown[]) => void }).fbq
   }
 
-  function trackEvent(eventName: string, params?: Record<string, unknown>, eventId?: string) {
+  function fire(eventName: string, params?: Record<string, unknown>, eventId?: string) {
     const q = fbq()
-    if (!q) return
+    if (!q) return false
     if (eventId) {
       q('track', eventName, params ?? {}, { eventID: eventId })
     } else {
       q('track', eventName, params ?? {})
     }
+    return true
+  }
+
+  // MetaPixelScript.vue injects the fbq stub asynchronously (its pixel-config
+  // fetch is deliberately not awaited, so it doesn't block first paint) — an
+  // event fired immediately on page mount (ViewContent) can easily race
+  // ahead of that and find window.fbq still undefined, silently dropping the
+  // call forever. Events fired later in the journey (Purchase, well after
+  // checkout has taken real time) never hit this because the pixel has
+  // always finished loading by then — which is exactly why ViewContent was
+  // missing while Purchase worked. Retry briefly instead of giving up
+  // immediately; a few hundred ms of delay is invisible to the event's
+  // validity window.
+  function trackEvent(eventName: string, params?: Record<string, unknown>, eventId?: string) {
+    if (fire(eventName, params, eventId)) return
+    if (!import.meta.client) return
+    let attempts = 0
+    const interval = setInterval(() => {
+      attempts++
+      if (fire(eventName, params, eventId) || attempts >= 25) clearInterval(interval)
+    }, 200)
   }
 
   // Meta's own first-party cookies — _fbp is set as soon as the pixel
