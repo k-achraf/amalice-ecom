@@ -30,7 +30,7 @@ watch(() => route.path, () => { mobileOpen.value = false })
 
     <div class="mx-auto flex h-16 max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
       <!-- Mobile menu toggle -->
-      <VoltButton color="neutral" variant="outline" size="sm" square class="lg:hidden" aria-label="Open menu" @click="mobileOpen = true">
+      <VoltButton color="neutral" variant="outline" size="sm" square class="lg:hidden" aria-label="فتح القائمة" @click="mobileOpen = true">
         <Icon name="i-lucide-menu" class="size-4" />
       </VoltButton>
 
@@ -41,31 +41,31 @@ watch(() => route.path, () => { mobileOpen.value = false })
         </NuxtLink>
 
         <nav class="hidden items-center gap-6 lg:flex">
-          <NuxtLink to="/catalog" class="text-sm text-white/70 transition-colors hover:text-white">Shop</NuxtLink>
+          <NuxtLink to="/catalog" class="text-sm text-white/70 transition-colors hover:text-white">المتجر</NuxtLink>
           <NuxtLink v-for="cat in categories" :key="cat.id" :to="`/collections/${cat.slug}`" class="text-sm text-white/70 transition-colors hover:text-white">
             {{ cat.name }}
           </NuxtLink>
-          <NuxtLink to="/deals" class="text-sm text-primary-400 transition-colors hover:text-primary-300">Deals</NuxtLink>
-          <NuxtLink to="/new-arrivals" class="text-sm text-white/70 transition-colors hover:text-white">New</NuxtLink>
+          <NuxtLink to="/deals" class="text-sm text-primary-400 transition-colors hover:text-primary-300">العروض</NuxtLink>
+          <NuxtLink to="/new-arrivals" class="text-sm text-white/70 transition-colors hover:text-white">جديد</NuxtLink>
         </nav>
       </div>
 
       <!-- Right cluster: search + actions -->
-      <div class="ml-auto flex flex-1 items-center justify-end gap-4">
+      <div class="me-auto flex flex-1 items-center justify-end gap-4">
         <form class="hidden max-w-xs flex-1 md:block" @submit.prevent="onSearch">
-          <VoltInput v-model="searchInput" placeholder="Search products…" icon="i-lucide-search" />
+          <VoltInput v-model="searchInput" placeholder="ابحث عن المنتجات..." icon="i-lucide-search" />
         </form>
 
         <div class="flex shrink-0 items-center gap-2">
-          <VoltButton to="/wishlist" color="neutral" variant="outline" size="sm" square class="hidden sm:inline-flex" aria-label="Wishlist">
+          <VoltButton to="/wishlist" color="neutral" variant="outline" size="sm" square class="hidden sm:inline-flex" aria-label="المفضلة">
             <Icon name="i-lucide-heart" class="size-4" />
           </VoltButton>
-          <VoltButton v-if="settings.displayCart" to="/cart" color="primary" variant="solid" size="sm" square aria-label="Cart" class="relative">
+          <VoltButton v-if="settings.displayCart" to="/cart" color="primary" variant="solid" size="sm" square aria-label="السلة" class="relative">
             <Icon name="i-lucide-shopping-bag" class="size-4" />
             <ClientOnly>
               <span
                 v-if="cart.itemCount > 0"
-                class="font-mono-spec absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-md border border-black bg-black text-[10px] text-primary-400"
+                class="font-mono-spec absolute -end-1.5 -top-1.5 flex size-5 items-center justify-center rounded-md border border-black bg-black text-[10px] text-primary-400"
               >{{ cart.itemCount }}</span>
             </ClientOnly>
           </VoltButton>
@@ -88,22 +88,22 @@ watch(() => route.path, () => { mobileOpen.value = false })
       leave-active-class="transition-transform duration-150"
       leave-to-class="-translate-x-full"
     >
-      <div v-if="mobileOpen" class="fixed inset-y-0 left-0 z-[70] flex w-80 max-w-[85vw] flex-col border-r border-white/10 bg-black p-5 lg:hidden">
+      <div v-if="mobileOpen" class="fixed inset-y-0 start-0 z-[70] flex w-80 max-w-[85vw] flex-col border-e border-white/10 bg-black p-5 lg:hidden">
         <div class="mb-6 flex items-center justify-between">
-          <span class="font-display text-lg text-white">Menu</span>
-          <VoltButton color="neutral" variant="outline" size="sm" square aria-label="Close menu" @click="mobileOpen = false">
+          <span class="font-display text-lg text-white">القائمة</span>
+          <VoltButton color="neutral" variant="outline" size="sm" square aria-label="إغلاق القائمة" @click="mobileOpen = false">
             <Icon name="i-lucide-x" class="size-4" />
           </VoltButton>
         </div>
         <form class="mb-6" @submit.prevent="onSearch">
-          <VoltInput v-model="searchInput" placeholder="Search products…" icon="i-lucide-search" />
+          <VoltInput v-model="searchInput" placeholder="ابحث عن المنتجات..." icon="i-lucide-search" />
         </form>
         <nav class="flex flex-1 flex-col gap-1 overflow-y-auto text-sm">
-          <NuxtLink to="/catalog" class="border-b border-white/10 py-3 text-white/80 hover:text-white" @click="mobileOpen = false">All products</NuxtLink>
+          <NuxtLink to="/catalog" class="border-b border-white/10 py-3 text-white/80 hover:text-white" @click="mobileOpen = false">كل المنتجات</NuxtLink>
           <NuxtLink v-for="cat in categories" :key="cat.id" :to="`/collections/${cat.slug}`" class="border-b border-white/10 py-3 text-white/80 hover:text-white" @click="mobileOpen = false">{{ cat.name }}</NuxtLink>
-          <NuxtLink to="/deals" class="border-b border-white/10 py-3 text-primary-400" @click="mobileOpen = false">Deals</NuxtLink>
-          <NuxtLink to="/new-arrivals" class="border-b border-white/10 py-3 text-white/80 hover:text-white" @click="mobileOpen = false">New arrivals</NuxtLink>
-          <NuxtLink to="/wishlist" class="py-3 text-white/80 hover:text-white" @click="mobileOpen = false">Wishlist</NuxtLink>
+          <NuxtLink to="/deals" class="border-b border-white/10 py-3 text-primary-400" @click="mobileOpen = false">العروض</NuxtLink>
+          <NuxtLink to="/new-arrivals" class="border-b border-white/10 py-3 text-white/80 hover:text-white" @click="mobileOpen = false">وصل حديثاً</NuxtLink>
+          <NuxtLink to="/wishlist" class="py-3 text-white/80 hover:text-white" @click="mobileOpen = false">المفضلة</NuxtLink>
         </nav>
       </div>
     </Transition>

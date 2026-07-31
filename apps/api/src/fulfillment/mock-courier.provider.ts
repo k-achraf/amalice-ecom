@@ -29,7 +29,7 @@ export class MockCourierProvider implements CourierProvider {
     this.shipments.set(trackingReference, 'created')
     this.logger.log(
       `[MOCK COURIER] Shipment created: ${trackingReference} → ${input.recipientPhone}, ` +
-        `COD $${(input.codAmountCents / 100).toFixed(2)}, ${input.address.city}/${input.address.region}`
+        `COD ${(input.codAmountCents / 100).toFixed(2)} DZD, ${input.address.city}/${input.address.region}`
     )
     return { trackingReference, courierStatus: 'created' }
   }

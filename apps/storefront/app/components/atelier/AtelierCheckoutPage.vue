@@ -3,9 +3,9 @@ import type { ZodTypeAny } from 'zod'
 import type { CartItem } from '~/stores/cart'
 
 // Atelier checkout — glow-card form left, sticky glow-card order summary
-// right. No UForm/UStepper/UPinInput: address validation runs the passed
-// Zod schema directly on submit (same gate UForm applied internally), the
-// step indicator is circular dots, OTP uses AtelierPinInput.
+// right. No UForm/UStepper: address validation runs the passed Zod schema
+// directly on submit (same gate UForm applied internally), the step
+// indicator is circular dots.
 const props = defineProps<{
   cart: { items: CartItem[]; totalCents: number }
   step: string
@@ -13,21 +13,18 @@ const props = defineProps<{
   form: {
     phone: string
     name: string
+    wilayaId: string
+    shippingType: string
+    shippingPriceCents: number
     address: { line1: string; line2: string; city: string; region: string; postalCode: string; country: string }
   }
   addressSchema: ZodTypeAny
+  addressError: string | null
+  totalCents: number
   placing: boolean
   placeError: string | null
-  order: { id: string; totalCents: number } | null
-  otpCode: string[]
-  otpCodeString: string
-  otpError: string | null
-  verifying: boolean
-  resendCooldown: number
   onAddressSubmit: () => void
   onPlaceOrder: () => void
-  onVerifyCode: () => void
-  onResendCode: () => void
   onBack: () => void
 }>()
 
@@ -106,30 +103,8 @@ function submitAddress() {
                       <label class="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-500">Address line 2 (optional)</label>
                       <AtelierInput v-model="props.form.address.line2" />
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
-                      <div>
-                        <label class="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-500">City</label>
-                        <AtelierInput v-model="props.form.address.city" />
-                        <p v-if="fieldErrors['address.city']" class="mt-1 text-xs font-medium text-primary-600">{{ fieldErrors['address.city'] }}</p>
-                      </div>
-                      <div>
-                        <label class="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-500">Region / State</label>
-                        <AtelierInput v-model="props.form.address.region" />
-                        <p v-if="fieldErrors['address.region']" class="mt-1 text-xs font-medium text-primary-600">{{ fieldErrors['address.region'] }}</p>
-                      </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                      <div>
-                        <label class="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-500">Postal code</label>
-                        <AtelierInput v-model="props.form.address.postalCode" />
-                        <p v-if="fieldErrors['address.postalCode']" class="mt-1 text-xs font-medium text-primary-600">{{ fieldErrors['address.postalCode'] }}</p>
-                      </div>
-                      <div>
-                        <label class="mb-1.5 block text-xs font-medium uppercase tracking-wide text-neutral-500">Country (2-letter)</label>
-                        <AtelierInput v-model="props.form.address.country" :maxlength="2" class="uppercase" />
-                        <p v-if="fieldErrors['address.country']" class="mt-1 text-xs font-medium text-primary-600">{{ fieldErrors['address.country'] }}</p>
-                      </div>
-                    </div>
+                    <AtelierCheckoutShippingFields :form="props.form" />
+                    <p v-if="props.addressError" class="mt-1 text-xs font-medium text-primary-600">{{ props.addressError }}</p>
                     <AtelierButton type="submit" block size="lg" trailing-icon="i-lucide-arrow-right">Continue to review</AtelierButton>
                   </form>
                 </div>
@@ -153,14 +128,20 @@ function submitAddress() {
                     <h3 class="mb-2 font-semibold text-[var(--color-atelier-ink)]">Deliver to</h3>
                     <p class="font-medium text-[var(--color-atelier-ink)]">{{ props.form.name || props.form.phone }}</p>
                     <p class="text-neutral-500">{{ props.form.address.line1 }}<template v-if="props.form.address.line2">, {{ props.form.address.line2 }}</template></p>
-                    <p class="text-neutral-500">{{ props.form.address.city }}, {{ props.form.address.region }} {{ props.form.address.postalCode }}</p>
-                    <p class="text-neutral-500">{{ props.form.address.country }}</p>
+                    <p class="text-neutral-500">{{ props.form.address.city }}, {{ props.form.address.region }}</p>
                     <p class="text-neutral-500">{{ props.form.phone }}</p>
+                  </div>
+
+                  <div class="mt-4 space-y-1 rounded-2xl border border-neutral-100 p-4 text-sm">
+                    <div class="flex items-center justify-between">
+                      <span class="text-neutral-500">Shipping ({{ props.form.shippingType === 'Home' ? 'Home delivery' : 'Desk delivery' }})</span>
+                      <PriceDisplay :amount-cents="props.form.shippingPriceCents" class="font-medium" />
+                    </div>
                   </div>
 
                   <div class="mt-4 flex items-center justify-between rounded-2xl bg-primary-50 p-4">
                     <span class="font-medium text-primary-700">Cash due on delivery</span>
-                    <PriceDisplay :amount-cents="props.cart.totalCents" class="text-lg font-semibold text-primary-700" />
+                    <PriceDisplay :amount-cents="props.totalCents" class="text-lg font-semibold text-primary-700" />
                   </div>
 
                   <p v-if="props.placeError" class="mt-4 rounded-2xl bg-primary-600 p-3 text-sm font-medium text-white">{{ props.placeError }}</p>
@@ -169,22 +150,6 @@ function submitAddress() {
                     <AtelierButton variant="outline" icon="i-lucide-arrow-left" @click="props.onBack">Back</AtelierButton>
                     <AtelierButton block size="lg" :loading="props.placing" @click="props.onPlaceOrder">Place order</AtelierButton>
                   </div>
-                </div>
-
-                <!-- Step 3: OTP -->
-                <div v-else-if="props.step === 'otp'">
-                  <h2 class="font-display mb-1 text-2xl text-[var(--color-atelier-ink)]">Confirm your order</h2>
-                  <p class="mb-6 leading-relaxed text-neutral-600">
-                    We sent a 6-digit code to <span class="font-medium text-[var(--color-atelier-ink)]">{{ props.form.phone }}</span>. Enter it below to confirm.
-                  </p>
-                  <div class="rounded-2xl bg-neutral-50 p-6">
-                    <AtelierPinInput v-model="props.otpCode" :length="6" />
-                  </div>
-                  <p v-if="props.otpError" class="mt-4 rounded-2xl bg-primary-600 p-3 text-sm font-medium text-white">{{ props.otpError }}</p>
-                  <AtelierButton block size="lg" :loading="props.verifying" :disabled="props.otpCodeString.length !== 6" class="mt-6" @click="props.onVerifyCode">Confirm order</AtelierButton>
-                  <AtelierButton variant="ghost" block class="mt-2" :disabled="props.resendCooldown > 0" @click="props.onResendCode">
-                    {{ props.resendCooldown > 0 ? `Resend code in ${props.resendCooldown}s` : 'Resend code' }}
-                  </AtelierButton>
                 </div>
               </div>
             </div>
@@ -206,11 +171,11 @@ function submitAddress() {
                 </ul>
                 <div class="space-y-2 border-t border-neutral-100 pt-4 text-sm">
                   <div class="flex items-center justify-between"><span class="text-neutral-500">Subtotal</span><PriceDisplay :amount-cents="props.cart.totalCents" class="font-medium" /></div>
-                  <div class="flex items-center justify-between"><span class="text-neutral-500">Shipping</span><span class="font-medium text-primary-600">Free</span></div>
+                  <div class="flex items-center justify-between"><span class="text-neutral-500">Shipping</span><span v-if="!props.form.shippingType" class="font-medium text-primary-600">Free</span><PriceDisplay v-else :amount-cents="props.form.shippingPriceCents" class="font-medium" /></div>
                 </div>
                 <div class="mt-4 flex items-center justify-between border-t border-neutral-100 pt-4">
                   <span class="font-medium text-[var(--color-atelier-ink)]">Total</span>
-                  <PriceDisplay :amount-cents="props.cart.totalCents" class="text-xl font-semibold text-primary-600" />
+                  <PriceDisplay :amount-cents="props.totalCents" class="text-xl font-semibold text-primary-600" />
                 </div>
                 <p class="mt-2 flex items-center gap-1.5 text-xs text-neutral-400"><Icon name="i-lucide-banknote" class="size-3.5" /> Cash on delivery</p>
               </div>

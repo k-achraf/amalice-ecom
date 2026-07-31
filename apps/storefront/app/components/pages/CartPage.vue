@@ -21,17 +21,17 @@ const props = defineProps<{
 
 <template>
   <main class="mx-auto max-w-3xl space-y-6 p-6">
-    <h1 class="text-2xl font-semibold">Your cart</h1>
+    <h1 class="text-2xl font-semibold">سلتك</h1>
 
     <Alert
       v-if="props.notice"
       color="warning"
       icon="i-lucide-alert-triangle"
-      title="Your cart changed"
+      title="تغيرت سلتك"
       :description="
         [
-          ...props.notice.removed.map((n) => `${n} is no longer available and was removed.`),
-          ...props.notice.changed.map((c) => `${c.name}'s price changed.`)
+          ...props.notice.removed.map((n) => `${n} لم يعد متوفراً وتمت إزالته.`),
+          ...props.notice.changed.map((c) => `تغير سعر ${c.name}.`)
         ].join(' ')
       "
       closable
@@ -42,10 +42,10 @@ const props = defineProps<{
       <EmptyState
         v-if="props.cart.items.length === 0"
         icon="i-lucide-shopping-cart"
-        title="Your cart is empty"
-        description="Browse the catalog to add something."
+        title="سلتك فارغة"
+        description="تصفح المتجر لإضافة شيء ما."
       >
-        <Button to="/" variant="outline" color="neutral">Continue shopping</Button>
+        <Button to="/" variant="outline" color="neutral">متابعة التسوق</Button>
       </EmptyState>
 
       <template v-else>
@@ -64,21 +64,21 @@ const props = defineProps<{
               :max="item.stockQuantity"
               @update:model-value="(v: number) => props.cart.setQuantity(item.productId, v)"
             />
-            <PriceDisplay :amount-cents="item.priceCents * item.quantity" class="w-20 text-right font-medium" />
-            <Button icon="i-lucide-trash-2" color="neutral" variant="ghost" square aria-label="Remove item" @click="props.cart.removeItem(item.productId)" />
+            <PriceDisplay :amount-cents="item.priceCents * item.quantity" class="w-20 text-end font-medium" />
+            <Button icon="i-lucide-trash-2" color="neutral" variant="ghost" square aria-label="إزالة المنتج" @click="props.cart.removeItem(item.productId)" />
           </li>
         </ul>
 
         <div class="flex items-center justify-between border-t border-default pt-4">
-          <span class="font-medium">Total</span>
+          <span class="font-medium">المجموع</span>
           <PriceDisplay :amount-cents="props.cart.totalCents" class="text-lg font-semibold" />
         </div>
 
-        <Button to="/checkout" block size="lg">Proceed to checkout</Button>
+        <Button to="/checkout" block size="lg">متابعة إلى إتمام الطلب</Button>
       </template>
 
       <template #fallback>
-        <div class="py-24 text-center text-neutral-500">Loading…</div>
+        <div class="py-24 text-center text-neutral-500">جارٍ التحميل…</div>
       </template>
     </ClientOnly>
   </main>

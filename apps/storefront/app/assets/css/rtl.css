@@ -1,0 +1,65 @@
+/*
+ * 100% RTL/Arabic storefront conversion — loaded last (see nuxt.config.ts's
+ * css[] ordering comment) so every rule here wins the cascade over each
+ * template's own scoped stylesheet without editing 14 separate files.
+ *
+ * What this file does NOT do: it doesn't (and can't, safely) blanket-flip
+ * every physical-direction Tailwind utility (ml-, mr-, pl-, pr-, left-,
+ * right-, border-l, border-r, rounded-l, rounded-r) used across the ~200
+ * component files in the 15 templates — Tailwind's numeric spacing scale is
+ * too large to enumerate safely here (and arbitrary values like ml-[3px]
+ * wouldn't be covered anyway). The correct fix for those is swapping them
+ * for Tailwind's logical-property utilities (ms-, me-, ps-, pe-, start-,
+ * end-, border-s, border-e, rounded-s, rounded-e), which already respond
+ * to `dir` with zero extra CSS — done per-template as part of the Arabic
+ * translation pass (see the RTL/Arabic task batches), since that's the same
+ * pass already touching every template's markup anyway. Directional icons
+ * (chevron/arrow next-prev, breadcrumb separators) are swapped by name in
+ * that same pass for the same reason — a blanket CSS mirror would also
+ * flip icons that aren't actually direction-indicating.
+ *
+ * CSS Flexbox/Grid layout order, floats, and text-align: start/end already
+ * flip correctly from `dir="rtl"` alone with zero CSS needed — most of this
+ * codebase's layout is flex-based, so structural mirroring is largely free.
+ */
+
+html[dir='rtl'] body {
+  direction: rtl;
+}
+
+/* Base body font — Cairo (Arabic + Latin, weights 200–1000) replaces Inter
+   for actual Arabic-script rendering. Kept OFF .tabular/.font-mono/code
+   (prices, SKUs, tracking refs) — those stay JetBrains Mono; Algeria COD
+   commerce uses Western numerals even in Arabic copy, so mono/tabular
+   number alignment is unaffected by the language switch. */
+body {
+  font-family: 'Cairo', 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Every template's display/heading face is Latin-only (Fraunces, Anton,
+   Cormorant, Space Grotesk, Poppins, Lora, Sora, Outfit, Bodoni Moda,
+   Bricolage Grotesque, Oswald, Archivo — zero Arabic glyph coverage between
+   them), so headings render Arabic text via Cairo everywhere instead of a
+   silent, inconsistent OS-fallback font per template. Attribute+class
+   selector (0,2,0 specificity) beats each template's own `.tpl-X` (0,1,0)
+   regardless of source order. */
+html[dir='rtl'] .tpl-boutique { --font-boutique-display: 'Cairo', ui-sans-serif, system-ui, sans-serif; }
+/* editorial and promify have no --font-*-display var of their own — both
+   templates use the base body font for headings too, so the global `body`
+   Cairo override above already covers them; no per-template rule needed. */
+html[dir='rtl'] .tpl-nova { --font-nova-display: 'Cairo', ui-sans-serif, system-ui, sans-serif; }
+html[dir='rtl'] .tpl-atelier { --font-atelier-display: 'Cairo', ui-sans-serif, system-ui, sans-serif; }
+html[dir='rtl'] .tpl-drop { --font-drop-display: 'Cairo', ui-sans-serif, system-ui, sans-serif; }
+html[dir='rtl'] .tpl-bloom { --font-bloom-display: 'Cairo', ui-sans-serif, system-ui, sans-serif; }
+html[dir='rtl'] .tpl-hearth { --font-hearth-display: 'Cairo', ui-sans-serif, system-ui, sans-serif; }
+html[dir='rtl'] .tpl-volt { --font-volt-display: 'Cairo', ui-sans-serif, system-ui, sans-serif; }
+html[dir='rtl'] .tpl-pulse { --font-pulse-display: 'Cairo', ui-sans-serif, system-ui, sans-serif; }
+html[dir='rtl'] .tpl-lumiere { --font-lumiere-display: 'Cairo', ui-sans-serif, system-ui, sans-serif; }
+html[dir='rtl'] .tpl-trove { --font-trove-display: 'Cairo', ui-sans-serif, system-ui, sans-serif; }
+html[dir='rtl'] .tpl-forge { --font-forge-display: 'Cairo', ui-sans-serif, system-ui, sans-serif; }
+html[dir='rtl'] .tpl-impulse { --font-impulse-display: 'Cairo', ui-sans-serif, system-ui, sans-serif; }
+
+/* Cheap, zero-risk, exactly-1:1 physical-utility swaps (unlike the spacing
+   scale, these have exactly one value each, safe to blanket-override). */
+html[dir='rtl'] .text-left { text-align: right; }
+html[dir='rtl'] .text-right { text-align: left; }

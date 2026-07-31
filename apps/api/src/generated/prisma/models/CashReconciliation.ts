@@ -438,14 +438,6 @@ export type CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CashReconciliationUpdateToOneWithWhereWithoutOrderInput, Prisma.CashReconciliationUpdateWithoutOrderInput>, Prisma.CashReconciliationUncheckedUpdateWithoutOrderInput>
 }
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
 }

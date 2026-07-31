@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product, ProductImage, ProductVariant, RatingSummary, Review, LeadFormField } from '@amalice/shared'
+import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review, LeadFormField } from '@amalice/shared'
 
 // Forge PDP — bordered gallery + bordered sticky order-summary card, boxed
 // SKU label, variants as bordered swatch chips. Lead-form mode uses
@@ -14,6 +14,7 @@ interface RichProduct extends Product {
 const props = defineProps<{
   product: RichProduct | null
   reviewData: { summary: RatingSummary; items: Review[] } | null
+  landingPageImageUrl?: string | null
   galleryImages: { url: string; alt: string }[]
   activeImageIndex: number
   quantity: number
@@ -29,11 +30,16 @@ const props = defineProps<{
   leadFormData?: Record<string, string>
   leadPlacing?: boolean
   leadError?: string | null
+  offers?: ProductOffer[]
+  selectedOfferId?: string | null
+  offerTotalCents?: number
+  leadShippingPriceCents?: number
   onSelectImage: (i: number) => void
   onSelectVariantByKey: (key: string, val: string) => void
   onUpdateQuantity: (v: number) => void
   onAddToCart: () => void
   onSubmitLead?: () => void
+  onSelectOffer?: (offer: ProductOffer) => void
 }>()
 
 const skuLabel = computed(() => props.product ? `SKU-${props.product.id.replace(/-/g, '').slice(0, 8).toUpperCase()}` : '')
@@ -53,9 +59,13 @@ const skuLabel = computed(() => props.product ? `SKU-${props.product.id.replace(
     </div>
 
     <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 gap-10 lg:grid-cols-2">
+      <!-- AI landing page image — replaces the gallery+description when the
+      merchant has generated and enabled one (see landing-page.ts). -->
+      <img v-if="props.landingPageImageUrl" :src="props.landingPageImageUrl" :alt="props.product.name" class="mb-10 w-full border-[3px] border-[var(--color-forge-ink)]" />
+
+      <div class="grid grid-cols-1 gap-10" :class="props.landingPageImageUrl ? '' : 'lg:grid-cols-2'">
         <!-- Gallery -->
-        <div class="space-y-4">
+        <div v-if="!props.landingPageImageUrl" class="space-y-4">
           <div class="aspect-square overflow-hidden border-[3px] border-[var(--color-forge-ink)] bg-white">
             <NuxtImg
               v-if="props.galleryImages.length"
@@ -110,7 +120,26 @@ const skuLabel = computed(() => props.product ? `SKU-${props.product.id.replace(
             <ForgeBadge v-else-if="props.effectiveStock <= props.product.lowStockThreshold" color="warning">Only {{ props.effectiveStock }} left</ForgeBadge>
           </div>
 
-          <p v-if="props.product.description" class="leading-relaxed text-[var(--color-forge-ink)]/60">{{ props.product.description }}</p>
+          <div v-if="props.product.description && !props.landingPageImageUrl" class="product-description-html leading-relaxed text-[var(--color-forge-ink)]/60" v-html="sanitizeDescriptionHtml(props.product.description)" />
+
+          <!-- Offers -->
+          <div v-if="props.offers?.length" class="space-y-2">
+            <button
+              v-for="offer in props.offers"
+              :key="offer.id"
+              type="button"
+              class="flex w-full items-center justify-between border-[3px] px-4 py-2 text-left text-sm font-bold transition-all"
+              :class="props.selectedOfferId === offer.id ? 'border-[var(--color-forge-ink)] bg-primary-500 text-[var(--color-forge-ink)]' : 'border-[var(--color-forge-ink)]/20 text-[var(--color-forge-ink)]/70 hover:border-[var(--color-forge-ink)]'"
+              @click="props.onSelectOffer?.(offer)"
+            >
+              <span>
+                <template v-if="offer.type === 'FixedBundlePrice'">Buy {{ offer.requiredQuantity }} for <PriceDisplay :amount-cents="offer.bundlePriceCents ?? 0" /></template>
+                <template v-else-if="offer.type === 'BuyXGetYFree'">Buy {{ offer.requiredQuantity }}, get {{ offer.freeQuantity }} free</template>
+                <template v-else>Buy {{ offer.requiredQuantity }}, free shipping</template>
+              </span>
+              <Icon v-if="props.selectedOfferId === offer.id" name="i-lucide-check" class="size-4" />
+            </button>
+          </div>
 
           <!-- Spec sheet — the SKU, category, stock and delivery terms laid
                out as a monospace data block, echoing the home hero's spec
@@ -168,12 +197,12 @@ const skuLabel = computed(() => props.product ? `SKU-${props.product.id.replace(
               <ForgeQuantityStepper :model-value="props.quantity" :min="1" :max="props.effectiveStock" :disabled="!props.inStock" @update:model-value="props.onUpdateQuantity" />
             </div>
             <div class="space-y-2 border-t-[3px] border-[var(--color-forge-ink)]/10 pt-4 text-sm">
-              <div class="flex items-center justify-between"><span class="text-[var(--color-forge-ink)]/50">Subtotal</span><PriceDisplay :amount-cents="props.effectivePriceCents * props.quantity" class="font-bold" /></div>
+              <div class="flex items-center justify-between"><span class="text-[var(--color-forge-ink)]/50">Subtotal</span><PriceDisplay :amount-cents="props.offerTotalCents ?? props.effectivePriceCents * props.quantity" class="font-bold" /></div>
               <div class="flex items-center justify-between"><span class="text-[var(--color-forge-ink)]/50">Shipping</span><span class="font-bold text-primary-700">Free</span></div>
             </div>
             <div class="mt-4 flex items-center justify-between border-t-[3px] border-[var(--color-forge-ink)] pt-4">
               <span class="font-bold uppercase">Total</span>
-              <PriceDisplay :amount-cents="props.effectivePriceCents * props.quantity" class="text-xl font-bold" />
+              <PriceDisplay :amount-cents="props.offerTotalCents ?? props.effectivePriceCents * props.quantity" class="text-xl font-bold" />
             </div>
             <p class="mt-2 flex items-center gap-1.5 text-xs text-[var(--color-forge-ink)]/40"><Icon name="i-lucide-banknote" class="size-3.5" /> Cash on delivery</p>
             <ForgeButton :disabled="!props.inStock" icon="i-lucide-shopping-bag" size="lg" block class="mt-5" @click="props.onAddToCart">{{ props.inStock ? 'Add to cart' : 'Out of stock' }}</ForgeButton>
@@ -189,7 +218,7 @@ const skuLabel = computed(() => props.product ? `SKU-${props.product.id.replace(
             <ForgeLeadFormFields :fields="props.leadFields ?? []" :data="props.leadFormData ?? {}" />
             <div class="flex items-center justify-between border-t-[3px] border-[var(--color-forge-ink)] pt-4">
               <span class="font-bold uppercase">Total</span>
-              <PriceDisplay :amount-cents="props.effectivePriceCents * props.quantity" class="text-xl font-bold" />
+              <PriceDisplay :amount-cents="(props.offerTotalCents ?? props.effectivePriceCents * props.quantity) + (props.leadShippingPriceCents ?? 0)" class="text-xl font-bold" />
             </div>
             <div class="flex items-center gap-3">
               <ForgeQuantityStepper :model-value="props.quantity" :min="1" :max="props.effectiveStock" @update:model-value="props.onUpdateQuantity" />

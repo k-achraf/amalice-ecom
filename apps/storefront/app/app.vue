@@ -24,4 +24,5 @@ const template = computed(() => settings.value?.activeTemplate ?? 'minimal')
     <NuxtPage />
   </NuxtLayout>
   <MetaPixelScript />
+  <TikTokPixelScript />
 </template>

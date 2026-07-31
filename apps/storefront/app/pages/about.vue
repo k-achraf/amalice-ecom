@@ -1,25 +1,25 @@
 <script setup lang="ts">
 useSeoMeta({
-  title: 'About',
-  description: 'Amalice is a cash-on-delivery commerce store — pay when your order arrives, no account or prepayment required.'
+  title: 'من نحن',
+  description: 'أماليس متجر إلكتروني يعتمد الدفع عند الاستلام — ادفع عند وصول طلبك، دون الحاجة لحساب أو دفع مسبق.'
 })
 </script>
 
 <template>
   <main class="mx-auto max-w-3xl space-y-8 px-4 py-12">
-    <h1 class="text-3xl font-bold">About Amalice</h1>
+    <h1 class="text-3xl font-bold">من نحن في أماليس</h1>
     <div class="space-y-4 leading-relaxed text-muted">
       <p>
-        Amalice is built around a simple idea: online shopping shouldn't require a credit card, an account,
-        or trust in a payment page you've never seen before. You order, we deliver, you pay in cash when it arrives.
+        بُنيت أماليس على فكرة بسيطة: التسوق عبر الإنترنت لا يجب أن يتطلب بطاقة ائتمان، أو حساباً، أو
+        الثقة بصفحة دفع لم ترها من قبل. أنت تطلب، ونحن نوصّل، وتدفع نقداً عند وصول طلبك.
       </p>
       <p>
-        Every order is verified with a one-time code sent to your phone — that keeps fake orders out and makes sure
-        your delivery reaches the right person. No password to remember, no account to manage.
+        نؤكد كل طلب باتصال سريع من فريقنا — وهذا يمنع الطلبات الوهمية ويضمن وصول شحنتك إلى الشخص الصحيح.
+        لا كلمة مرور لتتذكرها، ولا حساب لتديره.
       </p>
       <p>
-        We started Amalice to make everyday goods reachable for everyone, on terms that put the customer in control:
-        see it, hold it, then pay for it.
+        أطلقنا أماليس لنجعل المنتجات اليومية في متناول الجميع، بشروط تضع الزبون في موقع التحكم:
+        شاهد المنتج، المسه، ثم ادفع ثمنه.
       </p>
     </div>
   </main>

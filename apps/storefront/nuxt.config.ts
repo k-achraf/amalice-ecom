@@ -23,7 +23,14 @@ export default defineNuxtConfig({
     '~/assets/css/pulse.css',
     '~/assets/css/lumiere.css',
     '~/assets/css/trove.css',
-    '~/assets/css/forge.css'
+    '~/assets/css/forge.css',
+    '~/assets/css/impulse.css',
+    '~/assets/css/product-description.css',
+    // RTL/Arabic conversion — loaded LAST so it wins the cascade over every
+    // template's own scoped CSS above (all 14 --font-*-display vars, plus
+    // the broad physical-direction utility overrides) without having to
+    // touch each template's own stylesheet.
+    '~/assets/css/rtl.css'
   ],
   // Fraunces (Boutique's serif display face), Space Grotesk (Nova's heavy
   // display face), Cormorant (Atelier's delicate jewelry-catalog serif),
@@ -50,7 +57,15 @@ export default defineNuxtConfig({
       { name: 'Outfit', provider: 'google' },
       { name: 'Bodoni Moda', provider: 'google' },
       { name: 'Bricolage Grotesque', provider: 'google' },
-      { name: 'Oswald', provider: 'google' }
+      { name: 'Oswald', provider: 'google' },
+      { name: 'Archivo', provider: 'google' },
+      // RTL/Arabic conversion — Cairo has full Arabic + Latin coverage across
+      // a wide weight range (200–1000) and replaces every template's Latin-
+      // only display face (Fraunces, Anton, Cormorant, etc. have zero Arabic
+      // glyphs — without this, headings would silently fall back to whatever
+      // generic Arabic font each OS/browser ships, ugly and inconsistent
+      // across templates). See rtl.css for where it's applied.
+      { name: 'Cairo', provider: 'google' }
     ]
   },
   compatibilityDate: '2026-07-17',
@@ -80,12 +95,21 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      titleTemplate: '%s · Amalice',
-      title: 'Amalice',
+      // 100% RTL/Arabic storefront (no language switcher — see rtl.css for
+      // the corresponding CSS-side conversion). htmlAttrs is the one place
+      // dir/lang must be set for SSR: the browser needs dir="rtl" present in
+      // the very first HTML response, not applied client-side after hydration,
+      // or the page visibly flips from LTR to RTL on load.
+      htmlAttrs: {
+        lang: 'ar',
+        dir: 'rtl'
+      },
+      titleTemplate: '%s · أماليس',
+      title: 'أماليس',
       meta: [
         {
           name: 'description',
-          content: 'Amalice — cash on delivery shopping, no account required.'
+          content: 'أماليس — تسوق مع الدفع عند الاستلام، بدون حساب.'
         }
       ]
     }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product, ProductImage, ProductVariant, RatingSummary, Review, LeadFormField } from '@amalice/shared'
+import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review, LeadFormField } from '@amalice/shared'
 
 // Boutique PDP — a TALL single column (max-w-3xl), the editorial inverse of a
 // split layout. One large aspect-[4/5] image anchors the page; everything else
@@ -15,6 +15,7 @@ interface RichProduct extends Product {
 const props = defineProps<{
   product: RichProduct | null
   reviewData: { summary: RatingSummary; items: Review[] } | null
+  landingPageImageUrl?: string | null
   galleryImages: { url: string; alt: string }[]
   activeImageIndex: number
   quantity: number
@@ -30,11 +31,14 @@ const props = defineProps<{
   leadFormData?: Record<string, string>
   leadPlacing?: boolean
   leadError?: string | null
+  offers?: ProductOffer[]
+  selectedOfferId?: string | null
   onSelectImage: (i: number) => void
   onSelectVariantByKey: (key: string, val: string) => void
   onUpdateQuantity: (v: number) => void
   onAddToCart: () => void
   onSubmitLead?: () => void
+  onSelectOffer?: (offer: ProductOffer) => void
 }>()
 </script>
 
@@ -51,8 +55,14 @@ const props = defineProps<{
       </nav>
     </div>
 
+    <!-- AI landing page image — replaces the gallery+description when the
+    merchant has generated and enabled one (see landing-page.ts). -->
+    <section v-if="props.landingPageImageUrl" class="mx-auto max-w-3xl px-6 pt-12">
+      <img :src="props.landingPageImageUrl" :alt="props.product.name" class="w-full" />
+    </section>
+
     <!-- Gallery — large, centered, aspect-[4/5] -->
-    <section class="mx-auto max-w-3xl px-6 pt-12">
+    <section v-else class="mx-auto max-w-3xl px-6 pt-12">
       <div class="aspect-[4/5] overflow-hidden bg-elevated">
         <NuxtImg
           v-if="props.galleryImages.length"
@@ -103,8 +113,27 @@ const props = defineProps<{
     </section>
 
     <!-- Description — narrow, generous lead -->
-    <section v-if="props.product.description" class="mx-auto max-w-2xl px-6 pt-12">
-      <p class="text-center text-base font-light leading-relaxed text-muted">{{ props.product.description }}</p>
+    <section v-if="props.product.description && !props.landingPageImageUrl" class="mx-auto max-w-2xl px-6 pt-12">
+      <div class="product-description-html text-center text-base font-light leading-relaxed text-muted" v-html="sanitizeDescriptionHtml(props.product.description)" />
+    </section>
+
+    <!-- Offers — centered, refined -->
+    <section v-if="props.offers?.length" class="mx-auto max-w-xl space-y-3 px-6 pt-12">
+      <button
+        v-for="offer in props.offers"
+        :key="offer.id"
+        type="button"
+        class="flex w-full items-center justify-between border-2 px-6 py-3 text-left text-xs uppercase tracking-[0.2em] transition-colors"
+        :class="props.selectedOfferId === offer.id ? 'border-highlighted bg-highlighted text-inverted' : 'border-default text-highlighted hover:border-muted'"
+        @click="props.onSelectOffer?.(offer)"
+      >
+        <span>
+          <template v-if="offer.type === 'FixedBundlePrice'">Buy {{ offer.requiredQuantity }} for <PriceDisplay :amount-cents="offer.bundlePriceCents ?? 0" /></template>
+          <template v-else-if="offer.type === 'BuyXGetYFree'">Buy {{ offer.requiredQuantity }}, get {{ offer.freeQuantity }} free</template>
+          <template v-else>Buy {{ offer.requiredQuantity }}, free shipping</template>
+        </span>
+        <Icon v-if="props.selectedOfferId === offer.id" name="i-lucide-check" class="size-3.5" />
+      </button>
     </section>
 
     <!-- Variants — centered pills, border-2 uppercase tracking-widest -->

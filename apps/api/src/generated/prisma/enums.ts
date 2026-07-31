@@ -10,9 +10,13 @@
 */
 
 export const OrderState = {
-  PendingOTP: 'PendingOTP',
+  PendingCallCenter: 'PendingCallCenter',
+  CallCenterNoAnswer: 'CallCenterNoAnswer',
+  WrongNumber: 'WrongNumber',
+  Postponed: 'Postponed',
   Cancelled: 'Cancelled',
   Confirmed: 'Confirmed',
+  OnHold: 'OnHold',
   Packed: 'Packed',
   HandedToCourier: 'HandedToCourier',
   OutForDelivery: 'OutForDelivery',
@@ -39,6 +43,24 @@ export const AdminRoleName = {
 export type AdminRoleName = (typeof AdminRoleName)[keyof typeof AdminRoleName]
 
 
+export const LandingPageStatus = {
+  Pending: 'Pending',
+  Generating: 'Generating',
+  Completed: 'Completed',
+  Failed: 'Failed'
+} as const
+
+export type LandingPageStatus = (typeof LandingPageStatus)[keyof typeof LandingPageStatus]
+
+
+export const LandingPageImageProvider = {
+  Gemini: 'Gemini',
+  Pollinations: 'Pollinations'
+} as const
+
+export type LandingPageImageProvider = (typeof LandingPageImageProvider)[keyof typeof LandingPageImageProvider]
+
+
 export const StockAdjustmentReason = {
   Restock: 'Restock',
   Correction: 'Correction',
@@ -61,6 +83,15 @@ export const AttributeType = {
 } as const
 
 export type AttributeType = (typeof AttributeType)[keyof typeof AttributeType]
+
+
+export const ProductOfferType = {
+  FixedBundlePrice: 'FixedBundlePrice',
+  BuyXGetYFree: 'BuyXGetYFree',
+  FreeShipping: 'FreeShipping'
+} as const
+
+export type ProductOfferType = (typeof ProductOfferType)[keyof typeof ProductOfferType]
 
 
 export const RemittanceBatchStatus = {
@@ -109,3 +140,71 @@ export const AuditAction = {
 } as const
 
 export type AuditAction = (typeof AuditAction)[keyof typeof AuditAction]
+
+
+export const ShippingType = {
+  Home: 'Home',
+  Desk: 'Desk'
+} as const
+
+export type ShippingType = (typeof ShippingType)[keyof typeof ShippingType]
+
+
+export const ShippingCompanyProvider = {
+  Dhd: 'Dhd'
+} as const
+
+export type ShippingCompanyProvider = (typeof ShippingCompanyProvider)[keyof typeof ShippingCompanyProvider]
+
+
+export const SourcedProductStatus = {
+  Researching: 'Researching',
+  Testing: 'Testing',
+  TestPassed: 'TestPassed',
+  TestFailed: 'TestFailed',
+  Sourcing: 'Sourcing',
+  Received: 'Received',
+  Live: 'Live',
+  Discontinued: 'Discontinued'
+} as const
+
+export type SourcedProductStatus = (typeof SourcedProductStatus)[keyof typeof SourcedProductStatus]
+
+
+export const AdTestPlatform = {
+  Facebook: 'Facebook',
+  TikTok: 'TikTok',
+  Snapchat: 'Snapchat',
+  Google: 'Google',
+  Other: 'Other'
+} as const
+
+export type AdTestPlatform = (typeof AdTestPlatform)[keyof typeof AdTestPlatform]
+
+
+export const AdCreativeType = {
+  Image: 'Image',
+  Video: 'Video'
+} as const
+
+export type AdCreativeType = (typeof AdCreativeType)[keyof typeof AdCreativeType]
+
+
+export const AdTestStatus = {
+  Running: 'Running',
+  Passed: 'Passed',
+  Failed: 'Failed'
+} as const
+
+export type AdTestStatus = (typeof AdTestStatus)[keyof typeof AdTestStatus]
+
+
+export const SourcingRequestStatus = {
+  Requested: 'Requested',
+  Confirmed: 'Confirmed',
+  Shipped: 'Shipped',
+  Received: 'Received',
+  Cancelled: 'Cancelled'
+} as const
+
+export type SourcingRequestStatus = (typeof SourcingRequestStatus)[keyof typeof SourcingRequestStatus]

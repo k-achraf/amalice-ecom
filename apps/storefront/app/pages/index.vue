@@ -7,8 +7,8 @@ import type { Category, ProductListResponse } from '@amalice/shared'
 // HomeProductGrid (which itself uses the overridable card).
 
 useSeoMeta({
-  title: 'Amalice — Cash on delivery shopping',
-  description: 'Shop everyday goods and pay when they arrive. No account, no prepayment — just phone-verified cash on delivery.'
+  title: 'أماليس — التسوق بنظام الدفع عند الاستلام',
+  description: 'تسوّق منتجاتك اليومية وادفع عند وصولها. لا حساب، لا دفع مسبق — نتصل بك للتأكيد، ثم تدفع نقداً عند الاستلام.'
 })
 
 const sd = useStructuredData()
@@ -35,12 +35,12 @@ const { data: bestSellers } = await useApiFetch<ProductListResponse>('/products?
     <TemplateSection
       v-if="featured?.items.length"
       name="HomeProductGrid"
-      :section-props="{ title: 'New arrivals', products: featured.items, viewAllTo: '/catalog' }"
+      :section-props="{ title: 'وصل حديثاً', products: featured.items, viewAllTo: '/catalog' }"
     />
     <TemplateSection
       v-if="bestSellers?.items.length"
       name="HomeProductGrid"
-      :section-props="{ title: 'Best sellers', products: bestSellers.items, viewAllTo: '/catalog' }"
+      :section-props="{ title: 'الأكثر مبيعاً', products: bestSellers.items, viewAllTo: '/catalog' }"
     />
 
     <!-- USP / trust strip — template-overridable -->

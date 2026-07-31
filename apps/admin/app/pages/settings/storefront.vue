@@ -362,7 +362,7 @@ const showFieldModalBool = computed({
                   <circle cx="158" cy="98" r="12" fill="#faf6ee" />
                 </svg>
                 <!-- Forge preview: concrete-gray surface, safety-yellow accent, hazard stripes -->
-                <svg v-else viewBox="0 0 200 150" class="size-full" preserveAspectRatio="xMidYMid meet">
+                <svg v-else-if="tpl === 'forge'" viewBox="0 0 200 150" class="size-full" preserveAspectRatio="xMidYMid meet">
                   <defs>
                     <pattern id="forgeHazard" width="12" height="12" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
                       <rect width="6" height="12" fill="#171412" />
@@ -378,6 +378,24 @@ const showFieldModalBool = computed({
                   <rect x="74" y="96" width="52" height="42" fill="#ffffff" stroke="#232120" stroke-width="3" />
                   <rect x="134" y="96" width="52" height="42" fill="#ffffff" stroke="#232120" stroke-width="3" />
                   <rect x="134" y="96" width="52" height="8" fill="url(#forgeHazard)" />
+                </svg>
+                <!-- Impulse preview: funnel page — green trust band, centered headline with yellow marker, glowing orange CTA, countdown pills -->
+                <svg v-else viewBox="0 0 200 150" class="size-full" preserveAspectRatio="xMidYMid meet">
+                  <rect x="0" y="0" width="200" height="150" fill="#fdf9f4" />
+                  <rect x="0" y="0" width="200" height="8" fill="#16a34a" />
+                  <rect x="45" y="24" width="110" height="10" rx="2" fill="#1c1712" />
+                  <rect x="55" y="40" width="90" height="10" rx="2" fill="#ffd43b" />
+                  <rect x="62" y="42" width="76" height="6" rx="1" fill="#1c1712" />
+                  <ellipse cx="100" cy="72" rx="42" ry="12" fill="#ff6a1f" opacity="0.25" />
+                  <rect x="60" y="62" width="80" height="20" rx="10" fill="#ff6a1f" />
+                  <rect x="70" y="69" width="60" height="6" rx="3" fill="#ffffff" opacity="0.9" />
+                  <rect x="66" y="94" width="20" height="12" rx="2" fill="#1c1712" />
+                  <rect x="90" y="94" width="20" height="12" rx="2" fill="#1c1712" />
+                  <rect x="114" y="94" width="20" height="12" rx="2" fill="#1c1712" />
+                  <rect x="20" y="118" width="76" height="22" rx="6" fill="#ffffff" stroke="#ece1d4" stroke-width="2" />
+                  <rect x="104" y="118" width="76" height="22" rx="6" fill="#ffffff" stroke="#ece1d4" stroke-width="2" />
+                  <rect x="26" y="124" width="34" height="10" rx="5" fill="#dcf5e5" />
+                  <rect x="110" y="124" width="34" height="10" rx="5" fill="#dcf5e5" />
                 </svg>
               </div>
 
@@ -416,8 +434,8 @@ const showFieldModalBool = computed({
               <p class="font-medium text-highlighted">Cart-based checkout</p>
               <p class="text-sm text-muted">
                 {{ displayCart
-                  ? 'Customers add products to a cart, then check out with phone + address + OTP.'
-                  : 'No cart — customers fill a lead form directly on the product page (phone + address + quantity → OTP).' }}
+                  ? 'Customers add products to a cart, then check out with phone + address — a call-center agent confirms the order after.'
+                  : 'No cart — customers fill a lead form directly on the product page (phone + address + quantity); a call-center agent confirms after.' }}
               </p>
             </div>
             <USwitch v-model="displayCart" />

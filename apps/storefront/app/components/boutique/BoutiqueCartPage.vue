@@ -24,8 +24,8 @@ const props = defineProps<{
   <main class="bg-default">
     <!-- Eyebrow header -->
     <header class="mx-auto max-w-3xl px-6 pt-24 text-center sm:pt-32">
-      <p class="text-xs uppercase tracking-[0.4em] text-muted">Your selection</p>
-      <h1 class="mt-6 text-3xl font-light tracking-tight text-highlighted sm:text-4xl">Shopping Bag</h1>
+      <p class="text-xs uppercase tracking-[0.4em] text-muted">مختاراتك</p>
+      <h1 class="mt-6 text-3xl font-light tracking-tight text-highlighted sm:text-4xl">حقيبة التسوق</h1>
       <div class="mx-auto mt-8 h-px w-12 bg-default" />
     </header>
 
@@ -36,11 +36,11 @@ const props = defineProps<{
           v-if="props.notice"
           color="warning"
           icon="i-lucide-alert-triangle"
-          title="Your bag changed"
+          title="تغيرت حقيبتك"
           :description="
             [
-              ...props.notice.removed.map((n) => `${n} is no longer available and was removed.`),
-              ...props.notice.changed.map((c) => `${c.name}'s price changed.`)
+              ...props.notice.removed.map((n) => `${n} لم يعد متوفراً وتمت إزالته.`),
+              ...props.notice.changed.map((c) => `تغير سعر ${c.name}.`)
             ].join(' ')
           "
           closable
@@ -51,11 +51,11 @@ const props = defineProps<{
         <EmptyState
           v-if="props.cart.items.length === 0"
           icon="i-lucide-shopping-bag"
-          title="Your bag is empty"
-          description="Browse the collection to begin."
+          title="حقيبتك فارغة"
+          description="تصفح المجموعة للبدء."
         >
           <BoutiqueButton to="/catalog" variant="outline" color="neutral" class="mt-6">
-            Explore the collection
+            اكتشف المجموعة
           </BoutiqueButton>
         </EmptyState>
 
@@ -88,10 +88,10 @@ const props = defineProps<{
                   />
                   <button
                     class="text-xs uppercase tracking-[0.2em] text-muted transition-colors hover:text-error"
-                    aria-label="Remove item"
+                    aria-label="إزالة المنتج"
                     @click="props.cart.removeItem(item.productId)"
                   >
-                    Remove
+                    إزالة
                   </button>
                 </div>
               </div>
@@ -101,7 +101,7 @@ const props = defineProps<{
           <!-- Total + checkout -->
           <div class="mt-12 space-y-8 border-t border-default pt-10">
             <div class="flex items-baseline justify-between">
-              <span class="text-xs uppercase tracking-[0.4em] text-muted">Total</span>
+              <span class="text-xs uppercase tracking-[0.4em] text-muted">المجموع</span>
               <PriceDisplay :amount-cents="props.cart.totalCents" class="price-accent text-2xl font-light tracking-tight" />
             </div>
             <BoutiqueButton
@@ -112,14 +112,14 @@ const props = defineProps<{
               variant="outline"
               class="!border-2"
             >
-              Proceed to checkout
+              متابعة إلى إتمام الطلب
             </BoutiqueButton>
           </div>
         </template>
       </section>
 
       <template #fallback>
-        <div class="py-32 text-center text-xs uppercase tracking-[0.3em] text-muted">Loading…</div>
+        <div class="py-32 text-center text-xs uppercase tracking-[0.3em] text-muted">جارٍ التحميل...</div>
       </template>
     </ClientOnly>
   </main>

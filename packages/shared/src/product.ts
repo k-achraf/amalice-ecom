@@ -11,7 +11,10 @@ export const CreateProductSchema = z.object({
   // API response always has these keys present, just possibly null.
   // Accepting null here too (not just undefined) keeps this schema
   // structurally assignable from whatever Prisma actually returns.
-  description: z.string().max(5000).nullable().optional(),
+  // Stores Tiptap-produced HTML (rich text incl. embedded <img>/<video> tags
+  // pointing at uploaded assets), not plain text — hence the much larger cap
+  // than a plain description would need.
+  description: z.string().max(20000).nullable().optional(),
   category: z.string().max(100).nullable().optional(),
   // SF-17 — normalized FK to Category. Optional: seeded/legacy products may
   // only carry the flat `category` tag. `category` is kept for back-compat;

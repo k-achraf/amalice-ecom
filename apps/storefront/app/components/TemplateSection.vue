@@ -55,14 +55,17 @@ import TroveProductCard from './trove/TroveProductCard.vue'
 import ForgeHomeHero from './forge/ForgeHomeHero.vue'
 import ForgeHomeUsps from './forge/ForgeHomeUsps.vue'
 import ForgeProductCard from './forge/ForgeProductCard.vue'
+import ImpulseHomeHero from './impulse/ImpulseHomeHero.vue'
+import ImpulseHomeUsps from './impulse/ImpulseHomeUsps.vue'
+import ImpulseProductCard from './impulse/ImpulseProductCard.vue'
 
 // (section, template) → component. Missing entry = fallback to the minimal
 // (bare) component in the FALLBACK map. This is the one place the template-
 // override registry lives — add a new section or template here.
 const OVERRIDES: Record<string, Record<string, Component>> = {
-  HomeHero: { editorial: EditorialHomeHero, boutique: BoutiqueHomeHero, promify: PromifyHomeHero, nova: NovaHomeHero, atelier: AtelierHomeHero, drop: DropHomeHero, bloom: BloomHomeHero, hearth: HearthHomeHero, volt: VoltHomeHero, pulse: PulseHomeHero, lumiere: LumiereHomeHero, trove: TroveHomeHero, forge: ForgeHomeHero },
-  HomeUsps: { editorial: EditorialHomeUsps, boutique: BoutiqueHomeUsps, promify: PromifyHomeUsps, nova: NovaHomeUsps, atelier: AtelierHomeUsps, drop: DropHomeUsps, bloom: BloomHomeUsps, hearth: HearthHomeUsps, volt: VoltHomeUsps, pulse: PulseHomeUsps, lumiere: LumiereHomeUsps, trove: TroveHomeUsps, forge: ForgeHomeUsps },
-  ProductCard: { editorial: EditorialProductCard, boutique: BoutiqueProductCard, promify: PromifyProductCard, nova: NovaProductCard, atelier: AtelierProductCard, drop: DropProductCard, bloom: BloomProductCard, hearth: HearthProductCard, volt: VoltProductCard, pulse: PulseProductCard, lumiere: LumiereProductCard, trove: TroveProductCard, forge: ForgeProductCard }
+  HomeHero: { editorial: EditorialHomeHero, boutique: BoutiqueHomeHero, promify: PromifyHomeHero, nova: NovaHomeHero, atelier: AtelierHomeHero, drop: DropHomeHero, bloom: BloomHomeHero, hearth: HearthHomeHero, volt: VoltHomeHero, pulse: PulseHomeHero, lumiere: LumiereHomeHero, trove: TroveHomeHero, forge: ForgeHomeHero, impulse: ImpulseHomeHero },
+  HomeUsps: { editorial: EditorialHomeUsps, boutique: BoutiqueHomeUsps, promify: PromifyHomeUsps, nova: NovaHomeUsps, atelier: AtelierHomeUsps, drop: DropHomeUsps, bloom: BloomHomeUsps, hearth: HearthHomeUsps, volt: VoltHomeUsps, pulse: PulseHomeUsps, lumiere: LumiereHomeUsps, trove: TroveHomeUsps, forge: ForgeHomeUsps, impulse: ImpulseHomeUsps },
+  ProductCard: { editorial: EditorialProductCard, boutique: BoutiqueProductCard, promify: PromifyProductCard, nova: NovaProductCard, atelier: AtelierProductCard, drop: DropProductCard, bloom: BloomProductCard, hearth: HearthProductCard, volt: VoltProductCard, pulse: PulseProductCard, lumiere: LumiereProductCard, trove: TroveProductCard, forge: ForgeProductCard, impulse: ImpulseProductCard }
 }
 
 // Sections without per-template variants — rendered directly by name.

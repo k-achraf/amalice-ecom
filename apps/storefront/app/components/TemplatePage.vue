@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // The template-PAGE resolver — a sibling to <TemplateSection> for whole pages.
-// Each page file owns its LOGIC (fetch, cart, OTP, checkout, filters, timers)
+// Each page file owns its LOGIC (fetch, cart, checkout, filters, timers)
 // and renders <TemplatePage name="Catalog" :page-props="...">. This resolves
 // the right PRESENTATIONAL component for the active template (e.g.
 // PromifyCatalogPage), falling back to the bare CatalogPage (minimal).
@@ -24,6 +24,7 @@ import CollectionPage from './pages/CollectionPage.vue'
 import DealsPage from './pages/DealsPage.vue'
 import WishlistPage from './pages/WishlistPage.vue'
 import NewArrivalsPage from './pages/NewArrivalsPage.vue'
+import ConfirmationPage from './pages/ConfirmationPage.vue'
 
 // ---- editorial overrides ----
 import EditorialCatalogPage from './editorial/EditorialCatalogPage.vue'
@@ -155,6 +156,17 @@ import ForgeDealsPage from './forge/ForgeDealsPage.vue'
 import ForgeWishlistPage from './forge/ForgeWishlistPage.vue'
 import ForgeNewArrivalsPage from './forge/ForgeNewArrivalsPage.vue'
 
+// ---- impulse overrides ----
+import ImpulseCatalogPage from './impulse/ImpulseCatalogPage.vue'
+import ImpulseProductDetailPage from './impulse/ImpulseProductDetailPage.vue'
+import ImpulseCartPage from './impulse/ImpulseCartPage.vue'
+import ImpulseCheckoutPage from './impulse/ImpulseCheckoutPage.vue'
+import ImpulseCollectionPage from './impulse/ImpulseCollectionPage.vue'
+import ImpulseDealsPage from './impulse/ImpulseDealsPage.vue'
+import ImpulseWishlistPage from './impulse/ImpulseWishlistPage.vue'
+import ImpulseNewArrivalsPage from './impulse/ImpulseNewArrivalsPage.vue'
+import ImpulseConfirmationPage from './impulse/ImpulseConfirmationPage.vue'
+
 // (pageName, template) → component. Missing entry → fallback below.
 const OVERRIDES: Record<string, Record<string, Component>> = {
   Catalog: {
@@ -170,7 +182,8 @@ const OVERRIDES: Record<string, Record<string, Component>> = {
     pulse: PulseCatalogPage,
     lumiere: LumiereCatalogPage,
     trove: TroveCatalogPage,
-    forge: ForgeCatalogPage
+    forge: ForgeCatalogPage,
+    impulse: ImpulseCatalogPage
   },
   ProductDetail: {
     editorial: EditorialProductDetailPage,
@@ -185,7 +198,8 @@ const OVERRIDES: Record<string, Record<string, Component>> = {
     pulse: PulseProductDetailPage,
     lumiere: LumiereProductDetailPage,
     trove: TroveProductDetailPage,
-    forge: ForgeProductDetailPage
+    forge: ForgeProductDetailPage,
+    impulse: ImpulseProductDetailPage
   },
   Cart: {
     editorial: EditorialCartPage,
@@ -200,7 +214,8 @@ const OVERRIDES: Record<string, Record<string, Component>> = {
     pulse: PulseCartPage,
     lumiere: LumiereCartPage,
     trove: TroveCartPage,
-    forge: ForgeCartPage
+    forge: ForgeCartPage,
+    impulse: ImpulseCartPage
   },
   Checkout: {
     editorial: EditorialCheckoutPage,
@@ -215,7 +230,8 @@ const OVERRIDES: Record<string, Record<string, Component>> = {
     pulse: PulseCheckoutPage,
     lumiere: LumiereCheckoutPage,
     trove: TroveCheckoutPage,
-    forge: ForgeCheckoutPage
+    forge: ForgeCheckoutPage,
+    impulse: ImpulseCheckoutPage
   },
   Collection: {
     editorial: EditorialCollectionPage,
@@ -230,7 +246,8 @@ const OVERRIDES: Record<string, Record<string, Component>> = {
     pulse: PulseCollectionPage,
     lumiere: LumiereCollectionPage,
     trove: TroveCollectionPage,
-    forge: ForgeCollectionPage
+    forge: ForgeCollectionPage,
+    impulse: ImpulseCollectionPage
   },
   Deals: {
     editorial: EditorialDealsPage,
@@ -245,7 +262,8 @@ const OVERRIDES: Record<string, Record<string, Component>> = {
     pulse: PulseDealsPage,
     lumiere: LumiereDealsPage,
     trove: TroveDealsPage,
-    forge: ForgeDealsPage
+    forge: ForgeDealsPage,
+    impulse: ImpulseDealsPage
   },
   Wishlist: {
     editorial: EditorialWishlistPage,
@@ -260,7 +278,8 @@ const OVERRIDES: Record<string, Record<string, Component>> = {
     pulse: PulseWishlistPage,
     lumiere: LumiereWishlistPage,
     trove: TroveWishlistPage,
-    forge: ForgeWishlistPage
+    forge: ForgeWishlistPage,
+    impulse: ImpulseWishlistPage
   },
   NewArrivals: {
     editorial: EditorialNewArrivalsPage,
@@ -275,7 +294,15 @@ const OVERRIDES: Record<string, Record<string, Component>> = {
     pulse: PulseNewArrivalsPage,
     lumiere: LumiereNewArrivalsPage,
     trove: TroveNewArrivalsPage,
-    forge: ForgeNewArrivalsPage
+    forge: ForgeNewArrivalsPage,
+    impulse: ImpulseNewArrivalsPage
+  },
+  // Only impulse has its own confirmation presentation for now — every other
+  // template falls through to the generic ConfirmationPage below (see this
+  // component's own top-of-file comment: "an unmapped (page, template) pair
+  // also renders the fallback").
+  Confirmation: {
+    impulse: ImpulseConfirmationPage
   }
 }
 
@@ -289,7 +316,8 @@ const FALLBACK: Record<string, Component> = {
   Collection: CollectionPage,
   Deals: DealsPage,
   Wishlist: WishlistPage,
-  NewArrivals: NewArrivalsPage
+  NewArrivals: NewArrivalsPage,
+  Confirmation: ConfirmationPage
 }
 
 const props = defineProps<{

@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import type { NormalizedCourierStatus } from './courier-provider.interface'
 import { CourierProvider, COURIER_PROVIDER } from './courier-provider.interface'
-import { isValidTransition } from '../common/order-transitions'
+import { isValidTransition } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
 

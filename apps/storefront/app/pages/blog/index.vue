@@ -3,22 +3,22 @@
 // + a grid of post cards. Same v1 scope decision as the other CMS pages: real
 // content authoring is a CMS, out of scope; this ships the structure + placeholder
 // copy so the page exists and renders on-brand.
-useSeoMeta({ title: 'Blog', description: 'Stories, guides, and updates from the team.' })
+useSeoMeta({ title: 'المدونة', description: 'قصص وأدلة وآخر مستجدات فريقنا.' })
 
 const featured = {
-  title: 'How cash-on-delivery builds trust where cards fail',
-  excerpt: 'For customers who have never trusted an online checkout, COD removes the risk entirely. Here is what we have learned shipping it.',
-  category: 'Insights',
-  date: 'July 2026'
+  title: 'كيف يبني الدفع عند الاستلام الثقة حيث تفشل البطاقات',
+  excerpt: 'بالنسبة للزبائن الذين لم يثقوا يوماً بالدفع الإلكتروني، يزيل الدفع عند الاستلام المخاطرة تماماً. إليك ما تعلمناه من تطبيقه.',
+  category: 'رؤى',
+  date: 'يوليو 2026'
 }
 
 const posts = [
-  { title: 'The phone-OTP checkout, explained', category: 'Guides', date: 'Jul 2026', excerpt: 'Why a 6-digit code is the highest-leverage anti-fraud control we ship.' },
-  { title: 'Packing a COD order: what happens behind the scenes', category: 'Behind the scenes', date: 'Jun 2026', excerpt: 'From confirmation to courier handoff — the path an order takes.' },
-  { title: '5 everyday essentials worth paying on delivery for', category: 'Lists', date: 'Jun 2026', excerpt: 'A short edit of goods that earn their place in your routine.' },
-  { title: 'What we do when a delivery fails', category: 'Operations', date: 'May 2026', excerpt: 'Failed deliveries cost real money. Here is how we handle them honestly.' },
-  { title: 'Why we do not ask you to create an account', category: 'Product', date: 'May 2026', excerpt: 'Accounts add friction. For a COD flow, your phone number is enough.' },
-  { title: 'Meet the couriers who deliver your orders', category: 'Stories', date: 'Apr 2026', excerpt: 'The people behind every doorstep handoff.' }
+  { title: 'اتصال التأكيد من مركز الاتصال، بالتفصيل', category: 'أدلة', date: 'يوليو 2026', excerpt: 'لماذا تُعد المكالمة الهاتفية السريعة أقوى إجراء لدينا لمكافحة الاحتيال.' },
+  { title: 'تحضير طلب الدفع عند الاستلام: ماذا يحدث خلف الكواليس', category: 'خلف الكواليس', date: 'يونيو 2026', excerpt: 'من التأكيد إلى تسليم المندوب — المسار الذي يقطعه كل طلب.' },
+  { title: '5 أساسيات يومية تستحق الدفع عند استلامها', category: 'قوائم', date: 'يونيو 2026', excerpt: 'مجموعة مختارة من المنتجات التي تستحق مكاناً في روتينك اليومي.' },
+  { title: 'ماذا نفعل عندما يفشل التوصيل', category: 'العمليات', date: 'مايو 2026', excerpt: 'حالات التوصيل الفاشلة تكلّفنا مالاً حقيقياً. إليك كيف نتعامل معها بصدق.' },
+  { title: 'لماذا لا نطلب منك إنشاء حساب', category: 'المنتج', date: 'مايو 2026', excerpt: 'الحسابات تضيف عائقاً إضافياً. في نظام الدفع عند الاستلام، رقم هاتفك كافٍ.' },
+  { title: 'تعرف على مندوبي التوصيل الذين يوصلون طلباتك', category: 'قصص', date: 'أبريل 2026', excerpt: 'الأشخاص الذين يقفون خلف كل عملية تسليم عند الباب.' }
 ]
 </script>
 
@@ -27,12 +27,12 @@ const posts = [
     <div class="border-b border-neutral-200 bg-neutral-50">
       <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <nav class="mb-4 flex items-center gap-2 text-sm text-neutral-400">
-          <NuxtLink to="/" class="transition-colors hover:text-primary-600">Home</NuxtLink>
+          <NuxtLink to="/" class="transition-colors hover:text-primary-600">الرئيسية</NuxtLink>
           <UIcon name="i-lucide-chevron-right" class="size-3.5" />
-          <span class="text-neutral-600">Blog</span>
+          <span class="text-neutral-600">المدونة</span>
         </nav>
-        <h1 class="text-3xl font-bold text-neutral-900 sm:text-4xl">The Blog</h1>
-        <p class="mt-2 text-neutral-500">Stories, guides, and updates from the team.</p>
+        <h1 class="text-3xl font-bold text-neutral-900 sm:text-4xl">المدونة</h1>
+        <p class="mt-2 text-neutral-500">قصص وأدلة وآخر مستجدات فريقنا.</p>
       </div>
     </div>
 
@@ -49,7 +49,7 @@ const posts = [
           </div>
           <h2 class="mt-3 text-2xl font-bold text-neutral-900">{{ featured.title }}</h2>
           <p class="mt-3 text-neutral-500">{{ featured.excerpt }}</p>
-          <UButton class="mt-5" color="primary" variant="link" trailing-icon="i-lucide-arrow-right">Read more</UButton>
+          <UButton class="mt-5" color="primary" variant="link" trailing-icon="i-lucide-arrow-right">اقرأ المزيد</UButton>
         </div>
       </article>
 

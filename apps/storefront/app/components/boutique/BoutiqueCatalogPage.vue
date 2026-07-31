@@ -24,8 +24,8 @@ const props = defineProps<{
   <div class="bg-default">
     <!-- Eyebrow masthead -->
     <header class="mx-auto max-w-5xl px-6 pt-24 text-center sm:pt-32">
-      <p class="text-xs uppercase tracking-[0.4em] text-muted">The Collection</p>
-      <h1 class="mt-6 text-3xl font-light tracking-tight text-highlighted sm:text-4xl">All Goods</h1>
+      <p class="text-xs uppercase tracking-[0.4em] text-muted">المجموعة</p>
+      <h1 class="mt-6 text-3xl font-light tracking-tight text-highlighted sm:text-4xl">جميع المنتجات</h1>
       <div class="mx-auto mt-8 h-px w-12 bg-default" />
     </header>
 
@@ -35,7 +35,7 @@ const props = defineProps<{
         <form class="w-full max-w-sm" @submit.prevent="props.onSearchSubmit">
           <BoutiqueInput
             :model-value="props.searchInput"
-            placeholder="Search…"
+            placeholder="ابحث عن المنتجات..."
             icon="i-lucide-search"
             class="w-full"
             @update:model-value="props.onUpdateSearchInput"
@@ -52,12 +52,12 @@ const props = defineProps<{
 
     <!-- Grid -->
     <section class="mx-auto max-w-5xl px-6 py-20 sm:py-24">
-      <div v-if="props.pending" class="py-32 text-center text-xs uppercase tracking-[0.3em] text-muted">Loading…</div>
+      <div v-if="props.pending" class="py-32 text-center text-xs uppercase tracking-[0.3em] text-muted">جارٍ التحميل...</div>
       <EmptyState
         v-else-if="!props.data?.items.length"
         icon="i-lucide-package-search"
-        title="Nothing found"
-        description="Try another search, or clear your filters."
+        title="لا توجد نتائج"
+        description="جرّب بحثاً آخر، أو امسح عوامل التصفية."
       />
       <template v-else>
         <div class="grid grid-cols-1 gap-x-8 gap-y-16 sm:grid-cols-2 lg:grid-cols-3">

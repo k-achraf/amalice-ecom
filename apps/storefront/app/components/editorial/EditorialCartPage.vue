@@ -20,23 +20,23 @@ const props = defineProps<{
 <template>
   <div class="bg-default">
     <div class="mx-auto max-w-4xl px-4 py-16">
-      <p class="text-center kicker">Your selection</p>
-      <h1 class="mt-2 text-center text-4xl font-bold tracking-tight text-highlighted sm:text-5xl">The Bag</h1>
+      <p class="text-center kicker">اختياراتك</p>
+      <h1 class="mt-2 text-center text-4xl font-bold tracking-tight text-highlighted sm:text-5xl">السلة</h1>
 
       <EditorialAlert
         v-if="props.notice"
         color="warning"
         icon="i-lucide-alert-triangle"
-        title="Your cart changed"
-        :description="[...props.notice.removed.map((n) => `${n} is no longer available and was removed.`), ...props.notice.changed.map((c) => `${c.name}'s price changed.`)].join(' ')"
+        title="تغيّرت سلتك"
+        :description="[...props.notice.removed.map((n) => `${n} لم يعد متوفراً وتمت إزالته.`), ...props.notice.changed.map((c) => `تغيّر سعر ${c.name}.`)].join(' ')"
         closable
         class="mt-8"
         @close="props.onDismissNotice"
       />
 
       <ClientOnly>
-        <EmptyState v-if="props.cart.items.length === 0" icon="i-lucide-shopping-cart" title="Your bag is empty" description="Browse the catalog to add something." class="mt-12">
-          <EditorialButton to="/catalog" class="!bg-highlighted !text-inverted">Continue shopping</EditorialButton>
+        <EmptyState v-if="props.cart.items.length === 0" icon="i-lucide-shopping-cart" title="سلتك فارغة" description="تصفح المتجر لإضافة منتج." class="mt-12">
+          <EditorialButton to="/catalog" class="!bg-highlighted !text-inverted">متابعة التسوق</EditorialButton>
         </EmptyState>
 
         <template v-else>
@@ -54,21 +54,21 @@ const props = defineProps<{
               </div>
               <div class="col-span-2 flex items-center justify-end gap-3">
                 <PriceDisplay :amount-cents="item.priceCents * item.quantity" class="text-lg font-bold tabular" />
-                <EditorialButton icon="i-lucide-x" color="neutral" variant="ghost" size="sm" square aria-label="Remove" @click="props.cart.removeItem(item.productId)" />
+                <EditorialButton icon="i-lucide-x" color="neutral" variant="ghost" size="sm" square aria-label="إزالة" @click="props.cart.removeItem(item.productId)" />
               </div>
             </div>
           </div>
 
           <div class="mt-8 flex items-center justify-between border-t-2 border-highlighted pt-6">
-            <span class="text-sm font-semibold text-muted">Total</span>
+            <span class="text-sm font-semibold text-muted">المجموع</span>
             <PriceDisplay :amount-cents="props.cart.totalCents" class="text-3xl font-bold" />
           </div>
 
-          <EditorialButton to="/checkout" size="lg" block class="mt-8 !bg-highlighted !text-inverted hover:!bg-highlighted/80">Proceed to checkout</EditorialButton>
+          <EditorialButton to="/checkout" size="lg" block class="mt-8 !bg-highlighted !text-inverted hover:!bg-highlighted/80">إتمام الطلب</EditorialButton>
         </template>
 
         <template #fallback>
-          <div class="py-24 text-center text-muted">Loading…</div>
+          <div class="py-24 text-center text-muted">جارٍ التحميل...</div>
         </template>
       </ClientOnly>
     </div>

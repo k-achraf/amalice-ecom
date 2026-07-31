@@ -17,10 +17,10 @@ function onSearch() {
 }
 
 const navLinks = [
-  { label: 'Home', to: '/' },
-  { label: 'Shop', to: '/catalog' },
-  { label: 'Deals', to: '/deals' },
-  { label: 'New', to: '/new-arrivals' }
+  { label: 'الرئيسية', to: '/' },
+  { label: 'المتجر', to: '/catalog' },
+  { label: 'العروض', to: '/deals' },
+  { label: 'جديد', to: '/new-arrivals' }
 ]
 
 const isMobileMenuOpen = ref(false)
@@ -63,7 +63,7 @@ watch(() => route.path, () => {
       >
         <PromifyInput
           v-model="searchInput"
-          placeholder="Search products…"
+          placeholder="ابحث عن المنتجات..."
           icon="i-lucide-search"
           class="pointer-events-auto w-full max-w-xs"
         />
@@ -78,14 +78,14 @@ watch(() => route.path, () => {
           variant="ghost"
           square
           class="hidden !rounded-full sm:inline-flex"
-          aria-label="Wishlist"
+          aria-label="المفضلة"
         />
-        <NuxtLink v-if="settings.displayCart" to="/cart" class="relative ml-1 flex items-center justify-center rounded-full p-2 text-neutral-600 hover:bg-neutral-100 hover:text-primary-600">
+        <NuxtLink v-if="settings.displayCart" to="/cart" class="relative ms-1 flex items-center justify-center rounded-full p-2 text-neutral-600 hover:bg-neutral-100 hover:text-primary-600">
           <Icon name="i-lucide-shopping-cart" class="size-5" />
           <ClientOnly>
             <span
               v-if="cart.itemCount > 0"
-              class="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-primary-600 text-[10px] font-bold text-white"
+              class="absolute -end-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-primary-600 text-[10px] font-bold text-white"
             >{{ cart.itemCount }}</span>
           </ClientOnly>
         </NuxtLink>
@@ -95,8 +95,8 @@ watch(() => route.path, () => {
           color="neutral"
           variant="ghost"
           square
-          class="ml-1 !rounded-full lg:hidden"
-          aria-label="Toggle menu"
+          class="ms-1 !rounded-full lg:hidden"
+          aria-label="القائمة"
           @click="isMobileMenuOpen = !isMobileMenuOpen"
         />
       </div>
@@ -113,7 +113,7 @@ watch(() => route.path, () => {
     >
       <div v-if="isMobileMenuOpen" class="border-t border-neutral-100 bg-white px-4 pb-4 lg:hidden">
         <form class="pt-3 md:hidden" @submit.prevent="onSearch">
-          <PromifyInput v-model="searchInput" placeholder="Search products…" icon="i-lucide-search" class="w-full" />
+          <PromifyInput v-model="searchInput" placeholder="ابحث عن المنتجات..." icon="i-lucide-search" class="w-full" />
         </form>
         <nav class="mt-2 flex flex-col gap-1">
           <NuxtLink
@@ -125,7 +125,7 @@ watch(() => route.path, () => {
           >
             {{ link.label }}
           </NuxtLink>
-          <NuxtLink to="/wishlist" class="rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-primary-600">Wishlist</NuxtLink>
+          <NuxtLink to="/wishlist" class="rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-primary-600">المفضلة</NuxtLink>
         </nav>
       </div>
     </Transition>

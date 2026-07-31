@@ -26,12 +26,12 @@ const activeCategory = computed(() => props.routeQuery.category || 'all')
     <div class="border-b border-neutral-200 bg-[var(--color-hearth-linen)]">
       <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <nav class="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-neutral-400">
-          <NuxtLink to="/" class="hover:text-primary-600">Home</NuxtLink>
-          <Icon name="i-lucide-chevron-right" class="size-3" />
-          <span class="text-neutral-600">Shop</span>
+          <NuxtLink to="/" class="hover:text-primary-600">الرئيسية</NuxtLink>
+          <Icon name="i-lucide-chevron-left" class="size-3" />
+          <span class="text-neutral-600">المتجر</span>
         </nav>
-        <h1 class="font-display text-4xl text-[var(--color-hearth-ink)] sm:text-5xl">The shop</h1>
-        <p class="mt-2 max-w-xl text-neutral-600">Every piece, in one place. Cash on delivery — pay when it lands at your door.</p>
+        <h1 class="font-display text-4xl text-[var(--color-hearth-ink)] sm:text-5xl">المتجر</h1>
+        <p class="mt-2 max-w-xl text-neutral-600">كل قطعة، في مكان واحد. الدفع عند الاستلام — ادفع عندما تصل إلى بابك.</p>
       </div>
     </div>
 
@@ -40,14 +40,14 @@ const activeCategory = computed(() => props.routeQuery.category || 'all')
         <aside class="hidden w-64 shrink-0 lg:block">
           <div class="hearth-card sticky top-24 space-y-6 p-5">
             <div>
-              <h3 class="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-400">Search</h3>
+              <h3 class="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-400">بحث</h3>
               <form @submit.prevent="props.onSearchSubmit">
-                <HearthInput :model-value="props.searchInput" placeholder="Search…" icon="i-lucide-search" @update:model-value="props.onUpdateSearchInput" />
+                <HearthInput :model-value="props.searchInput" placeholder="ابحث عن المنتجات..." icon="i-lucide-search" @update:model-value="props.onUpdateSearchInput" />
               </form>
             </div>
             <div class="h-px bg-neutral-100" />
             <div>
-              <h3 class="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-400">Categories</h3>
+              <h3 class="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-400">الفئات</h3>
               <div class="space-y-1">
                 <button
                   v-for="opt in props.categoryOptions"
@@ -66,10 +66,10 @@ const activeCategory = computed(() => props.routeQuery.category || 'all')
 
         <div class="min-w-0 flex-1">
           <div v-if="props.pending" class="flex items-center justify-center py-24 text-neutral-400">
-            <Icon name="i-lucide-loader-circle" class="mr-2 size-5 animate-spin" /> Loading…
+            <Icon name="i-lucide-loader-circle" class="me-2 size-5 animate-spin" /> جارٍ التحميل...
           </div>
-          <EmptyState v-else-if="!props.data?.items.length" icon="i-lucide-search-x" title="No products found" description="Try a different search or clear your filters.">
-            <HearthButton to="/catalog" class="mt-4">Clear filters</HearthButton>
+          <EmptyState v-else-if="!props.data?.items.length" icon="i-lucide-search-x" title="لم يتم العثور على منتجات" description="جرب بحثاً مختلفاً أو امسح عوامل التصفية.">
+            <HearthButton to="/catalog" class="mt-4">مسح عوامل التصفية</HearthButton>
           </EmptyState>
           <template v-else>
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">

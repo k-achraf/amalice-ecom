@@ -25,11 +25,11 @@ const props = defineProps<{
     <div class="bg-gradient-to-r from-primary-600 to-primary-900">
       <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-14 lg:px-8">
         <nav class="mb-3 flex items-center gap-2 text-sm text-white/60">
-          <NuxtLink to="/" class="transition-colors hover:text-white">Home</NuxtLink>
-          <Icon name="i-lucide-chevron-right" class="size-3.5" />
-          <span class="text-white/90">Cart</span>
+          <NuxtLink to="/" class="transition-colors hover:text-white">الرئيسية</NuxtLink>
+          <Icon name="i-lucide-chevron-left" class="size-3.5" />
+          <span class="text-white/90">السلة</span>
         </nav>
-        <h1 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">Your shopping cart</h1>
+        <h1 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">سلتك</h1>
       </div>
     </div>
 
@@ -40,12 +40,12 @@ const props = defineProps<{
           v-if="props.notice"
           color="warning"
           icon="i-lucide-alert-triangle"
-          title="Your cart changed"
+          title="سلتك تغيّرت"
           class="mb-6"
           :description="
             [
-              ...props.notice.removed.map((n) => `${n} is no longer available and was removed.`),
-              ...props.notice.changed.map((c) => `${c.name}'s price changed.`)
+              ...props.notice.removed.map((n) => `${n} لم يعد متوفراً وتمت إزالته.`),
+              ...props.notice.changed.map((c) => `تغيّر سعر ${c.name}.`)
             ].join(' ')
           "
           closable
@@ -55,10 +55,10 @@ const props = defineProps<{
         <EmptyState
           v-if="props.cart.items.length === 0"
           icon="i-lucide-shopping-cart"
-          title="Your cart is empty"
-          description="Browse the catalog to add something."
+          title="سلتك فارغة"
+          description="تصفح المتجر لإضافة منتج."
         >
-          <PromifyButton to="/catalog" class="mt-4">Continue shopping</PromifyButton>
+          <PromifyButton to="/catalog" class="mt-4">متابعة التسوق</PromifyButton>
         </EmptyState>
 
         <div v-else class="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -84,7 +84,7 @@ const props = defineProps<{
                     :max="item.stockQuantity"
                     @update:model-value="(v: number) => props.cart.setQuantity(item.productId, v)"
                   />
-                  <PriceDisplay :amount-cents="item.priceCents * item.quantity" class="w-24 text-right font-semibold text-neutral-900" />
+                  <PriceDisplay :amount-cents="item.priceCents * item.quantity" class="w-24 text-end font-semibold text-neutral-900" />
                   <PromifyButton
                     icon="i-lucide-trash-2"
                     color="neutral"
@@ -92,7 +92,7 @@ const props = defineProps<{
                     size="sm"
                     square
                     class="!rounded-full hover:!bg-red-50 hover:!text-red-500"
-                    aria-label="Remove item"
+                    aria-label="إزالة المنتج"
                     @click="props.cart.removeItem(item.productId)"
                   />
                 </li>
@@ -103,45 +103,45 @@ const props = defineProps<{
           <!-- Sticky order summary -->
           <div class="lg:col-span-1">
             <div class="sticky top-20 rounded-2xl border border-neutral-100 bg-white p-6 shadow-[var(--shadow-promify-md)]">
-              <h2 class="mb-4 text-lg font-bold text-neutral-900">Order summary</h2>
+              <h2 class="mb-4 text-lg font-bold text-neutral-900">ملخص الطلب</h2>
               <div class="space-y-3 text-sm">
                 <div class="flex items-center justify-between">
-                  <span class="text-neutral-500">Items ({{ props.cart.itemCount }})</span>
+                  <span class="text-neutral-500">المنتجات ({{ props.cart.itemCount }})</span>
                   <PriceDisplay :amount-cents="props.cart.totalCents" class="font-medium text-neutral-900" />
                 </div>
                 <div class="flex items-center justify-between">
-                  <span class="text-neutral-500">Shipping</span>
-                  <span class="font-medium text-primary-600">Free</span>
+                  <span class="text-neutral-500">الشحن</span>
+                  <span class="font-medium text-primary-600">مجاني</span>
                 </div>
                 <div class="flex items-center justify-between">
-                  <span class="text-neutral-500">Taxes</span>
-                  <span class="font-medium text-neutral-500">Calculated at delivery</span>
+                  <span class="text-neutral-500">الضرائب</span>
+                  <span class="font-medium text-neutral-500">تُحسب عند التوصيل</span>
                 </div>
               </div>
               <div class="mt-4 flex items-center justify-between border-t border-neutral-100 pt-4">
-                <span class="text-base font-semibold text-neutral-900">Total</span>
+                <span class="text-base font-semibold text-neutral-900">المجموع</span>
                 <PriceDisplay :amount-cents="props.cart.totalCents" class="text-xl font-bold text-neutral-900" />
               </div>
               <p class="mt-2 flex items-center gap-1.5 text-xs text-neutral-400">
-                <Icon name="i-lucide-banknote" class="size-3.5" /> Cash on delivery available
+                <Icon name="i-lucide-banknote" class="size-3.5" /> الدفع نقداً عند الاستلام متاح
               </p>
               <PromifyButton
                 to="/checkout"
                 block
                 size="xl"
-                trailing-icon="i-lucide-arrow-right"
+                trailing-icon="i-lucide-arrow-left"
                 class="mt-5"
               >
-                Proceed to checkout
+                إتمام الطلب
               </PromifyButton>
-              <PromifyButton to="/catalog" block variant="ghost" color="neutral" class="mt-2">Continue shopping</PromifyButton>
+              <PromifyButton to="/catalog" block variant="ghost" color="neutral" class="mt-2">متابعة التسوق</PromifyButton>
             </div>
           </div>
         </div>
 
         <template #fallback>
           <div class="flex items-center justify-center py-24 text-neutral-400">
-            <Icon name="i-lucide-loader-circle" class="mr-2 size-5 animate-spin" /> Loading…
+            <Icon name="i-lucide-loader-circle" class="me-2 size-5 animate-spin" /> جارٍ التحميل...
           </div>
         </template>
       </ClientOnly>

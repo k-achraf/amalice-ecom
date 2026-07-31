@@ -29,8 +29,8 @@ const cardImage = computed(() => resolveImageUrl(props.product.imageUrl))
       <p class="truncate text-sm font-medium text-highlighted">{{ product.name }}</p>
       <div class="flex items-center justify-between gap-2">
         <PriceDisplay :amount-cents="product.priceCents" class="text-sm" />
-        <Badge v-if="product.stockQuantity === 0" color="error" variant="subtle">Out of stock</Badge>
-        <Badge v-else-if="product.stockQuantity <= product.lowStockThreshold" color="warning" variant="subtle">Low stock</Badge>
+        <Badge v-if="product.stockQuantity === 0" color="error" variant="subtle">غير متوفر</Badge>
+        <Badge v-else-if="product.stockQuantity <= product.lowStockThreshold" color="warning" variant="subtle">كمية محدودة</Badge>
       </div>
     </div>
   </NuxtLink>

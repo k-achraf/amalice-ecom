@@ -3,8 +3,8 @@ import type { ZodTypeAny } from 'zod'
 import type { CartItem } from '~/stores/cart'
 
 // Minimal (fallback) checkout presentation — vertical stepper, single-column
-// form. The OTP flow + timers live in the page shell; this receives the
-// reactive state + handlers and renders the 3 steps. No @nuxt/ui: address
+// form. Order placement + step state live in the page shell; this receives
+// the reactive state + handlers and renders the 2 steps. No @nuxt/ui: address
 // validation runs the passed Zod schema directly on submit.
 const props = defineProps<{
   cart: { items: CartItem[]; totalCents: number }
@@ -13,21 +13,18 @@ const props = defineProps<{
   form: {
     phone: string
     name: string
+    wilayaId: string
+    shippingType: string
+    shippingPriceCents: number
     address: { line1: string; line2: string; city: string; region: string; postalCode: string; country: string }
   }
   addressSchema: ZodTypeAny
+  addressError: string | null
+  totalCents: number
   placing: boolean
   placeError: string | null
-  order: { id: string; totalCents: number } | null
-  otpCode: string[]
-  otpCodeString: string
-  otpError: string | null
-  verifying: boolean
-  resendCooldown: number
   onAddressSubmit: () => void
   onPlaceOrder: () => void
-  onVerifyCode: () => void
-  onResendCode: () => void
   onBack: () => void
 }>()
 
@@ -51,15 +48,15 @@ const currentStepIndex = computed(() => props.stepItems.findIndex((s) => s.value
 <template>
   <ClientOnly>
     <main class="mx-auto max-w-2xl space-y-8 p-6">
-      <h1 class="text-2xl font-semibold">Checkout</h1>
+      <h1 class="text-2xl font-semibold">إتمام الطلب</h1>
 
       <EmptyState
         v-if="props.cart.items.length === 0"
         icon="i-lucide-shopping-cart"
-        title="Your cart is empty"
-        description="Add something to your cart before checking out."
+        title="سلتك فارغة"
+        description="أضف منتجاً إلى سلتك قبل إتمام الطلب."
       >
-        <Button to="/" variant="outline" color="neutral">Continue shopping</Button>
+        <Button to="/" variant="outline" color="neutral">متابعة التسوق</Button>
       </EmptyState>
 
       <template v-else>
@@ -83,56 +80,33 @@ const currentStepIndex = computed(() => props.stepItems.findIndex((s) => s.value
         <!-- Step 1: address -->
         <form v-if="props.step === 'address'" class="space-y-4" @submit.prevent="submitAddress">
           <div class="space-y-1">
-            <label class="block text-sm font-medium text-highlighted">Phone</label>
+            <label class="block text-sm font-medium text-highlighted">رقم الهاتف</label>
             <Input v-model="props.form.phone" type="tel" placeholder="+15551234567" class="w-full" />
-            <p class="text-xs text-muted">E.164 format, e.g. +15551234567</p>
+            <p class="text-xs text-muted">بصيغة E.164، مثال: +15551234567</p>
             <p v-if="fieldErrors['phone']" class="text-sm text-error">{{ fieldErrors['phone'] }}</p>
           </div>
           <div class="space-y-1">
-            <label class="block text-sm font-medium text-highlighted">Name (optional)</label>
+            <label class="block text-sm font-medium text-highlighted">الاسم (اختياري)</label>
             <Input v-model="props.form.name" class="w-full" />
           </div>
           <div class="space-y-1">
-            <label class="block text-sm font-medium text-highlighted">Address line 1</label>
+            <label class="block text-sm font-medium text-highlighted">العنوان - السطر 1</label>
             <Input v-model="props.form.address.line1" class="w-full" />
             <p v-if="fieldErrors['address.line1']" class="text-sm text-error">{{ fieldErrors['address.line1'] }}</p>
           </div>
           <div class="space-y-1">
-            <label class="block text-sm font-medium text-highlighted">Address line 2 (optional)</label>
+            <label class="block text-sm font-medium text-highlighted">العنوان - السطر 2 (اختياري)</label>
             <Input v-model="props.form.address.line2" class="w-full" />
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-1">
-              <label class="block text-sm font-medium text-highlighted">City</label>
-              <Input v-model="props.form.address.city" class="w-full" />
-              <p v-if="fieldErrors['address.city']" class="text-sm text-error">{{ fieldErrors['address.city'] }}</p>
-            </div>
-            <div class="space-y-1">
-              <label class="block text-sm font-medium text-highlighted">Region / State</label>
-              <Input v-model="props.form.address.region" class="w-full" />
-              <p v-if="fieldErrors['address.region']" class="text-sm text-error">{{ fieldErrors['address.region'] }}</p>
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-1">
-              <label class="block text-sm font-medium text-highlighted">Postal code</label>
-              <Input v-model="props.form.address.postalCode" class="w-full" />
-              <p v-if="fieldErrors['address.postalCode']" class="text-sm text-error">{{ fieldErrors['address.postalCode'] }}</p>
-            </div>
-            <div class="space-y-1">
-              <label class="block text-sm font-medium text-highlighted">Country</label>
-              <Input v-model="props.form.address.country" :maxlength="2" class="w-full uppercase" />
-              <p class="text-xs text-muted">2-letter code, e.g. US</p>
-              <p v-if="fieldErrors['address.country']" class="text-sm text-error">{{ fieldErrors['address.country'] }}</p>
-            </div>
-          </div>
-          <Button type="submit" block size="lg">Continue to review</Button>
+          <CheckoutShippingFields :form="props.form" />
+          <p v-if="props.addressError" class="text-sm text-error">{{ props.addressError }}</p>
+          <Button type="submit" block size="lg">متابعة للمراجعة</Button>
         </form>
 
         <!-- Step 2: review -->
         <div v-else-if="props.step === 'review'" class="space-y-6">
           <div class="space-y-2">
-            <h2 class="font-medium text-highlighted">Items</h2>
+            <h2 class="font-medium text-highlighted">المنتجات</h2>
             <ul class="divide-y divide-default">
               <li v-for="item in props.cart.items" :key="item.productId" class="flex justify-between py-2 text-sm">
                 <span>{{ item.name }} × {{ item.quantity }}</span>
@@ -141,41 +115,33 @@ const currentStepIndex = computed(() => props.stepItems.findIndex((s) => s.value
             </ul>
           </div>
           <div class="space-y-1 text-sm">
-            <h2 class="font-medium text-highlighted">Deliver to</h2>
+            <h2 class="font-medium text-highlighted">التوصيل إلى</h2>
             <p>{{ props.form.name || props.form.phone }}</p>
             <p>{{ props.form.address.line1 }}<template v-if="props.form.address.line2">, {{ props.form.address.line2 }}</template></p>
-            <p>{{ props.form.address.city }}, {{ props.form.address.region }} {{ props.form.address.postalCode }}</p>
-            <p>{{ props.form.address.country }}</p>
+            <p>{{ props.form.address.city }}, {{ props.form.address.region }}</p>
             <p>{{ props.form.phone }}</p>
           </div>
+          <div class="space-y-2 border-t border-default pt-4 text-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-muted">الشحن ({{ props.form.shippingType === 'Home' ? 'التوصيل إلى المنزل' : 'الاستلام من مكتب التوصيل' }})</span>
+              <PriceDisplay :amount-cents="props.form.shippingPriceCents" />
+            </div>
+          </div>
           <div class="flex items-center justify-between border-t border-default pt-4">
-            <span class="font-medium">Cash due on delivery</span>
-            <PriceDisplay :amount-cents="props.cart.totalCents" class="text-lg font-semibold" />
+            <span class="font-medium">المجموع المستحق عند الاستلام</span>
+            <PriceDisplay :amount-cents="props.totalCents" class="text-lg font-semibold" />
           </div>
           <Alert v-if="props.placeError" color="error" :description="props.placeError" />
           <div class="flex gap-3">
-            <Button variant="outline" color="neutral" @click="props.onBack">Back</Button>
-            <Button block size="lg" :loading="props.placing" @click="props.onPlaceOrder">Place order</Button>
+            <Button variant="outline" color="neutral" @click="props.onBack">رجوع</Button>
+            <Button block size="lg" :loading="props.placing" @click="props.onPlaceOrder">تأكيد الطلب</Button>
           </div>
-        </div>
-
-        <!-- Step 3: OTP -->
-        <div v-else-if="props.step === 'otp'" class="space-y-6">
-          <p class="text-sm text-muted">
-            We sent a 6-digit code to {{ props.form.phone }}. Enter it below to confirm your order.
-          </p>
-          <PinInput :model-value="props.otpCode" :length="6" @update:model-value="(v: string[]) => (props.otpCode as string[]).splice(0, props.otpCode.length, ...v)" />
-          <Alert v-if="props.otpError" color="error" :description="props.otpError" />
-          <Button block size="lg" :loading="props.verifying" :disabled="props.otpCodeString.length !== 6" @click="props.onVerifyCode">Confirm order</Button>
-          <Button variant="link" color="neutral" :disabled="props.resendCooldown > 0" @click="props.onResendCode">
-            {{ props.resendCooldown > 0 ? `Resend code in ${props.resendCooldown}s` : 'Resend code' }}
-          </Button>
         </div>
       </template>
     </main>
 
     <template #fallback>
-      <div class="py-24 text-center text-muted">Loading…</div>
+      <div class="py-24 text-center text-muted">جارٍ التحميل...</div>
     </template>
   </ClientOnly>
 </template>

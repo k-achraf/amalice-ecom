@@ -22,8 +22,8 @@ const props = defineProps<{
   <main v-if="props.category" class="mx-auto max-w-7xl space-y-8 p-6">
     <header class="space-y-2">
       <nav class="text-sm text-muted">
-        <NuxtLink to="/" class="hover:text-highlighted">Home</NuxtLink> /
-        <NuxtLink to="/catalog" class="hover:text-highlighted">Shop</NuxtLink> /
+        <NuxtLink to="/" class="hover:text-highlighted">الرئيسية</NuxtLink> /
+        <NuxtLink to="/catalog" class="hover:text-highlighted">المتجر</NuxtLink> /
         <span>{{ props.category.name }}</span>
       </nav>
       <h1 class="text-3xl font-bold">{{ props.category.name }}</h1>
@@ -34,34 +34,34 @@ const props = defineProps<{
       <aside class="hidden w-56 shrink-0 lg:block">
         <div class="sticky top-4 space-y-6">
           <div>
-            <h3 class="mb-3 text-sm font-semibold">Price range ($)</h3>
+            <h3 class="mb-3 text-sm font-semibold">نطاق السعر (دج)</h3>
             <div class="flex items-center gap-2">
               <Input
                 :model-value="props.minPrice?.toString() ?? ''"
                 type="number"
-                placeholder="Min"
+                placeholder="الأدنى"
                 @update:model-value="(v: string) => props.onUpdateMinPrice(v ? Number(v) : undefined)"
               />
               <span class="text-muted">–</span>
               <Input
                 :model-value="props.maxPrice?.toString() ?? ''"
                 type="number"
-                placeholder="Max"
+                placeholder="الأقصى"
                 @update:model-value="(v: string) => props.onUpdateMaxPrice(v ? Number(v) : undefined)"
               />
             </div>
-            <Button class="mt-2" size="xs" color="neutral" variant="outline" block @click="props.onApplyPrice">Apply</Button>
+            <Button class="mt-2" size="xs" color="neutral" variant="outline" block @click="props.onApplyPrice">تطبيق</Button>
           </div>
         </div>
       </aside>
 
       <div class="flex-1 space-y-6">
-        <div v-if="props.pending" class="py-24 text-center text-muted">Loading…</div>
+        <div v-if="props.pending" class="py-24 text-center text-muted">جارٍ التحميل...</div>
         <EmptyState
           v-else-if="!props.data?.items.length"
           icon="i-lucide-package-search"
-          title="No products in this collection yet"
-          description="Check back soon, or browse the full catalog."
+          title="لا توجد منتجات في هذه الفئة بعد"
+          description="تحقق مرة أخرى قريباً، أو تصفح المتجر بالكامل."
         />
         <template v-else>
           <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">

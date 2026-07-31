@@ -12,14 +12,19 @@ const colorMode = useColorMode()
 const allLinks: (NavigationMenuItem & { roles: AdminRoleName[] })[] = [
   { label: 'Dashboard', icon: 'i-lucide-layout-dashboard', to: '/', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Warehouse'] },
   { label: 'Orders', icon: 'i-lucide-package', to: '/orders', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Support'] },
+  { label: 'Call Center', icon: 'i-lucide-phone-call', to: '/call-center', roles: ['SuperAdmin', 'OpsManager', 'Support'] },
   { label: 'Inventory', icon: 'i-lucide-boxes', to: '/inventory', roles: ['SuperAdmin', 'OpsManager', 'Warehouse'] },
   { label: 'Customers', icon: 'i-lucide-users', to: '/customers', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Support'] },
   { label: 'Reconciliation', icon: 'i-lucide-receipt', to: '/reconciliation', roles: ['SuperAdmin', 'Finance'] },
-  { label: 'Fulfillment', icon: 'i-lucide-truck', to: '/fulfillment', roles: ['SuperAdmin', 'OpsManager'] },
+  { label: 'Fulfillment', icon: 'i-lucide-package-check', to: '/fulfillment', roles: ['SuperAdmin', 'OpsManager'] },
+  { label: 'Shipping', icon: 'i-lucide-truck', to: '/shipping', roles: ['SuperAdmin', 'OpsManager'] },
+  { label: 'Product Sourcing', icon: 'i-lucide-search-code', to: '/sourcing', roles: ['SuperAdmin', 'OpsManager'] },
   { label: 'Users & Roles', icon: 'i-lucide-user-cog', to: '/users', roles: ['SuperAdmin'] },
   { label: 'Apps', icon: 'i-lucide-layout-grid', to: '/apps', roles: ['SuperAdmin'] },
   { label: 'Storefront', icon: 'i-lucide-palette', to: '/settings/storefront', roles: ['SuperAdmin'] },
   { label: 'Attributes', icon: 'i-lucide-layers', to: '/settings/attributes', roles: ['SuperAdmin'] },
+  { label: 'Shipping Rates', icon: 'i-lucide-map-pinned', to: '/settings/shipping', roles: ['SuperAdmin', 'OpsManager'] },
+  { label: 'Shipping Companies', icon: 'i-lucide-plug', to: '/settings/shipping-companies', roles: ['SuperAdmin', 'OpsManager'] },
   { label: 'Audit Log', icon: 'i-lucide-history', to: '/audit-log', roles: ['SuperAdmin', 'Finance', 'OpsManager'] }
 ]
 

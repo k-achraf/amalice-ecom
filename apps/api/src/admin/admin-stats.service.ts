@@ -19,7 +19,7 @@ export class AdminStatsService {
       ordersToday,
       codPendingAgg,
       codCollectedAgg,
-      pendingOtpCount,
+      pendingCallCenterCount,
       confirmedCount,
       packedCount,
       deliveriesToday,
@@ -37,7 +37,7 @@ export class AdminStatsService {
         where: { state: { in: ['CashCollected', 'Reconciled', 'Settled'] } },
         _sum: { totalCents: true }
       }),
-      this.prisma.order.count({ where: { state: 'PendingOTP' } }),
+      this.prisma.order.count({ where: { state: { in: ['PendingCallCenter', 'CallCenterNoAnswer'] } } }),
       this.prisma.order.count({ where: { state: 'Confirmed' } }),
       this.prisma.order.count({ where: { state: 'Packed' } }),
       this.prisma.order.count({
@@ -56,7 +56,7 @@ export class AdminStatsService {
       ordersToday,
       codAmountPendingCents: codPendingAgg._sum.totalCents ?? 0,
       codAmountCollectedCents: codCollectedAgg._sum.totalCents ?? 0,
-      pendingOtpCount,
+      pendingCallCenterCount,
       confirmedCount,
       packedCount,
       deliveriesToday,

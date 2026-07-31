@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { AdminProductDetail, Category } from '@amalice/shared'
+import type { AdminProductDetail, Category, ProductLandingPage } from '@amalice/shared'
+import { offerTotalQuantity, offerPriceCents } from '@amalice/shared'
 
 // Full product editor — tabbed sections for Details, Variants, Images, Inventory.
 // Each tab manages its own CRUD via the admin API. The product detail (with
@@ -28,7 +29,17 @@ const { data: product, pending, refresh } = await useAdminFetch<AdminProductDeta
 const { data: categories } = await useAdminFetch<Category[]>('/categories', { key: 'admin-all-categories' })
 const { data: allAttributes } = await useAdminFetch<{ id: string; name: string; type: string; options: { id: string; value: string; colorHex: string | null }[] }[]>('/admin/attributes', { key: 'admin-attributes' })
 
-const activeTab = ref<'details' | 'variants' | 'images' | 'inventory'>('details')
+const activeTab = ref<'details' | 'variants' | 'images' | 'landingPage' | 'offers' | 'upsells' | 'inventory'>('details')
+
+// Every *Cents field is stored as amount * 100 internally (this app's one
+// money convention — see PriceDisplay), but admins think in plain DZD, not
+// centimes. cents/100 -> input, Math.round(input*100) -> stored back.
+const productPriceDzd = computed<number>({
+  get: () => (product.value ? product.value.priceCents / 100 : 0),
+  set: (v) => {
+    if (product.value) product.value.priceCents = Math.round((v ?? 0) * 100)
+  }
+})
 
 // ---- Details tab ----
 const savingDetails = ref(false)
@@ -66,6 +77,13 @@ function openCreateVariant() {
   editingVariant.value = { sku: '', priceCents: product.value?.priceCents ?? 0, stockQuantity: 0, optionIds: [] }
   showVariantModal.value = true
 }
+
+const editingVariantPriceDzd = computed<number>({
+  get: () => (editingVariant.value ? editingVariant.value.priceCents / 100 : 0),
+  set: (v) => {
+    if (editingVariant.value) editingVariant.value.priceCents = Math.round((v ?? 0) * 100)
+  }
+})
 
 function openEditVariant(v: AdminProductDetail['variants'][0]) {
   editingVariant.value = { sku: v.sku, priceCents: v.priceCents, stockQuantity: v.stockQuantity, optionIds: v.options.map((o) => o.id), id: v.id }
@@ -346,6 +364,320 @@ const showVariantModalBool = computed({
   get: () => showVariantModal.value,
   set: (v) => { if (!v) { showVariantModal.value = false; editingVariant.value = null } }
 })
+
+// ---- Landing Page tab ----
+// AI-generated long-scroll marketing image (hero + feature highlights +
+// CTA, stitched together server-side) — see apps/api/src/landing-pages.
+// Generation runs as a background job; this tab polls while status is
+// "Generating" and stops once it lands on Completed/Failed.
+const landingPage = ref<ProductLandingPage | null>(null)
+const generatingLandingPage = ref(false)
+const selectedSourceImages = ref<string[]>([])
+const landingPageDescription = ref('')
+const sectionCount = ref(5)
+// Gemini edits the product's real photos and draws its own on-image text,
+// but needs Google Cloud billing enabled; Pollinations is free/keyless with
+// no billing step, but generates a generic product-style image (not the
+// real photos) and has the text composited on in code instead.
+const imageProvider = ref<'Gemini' | 'Pollinations'>('Gemini')
+let landingPageProviderTouched = false
+let landingPagePollTimer: ReturnType<typeof setInterval> | undefined
+
+async function fetchLandingPage() {
+  try {
+    landingPage.value = await api<ProductLandingPage | null>(`/admin/products/${id}/landing-page`)
+  } catch {
+    landingPage.value = null
+  }
+  // Restore the source-image selection and provider choice from the last
+  // generation so "Regenerate" works immediately without re-picking anything.
+  if (landingPage.value && selectedSourceImages.value.length === 0) {
+    const usedUrls = new Set(landingPage.value.sections.flatMap((s) => s.sourceImageUrls))
+    if (usedUrls.size) selectedSourceImages.value = [...usedUrls]
+  }
+  if (landingPage.value && !landingPageProviderTouched) {
+    imageProvider.value = landingPage.value.imageProvider
+  }
+}
+
+function stopLandingPagePolling() {
+  if (landingPagePollTimer) clearInterval(landingPagePollTimer)
+  landingPagePollTimer = undefined
+}
+
+function startLandingPagePolling() {
+  stopLandingPagePolling()
+  landingPagePollTimer = setInterval(async () => {
+    await fetchLandingPage()
+    if (landingPage.value && landingPage.value.status !== 'Generating') stopLandingPagePolling()
+  }, 3000)
+}
+
+onMounted(async () => {
+  await fetchLandingPage()
+  if (landingPage.value?.status === 'Generating') startLandingPagePolling()
+})
+onUnmounted(() => stopLandingPagePolling())
+
+// Prefill the generation description from the product's own description,
+// once, the first time it becomes available — still freely editable after.
+watch(product, (p) => {
+  if (p && !landingPageDescription.value) landingPageDescription.value = (p.description as string) ?? ''
+}, { immediate: true })
+
+function toggleSourceImage(url: string) {
+  const idx = selectedSourceImages.value.indexOf(url)
+  if (idx === -1) selectedSourceImages.value.push(url)
+  else selectedSourceImages.value.splice(idx, 1)
+}
+
+function selectImageProvider(provider: 'Gemini' | 'Pollinations') {
+  imageProvider.value = provider
+  landingPageProviderTouched = true
+}
+
+async function generateLandingPage() {
+  if (selectedSourceImages.value.length === 0) {
+    toast.add({ title: 'Select at least one source image', color: 'warning' })
+    return
+  }
+  if (!landingPageDescription.value.trim()) {
+    toast.add({ title: 'Add a description to generate from', color: 'warning' })
+    return
+  }
+  generatingLandingPage.value = true
+  try {
+    landingPage.value = await api<ProductLandingPage>(`/admin/products/${id}/landing-page/generate`, {
+      method: 'POST',
+      body: {
+        sourceImageUrls: selectedSourceImages.value,
+        description: landingPageDescription.value,
+        sectionCount: sectionCount.value,
+        imageProvider: imageProvider.value
+      }
+    })
+    startLandingPagePolling()
+    toast.add({ title: 'Generating landing page…', description: 'This can take a minute or two — feel free to switch tabs.', color: 'info' })
+  } catch (err) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: 'Failed to start generation', description: data?.message, color: 'error' })
+  } finally {
+    generatingLandingPage.value = false
+  }
+}
+
+async function regenerateSection(sectionId: string) {
+  try {
+    landingPage.value = await api<ProductLandingPage>(`/admin/products/${id}/landing-page/sections/${sectionId}/regenerate`, { method: 'POST' })
+    startLandingPagePolling()
+  } catch (err) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: 'Failed to regenerate section', description: data?.message, color: 'error' })
+  }
+}
+
+async function toggleLandingPageEnabled(enabled: boolean) {
+  try {
+    landingPage.value = await api<ProductLandingPage>(`/admin/products/${id}/landing-page`, { method: 'PUT', body: { enabled } })
+    toast.add({ title: enabled ? 'Now shown on the storefront' : 'Hidden from the storefront', color: 'success' })
+  } catch (err) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: 'Failed to update', description: data?.message, color: 'error' })
+  }
+}
+
+const sectionStatusColor: Record<string, 'success' | 'warning' | 'error' | 'neutral'> = {
+  completed: 'success',
+  generating: 'warning',
+  pending: 'neutral',
+  failed: 'error'
+}
+
+// ---- Offers tab ----
+// Quantity-triggered promos (buy-X bundle price, buy-X-get-Y-free, buy-X
+// free-shipping badge) — plain CRUD against product.offers, no background
+// job unlike the Landing Page tab, so mutations just refresh() the product.
+const offerTypeOptions = [
+  { value: 'FixedBundlePrice', label: 'Bundle price (buy X for a set DZD amount)' },
+  { value: 'BuyXGetYFree', label: 'Buy X, get Y free' },
+  { value: 'FreeShipping', label: 'Buy X, free shipping (badge only)' }
+]
+const dzdFormatter = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'DZD' })
+function formatDzd(cents: number) {
+  return dzdFormatter.format(cents / 100)
+}
+const newOffer = reactive({
+  type: 'FixedBundlePrice' as 'FixedBundlePrice' | 'BuyXGetYFree' | 'FreeShipping',
+  requiredQuantity: 2,
+  freeQuantity: 1,
+  bundlePriceCents: null as number | null
+})
+const newOfferBundlePriceDzd = computed<number | null>({
+  get: () => (newOffer.bundlePriceCents == null ? null : newOffer.bundlePriceCents / 100),
+  set: (v) => {
+    newOffer.bundlePriceCents = v == null ? null : Math.round(v * 100)
+  }
+})
+const creatingOffer = ref(false)
+const savingOfferId = ref<string | null>(null)
+
+function offerSummary(o: { type: 'FixedBundlePrice' | 'BuyXGetYFree' | 'FreeShipping'; requiredQuantity: number; freeQuantity: number; bundlePriceCents: number | null }): string {
+  const totalQty = offerTotalQuantity(o)
+  const priceCents = offerPriceCents(o, product.value?.priceCents ?? 0)
+  if (o.type === 'FixedBundlePrice') return `Buy ${o.requiredQuantity} for ${formatDzd(priceCents)}`
+  if (o.type === 'BuyXGetYFree') return `Buy ${o.requiredQuantity}, get ${o.freeQuantity} free (${totalQty} total for ${formatDzd(priceCents)})`
+  return `Buy ${o.requiredQuantity}, free shipping`
+}
+
+async function createOffer() {
+  if (newOffer.type === 'FixedBundlePrice' && !newOffer.bundlePriceCents) {
+    toast.add({ title: 'Enter a bundle price', color: 'warning' })
+    return
+  }
+  if (newOffer.type === 'BuyXGetYFree' && newOffer.freeQuantity < 1) {
+    toast.add({ title: 'Free quantity must be at least 1', color: 'warning' })
+    return
+  }
+  creatingOffer.value = true
+  try {
+    await api(`/admin/products/${id}/offers`, {
+      method: 'POST',
+      body: {
+        type: newOffer.type,
+        requiredQuantity: newOffer.requiredQuantity,
+        freeQuantity: newOffer.type === 'BuyXGetYFree' ? newOffer.freeQuantity : 0,
+        bundlePriceCents: newOffer.type === 'FixedBundlePrice' ? newOffer.bundlePriceCents : null
+      }
+    })
+    await refresh()
+    toast.add({ title: 'Offer added', color: 'success' })
+    newOffer.requiredQuantity = 2
+    newOffer.freeQuantity = 1
+    newOffer.bundlePriceCents = null
+  } catch (err) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: 'Failed to add offer', description: data?.message, color: 'error' })
+  } finally {
+    creatingOffer.value = false
+  }
+}
+
+async function toggleOfferEnabled(offerId: string, enabled: boolean) {
+  savingOfferId.value = offerId
+  try {
+    await api(`/admin/products/${id}/offers/${offerId}`, { method: 'PATCH', body: { enabled } })
+    await refresh()
+  } catch (err) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: 'Failed to update offer', description: data?.message, color: 'error' })
+  } finally {
+    savingOfferId.value = null
+  }
+}
+
+async function deleteOffer(offerId: string) {
+  savingOfferId.value = offerId
+  try {
+    await api(`/admin/products/${id}/offers/${offerId}`, { method: 'DELETE' })
+    await refresh()
+    toast.add({ title: 'Offer removed', color: 'success' })
+  } catch (err) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: 'Failed to remove offer', description: data?.message, color: 'error' })
+  } finally {
+    savingOfferId.value = null
+  }
+}
+
+// ---- Upsells tab ----
+// "Customers who buy this product are offered X" — see ProductUpsell's
+// Prisma comment. Fetched lazily (only once the Upsells tab is opened,
+// same reasoning as everything else on this page that isn't needed until
+// its own tab is visible) rather than bundled into the initial product
+// fetch, since it's a separate resource.
+interface ProductUpsellRow {
+  id: string
+  upsellProductId: string
+  enabled: boolean
+  priceCentsOverride: number | null
+  upsellProduct: { id: string; name: string; slug: string; imageUrl: string | null; priceCents: number }
+}
+const upsells = ref<ProductUpsellRow[]>([])
+const upsellsLoaded = ref(false)
+const otherProducts = ref<{ id: string; name: string; priceCents: number }[]>([])
+
+async function loadUpsellsTab() {
+  if (upsellsLoaded.value) return
+  upsellsLoaded.value = true
+  const [upsellRes, productsRes] = await Promise.all([
+    api<ProductUpsellRow[]>(`/admin/products/${id}/upsells`),
+    api<{ items: { id: string; name: string; priceCents: number }[] }>('/products?pageSize=100')
+  ])
+  upsells.value = upsellRes
+  otherProducts.value = productsRes.items.filter((p) => p.id !== id)
+}
+watch(activeTab, (tab) => {
+  if (tab === 'upsells') loadUpsellsTab()
+})
+
+const newUpsellProductId = ref<string | undefined>(undefined)
+const newUpsellPriceOverrideDzd = ref<number | null>(null)
+const creatingUpsell = ref(false)
+const savingUpsellId = ref<string | null>(null)
+
+async function createUpsell() {
+  if (!newUpsellProductId.value) {
+    toast.add({ title: 'Pick a product to suggest', color: 'warning' })
+    return
+  }
+  creatingUpsell.value = true
+  try {
+    const created = await api<ProductUpsellRow>(`/admin/products/${id}/upsells`, {
+      method: 'POST',
+      body: {
+        upsellProductId: newUpsellProductId.value,
+        priceCentsOverride: newUpsellPriceOverrideDzd.value == null ? null : Math.round(newUpsellPriceOverrideDzd.value * 100)
+      }
+    })
+    upsells.value.push(created)
+    toast.add({ title: 'Upsell added', color: 'success' })
+    newUpsellProductId.value = undefined
+    newUpsellPriceOverrideDzd.value = null
+  } catch (err) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: 'Failed to add upsell', description: data?.message, color: 'error' })
+  } finally {
+    creatingUpsell.value = false
+  }
+}
+
+async function toggleUpsellEnabled(upsellId: string, enabled: boolean) {
+  savingUpsellId.value = upsellId
+  try {
+    await api(`/admin/products/${id}/upsells/${upsellId}`, { method: 'PATCH', body: { enabled } })
+    const row = upsells.value.find((u) => u.id === upsellId)
+    if (row) row.enabled = enabled
+  } catch (err) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: 'Failed to update upsell', description: data?.message, color: 'error' })
+  } finally {
+    savingUpsellId.value = null
+  }
+}
+
+async function deleteUpsell(upsellId: string) {
+  savingUpsellId.value = upsellId
+  try {
+    await api(`/admin/products/${id}/upsells/${upsellId}`, { method: 'DELETE' })
+    upsells.value = upsells.value.filter((u) => u.id !== upsellId)
+    toast.add({ title: 'Upsell removed', color: 'success' })
+  } catch (err) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: 'Failed to remove upsell', description: data?.message, color: 'error' })
+  } finally {
+    savingUpsellId.value = null
+  }
+}
 </script>
 
 <template>
@@ -370,6 +702,9 @@ const showVariantModalBool = computed({
             { label: 'Details', value: 'details', icon: 'i-lucide-file-text' },
             { label: 'Variants', value: 'variants', icon: 'i-lucide-layers' },
             { label: 'Images', value: 'images', icon: 'i-lucide-image' },
+            { label: 'Landing Page', value: 'landingPage', icon: 'i-lucide-sparkles' },
+            { label: 'Offers', value: 'offers', icon: 'i-lucide-tag' },
+            { label: 'Upsells', value: 'upsells', icon: 'i-lucide-plus-circle' },
             { label: 'Inventory', value: 'inventory', icon: 'i-lucide-boxes' }
           ]"
         />
@@ -378,7 +713,9 @@ const showVariantModalBool = computed({
         <div v-show="activeTab === 'details'" class="admin-kpi-card space-y-5 p-6">
           <UFormField label="Name"><UInput v-model="product.name" class="w-full" /></UFormField>
           <UFormField label="Slug"><UInput v-model="product.slug" class="w-full" /></UFormField>
-          <UFormField label="Description"><UTextarea v-model="product.description as string" class="w-full" :rows="3" /></UFormField>
+          <UFormField label="Description">
+            <RichTextEditor v-model="product.description" />
+          </UFormField>
           <div class="grid grid-cols-2 gap-4">
             <UFormField label="Category">
               <USelect
@@ -387,7 +724,7 @@ const showVariantModalBool = computed({
                 class="w-full"
               />
             </UFormField>
-            <UFormField label="Price (cents)"><UInputNumber v-model="product.priceCents" class="w-full" /></UFormField>
+            <UFormField label="Price (DZD)"><UInputNumber v-model="productPriceDzd" :min="0" class="w-full" /></UFormField>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <UFormField label="Low-stock threshold"><UInputNumber v-model="product.lowStockThreshold" class="w-full" /></UFormField>
@@ -431,7 +768,7 @@ const showVariantModalBool = computed({
           </div>
 
           <!-- Variants table -->
-          <div class="admin-kpi-card overflow-hidden">
+          <div class="admin-table-wrap">
             <div class="flex items-center justify-between border-b border-[var(--color-admin-border)] p-4">
               <h3 class="text-sm font-medium text-muted">Variants ({{ product.variants.length }})</h3>
               <div v-if="product.attributes.length" class="flex gap-2">
@@ -528,7 +865,7 @@ const showVariantModalBool = computed({
               <UButton icon="i-lucide-link" :loading="savingImage" color="neutral" variant="outline" :disabled="!newImageUrl" @click="addImage">Link</UButton>
             </div>
           </div>
-          <div class="admin-kpi-card overflow-hidden">
+          <div class="admin-table-wrap">
             <div class="border-b border-[var(--color-admin-border)] p-4">
               <h3 class="text-sm font-medium text-muted">Gallery ({{ product.images.length }}) — first image is the hero</h3>
             </div>
@@ -544,6 +881,276 @@ const showVariantModalBool = computed({
               </div>
             </div>
             <p v-if="!product.images.length" class="px-4 py-12 text-center text-sm text-muted">No images yet.</p>
+          </div>
+        </div>
+
+        <!-- Landing Page Tab -->
+        <div v-show="activeTab === 'landingPage'" class="space-y-5">
+          <div class="admin-kpi-card space-y-5 p-6">
+            <div>
+              <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
+                <UIcon name="i-lucide-sparkles" class="size-4 text-primary" /> AI Landing Page
+              </h3>
+              <p class="text-sm text-muted">
+                Turns this product's photos and description into a long-scroll marketing image — a hero section, a
+                few feature highlights, and a call-to-action, each generated with its own text and effects, then
+                combined into one image.
+              </p>
+            </div>
+
+            <UFormField label="Description to generate from" help="Prefilled from the product description — edit for punchier landing-page copy before generating.">
+              <UTextarea v-model="landingPageDescription" class="w-full" :rows="4" />
+            </UFormField>
+
+            <UFormField label="Source images" help="Pick 1–10 of this product's photos — the AI uses the real product shown in these, not an invented one.">
+              <div v-if="product.images.length" class="grid grid-cols-4 gap-2 sm:grid-cols-6">
+                <button
+                  v-for="img in product.images"
+                  :key="img.id"
+                  type="button"
+                  class="relative aspect-square overflow-hidden rounded-md border-2 transition-colors"
+                  :class="selectedSourceImages.includes(img.url) ? 'border-primary' : 'border-[var(--color-admin-border)]'"
+                  @click="toggleSourceImage(img.url)"
+                >
+                  <img :src="resolveImgUrl(img.url)" :alt="img.altText ?? ''" class="size-full object-cover" />
+                  <div v-if="selectedSourceImages.includes(img.url)" class="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-primary text-white">
+                    <UIcon name="i-lucide-check" class="size-3" />
+                  </div>
+                </button>
+              </div>
+              <p v-else class="text-sm text-muted">Add product photos in the Images tab first.</p>
+            </UFormField>
+
+            <UFormField label="Image provider" help="Gemini edits your real product photos and draws its own text, but needs Google Cloud billing enabled. Pollinations is free with no billing step, but generates a generic product-style image (not your real photos) and adds text separately.">
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  class="flex-1 rounded-md border-2 px-3 py-2 text-left text-sm transition-colors"
+                  :class="imageProvider === 'Gemini' ? 'border-primary bg-primary/5' : 'border-[var(--color-admin-border)]'"
+                  @click="selectImageProvider('Gemini')"
+                >
+                  <span class="font-medium">Gemini (Nano Banana)</span>
+                  <span class="block text-xs text-muted">Best quality — needs billing</span>
+                </button>
+                <button
+                  type="button"
+                  class="flex-1 rounded-md border-2 px-3 py-2 text-left text-sm transition-colors"
+                  :class="imageProvider === 'Pollinations' ? 'border-primary bg-primary/5' : 'border-[var(--color-admin-border)]'"
+                  @click="selectImageProvider('Pollinations')"
+                >
+                  <span class="font-medium">Pollinations</span>
+                  <span class="block text-xs text-muted">Free, no billing needed</span>
+                </button>
+              </div>
+            </UFormField>
+
+            <UFormField label="Number of sections">
+              <USelect v-model="sectionCount" :items="[3, 4, 5, 6, 7]" class="w-32" />
+            </UFormField>
+
+            <UButton
+              :loading="generatingLandingPage"
+              :disabled="!product.images.length"
+              color="primary"
+              icon="i-lucide-sparkles"
+              @click="generateLandingPage"
+            >
+              {{ landingPage ? 'Regenerate landing page' : 'Generate landing page' }}
+            </UButton>
+          </div>
+
+          <div v-if="landingPage" class="admin-kpi-card space-y-4 p-6">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <UBadge :color="sectionStatusColor[landingPage.status.toLowerCase()] ?? 'neutral'" variant="subtle">{{ landingPage.status }}</UBadge>
+                <UBadge color="neutral" variant="outline">{{ landingPage.imageProvider }}</UBadge>
+                <UIcon v-if="landingPage.status === 'Generating'" name="i-lucide-loader-circle" class="size-4 animate-spin text-muted" />
+              </div>
+              <div v-if="landingPage.status === 'Completed'" class="flex items-center gap-2">
+                <span class="text-sm text-muted">Show on storefront</span>
+                <USwitch :model-value="landingPage.enabled" @update:model-value="toggleLandingPageEnabled($event as boolean)" />
+              </div>
+            </div>
+
+            <p v-if="landingPage.errorMessage" class="flex items-start gap-1.5 text-sm text-error">
+              <UIcon name="i-lucide-alert-triangle" class="mt-0.5 size-4 shrink-0" />
+              {{ landingPage.errorMessage }}
+            </p>
+
+            <div v-if="landingPage.sections.length" class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div v-for="section in landingPage.sections" :key="section.id" class="space-y-1.5 rounded-md border border-[var(--color-admin-border)] p-2">
+                <div class="flex aspect-[3/4] items-center justify-center overflow-hidden rounded bg-[var(--color-admin-surface-tint)]">
+                  <img v-if="section.imageUrl" :src="resolveImgUrl(section.imageUrl)" class="size-full object-cover" />
+                  <UIcon
+                    v-else
+                    :name="section.status === 'failed' ? 'i-lucide-circle-x' : 'i-lucide-loader-circle'"
+                    class="size-6 text-muted"
+                    :class="section.status !== 'failed' && 'animate-spin'"
+                  />
+                </div>
+                <p class="line-clamp-2 text-xs font-medium text-highlighted">
+                  <span class="uppercase text-muted">{{ section.role }}</span>
+                  <template v-if="section.headline"> — {{ section.headline }}</template>
+                </p>
+                <UButton
+                  size="xs"
+                  variant="soft"
+                  color="neutral"
+                  icon="i-lucide-refresh-cw"
+                  block
+                  :disabled="section.status === 'generating'"
+                  @click="regenerateSection(section.id)"
+                >
+                  Regenerate
+                </UButton>
+              </div>
+            </div>
+
+            <div v-if="landingPage.finalImageUrl">
+              <h4 class="mb-2 text-sm font-medium text-muted">Final long image</h4>
+              <img :src="resolveImgUrl(landingPage.finalImageUrl)" class="w-full max-w-sm rounded-md border border-[var(--color-admin-border)]" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Offers Tab -->
+        <div v-show="activeTab === 'offers'" class="space-y-5">
+          <div class="admin-kpi-card space-y-5 p-6">
+            <div>
+              <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
+                <UIcon name="i-lucide-tag" class="size-4 text-primary" /> Offers
+              </h3>
+              <p class="text-sm text-muted">
+                Quantity-based promos shown on the product page — the customer picks an offer card, which sets the
+                quantity for them and locks in that price.
+              </p>
+            </div>
+
+            <div v-if="product.offers.length" class="space-y-2">
+              <div
+                v-for="offer in product.offers"
+                :key="offer.id"
+                class="flex items-center justify-between gap-3 rounded-md border border-[var(--color-admin-border)] p-3"
+              >
+                <div>
+                  <p class="text-sm font-medium text-highlighted">{{ offerSummary(offer) }}</p>
+                  <p class="text-xs text-muted">{{ offerTypeOptions.find(t => t.value === offer.type)?.label }}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <USwitch
+                    :model-value="offer.enabled"
+                    :disabled="savingOfferId === offer.id"
+                    @update:model-value="toggleOfferEnabled(offer.id, $event as boolean)"
+                  />
+                  <UButton
+                    icon="i-lucide-trash-2"
+                    color="error"
+                    variant="ghost"
+                    size="sm"
+                    :disabled="savingOfferId === offer.id"
+                    @click="deleteOffer(offer.id)"
+                  />
+                </div>
+              </div>
+            </div>
+            <p v-else class="text-sm text-muted">No offers yet.</p>
+          </div>
+
+          <div class="admin-kpi-card space-y-4 p-6">
+            <h4 class="text-sm font-medium text-highlighted">Add an offer</h4>
+
+            <UFormField label="Type">
+              <USelect v-model="newOffer.type" :items="offerTypeOptions" value-key="value" label-key="label" class="w-full" />
+            </UFormField>
+
+            <UFormField :label="newOffer.type === 'BuyXGetYFree' ? 'Paid quantity' : 'Required quantity'">
+              <UInputNumber v-model="newOffer.requiredQuantity" :min="1" :max="50" class="w-32" />
+            </UFormField>
+
+            <UFormField v-if="newOffer.type === 'BuyXGetYFree'" label="Free quantity">
+              <UInputNumber v-model="newOffer.freeQuantity" :min="1" :max="50" class="w-32" />
+            </UFormField>
+
+            <UFormField v-if="newOffer.type === 'FixedBundlePrice'" label="Bundle price (DZD)" help="Total price for the required quantity.">
+              <UInputNumber v-model="newOfferBundlePriceDzd" :min="0" class="w-40" />
+            </UFormField>
+
+            <p v-if="newOffer.type === 'FreeShipping'" class="text-sm text-muted">
+              Display-only — there's no shipping-fee concept yet, so this shows a badge but doesn't change the order total.
+            </p>
+
+            <UButton :loading="creatingOffer" color="primary" icon="i-lucide-plus" @click="createOffer">
+              Add offer
+            </UButton>
+          </div>
+        </div>
+
+        <!-- Upsells Tab -->
+        <div v-show="activeTab === 'upsells'" class="space-y-5">
+          <div class="admin-kpi-card space-y-5 p-6">
+            <div>
+              <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
+                <UIcon name="i-lucide-plus-circle" class="size-4 text-primary" /> Upsells
+              </h3>
+              <p class="text-sm text-muted">
+                Products suggested to a customer right after they place an order for this one — shown on a one-click
+                "add this?" page before the order confirmation. Set a special price to sweeten the offer, or leave it
+                blank to use the product's normal price.
+              </p>
+            </div>
+
+            <div v-if="upsells.length" class="space-y-2">
+              <div
+                v-for="u in upsells"
+                :key="u.id"
+                class="flex items-center justify-between gap-3 rounded-md border border-[var(--color-admin-border)] p-3"
+              >
+                <div>
+                  <p class="text-sm font-medium text-highlighted">{{ u.upsellProduct.name }}</p>
+                  <p class="text-xs text-muted">
+                    {{ formatDzd(u.priceCentsOverride ?? u.upsellProduct.priceCents) }}
+                    <span v-if="u.priceCentsOverride != null">(normally {{ formatDzd(u.upsellProduct.priceCents) }})</span>
+                  </p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <USwitch
+                    :model-value="u.enabled"
+                    :disabled="savingUpsellId === u.id"
+                    @update:model-value="toggleUpsellEnabled(u.id, $event as boolean)"
+                  />
+                  <UButton
+                    icon="i-lucide-trash-2"
+                    color="error"
+                    variant="ghost"
+                    size="sm"
+                    :disabled="savingUpsellId === u.id"
+                    @click="deleteUpsell(u.id)"
+                  />
+                </div>
+              </div>
+            </div>
+            <p v-else class="text-sm text-muted">No upsells configured yet.</p>
+          </div>
+
+          <div class="admin-kpi-card space-y-4 p-6">
+            <h4 class="text-sm font-medium text-highlighted">Add an upsell</h4>
+
+            <UFormField label="Suggested product">
+              <USelect
+                v-model="newUpsellProductId"
+                :items="otherProducts.map(p => ({ label: p.name, value: p.id }))"
+                placeholder="Choose a product…"
+                class="w-full"
+              />
+            </UFormField>
+
+            <UFormField label="Special price (DZD)" help="Leave blank to offer it at its normal price.">
+              <UInputNumber v-model="newUpsellPriceOverrideDzd" :min="0" class="w-40" />
+            </UFormField>
+
+            <UButton :loading="creatingUpsell" color="primary" icon="i-lucide-plus" @click="createUpsell">
+              Add upsell
+            </UButton>
           </div>
         </div>
 
@@ -577,7 +1184,7 @@ const showVariantModalBool = computed({
             <h3 class="text-lg font-semibold">{{ editingVariant.id ? 'Edit' : 'New' }} variant</h3>
             <UFormField label="SKU"><UInput v-model="editingVariant.sku" class="w-full" /></UFormField>
             <div class="grid grid-cols-2 gap-3">
-              <UFormField label="Price (cents)"><UInputNumber v-model="editingVariant.priceCents" class="w-full" /></UFormField>
+              <UFormField label="Price (DZD)"><UInputNumber v-model="editingVariantPriceDzd" :min="0" class="w-full" /></UFormField>
               <UFormField label="Stock"><UInputNumber v-model="editingVariant.stockQuantity" class="w-full" /></UFormField>
             </div>
             <!-- Option selectors: one per applied attribute, rendered by type -->
@@ -653,7 +1260,15 @@ const showVariantModalBool = computed({
                       </div>
                     </td>
                     <td class="px-3 py-2"><UInput v-model="gv.sku" size="xs" class="w-32" /></td>
-                    <td class="px-3 py-2"><UInputNumber v-model="gv.priceCents" size="xs" class="w-24" /></td>
+                    <td class="px-3 py-2">
+                      <UInputNumber
+                        :model-value="gv.priceCents / 100"
+                        :min="0"
+                        size="xs"
+                        class="w-24"
+                        @update:model-value="(v) => (gv.priceCents = Math.round((Number(v) || 0) * 100))"
+                      />
+                    </td>
                     <td class="px-3 py-2"><UInputNumber v-model="gv.stockQuantity" size="xs" class="w-20" /></td>
                   </tr>
                 </tbody>

@@ -41,6 +41,9 @@ const communeItems = computed(() => communes.value.map((c) => ({ label: c.name, 
 
 watch(selectedWilaya, async (wilaya, previous) => {
   if (wilaya?.id === previous?.id) return
+  props.data.wilayaId = wilaya?.id ?? ''
+  props.data.shippingType = ''
+  props.data.shippingPriceCents = ''
   if (!wilaya) {
     communes.value = []
     props.data.commune = ''
@@ -51,6 +54,11 @@ watch(selectedWilaya, async (wilaya, previous) => {
     props.data.commune = ''
   }
 }, { immediate: true })
+
+function selectShipping(type: 'Home' | 'Desk', priceCents: number) {
+  props.data.shippingType = type
+  props.data.shippingPriceCents = String(priceCents)
+}
 </script>
 
 <template>
@@ -93,5 +101,40 @@ watch(selectedWilaya, async (wilaya, previous) => {
         </div>
       </div>
     </template>
+
+    <div v-if="selectedWilaya" class="space-y-1.5">
+      <label class="block text-[11px] uppercase tracking-widest text-muted">Shipping method</label>
+      <div v-if="!selectedWilaya.homeDeliveryEnabled && !selectedWilaya.deskDeliveryEnabled" class="border border-default p-3 text-sm text-muted">
+        Delivery isn't currently available to {{ selectedWilaya.name }}.
+      </div>
+      <div v-else class="space-y-2">
+        <button
+          v-if="selectedWilaya.homeDeliveryEnabled"
+          type="button"
+          class="flex w-full items-center justify-between border-2 px-4 py-2.5 text-left text-sm transition-colors"
+          :class="props.data.shippingType === 'Home' ? 'border-highlighted bg-highlighted text-inverted' : 'border-default text-highlighted hover:border-muted'"
+          @click="selectShipping('Home', selectedWilaya.homeDeliveryPriceCents ?? 0)"
+        >
+          <span class="flex items-center gap-2 uppercase tracking-wide">
+            <Icon name="i-lucide-home" class="size-3.5" />
+            Home delivery
+          </span>
+          <PriceDisplay :amount-cents="selectedWilaya.homeDeliveryPriceCents ?? 0" />
+        </button>
+        <button
+          v-if="selectedWilaya.deskDeliveryEnabled"
+          type="button"
+          class="flex w-full items-center justify-between border-2 px-4 py-2.5 text-left text-sm transition-colors"
+          :class="props.data.shippingType === 'Desk' ? 'border-highlighted bg-highlighted text-inverted' : 'border-default text-highlighted hover:border-muted'"
+          @click="selectShipping('Desk', selectedWilaya.deskDeliveryPriceCents ?? 0)"
+        >
+          <span class="flex items-center gap-2 uppercase tracking-wide">
+            <Icon name="i-lucide-building-2" class="size-3.5" />
+            Desk delivery
+          </span>
+          <PriceDisplay :amount-cents="selectedWilaya.deskDeliveryPriceCents ?? 0" />
+        </button>
+      </div>
+    </div>
   </div>
 </template>

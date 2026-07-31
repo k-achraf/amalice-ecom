@@ -66,7 +66,7 @@ export interface DashboardStats {
   ordersToday: number
   codAmountPendingCents: number
   codAmountCollectedCents: number
-  pendingOtpCount: number
+  pendingCallCenterCount: number
   confirmedCount: number
   packedCount: number
   deliveriesToday: number

@@ -230,7 +230,7 @@ async function main() {
       }
     }))
 
-  // PendingOTP fixture (existing) — the original SF-08 proof order.
+  // PendingCallCenter fixture (existing) — the original SF-08 proof order.
   const existingOrder = await prisma.order.findFirst({ where: { customerId: customer.id } })
   if (!existingOrder) {
     const item = products[0]

@@ -70,7 +70,9 @@ export class ProductsController {
             }
           }
         },
-        categoryRef: true
+        categoryRef: true,
+        // Only enabled offers — a merchant can pause one without deleting it.
+        offers: { where: { enabled: true }, orderBy: { createdAt: 'asc' } }
       }
     })
     if (!product) throw new NotFoundException('Product not found')

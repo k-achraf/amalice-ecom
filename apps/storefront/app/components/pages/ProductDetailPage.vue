@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product, ProductImage, ProductVariant, RatingSummary, Review, LeadFormField } from '@amalice/shared'
+import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review, LeadFormField } from '@amalice/shared'
 
 // Minimal (fallback) PDP presentation — 2-col split (gallery | info) + reviews
 // below + related. The prop contract: the page shell owns product data,
@@ -14,6 +14,7 @@ interface RichProduct extends Product {
 const props = defineProps<{
   product: RichProduct | null
   reviewData: { summary: RatingSummary; items: Review[] } | null
+  landingPageImageUrl?: string | null
   galleryImages: { url: string; alt: string }[]
   activeImageIndex: number
   quantity: number
@@ -29,11 +30,14 @@ const props = defineProps<{
   leadFormData?: Record<string, string>
   leadPlacing?: boolean
   leadError?: string | null
+  offers?: ProductOffer[]
+  selectedOfferId?: string | null
   onSelectImage: (i: number) => void
   onSelectVariantByKey: (key: string, val: string) => void
   onUpdateQuantity: (v: number) => void
   onAddToCart: () => void
   onSubmitLead?: () => void
+  onSelectOffer?: (offer: ProductOffer) => void
 }>()
 </script>
 
@@ -45,9 +49,22 @@ const props = defineProps<{
       <span>{{ props.product.name }}</span>
     </nav>
 
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <!-- AI landing page image (packages/shared/src/landing-page.ts) — a
+    long-scroll marketing image standing in for the normal gallery +
+    description when the merchant has generated and enabled one. The buy
+    box below (price, variants, add-to-cart/lead form) is unaffected either
+    way — this only replaces the narrative content, never the purchase
+    mechanism. -->
+    <img
+      v-if="props.landingPageImageUrl"
+      :src="props.landingPageImageUrl"
+      :alt="props.product.name"
+      class="w-full rounded-lg"
+    />
+
+    <div class="grid grid-cols-1 gap-6" :class="props.landingPageImageUrl ? '' : 'lg:grid-cols-2'">
       <!-- Gallery -->
-      <div class="space-y-3">
+      <div v-if="!props.landingPageImageUrl" class="space-y-3">
         <div class="aspect-square overflow-hidden rounded-lg bg-elevated">
           <NuxtImg
             v-if="props.galleryImages.length"
@@ -102,7 +119,26 @@ const props = defineProps<{
           </Badge>
         </div>
 
-        <p v-if="props.product.description" class="text-muted">{{ props.product.description }}</p>
+        <div v-if="props.product.description && !props.landingPageImageUrl" class="product-description-html text-muted" v-html="sanitizeDescriptionHtml(props.product.description)" />
+
+        <!-- Offers — pick a card to set quantity + pricing to what it needs -->
+        <div v-if="props.offers?.length" class="space-y-2">
+          <button
+            v-for="offer in props.offers"
+            :key="offer.id"
+            type="button"
+            class="flex w-full items-center justify-between rounded-lg border-2 p-3 text-left transition-colors"
+            :class="props.selectedOfferId === offer.id ? 'border-primary bg-primary/5' : 'border-default hover:border-primary/50'"
+            @click="props.onSelectOffer?.(offer)"
+          >
+            <span class="text-sm font-medium">
+              <template v-if="offer.type === 'FixedBundlePrice'">Buy {{ offer.requiredQuantity }} for <PriceDisplay :amount-cents="offer.bundlePriceCents ?? 0" /></template>
+              <template v-else-if="offer.type === 'BuyXGetYFree'">Buy {{ offer.requiredQuantity }}, get {{ offer.freeQuantity }} free</template>
+              <template v-else>Buy {{ offer.requiredQuantity }}, free shipping</template>
+            </span>
+            <Icon v-if="props.selectedOfferId === offer.id" name="i-lucide-check-circle" class="size-5 text-primary" />
+          </button>
+        </div>
 
         <!-- Variants -->
         <div v-for="(values, key) in props.variantOptions" :key="key" class="space-y-2">

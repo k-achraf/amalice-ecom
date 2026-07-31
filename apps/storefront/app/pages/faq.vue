@@ -1,17 +1,17 @@
 <script setup lang="ts">
 useSeoMeta({
-  title: 'FAQ',
-  description: 'Common questions about cash-on-delivery shopping at Amalice.'
+  title: 'الأسئلة الشائعة',
+  description: 'أسئلة شائعة حول التسوق بنظام الدفع عند الاستلام في أماليس.'
 })
 
 const faqs = [
-  { q: 'Do I need to create an account?', a: 'No. You order as a guest — we verify your phone with a one-time code at checkout. No password to set or remember.' },
-  { q: 'When do I pay?', a: 'You pay in cash when your order is delivered to your door. No prepayment, no card.' },
-  { q: 'What if I am not home?', a: 'The courier will attempt delivery and contact you on the phone number you provided. You can re-arrange a delivery time.' },
-  { q: 'How long does delivery take?', a: 'Currently 3–5 business days — a flat estimate. Per-order delivery windows will improve as our courier network matures.' },
-  { q: 'Can I return an item?', a: 'Yes. See our Returns page for the policy and how to initiate a return after delivery.' },
-  { q: 'How do I track my order?', a: 'Use the "Track order" link with your order ID and phone number. Status updates appear as your order moves through packing, dispatch, and delivery.' },
-  { q: 'Why a phone code at checkout?', a: 'It is our main safeguard against fake orders — a real phone number means a real delivery. It keeps the catalog reliable for everyone.' }
+  { q: 'هل أحتاج إلى إنشاء حساب؟', a: 'لا. يمكنك الطلب كزائر — يتصل بك فريقنا لتأكيد طلبك قبل شحنه. لا حاجة لتعيين أو تذكر كلمة مرور.' },
+  { q: 'متى أدفع؟', a: 'تدفع نقداً عند توصيل طلبك إلى بابك. لا دفع مسبق ولا بطاقة.' },
+  { q: 'ماذا لو لم أكن في المنزل؟', a: 'سيحاول مندوب التوصيل تسليم الطلب والتواصل معك على رقم الهاتف الذي زودتنا به. يمكنك إعادة تحديد موعد التوصيل.' },
+  { q: 'كم يستغرق التوصيل؟', a: 'حالياً بين 3 و5 أيام عمل — وهو تقدير عام. ستتحسن دقة مواعيد التوصيل لكل طلب مع تطور شبكة مندوبينا.' },
+  { q: 'هل يمكنني إرجاع منتج؟', a: 'نعم. راجع صفحة الإرجاع للاطلاع على السياسة وكيفية بدء عملية إرجاع بعد التوصيل.' },
+  { q: 'كيف أتتبع طلبي؟', a: 'استخدم رابط "تتبع الطلب" مع رقم طلبك ورقم هاتفك. تظهر تحديثات الحالة أثناء تقدّم طلبك عبر مراحل التحضير والشحن والتوصيل.' },
+  { q: 'لماذا يتصل بي فريقكم لتأكيد طلبي؟', a: 'إنه إجراؤنا الأساسي للحماية من الطلبات الوهمية — فمكالمة تأكيد سريعة تعني توصيلاً حقيقياً. وهذا يحافظ على موثوقية المتجر للجميع.' }
 ]
 
 const items = faqs.map((f, i) => ({
@@ -24,10 +24,10 @@ const items = faqs.map((f, i) => ({
 
 <template>
   <main class="mx-auto max-w-3xl space-y-6 px-4 py-12">
-    <h1 class="text-3xl font-bold">Frequently asked questions</h1>
+    <h1 class="text-3xl font-bold">الأسئلة الشائعة</h1>
     <UAccordion :items="items" />
     <p class="border-t border-default pt-6 text-sm text-muted">
-      Still have a question? <NuxtLink to="/contact" class="text-primary hover:underline">Contact us</NuxtLink>.
+      لا يزال لديك سؤال؟ <NuxtLink to="/contact" class="text-primary hover:underline">اتصل بنا</NuxtLink>.
     </p>
   </main>
 </template>

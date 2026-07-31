@@ -9,8 +9,21 @@ const envSchema = z.object({
   // quietly ends up in production. Dev-only values live in .env.example.
   JWT_SECRET: z.string().min(32),
   JWT_REFRESH_SECRET: z.string().min(32),
-  OTP_SECRET: z.string().min(32),
-  OTP_TTL_SECONDS: z.coerce.number().int().positive().default(300)
+  // AI landing page builder (packages/shared/src/landing-page.ts) — a free
+  // key from aistudio.google.com. Optional: the feature degrades to a clear
+  // "not configured" error rather than the whole API failing to boot, since
+  // it's an opt-in content tool, not core platform infrastructure.
+  GEMINI_API_KEY: z.string().min(1).optional(),
+  // Google Sheets integration (apps/api/src/apps/google-sheets-client.service.ts)
+  // — a service account's credentials, shared globally across every
+  // connected sheet (one Amalice backend, not one per store). Both optional
+  // together: the feature just no-ops (order pushes/status updates silently
+  // skip) rather than failing checkout when unset. Get these from a Google
+  // Cloud service account JSON key: CLIENT_EMAIL is `client_email`,
+  // PRIVATE_KEY is `private_key` (keep its literal \n escapes as-is — the
+  // client unescapes them at read time).
+  GOOGLE_SHEETS_CLIENT_EMAIL: z.string().min(1).optional(),
+  GOOGLE_SHEETS_PRIVATE_KEY: z.string().min(1).optional()
 })
 
 export type Env = z.infer<typeof envSchema>

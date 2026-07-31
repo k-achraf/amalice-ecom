@@ -12,7 +12,7 @@ defineProps<{ title: string; products: Product[]; viewAllTo?: string }>()
   <section v-if="products?.length" class="mx-auto max-w-7xl px-4 py-8">
     <div class="mb-6 flex items-center justify-between">
       <h2 class="text-2xl font-semibold">{{ title }}</h2>
-      <Button v-if="viewAllTo" :to="viewAllTo" color="neutral" variant="ghost" trailing-icon="i-lucide-arrow-right">View all</Button>
+      <Button v-if="viewAllTo" :to="viewAllTo" color="neutral" variant="ghost" trailing-icon="i-lucide-arrow-left">عرض الكل</Button>
     </div>
     <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
       <TemplateSection v-for="p in products" :key="p.id" name="ProductCard" :section-props="{ product: p }" />

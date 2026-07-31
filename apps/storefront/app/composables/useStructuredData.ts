@@ -23,7 +23,7 @@ export function useStructuredData() {
       sku: p.id,
       offers: {
         '@type': 'Offer',
-        priceCurrency: 'USD',
+        priceCurrency: 'DZD',
         price: (p.priceCents / 100).toFixed(2),
         availability: p.stockQuantity > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'
       }

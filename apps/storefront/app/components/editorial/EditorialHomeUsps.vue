@@ -10,7 +10,7 @@
         “See it. Hold it. Then pay for it — in cash, when it arrives.”
       </p>
       <p class="mt-6 text-sm uppercase tracking-widest text-white/50">
-        Cash on delivery · Phone-verified · No account
+        Cash on delivery · Confirmed by phone · No account
       </p>
     </div>
   </section>

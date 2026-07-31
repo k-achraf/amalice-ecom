@@ -7,14 +7,20 @@
  *
  * The hybrid:
  *  - Polaris supplies the skeleton/density discipline (4px grid, hairline
- *    borders, 14px body, restrained palette, flat-but-layered shadows).
- *  - Stripe supplies the personality: indigo #635BFF primary (more clickable
- *    than Polaris's near-black for a SaaS dashboard), #F6F9FC off-white page
- *    surface, navy #0A2540-based soft shadows, lilac row hover.
+ *    borders, 14px body, restrained palette).
+ *  - Stripe supplies the personality: indigo #635BFF primary, #F6F9FC
+ *    off-white page surface, navy #0A2540-based soft shadows, lilac row hover.
+ *
+ * This revision adds real depth/hierarchy on top of that base — a fuller
+ * elevation scale, a tinted table header + accent-bar row hover so a data
+ * table no longer reads as "the same flat white box" as a KPI card, colored
+ * icon chips, a subtle gradient hero band, and a touch of motion (hover
+ * lift, transitions) — without drifting from the Stripe-soft, never-pure-
+ * black shadow language the base layer already established.
  *
  * Status semantics (StatusBadge order-lifecycle colors) are SHARED and FROZEN
  * across both apps — NOT re-skinned here. This override touches primary,
- * surface, shadow, and density only.
+ * surface, shadow, density, and now elevation/accent treatment.
  */
 :root {
   /* Stripe indigo replaces Polaris's near-black for primary ACTIONS.
@@ -27,19 +33,39 @@
   /* Stripe surfaces: off-white page bg, white cards, navy dark surface. */
   --color-admin-bg: #f6f9fc;
   --color-admin-surface: #ffffff;
+  --color-admin-surface-tint: #f8f9ff; /* faint indigo-tinted white — table headers, hero bands */
   --color-admin-border: #e3e8ee;
+  --color-admin-border-strong: #d8deea;
   --color-admin-row-hover: #f4f1ff; /* lilac wash — the Stripe tell */
   --color-admin-row-selected: #efeffb;
   --color-admin-text-secondary: #425466;
   --color-admin-dark: #0a2540; /* deep navy — dark surfaces, shadow base */
+  --color-admin-accent-glow: rgba(99, 91, 255, 0.16); /* indigo glow — hover rings, focus */
 
-  /* Stripe signature: soft, layered, navy-based, low-opacity. Never pure black. */
+  /* Stripe signature: soft, layered, navy-based, low-opacity. Never pure
+     black. A fuller scale than before — xs for hairline lift, up through xl
+     for the hero band — so cards, tables, and modals can each sit at a
+     visibly different elevation instead of all sharing one faint shadow. */
+  --shadow-admin-xs: 0 1px 2px rgba(10, 37, 64, 0.04);
   --shadow-admin-sm: 0 1px 2px rgba(10, 37, 64, 0.06), 0 1px 3px rgba(10, 37, 64, 0.04);
-  --shadow-admin-md: 0 4px 10px rgba(10, 37, 64, 0.06), 0 2px 6px rgba(10, 37, 64, 0.05);
-  --shadow-admin-lg: 0 10px 30px rgba(10, 37, 64, 0.1), 0 4px 12px rgba(10, 37, 64, 0.06);
+  --shadow-admin-md: 0 4px 10px rgba(10, 37, 64, 0.08), 0 2px 6px rgba(10, 37, 64, 0.05);
+  --shadow-admin-lg: 0 10px 30px rgba(10, 37, 64, 0.12), 0 4px 12px rgba(10, 37, 64, 0.06);
+  --shadow-admin-xl: 0 20px 50px rgba(10, 37, 64, 0.16), 0 8px 20px rgba(10, 37, 64, 0.08);
+  /* Colored glow shadow — used sparingly (primary buttons on hover, the
+     active nav item) for a touch of Stripe's "clickable" indigo warmth. */
+  --shadow-admin-glow: 0 6px 16px rgba(99, 91, 255, 0.28), 0 2px 6px rgba(99, 91, 255, 0.16);
 
-  /* Stripe radius: 6px default for components (their most-used value). */
-  --radius-admin: 6px;
+  /* Stripe radius: nudged from 6px to 10px for cards/tables — a softer,
+     more contemporary SaaS feel — while UI primitives (buttons/inputs/
+     badges) stay tighter via --ui-radius so controls don't feel oversized. */
+  --radius-admin: 10px;
+  --ui-radius: 0.5rem;
+
+  /* Subtle multi-stop gradient — the dashboard hero band and a couple of
+     accent corners. Deliberately faint (this is a data product, not a
+     marketing page) — a wash, not a poster. */
+  --gradient-admin-hero: linear-gradient(135deg, #f4f1ff 0%, #f6f9fc 55%, #eef6ff 100%);
+  --gradient-admin-accent: linear-gradient(90deg, #635bff 0%, #7c72ff 100%);
 }
 
 /* Dark mode: deep-navy surfaces (Stripe's #0A2540 family), keep the indigo.
@@ -47,10 +73,14 @@
 .dark {
   --color-admin-bg: #0a2540;
   --color-admin-surface: #102a4c;
+  --color-admin-surface-tint: #15305a;
   --color-admin-border: #1d3a5e;
+  --color-admin-border-strong: #28496f;
   --color-admin-row-hover: #16365e;
   --color-admin-row-selected: #1a3a66;
   --color-admin-text-secondary: #9bb0c9;
+  --color-admin-accent-glow: rgba(124, 114, 255, 0.22);
+  --gradient-admin-hero: linear-gradient(135deg, #102a4c 0%, #0a2540 55%, #0d2c4e 100%);
 }
 
 /* Page background — applied on the dashboard layout root via the
@@ -61,30 +91,107 @@
   min-height: 100vh;
 }
 
-/* Stripe-style data table treatment, applied via utility classes on UTable.
-  - no harsh zebra: white rows on the page bg
-  - 1px hairline separators (#E3E8EE)
-  - comfortable-but-dense: ~44–48px row height, 16px h-padding
-  - header: secondary grey text, 11–12px, weight 500 */
-.admin-table :deep(thead th) {
-  color: var(--color-admin-text-secondary);
-  font-size: 12px;
-  font-weight: 500;
-  border-bottom: 1px solid var(--color-admin-border);
+/* ---- Data table: now visibly its OWN surface, not a plain card in
+   disguise. A tinted header band (not just grey text), a slightly stronger
+   elevation than a resting KPI card, sticky header on scroll, and a left
+   accent bar + subtle lift on row hover instead of a flat color swap. ---- */
+.admin-table-wrap {
+  background-color: var(--color-admin-surface);
+  border: 1px solid var(--color-admin-border);
+  border-radius: var(--radius-admin);
+  box-shadow: var(--shadow-admin-md);
+  overflow: hidden;
 }
-.admin-table :deep(tbody td) {
+.admin-table thead th {
+  background-color: var(--color-admin-surface-tint);
+  color: var(--color-admin-text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--color-admin-border);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.admin-table tbody td {
   padding-top: 12px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--color-admin-border);
+  position: relative;
+  transition: background-color 0.15s ease;
 }
-.admin-table :deep(tbody tr:hover td) {
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.admin-table tbody tr:hover td {
   background-color: var(--color-admin-row-hover);
 }
+/* Left accent bar on the first cell of a hovered row — a small, deliberate
+   "this row is active" cue that a flat color swap alone doesn't give. */
+.admin-table tbody tr:hover td:first-child::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--gradient-admin-accent);
+}
 
-/* KPI card — Stripe look: white surface, soft navy shadow, tabular numbers. */
+/* ---- KPI / content card — Stripe look, now with a resting shadow one step
+   below the table's (so the table reads as more "surfaced") and a hover
+   lift for cards that are actually clickable (NuxtLink-wrapped). ---- */
 .admin-kpi-card {
   background-color: var(--color-admin-surface);
   border: 1px solid var(--color-admin-border);
   border-radius: var(--radius-admin);
   box-shadow: var(--shadow-admin-sm);
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+a.admin-kpi-card:hover,
+.admin-kpi-card.is-interactive:hover {
+  box-shadow: var(--shadow-admin-md);
+  border-color: var(--color-admin-border-strong);
+  transform: translateY(-2px);
+}
+
+/* ---- Icon chip — a small rounded-square tinted background for an icon,
+   used on KPI cards and list rows so an icon reads as a deliberate visual
+   anchor instead of a bare muted glyph floating in whitespace. Color
+   variants share the same 12%-opacity-tint formula against each semantic
+   Tailwind color. ---- */
+.admin-icon-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: calc(var(--radius-admin) - 3px);
+  flex-shrink: 0;
+}
+.admin-icon-chip-primary { background-color: rgba(99, 91, 255, 0.12); color: var(--color-primary-600); }
+.admin-icon-chip-success { background-color: rgba(25, 134, 64, 0.12); color: var(--ui-color-success-600, #198640); }
+.admin-icon-chip-warning { background-color: rgba(201, 154, 46, 0.14); color: var(--ui-color-warning-700, #755500); }
+.admin-icon-chip-error { background-color: rgba(205, 14, 14, 0.12); color: var(--ui-color-error-600, #ea392e); }
+.admin-icon-chip-info { background-color: rgba(10, 116, 200, 0.12); color: var(--ui-color-info-600, #2b88de); }
+.admin-icon-chip-neutral { background-color: var(--color-admin-surface-tint); color: var(--color-admin-text-secondary); }
+
+/* ---- Hero band — a faint gradient wash behind a page's welcome/summary
+   header (currently just the dashboard). Not a card: no border/shadow of
+   its own, it sits behind content as a page-level backdrop accent. ---- */
+.admin-hero-band {
+  background: var(--gradient-admin-hero);
+  border-radius: var(--radius-admin);
+  border: 1px solid var(--color-admin-border);
+}
+
+/* ---- Sidebar polish — the active nav item gets a soft indigo glow + left
+   accent instead of Nuxt UI's default flat highlight, so "where am I" is
+   unmistakable at a glance. Targets UNavigationMenu's own active-state
+   class rather than introducing a parallel nav component. ---- */
+.admin-surface a[data-active],
+.admin-surface a.router-link-active {
+  position: relative;
+  box-shadow: inset 0 0 0 1px var(--color-admin-accent-glow);
 }

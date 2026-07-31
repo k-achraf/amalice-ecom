@@ -53,23 +53,27 @@ export class ReviewsService {
 
   // SF-16 anti-spam: only customers with a Delivered order containing this
   // product can review it. Verified server-side against OrderItem history —
-  // not self-attested. COD's phone-OTP identity makes this tractable without
-  // a separate account system.
-  async create(productId: string, customerId: string, input: CreateReview): Promise<Review> {
+  // not self-attested. Phone is the shared-secret identity (same trust
+  // model as order tracking), no separate account system.
+  async create(productId: string, input: CreateReview): Promise<Review> {
     const product = await this.prisma.product.findUnique({ where: { id: productId } })
     if (!product) throw new NotFoundException('Product not found')
 
-    const hasDelivered = await this.prisma.order.findFirst({
-      where: {
-        customerId,
-        state: 'Delivered',
-        items: { some: { productId } }
-      },
-      select: { id: true }
-    })
-    if (!hasDelivered) {
+    const customer = await this.prisma.customer.findUnique({ where: { phone: input.phone } })
+    const hasDelivered = customer
+      ? await this.prisma.order.findFirst({
+          where: {
+            customerId: customer.id,
+            state: 'Delivered',
+            items: { some: { productId } }
+          },
+          select: { id: true }
+        })
+      : null
+    if (!customer || !hasDelivered) {
       throw new ForbiddenException('You can only review products you have had delivered')
     }
+    const customerId = customer.id
 
     // One review per customer+product — enforced structurally (unique
     // constraint in schema). The catch below turns the P2002 into a 409

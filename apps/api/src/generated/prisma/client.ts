@@ -60,6 +60,11 @@ export type Category = Prisma.CategoryModel
  */
 export type Product = Prisma.ProductModel
 /**
+ * Model ProductLandingPage
+ * 
+ */
+export type ProductLandingPage = Prisma.ProductLandingPageModel
+/**
  * Model ProductImage
  * 
  */
@@ -115,6 +120,16 @@ export type Order = Prisma.OrderModel
  */
 export type OrderItem = Prisma.OrderItemModel
 /**
+ * Model ProductOffer
+ * 
+ */
+export type ProductOffer = Prisma.ProductOfferModel
+/**
+ * Model ProductUpsell
+ * 
+ */
+export type ProductUpsell = Prisma.ProductUpsellModel
+/**
  * Model Shipment
  * 
  */
@@ -165,12 +180,62 @@ export type StoreSettings = Prisma.StoreSettingsModel
  */
 export type AppInstallation = Prisma.AppInstallationModel
 /**
+ * Model GoogleSheet
+ * 
+ */
+export type GoogleSheet = Prisma.GoogleSheetModel
+/**
+ * Model ProductGoogleSheet
+ * 
+ */
+export type ProductGoogleSheet = Prisma.ProductGoogleSheetModel
+/**
+ * Model GoogleSheetOrderRow
+ * 
+ */
+export type GoogleSheetOrderRow = Prisma.GoogleSheetOrderRowModel
+/**
  * Model Wilaya
  * 
  */
 export type Wilaya = Prisma.WilayaModel
 /**
+ * Model WilayaShippingRate
+ * 
+ */
+export type WilayaShippingRate = Prisma.WilayaShippingRateModel
+/**
  * Model Commune
  * 
  */
 export type Commune = Prisma.CommuneModel
+/**
+ * Model ShippingCompany
+ * 
+ */
+export type ShippingCompany = Prisma.ShippingCompanyModel
+/**
+ * Model ShippingCompanyTariff
+ * 
+ */
+export type ShippingCompanyTariff = Prisma.ShippingCompanyTariffModel
+/**
+ * Model SourcedProduct
+ * 
+ */
+export type SourcedProduct = Prisma.SourcedProductModel
+/**
+ * Model ProductAdTest
+ * 
+ */
+export type ProductAdTest = Prisma.ProductAdTestModel
+/**
+ * Model Wholesaler
+ * 
+ */
+export type Wholesaler = Prisma.WholesalerModel
+/**
+ * Model ProductSourcingRequest
+ * 
+ */
+export type ProductSourcingRequest = Prisma.ProductSourcingRequestModel

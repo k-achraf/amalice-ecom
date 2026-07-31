@@ -1,0 +1,213 @@
+/*
+ * Impulse template — a direct-response FUNNEL system, scoped to .tpl-impulse.
+ * Unlike every other template (which are stores you browse), Impulse is a
+ * funnel you fall through: distraction-free chrome, single-column pages
+ * ordered by classic CRO persuasion sequence (hook → proof → offer →
+ * urgency → action → reassurance), and motion reserved exclusively for the
+ * one thing that matters — the buy button.
+ *
+ * Like Nova/Pulse/etc., Impulse renders ZERO @nuxt/ui components — every
+ * interactive element (components/impulse/ui/*) is hand-built from plain
+ * Tailwind. This file (1) points the shared primary-* / neutral-* utilities
+ * at Impulse's hot-orange + warm-ink ramps, and (2) registers the tokens and
+ * keyframe effects Impulse introduces (CTA pulse ring + shine sweep, marker
+ * highlight, social-proof ticker, striped scarcity bar, bounce cue).
+ *
+ * Palette rationale (direct-response classics): a HOT ORANGE action color —
+ * the highest-converting CTA family in split-test lore — on a warm cream
+ * surface so the orange is the only saturated thing on screen; money-green
+ * reserved for savings/trust signals; a marker-yellow highlight for the
+ * words that matter. Archivo up to black-900 weight for shouty headlines.
+ *
+ * NOTE (lesson from Nova/Atelier): no top-level @theme block in app-level
+ * css entries — every token is a plain property scoped to .tpl-impulse, and
+ * every color used via named utilities gets its --ui-color-* twin.
+ */
+
+.tpl-impulse {
+  /* Hot conversion-orange — the ONLY saturated accent. 500/600 are the CTA
+     tones; everything else on the page stays warm-neutral so the button is
+     always the loudest pixel on screen. */
+  --color-primary-50: #fff4ec;
+  --color-primary-100: #ffe6d5;
+  --color-primary-200: #ffc9a8;
+  --color-primary-300: #ffa470;
+  --color-primary-400: #ff8340;
+  --color-primary-500: #ff6a1f;
+  --color-primary-600: #f05308;
+  --color-primary-700: #c73f06;
+  --color-primary-800: #9e330b;
+  --color-primary-900: #7f2d0c;
+  --color-primary-950: #451304;
+
+  /* Warm ink neutrals — cream-to-espresso, never cold gray. */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #fdf9f4;
+  --color-neutral-100: #f7f0e8;
+  --color-neutral-200: #ece1d4;
+  --color-neutral-300: #d4c4b0;
+  --color-neutral-400: #a89479;
+  --color-neutral-500: #7d6c55;
+  --color-neutral-600: #5c4f3e;
+  --color-neutral-700: #443a2e;
+  --color-neutral-800: #2d261e;
+  --color-neutral-900: #1c1712;
+  --color-neutral-950: #0f0c09;
+
+  /* --ui-color-* twins (CRITICAL — see pulse.css for why: Tailwind inlines
+     bg-primary-500 etc. straight to var(--ui-color-primary-500)). */
+  --ui-color-primary-50: #fff4ec;
+  --ui-color-primary-100: #ffe6d5;
+  --ui-color-primary-200: #ffc9a8;
+  --ui-color-primary-300: #ffa470;
+  --ui-color-primary-400: #ff8340;
+  --ui-color-primary-500: #ff6a1f;
+  --ui-color-primary-600: #f05308;
+  --ui-color-primary-700: #c73f06;
+  --ui-color-primary-800: #9e330b;
+  --ui-color-primary-900: #7f2d0c;
+  --ui-color-primary-950: #451304;
+  --ui-color-neutral-0: #ffffff;
+  --ui-color-neutral-50: #fdf9f4;
+  --ui-color-neutral-100: #f7f0e8;
+  --ui-color-neutral-200: #ece1d4;
+  --ui-color-neutral-300: #d4c4b0;
+  --ui-color-neutral-400: #a89479;
+  --ui-color-neutral-500: #7d6c55;
+  --ui-color-neutral-600: #5c4f3e;
+  --ui-color-neutral-700: #443a2e;
+  --ui-color-neutral-800: #2d261e;
+  --ui-color-neutral-900: #1c1712;
+  --ui-color-neutral-950: #0f0c09;
+
+  /* Money-green — trust, savings, guarantees, "in stock". Plain custom
+     properties, consumed via arbitrary-value syntax only. */
+  --color-impulse-green: #16a34a;
+  --color-impulse-green-soft: #dcf5e5;
+
+  /* Marker-yellow — the highlighter swipe behind key phrases. */
+  --color-impulse-yellow: #ffd43b;
+  --color-impulse-yellow-soft: #fff3c4;
+
+  /* Urgency red — countdowns and "almost gone" only. Never on CTAs (the CTA
+     owns orange); red is information, orange is action. */
+  --color-impulse-red: #dc2626;
+  --color-impulse-red-soft: #fee2e2;
+
+  /* Warm shadow tinted with the ink, plus the CTA's orange glow. */
+  --shadow-impulse-sm: 0 6px 16px -6px rgba(28, 23, 18, 0.14);
+  --shadow-impulse-md: 0 14px 32px -10px rgba(28, 23, 18, 0.18);
+  --shadow-impulse-cta: 0 10px 30px -6px rgba(255, 106, 31, 0.55);
+
+  --font-impulse-display: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Display type — Archivo, pushed to heavy weights. Funnel headlines shout. */
+.tpl-impulse h1,
+.tpl-impulse h2,
+.tpl-impulse h3,
+.tpl-impulse .font-display {
+  font-family: var(--font-impulse-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* ---- THE effect: the animated CTA. A slow "heartbeat" glow ring (scales
+   the orange shadow in and out) plus a diagonal shine that sweeps across
+   every few seconds. Applied to the primary buy/checkout buttons ONLY —
+   one animated element per viewport, so the eye has exactly one target. */
+@keyframes impulse-cta-heartbeat {
+  0%, 100% { box-shadow: 0 10px 30px -6px rgba(255, 106, 31, 0.55), 0 0 0 0 rgba(255, 106, 31, 0.45); }
+  50% { box-shadow: 0 10px 30px -6px rgba(255, 106, 31, 0.55), 0 0 0 12px rgba(255, 106, 31, 0); }
+}
+@keyframes impulse-cta-shine {
+  0% { transform: translateX(-130%) skewX(-18deg); }
+  18% { transform: translateX(230%) skewX(-18deg); }
+  100% { transform: translateX(230%) skewX(-18deg); }
+}
+.tpl-impulse .cta-pulse {
+  position: relative;
+  overflow: hidden;
+  animation: impulse-cta-heartbeat 1.8s ease-out infinite;
+}
+.tpl-impulse .cta-pulse::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  left: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  animation: impulse-cta-shine 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Marker highlight — a yellow highlighter swipe behind the money phrase in
+   a headline: <span class="marker">pay on delivery</span>. */
+.tpl-impulse .marker {
+  background-image: linear-gradient(100deg, transparent 2%, var(--color-impulse-yellow) 4%, var(--color-impulse-yellow) 96%, transparent 98%);
+  background-size: 100% 46%;
+  background-position: 0 78%;
+  background-repeat: no-repeat;
+  padding: 0 0.15em;
+}
+
+/* Social-proof ticker — an infinite marquee strip ("★ Karim from Alger just
+   ordered…"). Content is duplicated once in markup; the track scrolls -50%
+   so the loop is seamless. */
+@keyframes impulse-ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.tpl-impulse .ticker-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: impulse-ticker 30s linear infinite;
+}
+
+/* Scarcity bar — the "78% claimed" stock bar under the offer. The fill
+   carries animated candy stripes so it reads live, not static. */
+@keyframes impulse-stripes {
+  from { background-position: 0 0; }
+  to { background-position: 28px 0; }
+}
+.tpl-impulse .scarcity-fill {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-impulse-red) 0 10px,
+    #ef4444 10px 20px
+  );
+  background-size: 28px 28px;
+  animation: impulse-stripes 1s linear infinite;
+}
+
+/* Bounce cue — the "keep scrolling" arrow under the hero CTA. */
+@keyframes impulse-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+.tpl-impulse .bounce-cue {
+  animation: impulse-bounce 1.6s ease-in-out infinite;
+}
+
+/* Funnel card — the recurring content block: white, generous radius, warm
+   shadow, a hairline warm border. No hover lift (funnel cards aren't
+   clickable chrome — the CTA is the only thing that moves). */
+.tpl-impulse .funnel-card {
+  background: #fff;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-impulse-sm);
+}
+
+/* Reduced motion: kill every attention animation — the funnel still works
+   as a static persuasion sequence. */
+@media (prefers-reduced-motion: reduce) {
+  .tpl-impulse .cta-pulse,
+  .tpl-impulse .cta-pulse::after,
+  .tpl-impulse .ticker-track,
+  .tpl-impulse .scarcity-fill,
+  .tpl-impulse .bounce-cue {
+    animation: none;
+  }
+}

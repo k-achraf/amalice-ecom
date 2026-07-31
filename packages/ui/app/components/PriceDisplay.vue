@@ -3,7 +3,7 @@
 // math. Keep this convention aligned with the Order schema in
 // packages/shared once it exists (FND-05).
 const props = withDefaults(defineProps<{ amountCents: number; currency?: string }>(), {
-  currency: 'USD' // placeholder — swap to the real target-market currency before launch
+  currency: 'DZD' // Algerian Dinar — the store's target market
 })
 
 const formatted = computed(() =>

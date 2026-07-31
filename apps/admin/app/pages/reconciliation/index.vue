@@ -89,7 +89,7 @@ async function resolve(entryId: string) {
         <!-- Discrepancy queue (FIN-04) -->
         <section v-if="discrepancies?.length">
           <h2 class="mb-3 text-sm font-medium text-muted">Discrepancies (sorted by delta)</h2>
-          <div class="admin-kpi-card overflow-hidden">
+          <div class="admin-table-wrap">
             <table class="admin-table w-full text-sm">
               <thead>
                 <tr>
@@ -103,10 +103,10 @@ async function resolve(entryId: string) {
               <tbody>
                 <tr v-for="e in discrepancies" :key="e.id">
                   <td class="tabular px-4 py-3">{{ e.courierRef }}</td>
-                  <td class="tabular px-4 py-3 text-right">{{ e.expectedCents != null ? `$${(e.expectedCents / 100).toFixed(2)}` : '—' }}</td>
+                  <td class="tabular px-4 py-3 text-right"><PriceDisplay v-if="e.expectedCents != null" :amount-cents="e.expectedCents" /><template v-else>—</template></td>
                   <td class="tabular px-4 py-3 text-right"><PriceDisplay :amount-cents="e.collectedCents" /></td>
                   <td class="tabular px-4 py-3 text-right" :class="e.deltaCents && e.deltaCents !== 0 ? 'text-error font-medium' : 'text-warning'">
-                    {{ e.deltaCents == null ? 'unmatched' : `$${(e.deltaCents / 100).toFixed(2)}` }}
+                    <PriceDisplay v-if="e.deltaCents != null" :amount-cents="e.deltaCents" /><template v-else>unmatched</template>
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex gap-1">
@@ -123,7 +123,7 @@ async function resolve(entryId: string) {
         <!-- Batches (FIN-01/03) -->
         <section>
           <h2 class="mb-3 text-sm font-medium text-muted">Remittance batches</h2>
-          <div class="admin-kpi-card overflow-hidden">
+          <div class="admin-table-wrap">
             <table class="admin-table w-full text-sm">
               <thead>
                 <tr>

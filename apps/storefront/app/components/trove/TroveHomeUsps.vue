@@ -18,7 +18,7 @@
         <div class="trove-photo mx-auto mb-4 flex size-14 items-center justify-center bg-[var(--color-trove-teal-light)]/30">
           <Icon name="i-lucide-shield-check" class="size-5 text-[var(--color-trove-teal-dark)]" />
         </div>
-        <h3 class="font-display text-lg text-[var(--color-trove-ink)]">Phone-verified</h3>
+        <h3 class="font-display text-lg text-[var(--color-trove-ink)]">Confirmed by phone</h3>
         <p class="mt-2 text-sm text-neutral-500">A quick call confirms every order before it ships.</p>
       </div>
       <div class="trove-card p-7 text-center">

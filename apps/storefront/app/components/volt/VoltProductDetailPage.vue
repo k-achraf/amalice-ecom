@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product, ProductImage, ProductVariant, RatingSummary, Review, LeadFormField } from '@amalice/shared'
+import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review, LeadFormField } from '@amalice/shared'
 
 // Volt PDP — gallery left on a bordered dark panel, spec sheet right:
 // bracket-style status badges, tabular monospace price, hairline-bordered
@@ -14,6 +14,7 @@ interface RichProduct extends Product {
 const props = defineProps<{
   product: RichProduct | null
   reviewData: { summary: RatingSummary; items: Review[] } | null
+  landingPageImageUrl?: string | null
   galleryImages: { url: string; alt: string }[]
   activeImageIndex: number
   quantity: number
@@ -29,11 +30,14 @@ const props = defineProps<{
   leadFormData?: Record<string, string>
   leadPlacing?: boolean
   leadError?: string | null
+  offers?: ProductOffer[]
+  selectedOfferId?: string | null
   onSelectImage: (i: number) => void
   onSelectVariantByKey: (key: string, val: string) => void
   onUpdateQuantity: (v: number) => void
   onAddToCart: () => void
   onSubmitLead?: () => void
+  onSelectOffer?: (offer: ProductOffer) => void
 }>()
 </script>
 
@@ -51,9 +55,14 @@ const props = defineProps<{
       </div>
     </div>
 
-    <section class="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:px-8">
+    <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <!-- AI landing page image — replaces the gallery+description when the
+      merchant has generated and enabled one (see landing-page.ts). -->
+      <img v-if="props.landingPageImageUrl" :src="props.landingPageImageUrl" :alt="props.product.name" class="mb-10 w-full rounded-md border border-white/10" />
+
+      <div class="grid grid-cols-1 gap-10" :class="props.landingPageImageUrl ? '' : 'lg:grid-cols-2'">
       <!-- Gallery -->
-      <div class="space-y-3">
+      <div v-if="!props.landingPageImageUrl" class="space-y-3">
         <div class="aspect-square overflow-hidden rounded-md border border-white/10 bg-[#0c1113]">
           <NuxtImg
             v-if="props.galleryImages.length"
@@ -100,7 +109,26 @@ const props = defineProps<{
           <span v-else-if="props.effectiveStock <= props.product.lowStockThreshold" class="spec-badge">{{ props.effectiveStock }} left</span>
         </div>
 
-        <p v-if="props.product.description" class="leading-relaxed text-white/60">{{ props.product.description }}</p>
+        <div v-if="props.product.description && !props.landingPageImageUrl" class="product-description-html leading-relaxed text-white/60" v-html="sanitizeDescriptionHtml(props.product.description)" />
+
+        <!-- Offers -->
+        <div v-if="props.offers?.length" class="space-y-2">
+          <button
+            v-for="offer in props.offers"
+            :key="offer.id"
+            type="button"
+            class="flex w-full items-center justify-between rounded-md border px-4 py-2.5 text-left font-mono-spec text-xs uppercase tracking-wide transition-colors"
+            :class="props.selectedOfferId === offer.id ? 'border-primary-400 bg-primary-400/10 text-primary-400' : 'border-white/10 text-white/70 hover:border-white/25'"
+            @click="props.onSelectOffer?.(offer)"
+          >
+            <span>
+              <template v-if="offer.type === 'FixedBundlePrice'">Buy {{ offer.requiredQuantity }} for <PriceDisplay :amount-cents="offer.bundlePriceCents ?? 0" /></template>
+              <template v-else-if="offer.type === 'BuyXGetYFree'">Buy {{ offer.requiredQuantity }}, get {{ offer.freeQuantity }} free</template>
+              <template v-else>Buy {{ offer.requiredQuantity }}, free shipping</template>
+            </span>
+            <Icon v-if="props.selectedOfferId === offer.id" name="i-lucide-check" class="size-3.5" />
+          </button>
+        </div>
 
         <!-- Spec table — label:value monospace rows, reinforcing the spec-sheet read beyond just the gallery/detail split -->
         <div class="font-mono-spec rounded-md border border-white/10 bg-[#0c1113] text-xs text-white/50">
@@ -149,6 +177,7 @@ const props = defineProps<{
           </div>
           <p v-if="props.leadError" class="text-sm text-red-400">{{ props.leadError }}</p>
         </div>
+      </div>
       </div>
     </section>
 

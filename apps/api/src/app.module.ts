@@ -19,6 +19,9 @@ import { NotificationsModule } from './notifications/notifications.module'
 import { StoreSettingsModule } from './store-settings/store-settings.module'
 import { LocationsModule } from './locations/locations.module'
 import { AppsModule } from './apps/apps.module'
+import { LandingPagesModule } from './landing-pages/landing-pages.module'
+import { ShippingCompaniesModule } from './shipping-companies/shipping-companies.module'
+import { SourcingModule } from './sourcing/sourcing.module'
 
 @Module({
   imports: [
@@ -27,20 +30,20 @@ import { AppsModule } from './apps/apps.module'
     // across every route. ThrottlerGuard checks EVERY named throttler
     // registered in forRoot against EVERY route by default (unless
     // @SkipThrottle'd), so a second globally-registered named throttler
-    // (e.g. a stricter one meant only for OTP) would silently apply its
-    // tight limit to unrelated routes like the product catalog too — this
-    // was caught as a real bug (catalog browsing rate-limited to 5 req/5min
-    // by an OTP-only bucket) and fixed by having the OTP routes override
-    // 'default' per-route via @Throttle instead of introducing new names.
-    // The generated storage key already includes controller+handler name,
-    // so /request and /verify still get fully independent counters from
-    // each other and from every other route without a shared-bucket risk.
+    // (e.g. a stricter one meant only for a sensitive route like order
+    // tracking) would silently apply its tight limit to unrelated routes
+    // like the product catalog too — this was caught as a real bug (catalog
+    // browsing rate-limited to 5 req/5min by an unrelated tight bucket) and
+    // fixed by having sensitive routes override 'default' per-route via
+    // @Throttle instead of introducing new names. The generated storage key
+    // already includes controller+handler name, so each route still gets a
+    // fully independent counter without a shared-bucket risk.
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 60 }]),
     PrismaModule,
     RedisModule,
     // A dedicated ioredis connection, not RedisService — BullMQ's worker
     // holds blocking commands open on its connection, which would starve
-    // RedisService's own OTP-code reads/writes if they shared one.
+    // RedisService's other reads/writes if they shared one.
     // maxRetriesPerRequest: null is a hard BullMQ requirement, not a
     // stylistic choice — its blocking commands break without it.
     BullModule.forRootAsync({
@@ -58,7 +61,10 @@ import { AppsModule } from './apps/apps.module'
     NotificationsModule,
     StoreSettingsModule,
     LocationsModule,
-    AppsModule
+    AppsModule,
+    LandingPagesModule,
+    ShippingCompaniesModule,
+    SourcingModule
   ],
   providers: [
     { provide: APP_PIPE, useClass: ZodValidationPipe },

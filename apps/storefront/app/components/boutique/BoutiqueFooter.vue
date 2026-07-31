@@ -27,7 +27,7 @@ const { data: categories } = await useApiFetch<Category[]>('/categories', { key:
       </nav>
 
       <div class="mx-auto my-10 h-px w-12 bg-default" />
-      <p class="text-xs uppercase tracking-widest text-muted">Cash on delivery — Phone-verified orders — No account needed</p>
+      <p class="text-xs uppercase tracking-widest text-muted">Cash on delivery — Confirmed by phone — No account needed</p>
       <p class="mt-8 text-xs tracking-widest text-muted uppercase">© {{ new Date().getFullYear() }} {{ settings.storeName }}</p>
     </div>
   </footer>

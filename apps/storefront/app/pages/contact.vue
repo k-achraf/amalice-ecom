@@ -2,8 +2,8 @@
 import { z } from 'zod'
 
 useSeoMeta({
-  title: 'Contact',
-  description: 'Get in touch with Amalice customer support.'
+  title: 'اتصل بنا',
+  description: 'تواصل مع خدمة زبائن أماليس.'
 })
 
 const config = useRuntimeConfig()
@@ -32,11 +32,11 @@ async function onSubmit() {
     submitted.value = true
   } catch (err) {
     if (err instanceof z.ZodError) {
-      error.value = err.issues[0]?.message ?? 'Please check your input.'
+      error.value = err.issues[0]?.message ?? 'يرجى التحقق من البيانات المدخلة.'
     } else {
       // The contact endpoint may not exist yet (it's a thin shim) — fall back
       // gracefully rather than blocking the user.
-      error.value = 'Could not send right now. Please try again later.'
+      error.value = 'تعذر الإرسال حالياً. يرجى المحاولة لاحقاً.'
     }
   } finally {
     sending.value = false
@@ -47,21 +47,21 @@ void config
 
 <template>
   <main class="mx-auto max-w-xl space-y-8 px-4 py-12">
-    <h1 class="text-3xl font-bold">Contact us</h1>
-    <p class="text-muted">Questions about an order, a product, or how we work? Send us a note.</p>
+    <h1 class="text-3xl font-bold">اتصل بنا</h1>
+    <p class="text-muted">لديك سؤال حول طلب أو منتج أو طريقة عملنا؟ أرسل لنا رسالة.</p>
 
     <div v-if="submitted" class="rounded-lg border border-default bg-elevated p-6 text-center">
       <UIcon name="i-lucide-check-circle" class="mx-auto mb-3 size-10 text-success" />
-      <h2 class="font-semibold">Thanks — message received</h2>
-      <p class="mt-1 text-sm text-muted">We will get back to you at the email you provided.</p>
+      <h2 class="font-semibold">شكراً لك — تم استلام رسالتك</h2>
+      <p class="mt-1 text-sm text-muted">سنتواصل معك عبر البريد الإلكتروني الذي زودتنا به.</p>
     </div>
 
     <UForm v-else :state="state" class="space-y-4" @submit="onSubmit">
-      <UFormField label="Name" name="name"><UInput v-model="state.name" class="w-full" /></UFormField>
-      <UFormField label="Email" name="email"><UInput v-model="state.email" type="email" class="w-full" /></UFormField>
-      <UFormField label="Message" name="message"><UTextarea v-model="state.message" :rows="5" class="w-full" /></UFormField>
+      <UFormField label="الاسم" name="name"><UInput v-model="state.name" class="w-full" /></UFormField>
+      <UFormField label="البريد الإلكتروني" name="email"><UInput v-model="state.email" type="email" class="w-full" /></UFormField>
+      <UFormField label="الرسالة" name="message"><UTextarea v-model="state.message" :rows="5" class="w-full" /></UFormField>
       <p v-if="error" class="text-sm text-error">{{ error }}</p>
-      <UButton type="submit" :loading="sending" color="primary">Send message</UButton>
+      <UButton type="submit" :loading="sending" color="primary">إرسال الرسالة</UButton>
     </UForm>
   </main>
 </template>

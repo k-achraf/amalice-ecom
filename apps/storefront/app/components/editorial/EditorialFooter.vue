@@ -38,7 +38,7 @@ const { data: categories } = await useApiFetch<Category[]>('/categories', { key:
           <h3 class="kicker mb-3">Promise</h3>
           <ul class="space-y-2">
             <li class="flex items-center gap-2"><Icon name="i-lucide-banknote" class="size-4" /> Cash on delivery</li>
-            <li class="flex items-center gap-2"><Icon name="i-lucide-shield-check" class="size-4" /> Phone-verified</li>
+            <li class="flex items-center gap-2"><Icon name="i-lucide-shield-check" class="size-4" /> Confirmed by phone</li>
           </ul>
         </div>
       </div>

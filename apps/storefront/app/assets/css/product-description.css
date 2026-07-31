@@ -1,0 +1,51 @@
+/*
+ * Styling for sanitized product-description HTML (see
+ * app/utils/productDescriptionHtml.ts) rendered via v-html across all 15
+ * PDP templates. One shared class (.product-description-html) instead of
+ * per-template prose rules — inherits each template's own body font/color
+ * tokens by design (no font-family override here), so it reads as part of
+ * that template rather than a foreign "CMS block" dropped into the page.
+ */
+.product-description-html {
+  line-height: 1.7;
+}
+.product-description-html > * + * {
+  margin-top: 0.85em;
+}
+.product-description-html h2 {
+  font-size: 1.25em;
+  font-weight: 600;
+}
+.product-description-html h3 {
+  font-size: 1.1em;
+  font-weight: 600;
+}
+.product-description-html ul,
+.product-description-html ol {
+  padding-inline-start: 1.25em;
+}
+.product-description-html ul {
+  list-style: disc;
+}
+.product-description-html ol {
+  list-style: decimal;
+}
+.product-description-html li + li {
+  margin-top: 0.35em;
+}
+.product-description-html blockquote {
+  border-inline-start: 3px solid currentColor;
+  opacity: 0.85;
+  padding-inline-start: 1em;
+  font-style: italic;
+}
+.product-description-html a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.product-description-html img,
+.product-description-html video {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+}

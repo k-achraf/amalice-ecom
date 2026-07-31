@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product, ProductImage, ProductVariant, RatingSummary, Review, LeadFormField } from '@amalice/shared'
+import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review, LeadFormField } from '@amalice/shared'
 
 // Pulse PDP — white gallery + sticky glow-card order summary. Variants as
 // rounded pill chips. Lead-form mode uses PulseLeadFormFields (cascading
@@ -14,6 +14,7 @@ interface RichProduct extends Product {
 const props = defineProps<{
   product: RichProduct | null
   reviewData: { summary: RatingSummary; items: Review[] } | null
+  landingPageImageUrl?: string | null
   galleryImages: { url: string; alt: string }[]
   activeImageIndex: number
   quantity: number
@@ -29,11 +30,16 @@ const props = defineProps<{
   leadFormData?: Record<string, string>
   leadPlacing?: boolean
   leadError?: string | null
+  offers?: ProductOffer[]
+  selectedOfferId?: string | null
+  offerTotalCents?: number
+  leadShippingPriceCents?: number
   onSelectImage: (i: number) => void
   onSelectVariantByKey: (key: string, val: string) => void
   onUpdateQuantity: (v: number) => void
   onAddToCart: () => void
   onSubmitLead?: () => void
+  onSelectOffer?: (offer: ProductOffer) => void
 }>()
 </script>
 
@@ -51,9 +57,13 @@ const props = defineProps<{
     </div>
 
     <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 gap-10 lg:grid-cols-5 lg:gap-8">
+      <!-- AI landing page image — replaces the gallery+description when the
+      merchant has generated and enabled one (see landing-page.ts). -->
+      <img v-if="props.landingPageImageUrl" :src="props.landingPageImageUrl" :alt="props.product.name" class="mb-10 w-full rounded-xl" />
+
+      <div class="grid grid-cols-1 gap-10" :class="props.landingPageImageUrl ? '' : 'lg:grid-cols-5 lg:gap-8'">
         <!-- Gallery — floating glossy card, offset up and slightly narrower than half, echoing the hero's asymmetric device card -->
-        <div class="relative space-y-4 lg:col-span-2">
+        <div v-if="!props.landingPageImageUrl" class="relative space-y-4 lg:col-span-2">
           <div class="glossy-highlight glow-card relative -rotate-1 aspect-square overflow-hidden bg-neutral-50 p-4 lg:mt-6">
             <NuxtImg
               v-if="props.galleryImages.length"
@@ -80,7 +90,7 @@ const props = defineProps<{
         </div>
 
         <!-- Detail + order summary — the wider lane, so the split reads asymmetric rather than 50/50 -->
-        <div class="space-y-6 lg:col-span-3">
+        <div class="space-y-6" :class="props.landingPageImageUrl ? '' : 'lg:col-span-3'">
           <div>
             <p v-if="props.product.category" class="text-xs font-semibold uppercase tracking-[0.12em] text-primary-600">{{ props.product.category }}</p>
             <h1 class="font-display mt-1 text-4xl text-neutral-900 sm:text-5xl">{{ props.product.name }}</h1>
@@ -108,7 +118,26 @@ const props = defineProps<{
             <PulseBadge v-else-if="props.effectiveStock <= props.product.lowStockThreshold" color="primary">Only {{ props.effectiveStock }} left</PulseBadge>
           </div>
 
-          <p v-if="props.product.description" class="leading-relaxed text-neutral-600">{{ props.product.description }}</p>
+          <div v-if="props.product.description && !props.landingPageImageUrl" class="product-description-html leading-relaxed text-neutral-600" v-html="sanitizeDescriptionHtml(props.product.description)" />
+
+          <!-- Offers -->
+          <div v-if="props.offers?.length" class="space-y-2">
+            <button
+              v-for="offer in props.offers"
+              :key="offer.id"
+              type="button"
+              class="flex w-full items-center justify-between rounded-full border px-4 py-2 text-left text-sm font-medium transition-all"
+              :class="props.selectedOfferId === offer.id ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-neutral-200 text-neutral-600 hover:border-primary-300'"
+              @click="props.onSelectOffer?.(offer)"
+            >
+              <span>
+                <template v-if="offer.type === 'FixedBundlePrice'">Buy {{ offer.requiredQuantity }} for <PriceDisplay :amount-cents="offer.bundlePriceCents ?? 0" /></template>
+                <template v-else-if="offer.type === 'BuyXGetYFree'">Buy {{ offer.requiredQuantity }}, get {{ offer.freeQuantity }} free</template>
+                <template v-else>Buy {{ offer.requiredQuantity }}, free shipping</template>
+              </span>
+              <Icon v-if="props.selectedOfferId === offer.id" name="i-lucide-check" class="size-4" />
+            </button>
+          </div>
 
           <!-- Variants as rounded pill chips -->
           <div v-for="(values, key) in props.variantOptions" :key="key" class="space-y-3">
@@ -139,12 +168,12 @@ const props = defineProps<{
               <PulseQuantityStepper :model-value="props.quantity" :min="1" :max="props.effectiveStock" :disabled="!props.inStock" @update:model-value="props.onUpdateQuantity" />
             </div>
             <div class="space-y-2 border-t border-neutral-100 pt-4 text-sm">
-              <div class="flex items-center justify-between"><span class="text-neutral-500">Subtotal</span><PriceDisplay :amount-cents="props.effectivePriceCents * props.quantity" class="font-medium" /></div>
+              <div class="flex items-center justify-between"><span class="text-neutral-500">Subtotal</span><PriceDisplay :amount-cents="props.offerTotalCents ?? props.effectivePriceCents * props.quantity" class="font-medium" /></div>
               <div class="flex items-center justify-between"><span class="text-neutral-500">Shipping</span><span class="font-medium text-primary-600">Free</span></div>
             </div>
             <div class="mt-4 flex items-center justify-between border-t border-neutral-100 pt-4">
               <span class="font-medium text-neutral-900">Total</span>
-              <PriceDisplay :amount-cents="props.effectivePriceCents * props.quantity" class="text-xl font-semibold text-primary-600" />
+              <PriceDisplay :amount-cents="props.offerTotalCents ?? props.effectivePriceCents * props.quantity" class="text-xl font-semibold text-primary-600" />
             </div>
             <p class="mt-2 flex items-center gap-1.5 text-xs text-neutral-400"><Icon name="i-lucide-banknote" class="size-3.5" /> Cash on delivery</p>
             <PulseButton :disabled="!props.inStock" icon="i-lucide-shopping-bag" size="lg" block class="mt-5" @click="props.onAddToCart">{{ props.inStock ? 'Add to cart' : 'Out of stock' }}</PulseButton>
@@ -160,7 +189,7 @@ const props = defineProps<{
             <PulseLeadFormFields :fields="props.leadFields ?? []" :data="props.leadFormData ?? {}" />
             <div class="flex items-center justify-between border-t border-neutral-100 pt-4">
               <span class="font-medium text-neutral-900">Total</span>
-              <PriceDisplay :amount-cents="props.effectivePriceCents * props.quantity" class="text-xl font-semibold text-primary-600" />
+              <PriceDisplay :amount-cents="(props.offerTotalCents ?? props.effectivePriceCents * props.quantity) + (props.leadShippingPriceCents ?? 0)" class="text-xl font-semibold text-primary-600" />
             </div>
             <div class="flex items-center gap-3">
               <PulseQuantityStepper :model-value="props.quantity" :min="1" :max="props.effectiveStock" @update:model-value="props.onUpdateQuantity" />

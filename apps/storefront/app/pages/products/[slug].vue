@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import type { Product, ProductImage, ProductVariant, RatingSummary, Review } from '@amalice/shared'
-import { CheckoutSchema } from '@amalice/shared'
+import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review } from '@amalice/shared'
+import { CheckoutSchema, offerTotalQuantity, offerPriceCents } from '@amalice/shared'
 
 // LOGIC ONLY — presentation resolved by <TemplatePage name="ProductDetail">.
 // When displayCart=true: the "Add to cart" button works normally.
 // When displayCart=false: a lead-capture form replaces the add-to-cart button;
-// the customer enters phone/address/qty directly → places order → OTP verify,
-// all inline on the PDP (no cart). The shared useOrderPlacement() composable
-// handles the order+OTP flow without duplicating checkout.vue's logic.
+// the customer enters phone/address/qty directly → places order (lands in
+// PendingCallCenter, a call-center agent confirms it by phone), all inline
+// on the PDP (no cart).
 interface RichProduct extends Product {
   images: ProductImage[]
   variants: ProductVariant[]
   related: Product[]
   categoryRef: { name: string; slug: string } | null
+  offers: ProductOffer[]
 }
 
 const route = useRoute()
@@ -30,6 +31,17 @@ const { data: reviewData } = await useApiFetch<{ summary: RatingSummary; items: 
   `/products/${slug}/reviews`,
   { key: `reviews-${slug}` }
 )
+
+// AI landing page (apps/api/src/landing-pages) — null unless the merchant
+// generated one AND enabled it for this product. When present, the PDP
+// shows this long-scroll image in place of the plain gallery+description;
+// the actual buy mechanism (price/variants/add-to-cart or lead form) stays
+// unchanged either way.
+const { data: landingPage } = await useApiFetch<{ finalImageUrl: string } | null>(
+  `/products/${slug}/landing-page`,
+  { key: `landing-page-${slug}` }
+)
+const landingPageImageUrl = computed(() => (landingPage.value ? resolveImageUrl(landingPage.value.finalImageUrl) : null))
 
 useSeoMeta({
   title: () => product.value?.name,
@@ -59,6 +71,7 @@ const quantity = ref(1)
 const added = ref(false)
 const selectedVariantId = ref<string | null>(null)
 const activeImageIndex = ref(0)
+const selectedOfferId = ref<string | null>(null)
 
 const galleryImages = computed(() => {
   if (!product.value) return []
@@ -93,12 +106,29 @@ function onSelectVariantByKey(key: string, val: string) {
 }
 function onUpdateQuantity(v: number) {
   quantity.value = v
+  // A manual quantity change no longer matches whatever offer set it —
+  // offers are picked as a whole card (see onSelectOffer), not auto-detected
+  // from an arbitrary quantity.
+  if (selectedOffer.value && offerTotalQuantity(selectedOffer.value) !== v) selectedOfferId.value = null
 }
 function onAddToCart() {
   if (!product.value || !inStock.value) return
-  cart.addItem(product.value, quantity.value)
+  cart.addItem(product.value, quantity.value, selectedOffer.value, selectedVariant.value)
   added.value = true
   setTimeout(() => (added.value = false), 2000)
+}
+
+// ---- Offers (buy-X bundle price / buy-X-get-Y-free / free-shipping badge) ----
+// Picking an offer card sets the quantity to exactly what it needs and locks
+// in its pricing — not auto-detected from whatever quantity is already
+// selected (see ProductOffer's Prisma model comment for why).
+const selectedOffer = computed(() => product.value?.offers.find((o) => o.id === selectedOfferId.value) ?? null)
+const offerTotalCents = computed(() =>
+  selectedOffer.value ? offerPriceCents(selectedOffer.value, effectivePriceCents.value) : effectivePriceCents.value * quantity.value
+)
+function onSelectOffer(offer: ProductOffer) {
+  selectedOfferId.value = offer.id
+  quantity.value = offerTotalQuantity(offer)
 }
 
 // ---- Lead form (displayCart=false) ----
@@ -124,6 +154,10 @@ watchEffect(() => {
 const leadPlacing = ref(false)
 const leadError = ref<string | null>(null)
 
+// Priced client-side only for display (the "Total — cash on delivery" line);
+// the API re-prices from WilayaShippingRate server-side and never trusts this.
+const leadShippingPriceCents = computed(() => Number(leadFormData.shippingPriceCents) || 0)
+
 async function onSubmitLead() {
   if (!product.value) return
   // Validate required fields
@@ -133,17 +167,26 @@ async function onSubmitLead() {
       return
     }
   }
+  if (!leadFormData.wilayaId || !leadFormData.shippingType) {
+    leadError.value = 'Please select a shipping method.'
+    return
+  }
   leadPlacing.value = true
   leadError.value = null
   try {
     const apiClient = useApiClient()
-    const created = await apiClient<{ id: string; totalCents: number; state: string; createdAt: string; items: { productId: string; quantity: number; unitPriceCents: number }[] }>(
+    const created = await apiClient<{ id: string; totalCents: number; state: string; createdAt: string; items: { productId: string; quantity: number; unitPriceCents: number; lineTotalCents: number }[] }>(
       '/orders/lead',
       {
         method: 'POST',
         body: {
           fields: leadFormData,
-          items: [{ productId: product.value.id, quantity: quantity.value }]
+          wilayaId: leadFormData.wilayaId,
+          shippingType: leadFormData.shippingType,
+          items: [{ productId: product.value.id, variantId: selectedVariantId.value ?? undefined, quantity: quantity.value, offerId: selectedOfferId.value ?? undefined }],
+          // Pixel match-quality context — see checkout.vue's placeOrder for
+          // why no eventId is threaded through here either.
+          tracking: { ...useMetaPixel().getFbCookies(), ...useTikTokPixel().getTtCookie() }
         }
       }
     )
@@ -152,7 +195,10 @@ async function onSubmitLead() {
       items: created.items.map((i) => ({ ...i, name: product.value!.name }))
     }
     sessionStorage.setItem(`amalice.order.${created.id}`, JSON.stringify(enriched))
-    await navigateTo(`/orders/${created.id}/confirmation`)
+    // Upsells system — see checkout.vue's placeOrder for why phone is
+    // stashed here rather than passed as a URL query param.
+    sessionStorage.setItem(`amalice.order.${created.id}.phone`, leadFormData.phone || leadFormData.phoneNumber || '')
+    await navigateTo(`/orders/${created.id}/upsell`)
   } catch (err: unknown) {
     const data = (err as { data?: { message?: string } })?.data
     leadError.value = data?.message ?? 'Something went wrong. Please try again.'
@@ -168,6 +214,7 @@ async function onSubmitLead() {
     :page-props="{
       product,
       reviewData,
+      landingPageImageUrl,
       galleryImages,
       activeImageIndex: activeImageIndex ?? 0,
       quantity: quantity ?? 1,
@@ -183,11 +230,16 @@ async function onSubmitLead() {
       leadFormData,
       leadPlacing: leadPlacing ?? false,
       leadError,
+      offers: product?.offers ?? [],
+      selectedOfferId,
+      offerTotalCents,
+      leadShippingPriceCents,
       onSelectImage,
       onSelectVariantByKey,
       onUpdateQuantity,
       onAddToCart,
-      onSubmitLead
+      onSubmitLead,
+      onSelectOffer
     }"
   />
 </template>

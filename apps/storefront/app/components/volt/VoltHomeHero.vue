@@ -37,7 +37,7 @@ const settings = useStoreSettings()
         </div>
         <div class="font-mono-spec mt-8 max-w-sm space-y-1 rounded-md border border-white/10 bg-[#0c1113] p-4 text-xs text-white/40">
           <div class="flex justify-between border-b border-white/10 pb-2"><span>Delivery</span><span class="text-primary-400">Cash on delivery</span></div>
-          <div class="flex justify-between border-b border-white/10 py-2"><span>Verification</span><span class="text-primary-400">SMS OTP</span></div>
+          <div class="flex justify-between border-b border-white/10 py-2"><span>Verification</span><span class="text-primary-400">Call confirm</span></div>
           <div class="flex justify-between pt-2"><span>Account</span><span class="text-primary-400">Not required</span></div>
         </div>
       </div>

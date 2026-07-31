@@ -2,7 +2,7 @@ import { resolveComponent } from 'vue'
 import type { StoreTemplate } from '@amalice/shared'
 
 // The template-section resolver. Pages stay single-sourced for LOGIC (data
-// fetching, cart mutations, OTP, structured data) but delegate PRESENTATION
+// fetching, cart mutations, order placement, structured data) but delegate PRESENTATION
 // to section components. A template overrides a section by providing a
 // component named `${CapitalizedTemplate}${Section}`; otherwise the fallback
 // `${Section}` renders.
@@ -29,7 +29,8 @@ const TEMPLATE_PREFIX: Record<StoreTemplate, string> = {
   pulse: 'Pulse',
   lumiere: 'Lumiere',
   trove: 'Trove',
-  forge: 'Forge'
+  forge: 'Forge',
+  impulse: 'Impulse'
 }
 
 export function useTemplateComponent() {

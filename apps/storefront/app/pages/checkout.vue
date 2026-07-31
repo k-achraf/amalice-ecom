@@ -7,105 +7,75 @@ if (!settings.value.displayCart) {
   await navigateTo('/')
 }
 
-// LOGIC ONLY — the full 3-step COD + OTP flow stays here. Presentation via
-// <TemplatePage name="Checkout">. The OTP timer, sessionStorage handoff, and
-// order placement are single-sourced; templates can't drift checkout behavior.
+// LOGIC ONLY — the 2-step COD flow stays here (address, review). Presentation
+// via <TemplatePage name="Checkout">. Order placement is single-sourced;
+// templates can't drift checkout behavior. No OTP step: the order lands in
+// PendingCallCenter directly and a call-center agent confirms it by phone.
 useSeoMeta({ title: 'Checkout' })
 
 const cart = useCartStore()
 const apiClient = useApiClient()
 const router = useRouter()
+const metaPixel = useMetaPixel()
+const tiktokPixel = useTikTokPixel()
 
-type Step = 'address' | 'review' | 'otp'
+// InitiateCheckout (both pixels) — fires once, when the checkout page is
+// actually reached with items in the cart (not on every render/step change).
+if (import.meta.client && cart.items.length > 0) {
+  metaPixel.trackEvent('InitiateCheckout', {
+    content_ids: cart.items.map((i) => i.productId),
+    content_type: 'product',
+    contents: cart.items.map((i) => ({ id: i.productId, quantity: i.quantity })),
+    value: cart.totalCents / 100,
+    currency: 'DZD',
+    num_items: cart.itemCount
+  })
+  tiktokPixel.trackEvent('InitiateCheckout', {
+    contents: cart.items.map((i) => ({ content_id: i.productId, quantity: i.quantity, price: i.priceCents / 100 })),
+    value: cart.totalCents / 100,
+    currency: 'DZD'
+  })
+}
+
+type Step = 'address' | 'review'
 const step = ref<Step>('address')
 const stepItems = [
   { value: 'address', title: 'Address', icon: 'i-lucide-map-pin' },
-  { value: 'review', title: 'Review', icon: 'i-lucide-clipboard-list' },
-  { value: 'otp', title: 'Verify', icon: 'i-lucide-shield-check' }
+  { value: 'review', title: 'Review', icon: 'i-lucide-clipboard-list' }
 ]
 
 const AddressStepSchema = CheckoutSchema.omit({ items: true })
 const form = reactive({
   phone: '',
   name: '',
+  wilayaId: '',
+  shippingType: '',
+  shippingPriceCents: 0,
   address: { line1: '', line2: '', city: '', region: '', postalCode: '', country: '' }
 })
 
+const totalCents = computed(() => cart.totalCents + form.shippingPriceCents)
+
+const addressError = ref<string | null>(null)
 function onAddressSubmit() {
+  if (!form.wilayaId || !form.shippingType) {
+    addressError.value = 'Please select a shipping method.'
+    return
+  }
+  addressError.value = null
   step.value = 'review'
 }
 
 const placing = ref(false)
 const placeError = ref<string | null>(null)
-const order = ref<{ id: string; totalCents: number } | null>(null)
-
-async function placeOrder() {
-  placing.value = true
-  placeError.value = null
-  try {
-    const created = await apiClient<{ id: string; totalCents: number }>('/orders', {
-      method: 'POST',
-      body: {
-        phone: form.phone,
-        name: form.name || undefined,
-        address: { ...form.address, line2: form.address.line2 || undefined },
-        items: cart.items.map((i) => ({ productId: i.productId, quantity: i.quantity }))
-      }
-    })
-    order.value = created
-    step.value = 'otp'
-    startCooldown()
-  } catch (err) {
-    placeError.value = extractErrorMessage(err)
-  } finally {
-    placing.value = false
-  }
-}
-
-function extractErrorMessage(err: unknown): string {
-  const data = (err as { data?: { message?: string } })?.data
-  return data?.message ?? 'Something went wrong. Please try again.'
-}
-
-const otpCode = ref<string[]>([])
-const otpCodeString = computed(() => otpCode.value.join(''))
-const otpError = ref<string | null>(null)
-const verifying = ref(false)
-const resendCooldown = ref(0)
-let cooldownTimer: ReturnType<typeof setInterval> | undefined
-
-function startCooldown() {
-  resendCooldown.value = 60
-  clearInterval(cooldownTimer)
-  cooldownTimer = setInterval(() => {
-    if (resendCooldown.value <= 1) {
-      clearInterval(cooldownTimer)
-      resendCooldown.value = 0
-    } else {
-      resendCooldown.value -= 1
-    }
-  }, 1000)
-}
-
-onUnmounted(() => clearInterval(cooldownTimer))
-
-async function resendCode() {
-  if (resendCooldown.value > 0) return
-  otpError.value = null
-  try {
-    await apiClient('/auth/otp/request', { method: 'POST', body: { phone: form.phone } })
-    startCooldown()
-  } catch (err) {
-    otpError.value = extractErrorMessage(err)
-  }
-}
 
 interface ConfirmedOrderItem {
   productId: string
   quantity: number
   unitPriceCents: number
+  lineTotalCents: number
 }
-interface ConfirmedOrder {
+interface PlacedOrder {
   id: string
   totalCents: number
   state: string
@@ -113,28 +83,45 @@ interface ConfirmedOrder {
   items: ConfirmedOrderItem[]
 }
 
-async function verifyCode() {
-  if (!order.value) return
-  verifying.value = true
-  otpError.value = null
+async function placeOrder() {
+  placing.value = true
+  placeError.value = null
   try {
-    const result = await apiClient<{ order: ConfirmedOrder }>(`/orders/${order.value.id}/confirm`, {
+    const created = await apiClient<PlacedOrder>('/orders', {
       method: 'POST',
-      body: { code: otpCodeString.value }
+      body: {
+        phone: form.phone,
+        name: form.name || undefined,
+        address: { ...form.address, line2: form.address.line2 || undefined },
+        wilayaId: form.wilayaId,
+        shippingType: form.shippingType,
+        items: cart.items.map((i) => ({ productId: i.productId, variantId: i.variantId ?? undefined, quantity: i.quantity, offerId: i.offerId ?? undefined })),
+        // Pixel match-quality context — see CheckoutTrackingSchema. No
+        // eventId here: the server defaults each platform's server-side
+        // purchase event id to the order id, and the confirmation page's
+        // browser pixel calls use that same order id, so they dedupe
+        // without the client needing to invent and thread an id through.
+        tracking: { ...metaPixel.getFbCookies(), ...tiktokPixel.getTtCookie() }
+      }
     })
     const nameByProductId = new Map(cart.items.map((i) => [i.productId, i.name]))
     const enriched = {
-      ...result.order,
-      items: result.order.items.map((i) => ({ ...i, name: nameByProductId.get(i.productId) ?? 'Item' }))
+      ...created,
+      items: created.items.map((i) => ({ ...i, name: nameByProductId.get(i.productId) ?? 'Item' }))
     }
-    sessionStorage.setItem(`amalice.order.${order.value.id}`, JSON.stringify(enriched))
+    sessionStorage.setItem(`amalice.order.${created.id}`, JSON.stringify(enriched))
+    // Upsells system — the post-checkout upsell page needs the phone to
+    // authorize its GET/accept calls (same shared-secret model as order
+    // tracking). Stashed alongside the order rather than passed as a URL
+    // query param so it doesn't end up in browser history/referrers.
+    sessionStorage.setItem(`amalice.order.${created.id}.phone`, form.phone)
     cart.clear()
-    await router.push(`/orders/${order.value.id}/confirmation`)
+    await router.push(`/orders/${created.id}/upsell`)
   } catch (err) {
-    otpError.value = extractErrorMessage(err)
-    otpCode.value = []
+    const data = (err as { data?: { message?: string } })?.data
+    placeError.value = data?.message ?? 'Something went wrong. Please try again.'
   } finally {
-    verifying.value = false
+    placing.value = false
   }
 }
 
@@ -152,18 +139,12 @@ function onBack() {
       stepItems,
       form,
       addressSchema: AddressStepSchema,
+      addressError,
+      totalCents,
       placing: placing ?? false,
       placeError,
-      order,
-      otpCode,
-      otpCodeString,
-      otpError,
-      verifying: verifying ?? false,
-      resendCooldown: resendCooldown ?? 0,
       onAddressSubmit,
       onPlaceOrder: placeOrder,
-      onVerifyCode: verifyCode,
-      onResendCode: resendCode,
       onBack
     }"
   />

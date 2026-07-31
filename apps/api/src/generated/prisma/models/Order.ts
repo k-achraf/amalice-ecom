@@ -28,10 +28,12 @@ export type AggregateOrder = {
 
 export type OrderAvgAggregateOutputType = {
   totalCents: number | null
+  shippingPriceCents: number | null
 }
 
 export type OrderSumAggregateOutputType = {
   totalCents: number | null
+  shippingPriceCents: number | null
 }
 
 export type OrderMinAggregateOutputType = {
@@ -40,6 +42,8 @@ export type OrderMinAggregateOutputType = {
   addressId: string | null
   state: $Enums.OrderState | null
   totalCents: number | null
+  shippingType: $Enums.ShippingType | null
+  shippingPriceCents: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -50,6 +54,8 @@ export type OrderMaxAggregateOutputType = {
   addressId: string | null
   state: $Enums.OrderState | null
   totalCents: number | null
+  shippingType: $Enums.ShippingType | null
+  shippingPriceCents: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -60,6 +66,8 @@ export type OrderCountAggregateOutputType = {
   addressId: number
   state: number
   totalCents: number
+  shippingType: number
+  shippingPriceCents: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -68,10 +76,12 @@ export type OrderCountAggregateOutputType = {
 
 export type OrderAvgAggregateInputType = {
   totalCents?: true
+  shippingPriceCents?: true
 }
 
 export type OrderSumAggregateInputType = {
   totalCents?: true
+  shippingPriceCents?: true
 }
 
 export type OrderMinAggregateInputType = {
@@ -80,6 +90,8 @@ export type OrderMinAggregateInputType = {
   addressId?: true
   state?: true
   totalCents?: true
+  shippingType?: true
+  shippingPriceCents?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -90,6 +102,8 @@ export type OrderMaxAggregateInputType = {
   addressId?: true
   state?: true
   totalCents?: true
+  shippingType?: true
+  shippingPriceCents?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -100,6 +114,8 @@ export type OrderCountAggregateInputType = {
   addressId?: true
   state?: true
   totalCents?: true
+  shippingType?: true
+  shippingPriceCents?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -197,6 +213,8 @@ export type OrderGroupByOutputType = {
   addressId: string
   state: $Enums.OrderState
   totalCents: number
+  shippingType: $Enums.ShippingType | null
+  shippingPriceCents: number
   createdAt: Date
   updatedAt: Date
   _count: OrderCountAggregateOutputType | null
@@ -230,6 +248,8 @@ export type OrderWhereInput = {
   addressId?: Prisma.StringFilter<"Order"> | string
   state?: Prisma.EnumOrderStateFilter<"Order"> | $Enums.OrderState
   totalCents?: Prisma.IntFilter<"Order"> | number
+  shippingType?: Prisma.EnumShippingTypeNullableFilter<"Order"> | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFilter<"Order"> | number
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
@@ -239,6 +259,7 @@ export type OrderWhereInput = {
   cashReconciliation?: Prisma.XOR<Prisma.CashReconciliationNullableScalarRelationFilter, Prisma.CashReconciliationWhereInput> | null
   ledgerEntries?: Prisma.LedgerEntryListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
+  googleSheetRows?: Prisma.GoogleSheetOrderRowListRelationFilter
 }
 
 export type OrderOrderByWithRelationInput = {
@@ -247,6 +268,8 @@ export type OrderOrderByWithRelationInput = {
   addressId?: Prisma.SortOrder
   state?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
+  shippingType?: Prisma.SortOrderInput | Prisma.SortOrder
+  shippingPriceCents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   customer?: Prisma.CustomerOrderByWithRelationInput
@@ -256,6 +279,7 @@ export type OrderOrderByWithRelationInput = {
   cashReconciliation?: Prisma.CashReconciliationOrderByWithRelationInput
   ledgerEntries?: Prisma.LedgerEntryOrderByRelationAggregateInput
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowOrderByRelationAggregateInput
 }
 
 export type OrderWhereUniqueInput = Prisma.AtLeast<{
@@ -267,6 +291,8 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   addressId?: Prisma.StringFilter<"Order"> | string
   state?: Prisma.EnumOrderStateFilter<"Order"> | $Enums.OrderState
   totalCents?: Prisma.IntFilter<"Order"> | number
+  shippingType?: Prisma.EnumShippingTypeNullableFilter<"Order"> | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFilter<"Order"> | number
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
@@ -276,6 +302,7 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   cashReconciliation?: Prisma.XOR<Prisma.CashReconciliationNullableScalarRelationFilter, Prisma.CashReconciliationWhereInput> | null
   ledgerEntries?: Prisma.LedgerEntryListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
+  googleSheetRows?: Prisma.GoogleSheetOrderRowListRelationFilter
 }, "id">
 
 export type OrderOrderByWithAggregationInput = {
@@ -284,6 +311,8 @@ export type OrderOrderByWithAggregationInput = {
   addressId?: Prisma.SortOrder
   state?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
+  shippingType?: Prisma.SortOrderInput | Prisma.SortOrder
+  shippingPriceCents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.OrderCountOrderByAggregateInput
@@ -302,6 +331,8 @@ export type OrderScalarWhereWithAggregatesInput = {
   addressId?: Prisma.StringWithAggregatesFilter<"Order"> | string
   state?: Prisma.EnumOrderStateWithAggregatesFilter<"Order"> | $Enums.OrderState
   totalCents?: Prisma.IntWithAggregatesFilter<"Order"> | number
+  shippingType?: Prisma.EnumShippingTypeNullableWithAggregatesFilter<"Order"> | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntWithAggregatesFilter<"Order"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
 }
@@ -310,6 +341,8 @@ export type OrderCreateInput = {
   id?: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -319,6 +352,7 @@ export type OrderCreateInput = {
   cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryCreateNestedManyWithoutOrderInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUncheckedCreateInput = {
@@ -327,6 +361,8 @@ export type OrderUncheckedCreateInput = {
   addressId: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
@@ -334,12 +370,15 @@ export type OrderUncheckedCreateInput = {
   cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedCreateNestedManyWithoutOrderInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -349,6 +388,7 @@ export type OrderUpdateInput = {
   cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
   ledgerEntries?: Prisma.LedgerEntryUpdateManyWithoutOrderNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateInput = {
@@ -357,6 +397,8 @@ export type OrderUncheckedUpdateInput = {
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
@@ -364,6 +406,7 @@ export type OrderUncheckedUpdateInput = {
   cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedUpdateManyWithoutOrderNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderCreateManyInput = {
@@ -372,6 +415,8 @@ export type OrderCreateManyInput = {
   addressId: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -380,6 +425,8 @@ export type OrderUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -390,6 +437,8 @@ export type OrderUncheckedUpdateManyInput = {
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -410,12 +459,15 @@ export type OrderCountOrderByAggregateInput = {
   addressId?: Prisma.SortOrder
   state?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
+  shippingType?: Prisma.SortOrder
+  shippingPriceCents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type OrderAvgOrderByAggregateInput = {
   totalCents?: Prisma.SortOrder
+  shippingPriceCents?: Prisma.SortOrder
 }
 
 export type OrderMaxOrderByAggregateInput = {
@@ -424,6 +476,8 @@ export type OrderMaxOrderByAggregateInput = {
   addressId?: Prisma.SortOrder
   state?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
+  shippingType?: Prisma.SortOrder
+  shippingPriceCents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -434,12 +488,15 @@ export type OrderMinOrderByAggregateInput = {
   addressId?: Prisma.SortOrder
   state?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
+  shippingType?: Prisma.SortOrder
+  shippingPriceCents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type OrderSumOrderByAggregateInput = {
   totalCents?: Prisma.SortOrder
+  shippingPriceCents?: Prisma.SortOrder
 }
 
 export type OrderScalarRelationFilter = {
@@ -540,6 +597,10 @@ export type EnumOrderStateFieldUpdateOperationsInput = {
   set?: $Enums.OrderState
 }
 
+export type NullableEnumShippingTypeFieldUpdateOperationsInput = {
+  set?: $Enums.ShippingType | null
+}
+
 export type OrderCreateNestedOneWithoutItemsInput = {
   create?: Prisma.XOR<Prisma.OrderCreateWithoutItemsInput, Prisma.OrderUncheckedCreateWithoutItemsInput>
   connectOrCreate?: Prisma.OrderCreateOrConnectWithoutItemsInput
@@ -614,10 +675,26 @@ export type OrderUpdateOneWithoutNotificationsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.OrderUpdateToOneWithWhereWithoutNotificationsInput, Prisma.OrderUpdateWithoutNotificationsInput>, Prisma.OrderUncheckedUpdateWithoutNotificationsInput>
 }
 
+export type OrderCreateNestedOneWithoutGoogleSheetRowsInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutGoogleSheetRowsInput, Prisma.OrderUncheckedCreateWithoutGoogleSheetRowsInput>
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutGoogleSheetRowsInput
+  connect?: Prisma.OrderWhereUniqueInput
+}
+
+export type OrderUpdateOneRequiredWithoutGoogleSheetRowsNestedInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutGoogleSheetRowsInput, Prisma.OrderUncheckedCreateWithoutGoogleSheetRowsInput>
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutGoogleSheetRowsInput
+  upsert?: Prisma.OrderUpsertWithoutGoogleSheetRowsInput
+  connect?: Prisma.OrderWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrderUpdateToOneWithWhereWithoutGoogleSheetRowsInput, Prisma.OrderUpdateWithoutGoogleSheetRowsInput>, Prisma.OrderUncheckedUpdateWithoutGoogleSheetRowsInput>
+}
+
 export type OrderCreateWithoutCustomerInput = {
   id?: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
@@ -626,6 +703,7 @@ export type OrderCreateWithoutCustomerInput = {
   cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryCreateNestedManyWithoutOrderInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutCustomerInput = {
@@ -633,6 +711,8 @@ export type OrderUncheckedCreateWithoutCustomerInput = {
   addressId: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
@@ -640,6 +720,7 @@ export type OrderUncheckedCreateWithoutCustomerInput = {
   cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedCreateNestedManyWithoutOrderInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutCustomerInput = {
@@ -677,6 +758,8 @@ export type OrderScalarWhereInput = {
   addressId?: Prisma.StringFilter<"Order"> | string
   state?: Prisma.EnumOrderStateFilter<"Order"> | $Enums.OrderState
   totalCents?: Prisma.IntFilter<"Order"> | number
+  shippingType?: Prisma.EnumShippingTypeNullableFilter<"Order"> | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFilter<"Order"> | number
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
 }
@@ -685,6 +768,8 @@ export type OrderCreateWithoutAddressInput = {
   id?: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -693,6 +778,7 @@ export type OrderCreateWithoutAddressInput = {
   cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryCreateNestedManyWithoutOrderInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutAddressInput = {
@@ -700,6 +786,8 @@ export type OrderUncheckedCreateWithoutAddressInput = {
   customerId: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
@@ -707,6 +795,7 @@ export type OrderUncheckedCreateWithoutAddressInput = {
   cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedCreateNestedManyWithoutOrderInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutAddressInput = {
@@ -739,6 +828,8 @@ export type OrderCreateWithoutItemsInput = {
   id?: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -747,6 +838,7 @@ export type OrderCreateWithoutItemsInput = {
   cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryCreateNestedManyWithoutOrderInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutItemsInput = {
@@ -755,12 +847,15 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   addressId: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   shipment?: Prisma.ShipmentUncheckedCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedCreateNestedManyWithoutOrderInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutItemsInput = {
@@ -783,6 +878,8 @@ export type OrderUpdateWithoutItemsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -791,6 +888,7 @@ export type OrderUpdateWithoutItemsInput = {
   cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
   ledgerEntries?: Prisma.LedgerEntryUpdateManyWithoutOrderNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutItemsInput = {
@@ -799,18 +897,23 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   shipment?: Prisma.ShipmentUncheckedUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedUpdateManyWithoutOrderNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderCreateWithoutShipmentInput = {
   id?: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -819,6 +922,7 @@ export type OrderCreateWithoutShipmentInput = {
   cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryCreateNestedManyWithoutOrderInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutShipmentInput = {
@@ -827,12 +931,15 @@ export type OrderUncheckedCreateWithoutShipmentInput = {
   addressId: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedCreateNestedManyWithoutOrderInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutShipmentInput = {
@@ -855,6 +962,8 @@ export type OrderUpdateWithoutShipmentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -863,6 +972,7 @@ export type OrderUpdateWithoutShipmentInput = {
   cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
   ledgerEntries?: Prisma.LedgerEntryUpdateManyWithoutOrderNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutShipmentInput = {
@@ -871,18 +981,23 @@ export type OrderUncheckedUpdateWithoutShipmentInput = {
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedUpdateManyWithoutOrderNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderCreateWithoutCashReconciliationInput = {
   id?: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -891,6 +1006,7 @@ export type OrderCreateWithoutCashReconciliationInput = {
   shipment?: Prisma.ShipmentCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryCreateNestedManyWithoutOrderInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutCashReconciliationInput = {
@@ -899,12 +1015,15 @@ export type OrderUncheckedCreateWithoutCashReconciliationInput = {
   addressId: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentUncheckedCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedCreateNestedManyWithoutOrderInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutCashReconciliationInput = {
@@ -927,6 +1046,8 @@ export type OrderUpdateWithoutCashReconciliationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -935,6 +1056,7 @@ export type OrderUpdateWithoutCashReconciliationInput = {
   shipment?: Prisma.ShipmentUpdateOneWithoutOrderNestedInput
   ledgerEntries?: Prisma.LedgerEntryUpdateManyWithoutOrderNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutCashReconciliationInput = {
@@ -943,18 +1065,23 @@ export type OrderUncheckedUpdateWithoutCashReconciliationInput = {
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUncheckedUpdateOneWithoutOrderNestedInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedUpdateManyWithoutOrderNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderCreateWithoutLedgerEntriesInput = {
   id?: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -963,6 +1090,7 @@ export type OrderCreateWithoutLedgerEntriesInput = {
   shipment?: Prisma.ShipmentCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutLedgerEntriesInput = {
@@ -971,12 +1099,15 @@ export type OrderUncheckedCreateWithoutLedgerEntriesInput = {
   addressId: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentUncheckedCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutLedgerEntriesInput = {
@@ -999,6 +1130,8 @@ export type OrderUpdateWithoutLedgerEntriesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -1007,6 +1140,7 @@ export type OrderUpdateWithoutLedgerEntriesInput = {
   shipment?: Prisma.ShipmentUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutLedgerEntriesInput = {
@@ -1015,18 +1149,23 @@ export type OrderUncheckedUpdateWithoutLedgerEntriesInput = {
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUncheckedUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderCreateWithoutNotificationsInput = {
   id?: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -1035,6 +1174,7 @@ export type OrderCreateWithoutNotificationsInput = {
   shipment?: Prisma.ShipmentCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutNotificationsInput = {
@@ -1043,12 +1183,15 @@ export type OrderUncheckedCreateWithoutNotificationsInput = {
   addressId: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentUncheckedCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutNotificationsInput = {
@@ -1071,6 +1214,8 @@ export type OrderUpdateWithoutNotificationsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -1079,6 +1224,7 @@ export type OrderUpdateWithoutNotificationsInput = {
   shipment?: Prisma.ShipmentUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
   ledgerEntries?: Prisma.LedgerEntryUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutNotificationsInput = {
@@ -1087,29 +1233,76 @@ export type OrderUncheckedUpdateWithoutNotificationsInput = {
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUncheckedUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
 }
 
-export type OrderCreateManyCustomerInput = {
+export type OrderCreateWithoutGoogleSheetRowsInput = {
   id?: string
+  state?: $Enums.OrderState
+  totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
+  address: Prisma.AddressCreateNestedOneWithoutOrdersInput
+  items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
+  shipment?: Prisma.ShipmentCreateNestedOneWithoutOrderInput
+  cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
+  ledgerEntries?: Prisma.LedgerEntryCreateNestedManyWithoutOrderInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
+}
+
+export type OrderUncheckedCreateWithoutGoogleSheetRowsInput = {
+  id?: string
+  customerId: string
   addressId: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
+  shipment?: Prisma.ShipmentUncheckedCreateNestedOneWithoutOrderInput
+  cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
+  ledgerEntries?: Prisma.LedgerEntryUncheckedCreateNestedManyWithoutOrderInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
 }
 
-export type OrderUpdateWithoutCustomerInput = {
+export type OrderCreateOrConnectWithoutGoogleSheetRowsInput = {
+  where: Prisma.OrderWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrderCreateWithoutGoogleSheetRowsInput, Prisma.OrderUncheckedCreateWithoutGoogleSheetRowsInput>
+}
+
+export type OrderUpsertWithoutGoogleSheetRowsInput = {
+  update: Prisma.XOR<Prisma.OrderUpdateWithoutGoogleSheetRowsInput, Prisma.OrderUncheckedUpdateWithoutGoogleSheetRowsInput>
+  create: Prisma.XOR<Prisma.OrderCreateWithoutGoogleSheetRowsInput, Prisma.OrderUncheckedCreateWithoutGoogleSheetRowsInput>
+  where?: Prisma.OrderWhereInput
+}
+
+export type OrderUpdateToOneWithWhereWithoutGoogleSheetRowsInput = {
+  where?: Prisma.OrderWhereInput
+  data: Prisma.XOR<Prisma.OrderUpdateWithoutGoogleSheetRowsInput, Prisma.OrderUncheckedUpdateWithoutGoogleSheetRowsInput>
+}
+
+export type OrderUpdateWithoutGoogleSheetRowsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUpdateOneWithoutOrderNestedInput
@@ -1118,11 +1311,14 @@ export type OrderUpdateWithoutCustomerInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
 }
 
-export type OrderUncheckedUpdateWithoutCustomerInput = {
+export type OrderUncheckedUpdateWithoutGoogleSheetRowsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
@@ -1132,11 +1328,58 @@ export type OrderUncheckedUpdateWithoutCustomerInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
 }
 
+export type OrderCreateManyCustomerInput = {
+  id?: string
+  addressId: string
+  state?: $Enums.OrderState
+  totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type OrderUpdateWithoutCustomerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
+  totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
+  items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
+  shipment?: Prisma.ShipmentUpdateOneWithoutOrderNestedInput
+  cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
+  ledgerEntries?: Prisma.LedgerEntryUpdateManyWithoutOrderNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
+}
+
+export type OrderUncheckedUpdateWithoutCustomerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
+  totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
+  shipment?: Prisma.ShipmentUncheckedUpdateOneWithoutOrderNestedInput
+  cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
+  ledgerEntries?: Prisma.LedgerEntryUncheckedUpdateManyWithoutOrderNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
+}
+
 export type OrderUncheckedUpdateManyWithoutCustomerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1146,6 +1389,8 @@ export type OrderCreateManyAddressInput = {
   customerId: string
   state?: $Enums.OrderState
   totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1154,6 +1399,8 @@ export type OrderUpdateWithoutAddressInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -1162,6 +1409,7 @@ export type OrderUpdateWithoutAddressInput = {
   cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
   ledgerEntries?: Prisma.LedgerEntryUpdateManyWithoutOrderNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutAddressInput = {
@@ -1169,6 +1417,8 @@ export type OrderUncheckedUpdateWithoutAddressInput = {
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
@@ -1176,6 +1426,7 @@ export type OrderUncheckedUpdateWithoutAddressInput = {
   cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedUpdateManyWithoutOrderNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateManyWithoutAddressInput = {
@@ -1183,6 +1434,8 @@ export type OrderUncheckedUpdateManyWithoutAddressInput = {
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
   state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1196,12 +1449,14 @@ export type OrderCountOutputType = {
   items: number
   ledgerEntries: number
   notifications: number
+  googleSheetRows: number
 }
 
 export type OrderCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   items?: boolean | OrderCountOutputTypeCountItemsArgs
   ledgerEntries?: boolean | OrderCountOutputTypeCountLedgerEntriesArgs
   notifications?: boolean | OrderCountOutputTypeCountNotificationsArgs
+  googleSheetRows?: boolean | OrderCountOutputTypeCountGoogleSheetRowsArgs
 }
 
 /**
@@ -1235,6 +1490,13 @@ export type OrderCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime.T
   where?: Prisma.NotificationWhereInput
 }
 
+/**
+ * OrderCountOutputType without action
+ */
+export type OrderCountOutputTypeCountGoogleSheetRowsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.GoogleSheetOrderRowWhereInput
+}
+
 
 export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1242,6 +1504,8 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   addressId?: boolean
   state?: boolean
   totalCents?: boolean
+  shippingType?: boolean
+  shippingPriceCents?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -1251,6 +1515,7 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   cashReconciliation?: boolean | Prisma.Order$cashReconciliationArgs<ExtArgs>
   ledgerEntries?: boolean | Prisma.Order$ledgerEntriesArgs<ExtArgs>
   notifications?: boolean | Prisma.Order$notificationsArgs<ExtArgs>
+  googleSheetRows?: boolean | Prisma.Order$googleSheetRowsArgs<ExtArgs>
   _count?: boolean | Prisma.OrderCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
 
@@ -1260,6 +1525,8 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   addressId?: boolean
   state?: boolean
   totalCents?: boolean
+  shippingType?: boolean
+  shippingPriceCents?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -1272,6 +1539,8 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   addressId?: boolean
   state?: boolean
   totalCents?: boolean
+  shippingType?: boolean
+  shippingPriceCents?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -1284,11 +1553,13 @@ export type OrderSelectScalar = {
   addressId?: boolean
   state?: boolean
   totalCents?: boolean
+  shippingType?: boolean
+  shippingPriceCents?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "addressId" | "state" | "totalCents" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "addressId" | "state" | "totalCents" | "shippingType" | "shippingPriceCents" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
   address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
@@ -1297,6 +1568,7 @@ export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   cashReconciliation?: boolean | Prisma.Order$cashReconciliationArgs<ExtArgs>
   ledgerEntries?: boolean | Prisma.Order$ledgerEntriesArgs<ExtArgs>
   notifications?: boolean | Prisma.Order$notificationsArgs<ExtArgs>
+  googleSheetRows?: boolean | Prisma.Order$googleSheetRowsArgs<ExtArgs>
   _count?: boolean | Prisma.OrderCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrderIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1318,6 +1590,7 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     cashReconciliation: Prisma.$CashReconciliationPayload<ExtArgs> | null
     ledgerEntries: Prisma.$LedgerEntryPayload<ExtArgs>[]
     notifications: Prisma.$NotificationPayload<ExtArgs>[]
+    googleSheetRows: Prisma.$GoogleSheetOrderRowPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1325,6 +1598,8 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     addressId: string
     state: $Enums.OrderState
     totalCents: number
+    shippingType: $Enums.ShippingType | null
+    shippingPriceCents: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["order"]>
@@ -1728,6 +2003,7 @@ export interface Prisma__OrderClient<T, Null = never, ExtArgs extends runtime.Ty
   cashReconciliation<T extends Prisma.Order$cashReconciliationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$cashReconciliationArgs<ExtArgs>>): Prisma.Prisma__CashReconciliationClient<runtime.Types.Result.GetResult<Prisma.$CashReconciliationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   ledgerEntries<T extends Prisma.Order$ledgerEntriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$ledgerEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LedgerEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   notifications<T extends Prisma.Order$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  googleSheetRows<T extends Prisma.Order$googleSheetRowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$googleSheetRowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GoogleSheetOrderRowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1762,6 +2038,8 @@ export interface OrderFieldRefs {
   readonly addressId: Prisma.FieldRef<"Order", 'String'>
   readonly state: Prisma.FieldRef<"Order", 'OrderState'>
   readonly totalCents: Prisma.FieldRef<"Order", 'Int'>
+  readonly shippingType: Prisma.FieldRef<"Order", 'ShippingType'>
+  readonly shippingPriceCents: Prisma.FieldRef<"Order", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Order", 'DateTime'>
 }
@@ -2272,6 +2550,30 @@ export type Order$notificationsArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.NotificationScalarFieldEnum | Prisma.NotificationScalarFieldEnum[]
+}
+
+/**
+ * Order.googleSheetRows
+ */
+export type Order$googleSheetRowsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the GoogleSheetOrderRow
+   */
+  select?: Prisma.GoogleSheetOrderRowSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the GoogleSheetOrderRow
+   */
+  omit?: Prisma.GoogleSheetOrderRowOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GoogleSheetOrderRowInclude<ExtArgs> | null
+  where?: Prisma.GoogleSheetOrderRowWhereInput
+  orderBy?: Prisma.GoogleSheetOrderRowOrderByWithRelationInput | Prisma.GoogleSheetOrderRowOrderByWithRelationInput[]
+  cursor?: Prisma.GoogleSheetOrderRowWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.GoogleSheetOrderRowScalarFieldEnum | Prisma.GoogleSheetOrderRowScalarFieldEnum[]
 }
 
 /**

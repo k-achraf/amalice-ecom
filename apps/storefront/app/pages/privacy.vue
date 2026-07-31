@@ -1,19 +1,19 @@
 <script setup lang="ts">
-useSeoMeta({ title: 'Privacy policy', description: 'How Amalice collects, uses, and protects your information.' })
+useSeoMeta({ title: 'سياسة الخصوصية', description: 'كيف تجمع أماليس معلوماتك وتستخدمها وتحميها.' })
 </script>
 <template>
   <main class="mx-auto max-w-3xl space-y-6 px-4 py-12">
     <header>
-      <h1 class="text-3xl font-bold">Privacy policy</h1>
-      <p class="mt-1 text-sm text-muted">Last updated: July 2026</p>
+      <h1 class="text-3xl font-bold">سياسة الخصوصية</h1>
+      <p class="mt-1 text-sm text-muted">آخر تحديث: يوليو 2026</p>
     </header>
     <div class="space-y-4 leading-relaxed text-muted">
-      <p>We collect only what we need to deliver your order and prevent fraud.</p>
-      <p><strong class="text-highlighted">What we collect:</strong> Your phone number (used to verify orders and contact you about delivery), your name, and your delivery address. We do not collect or store payment card information — orders are cash on delivery.</p>
-      <p><strong class="text-highlighted">How we use it:</strong> To process and deliver your orders, to send you order status updates, to prevent fraudulent orders, and — only if you ask — to respond to support requests.</p>
-      <p><strong class="text-highlighted">Who sees it:</strong> Our staff (limited by role — customer-service and operations roles have access to contact details; finance and warehouse roles do not) and the courier that delivers your order. We do not sell your information.</p>
-      <p><strong class="text-highlighted">Your choices:</strong> You can request access to, correction of, or deletion of your information by contacting us. Order records are retained as needed for accounting and dispute resolution.</p>
-      <p><strong class="text-highlighted">Security:</strong> Sensitive details like phone numbers are protected by role-based access controls, and order/financial changes are recorded in a tamper-evident audit log.</p>
+      <p>نجمع فقط ما نحتاجه لتوصيل طلبك ومنع الاحتيال.</p>
+      <p><strong class="text-highlighted">ما نجمعه:</strong> رقم هاتفك (يُستخدم للتحقق من الطلبات والتواصل معك بخصوص التوصيل)، اسمك، وعنوان التوصيل. لا نجمع أو نخزّن بيانات بطاقات الدفع — فالطلبات تُدفع نقداً عند الاستلام.</p>
+      <p><strong class="text-highlighted">كيف نستخدمها:</strong> لمعالجة طلباتك وتوصيلها، ولإرسال تحديثات حالة الطلب، ولمنع الطلبات الاحتيالية، وفقط عند طلبك للرد على استفسارات الدعم.</p>
+      <p><strong class="text-highlighted">من يطّلع عليها:</strong> موظفونا (بصلاحيات محددة حسب الدور — فرق خدمة الزبائن والعمليات تصل إلى بيانات التواصل، بينما لا تصل إليها فرق المالية والمستودع) ومندوب التوصيل الذي يوصل طلبك. لا نبيع معلوماتك لأي جهة.</p>
+      <p><strong class="text-highlighted">خياراتك:</strong> يمكنك طلب الاطلاع على معلوماتك أو تصحيحها أو حذفها بالتواصل معنا. تُحفظ سجلات الطلبات للمدة اللازمة لأغراض المحاسبة وتسوية النزاعات.</p>
+      <p><strong class="text-highlighted">الأمان:</strong> تُحمى البيانات الحساسة مثل أرقام الهواتف بضوابط وصول قائمة على الأدوار، وتُسجَّل التعديلات على الطلبات والبيانات المالية في سجل تدقيق يصعب التلاعب به.</p>
     </div>
   </main>
 </template>

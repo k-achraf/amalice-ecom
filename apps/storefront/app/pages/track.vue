@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { OrderState } from '@amalice/shared'
 
-useSeoMeta({ title: 'Track order' })
+useSeoMeta({ title: 'تتبع الطلب' })
 
 const apiClient = useApiClient()
 const route = useRoute()
@@ -30,7 +30,7 @@ async function lookup() {
     })
   } catch (err) {
     const data = (err as { data?: { message?: string } })?.data
-    error.value = data?.message ?? 'Could not find that order. Check the order ID and phone number.'
+    error.value = data?.message ?? 'تعذر العثور على هذا الطلب. تحقق من رقم الطلب ورقم الهاتف.'
   } finally {
     loading.value = false
   }
@@ -40,9 +40,9 @@ async function lookup() {
 <template>
   <main class="mx-auto max-w-lg space-y-6 p-6">
     <div>
-      <h1 class="text-2xl font-semibold">Track your order</h1>
+      <h1 class="text-2xl font-semibold">تتبع طلبك</h1>
       <p class="text-sm text-neutral-500">
-        Enter your order ID and the phone number used at checkout.
+        أدخل رقم طلبك ورقم الهاتف الذي استخدمته عند إتمام الطلب.
       </p>
     </div>
 
@@ -57,14 +57,14 @@ async function lookup() {
     -->
     <ClientOnly>
       <form class="space-y-4" @submit.prevent="lookup">
-        <UFormField label="Order ID" name="orderId">
-          <UInput v-model="orderId" class="w-full font-mono" placeholder="e.g. 2ffdcd31-..." />
+        <UFormField label="رقم الطلب" name="orderId">
+          <UInput v-model="orderId" class="w-full font-mono" placeholder="مثال: 2ffdcd31-..." />
         </UFormField>
-        <UFormField label="Phone" name="phone">
+        <UFormField label="رقم الهاتف" name="phone">
           <UInput v-model="phone" type="tel" class="w-full" placeholder="+15551234567" />
         </UFormField>
         <UButton type="submit" block size="lg" :loading="loading" :disabled="!orderId || !phone">
-          Track order
+          تتبع الطلب
         </UButton>
       </form>
 
@@ -76,15 +76,15 @@ async function lookup() {
           <StatusBadge :state="result.state" />
         </div>
         <div class="flex items-center justify-between text-sm">
-          <span>Cash due on delivery</span>
+          <span>المجموع المستحق عند الاستلام</span>
           <PriceDisplay :amount-cents="result.totalCents" class="font-medium" />
         </div>
         <p v-if="result.trackingReference" class="text-sm">
-          Courier tracking reference:
+          رقم تتبع المندوب:
           <span class="tabular font-medium">{{ result.trackingReference }}</span>
         </p>
         <p v-else class="text-sm text-neutral-500">
-          No courier tracking reference yet — this appears once the order is handed to the courier.
+          لا يوجد رقم تتبع بعد — سيظهر بمجرد تسليم الطلب إلى مندوب التوصيل.
         </p>
       </div>
     </ClientOnly>

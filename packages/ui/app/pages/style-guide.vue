@@ -44,7 +44,7 @@ const isDev = import.meta.dev
 const colorMode = useColorMode()
 
 const orderStates = [
-  'PendingOTP', 'Cancelled', 'Confirmed', 'Packed', 'HandedToCourier',
+  'PendingCallCenter', 'Cancelled', 'Confirmed', 'Packed', 'HandedToCourier',
   'OutForDelivery', 'DeliveryFailed', 'Delivered', 'ReturnedToOrigin',
   'Restocked', 'CashCollected', 'Reconciled', 'Settled'
 ] as const

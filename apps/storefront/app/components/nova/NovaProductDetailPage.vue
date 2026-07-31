@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product, ProductImage, ProductVariant, RatingSummary, Review, LeadFormField } from '@amalice/shared'
+import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review, LeadFormField } from '@amalice/shared'
 
 // Nova PDP — bordered gallery + bordered sticky order-summary card. Variants
 // as bordered chips. Lead-form mode uses NovaLeadFormFields (cascading
@@ -14,6 +14,7 @@ interface RichProduct extends Product {
 const props = defineProps<{
   product: RichProduct | null
   reviewData: { summary: RatingSummary; items: Review[] } | null
+  landingPageImageUrl?: string | null
   galleryImages: { url: string; alt: string }[]
   activeImageIndex: number
   quantity: number
@@ -29,11 +30,16 @@ const props = defineProps<{
   leadFormData?: Record<string, string>
   leadPlacing?: boolean
   leadError?: string | null
+  offers?: ProductOffer[]
+  selectedOfferId?: string | null
+  offerTotalCents?: number
+  leadShippingPriceCents?: number
   onSelectImage: (i: number) => void
   onSelectVariantByKey: (key: string, val: string) => void
   onUpdateQuantity: (v: number) => void
   onAddToCart: () => void
   onSubmitLead?: () => void
+  onSelectOffer?: (offer: ProductOffer) => void
 }>()
 </script>
 
@@ -51,9 +57,13 @@ const props = defineProps<{
     </div>
 
     <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 gap-10 lg:grid-cols-2">
+      <!-- AI landing page image — replaces the gallery+description when the
+      merchant has generated and enabled one (see landing-page.ts). -->
+      <img v-if="props.landingPageImageUrl" :src="props.landingPageImageUrl" :alt="props.product.name" class="mb-10 w-full border-2 border-black" />
+
+      <div class="grid grid-cols-1 gap-10" :class="props.landingPageImageUrl ? '' : 'lg:grid-cols-2'">
         <!-- Gallery -->
-        <div class="space-y-4">
+        <div v-if="!props.landingPageImageUrl" class="space-y-4">
           <div class="aspect-square overflow-hidden border-2 border-black bg-white shadow-[var(--shadow-nova-md)]">
             <NuxtImg
               v-if="props.galleryImages.length"
@@ -108,7 +118,26 @@ const props = defineProps<{
             <span v-else-if="props.effectiveStock <= props.product.lowStockThreshold" class="sticker">Only {{ props.effectiveStock }} left</span>
           </div>
 
-          <p v-if="props.product.description" class="leading-relaxed text-black/60">{{ props.product.description }}</p>
+          <div v-if="props.product.description && !props.landingPageImageUrl" class="product-description-html leading-relaxed text-black/60" v-html="sanitizeDescriptionHtml(props.product.description)" />
+
+          <!-- Offers -->
+          <div v-if="props.offers?.length" class="space-y-2">
+            <button
+              v-for="offer in props.offers"
+              :key="offer.id"
+              type="button"
+              class="flex w-full items-center justify-between border-2 px-4 py-2 text-left text-sm font-bold transition-all"
+              :class="props.selectedOfferId === offer.id ? 'border-black bg-primary-500 text-black' : 'border-black/20 text-black/70 hover:border-black'"
+              @click="props.onSelectOffer?.(offer)"
+            >
+              <span>
+                <template v-if="offer.type === 'FixedBundlePrice'">Buy {{ offer.requiredQuantity }} for <PriceDisplay :amount-cents="offer.bundlePriceCents ?? 0" /></template>
+                <template v-else-if="offer.type === 'BuyXGetYFree'">Buy {{ offer.requiredQuantity }}, get {{ offer.freeQuantity }} free</template>
+                <template v-else>Buy {{ offer.requiredQuantity }}, free shipping</template>
+              </span>
+              <Icon v-if="props.selectedOfferId === offer.id" name="i-lucide-check" class="size-4" />
+            </button>
+          </div>
 
           <!-- Variants as bordered chips -->
           <div v-for="(values, key) in props.variantOptions" :key="key" class="space-y-3">
@@ -139,12 +168,12 @@ const props = defineProps<{
               <NovaQuantityStepper :model-value="props.quantity" :min="1" :max="props.effectiveStock" :disabled="!props.inStock" @update:model-value="props.onUpdateQuantity" />
             </div>
             <div class="space-y-2 border-t-2 border-black/10 pt-4 text-sm">
-              <div class="flex items-center justify-between"><span class="text-black/50">Subtotal</span><PriceDisplay :amount-cents="props.effectivePriceCents * props.quantity" class="font-bold" /></div>
+              <div class="flex items-center justify-between"><span class="text-black/50">Subtotal</span><PriceDisplay :amount-cents="props.offerTotalCents ?? props.effectivePriceCents * props.quantity" class="font-bold" /></div>
               <div class="flex items-center justify-between"><span class="text-black/50">Shipping</span><span class="font-bold text-primary-700">Free</span></div>
             </div>
             <div class="mt-4 flex items-center justify-between border-t-2 border-black pt-4">
               <span class="font-bold uppercase">Total</span>
-              <PriceDisplay :amount-cents="props.effectivePriceCents * props.quantity" class="text-xl font-bold" />
+              <PriceDisplay :amount-cents="props.offerTotalCents ?? props.effectivePriceCents * props.quantity" class="text-xl font-bold" />
             </div>
             <p class="mt-2 flex items-center gap-1.5 text-xs text-black/40"><Icon name="i-lucide-banknote" class="size-3.5" /> Cash on delivery</p>
             <NovaButton :disabled="!props.inStock" icon="i-lucide-shopping-bag" size="lg" block class="mt-5" @click="props.onAddToCart">{{ props.inStock ? 'Add to cart' : 'Out of stock' }}</NovaButton>
@@ -160,7 +189,7 @@ const props = defineProps<{
             <NovaLeadFormFields :fields="props.leadFields ?? []" :data="props.leadFormData ?? {}" />
             <div class="flex items-center justify-between border-t-2 border-black pt-4">
               <span class="font-bold uppercase">Total</span>
-              <PriceDisplay :amount-cents="props.effectivePriceCents * props.quantity" class="text-xl font-bold" />
+              <PriceDisplay :amount-cents="(props.offerTotalCents ?? props.effectivePriceCents * props.quantity) + (props.leadShippingPriceCents ?? 0)" class="text-xl font-bold" />
             </div>
             <div class="flex items-center gap-3">
               <NovaQuantityStepper :model-value="props.quantity" :min="1" :max="props.effectiveStock" @update:model-value="props.onUpdateQuantity" />

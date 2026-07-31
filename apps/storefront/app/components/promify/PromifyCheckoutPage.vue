@@ -3,7 +3,7 @@ import type { ZodTypeAny } from 'zod'
 import type { CartItem } from '~/stores/cart'
 
 // Promify checkout — 2-col: form left, live order summary card right. A
-// plain dot/line stepper at top. Renders the 3 steps (address, review, otp).
+// plain dot/line stepper at top. Renders the 2 steps (address, review).
 // Wrapped in ClientOnly. No @nuxt/ui: address validation runs the passed
 // Zod schema directly on submit (the same gate UForm applied internally).
 const props = defineProps<{
@@ -13,21 +13,18 @@ const props = defineProps<{
   form: {
     phone: string
     name: string
+    wilayaId: string
+    shippingType: string
+    shippingPriceCents: number
     address: { line1: string; line2: string; city: string; region: string; postalCode: string; country: string }
   }
   addressSchema: ZodTypeAny
+  addressError: string | null
+  totalCents: number
   placing: boolean
   placeError: string | null
-  order: { id: string; totalCents: number } | null
-  otpCode: string[]
-  otpCodeString: string
-  otpError: string | null
-  verifying: boolean
-  resendCooldown: number
   onAddressSubmit: () => void
   onPlaceOrder: () => void
-  onVerifyCode: () => void
-  onResendCode: () => void
   onBack: () => void
 }>()
 
@@ -52,11 +49,11 @@ function submitAddress() {
     <div class="bg-gradient-to-r from-primary-600 to-primary-900">
       <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-14 lg:px-8">
         <nav class="mb-3 flex items-center gap-2 text-sm text-white/60">
-          <NuxtLink to="/" class="transition-colors hover:text-white">Home</NuxtLink>
-          <Icon name="i-lucide-chevron-right" class="size-3.5" />
-          <span class="text-white/90">Checkout</span>
+          <NuxtLink to="/" class="transition-colors hover:text-white">الرئيسية</NuxtLink>
+          <Icon name="i-lucide-chevron-left" class="size-3.5" />
+          <span class="text-white/90">إتمام الطلب</span>
         </nav>
-        <h1 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">Checkout</h1>
+        <h1 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">إتمام الطلب</h1>
       </div>
     </div>
 
@@ -65,10 +62,10 @@ function submitAddress() {
         <EmptyState
           v-if="props.cart.items.length === 0"
           icon="i-lucide-shopping-cart"
-          title="Your cart is empty"
-          description="Add something to your cart before checking out."
+          title="سلتك فارغة"
+          description="أضف منتجاً إلى سلتك قبل إتمام الطلب."
         >
-          <PromifyButton to="/catalog" class="mt-4">Continue shopping</PromifyButton>
+          <PromifyButton to="/catalog" class="mt-4">متابعة التسوق</PromifyButton>
         </EmptyState>
 
         <template v-else>
@@ -117,31 +114,8 @@ function submitAddress() {
                       <label class="mb-1.5 block text-sm font-medium text-neutral-700">Address line 2 (optional)</label>
                       <PromifyInput v-model="props.form.address.line2" />
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
-                      <div>
-                        <label class="mb-1.5 block text-sm font-medium text-neutral-700">City</label>
-                        <PromifyInput v-model="props.form.address.city" />
-                        <p v-if="fieldErrors['address.city']" class="mt-1 text-xs font-medium text-red-600">{{ fieldErrors['address.city'] }}</p>
-                      </div>
-                      <div>
-                        <label class="mb-1.5 block text-sm font-medium text-neutral-700">Region / State</label>
-                        <PromifyInput v-model="props.form.address.region" />
-                        <p v-if="fieldErrors['address.region']" class="mt-1 text-xs font-medium text-red-600">{{ fieldErrors['address.region'] }}</p>
-                      </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                      <div>
-                        <label class="mb-1.5 block text-sm font-medium text-neutral-700">Postal code</label>
-                        <PromifyInput v-model="props.form.address.postalCode" />
-                        <p v-if="fieldErrors['address.postalCode']" class="mt-1 text-xs font-medium text-red-600">{{ fieldErrors['address.postalCode'] }}</p>
-                      </div>
-                      <div>
-                        <label class="mb-1.5 block text-sm font-medium text-neutral-700">Country</label>
-                        <PromifyInput v-model="props.form.address.country" :maxlength="2" class="uppercase" />
-                        <p class="mt-1 text-xs text-neutral-400">2-letter code, e.g. US</p>
-                        <p v-if="fieldErrors['address.country']" class="mt-1 text-xs font-medium text-red-600">{{ fieldErrors['address.country'] }}</p>
-                      </div>
-                    </div>
+                    <PromifyCheckoutShippingFields :form="props.form" />
+                    <p v-if="props.addressError" class="mt-1 text-xs font-medium text-red-600">{{ props.addressError }}</p>
                     <PromifyButton type="submit" block size="xl" trailing-icon="i-lucide-arrow-right">
                       Continue to review
                     </PromifyButton>
@@ -167,14 +141,20 @@ function submitAddress() {
                     <h3 class="mb-2 font-semibold text-neutral-900">Deliver to</h3>
                     <p class="font-medium text-neutral-900">{{ props.form.name || props.form.phone }}</p>
                     <p class="text-neutral-600">{{ props.form.address.line1 }}<template v-if="props.form.address.line2">, {{ props.form.address.line2 }}</template></p>
-                    <p class="text-neutral-600">{{ props.form.address.city }}, {{ props.form.address.region }} {{ props.form.address.postalCode }}</p>
-                    <p class="text-neutral-600">{{ props.form.address.country }}</p>
+                    <p class="text-neutral-600">{{ props.form.address.city }}, {{ props.form.address.region }}</p>
                     <p class="text-neutral-600">{{ props.form.phone }}</p>
+                  </div>
+
+                  <div class="mt-4 space-y-1 rounded-xl border border-neutral-100 p-4 text-sm">
+                    <div class="flex items-center justify-between">
+                      <span class="text-neutral-500">Shipping ({{ props.form.shippingType === 'Home' ? 'Home delivery' : 'Desk delivery' }})</span>
+                      <PriceDisplay :amount-cents="props.form.shippingPriceCents" class="font-medium text-neutral-900" />
+                    </div>
                   </div>
 
                   <div class="mt-4 flex items-center justify-between rounded-xl bg-primary-50 p-4">
                     <span class="font-semibold text-primary-700">Cash due on delivery</span>
-                    <PriceDisplay :amount-cents="props.cart.totalCents" class="text-lg font-bold text-primary-700" />
+                    <PriceDisplay :amount-cents="props.totalCents" class="text-lg font-bold text-primary-700" />
                   </div>
 
                   <PromifyAlert v-if="props.placeError" color="error" icon="i-lucide-alert-circle" class="mt-4" :description="props.placeError" />
@@ -185,28 +165,6 @@ function submitAddress() {
                       Place order
                     </PromifyButton>
                   </div>
-                </div>
-
-                <!-- Step 3: OTP -->
-                <div v-else-if="props.step === 'otp'">
-                  <h2 class="mb-1 text-xl font-bold text-neutral-900">Confirm your order</h2>
-                  <p class="mb-6 leading-relaxed text-neutral-600">
-                    We sent a 6-digit code to <span class="font-medium text-neutral-900">{{ props.form.phone }}</span>. Enter it below to confirm.
-                  </p>
-                  <div class="rounded-xl bg-neutral-50 p-6">
-                    <PromifyPinInput
-                      :model-value="props.otpCode"
-                      :length="6"
-                      @update:model-value="(v: string[]) => (props.otpCode as string[]).splice(0, props.otpCode.length, ...v)"
-                    />
-                  </div>
-                  <PromifyAlert v-if="props.otpError" color="error" icon="i-lucide-alert-circle" class="mt-4" :description="props.otpError" />
-                  <PromifyButton block size="xl" :loading="props.verifying" :disabled="props.otpCodeString.length !== 6" class="mt-6" @click="props.onVerifyCode">
-                    Confirm order
-                  </PromifyButton>
-                  <PromifyButton variant="link" color="neutral" block class="mt-2" :disabled="props.resendCooldown > 0" @click="props.onResendCode">
-                    {{ props.resendCooldown > 0 ? `Resend code in ${props.resendCooldown}s` : 'Resend code' }}
-                  </PromifyButton>
                 </div>
               </div>
             </div>
@@ -234,12 +192,13 @@ function submitAddress() {
                   </div>
                   <div class="flex items-center justify-between">
                     <span class="text-neutral-500">Shipping</span>
-                    <span class="font-medium text-primary-600">Free</span>
+                    <span v-if="!props.form.shippingType" class="font-medium text-primary-600">Free</span>
+                    <PriceDisplay v-else :amount-cents="props.form.shippingPriceCents" class="font-medium text-neutral-900" />
                   </div>
                 </div>
                 <div class="mt-4 flex items-center justify-between border-t border-neutral-100 pt-4">
                   <span class="text-base font-semibold text-neutral-900">Total</span>
-                  <PriceDisplay :amount-cents="props.cart.totalCents" class="text-xl font-bold text-neutral-900" />
+                  <PriceDisplay :amount-cents="props.totalCents" class="text-xl font-bold text-neutral-900" />
                 </div>
                 <p class="mt-2 flex items-center gap-1.5 text-xs text-neutral-400">
                   <Icon name="i-lucide-banknote" class="size-3.5" /> Cash on delivery

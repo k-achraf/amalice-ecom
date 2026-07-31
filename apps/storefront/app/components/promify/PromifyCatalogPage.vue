@@ -29,12 +29,12 @@ const activeCategory = computed(() => props.routeQuery.category || 'all')
     <div class="bg-gradient-to-r from-primary-600 to-primary-900">
       <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-14 lg:px-8">
         <nav class="mb-3 flex items-center gap-2 text-sm text-white/60">
-          <NuxtLink to="/" class="transition-colors hover:text-white">Home</NuxtLink>
-          <Icon name="i-lucide-chevron-right" class="size-3.5" />
-          <span class="text-white/90">Shop</span>
+          <NuxtLink to="/" class="transition-colors hover:text-white">الرئيسية</NuxtLink>
+          <Icon name="i-lucide-chevron-left" class="size-3.5" />
+          <span class="text-white/90">المتجر</span>
         </nav>
-        <h1 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">Shop all products</h1>
-        <p class="mt-2 max-w-xl text-white/70">Browse the full edit. Cash on delivery — pay when it lands at your door.</p>
+        <h1 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">تسوق كل المنتجات</h1>
+        <p class="mt-2 max-w-xl text-white/70">تصفح التشكيلة الكاملة. الدفع عند الاستلام — ادفع عند وصول طلبك إلى بابك.</p>
       </div>
     </div>
 
@@ -44,7 +44,7 @@ const activeCategory = computed(() => props.routeQuery.category || 'all')
         <form class="flex-1" @submit.prevent="props.onSearchSubmit">
           <PromifyInput
             :model-value="props.searchInput"
-            placeholder="Search products…"
+            placeholder="ابحث عن المنتجات..."
             icon="i-lucide-search"
             class="w-full"
             @update:model-value="props.onUpdateSearchInput"
@@ -60,15 +60,15 @@ const activeCategory = computed(() => props.routeQuery.category || 'all')
 
       <!-- Grid -->
       <div v-if="props.pending" class="flex items-center justify-center py-24 text-neutral-400">
-        <Icon name="i-lucide-loader-circle" class="mr-2 size-5 animate-spin" /> Loading…
+        <Icon name="i-lucide-loader-circle" class="me-2 size-5 animate-spin" /> جارٍ التحميل...
       </div>
       <EmptyState
         v-else-if="!props.data?.items.length"
         icon="i-lucide-package-search"
-        title="No products found"
-        description="Try a different search or clear your filters."
+        title="لم يتم العثور على منتجات"
+        description="جرّب بحثاً مختلفاً أو امسح عوامل التصفية."
       >
-        <PromifyButton to="/catalog" class="mt-4">Clear filters</PromifyButton>
+        <PromifyButton to="/catalog" class="mt-4">مسح عوامل التصفية</PromifyButton>
       </EmptyState>
       <template v-else>
         <div class="grid grid-cols-2 gap-6 sm:grid-cols-3 xl:grid-cols-4">

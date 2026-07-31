@@ -6,7 +6,11 @@ import type {
   UpdateProductImage,
   UpdateProductVariant,
   CreateAttribute,
-  CreateAttributeOption
+  CreateAttributeOption,
+  CreateProductOffer,
+  UpdateProductOffer,
+  CreateProductUpsell,
+  UpdateProductUpsell
 } from '@amalice/shared'
 import { Prisma } from '../generated/prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
@@ -46,7 +50,8 @@ export class AdminProductManagementService {
             }
           },
           orderBy: { attribute: { sortOrder: 'asc' } }
-        }
+        },
+        offers: { orderBy: { createdAt: 'asc' } }
       }
     })
     if (!product) throw new NotFoundException('Product not found')
@@ -85,6 +90,17 @@ export class AdminProductManagementService {
         type: pa.attribute.type,
         sortOrder: pa.attribute.sortOrder,
         options: pa.attribute.options.map((o) => ({ id: o.id, value: o.value, displayValue: o.displayValue, colorHex: o.colorHex }))
+      })),
+      offers: product.offers.map((o) => ({
+        id: o.id,
+        productId: o.productId,
+        type: o.type,
+        enabled: o.enabled,
+        requiredQuantity: o.requiredQuantity,
+        freeQuantity: o.freeQuantity,
+        bundlePriceCents: o.bundlePriceCents,
+        createdAt: o.createdAt.toISOString(),
+        updatedAt: o.updatedAt.toISOString()
       }))
     }
   }
@@ -238,6 +254,130 @@ export class AdminProductManagementService {
     }
     await this.audit.log({ actor, action: 'Update', entity: 'ProductImage', entityId: productId, metadata: { action: 'reorder', orderedIds } })
     return { reordered: true }
+  }
+
+  // ---- Offer CRUD ----
+  // Cross-field checks (bundlePriceCents required for FixedBundlePrice,
+  // freeQuantity>=1 for BuyXGetYFree) live here rather than in the Zod
+  // schema — easier to express than threading them through
+  // CreateProductOfferSchema/UpdateProductOfferSchema's .partial() split.
+  private validateOfferShape(type: string, bundlePriceCents: number | null | undefined, freeQuantity: number | undefined) {
+    if (type === 'FixedBundlePrice' && (bundlePriceCents === null || bundlePriceCents === undefined)) {
+      throw new BadRequestException('Bundle price is required for a fixed-bundle-price offer')
+    }
+    if (type === 'BuyXGetYFree' && (freeQuantity === undefined || freeQuantity < 1)) {
+      throw new BadRequestException('Free quantity must be at least 1 for a buy-X-get-Y-free offer')
+    }
+  }
+
+  async createOffer(productId: string, input: CreateProductOffer, actor: AuditActor) {
+    const product = await this.prisma.product.findUnique({ where: { id: productId } })
+    if (!product) throw new NotFoundException('Product not found')
+    this.validateOfferShape(input.type, input.bundlePriceCents, input.freeQuantity)
+
+    const offer = await this.prisma.productOffer.create({
+      data: {
+        productId,
+        type: input.type,
+        requiredQuantity: input.requiredQuantity,
+        freeQuantity: input.freeQuantity ?? 0,
+        bundlePriceCents: input.type === 'FixedBundlePrice' ? (input.bundlePriceCents ?? null) : null
+      }
+    })
+    await this.audit.log({ actor, action: 'Create', entity: 'ProductOffer', entityId: offer.id, metadata: { productId, type: offer.type } })
+    return offer
+  }
+
+  async updateOffer(productId: string, offerId: string, input: UpdateProductOffer, actor: AuditActor) {
+    const offer = await this.prisma.productOffer.findUnique({ where: { id: offerId } })
+    if (!offer || offer.productId !== productId) throw new NotFoundException('Offer not found')
+
+    const nextType = input.type ?? offer.type
+    const nextBundlePriceCents = input.bundlePriceCents !== undefined ? input.bundlePriceCents : offer.bundlePriceCents
+    const nextFreeQuantity = input.freeQuantity !== undefined ? input.freeQuantity : offer.freeQuantity
+    this.validateOfferShape(nextType, nextBundlePriceCents, nextFreeQuantity)
+
+    const updated = await this.prisma.productOffer.update({
+      where: { id: offerId },
+      data: {
+        type: input.type,
+        requiredQuantity: input.requiredQuantity,
+        freeQuantity: input.freeQuantity,
+        bundlePriceCents: nextType === 'FixedBundlePrice' ? nextBundlePriceCents : null,
+        enabled: input.enabled
+      }
+    })
+    await this.audit.log({ actor, action: 'Update', entity: 'ProductOffer', entityId: offerId, metadata: { productId, changes: input } })
+    return updated
+  }
+
+  async deleteOffer(productId: string, offerId: string, actor: AuditActor) {
+    const offer = await this.prisma.productOffer.findUnique({ where: { id: offerId } })
+    if (!offer || offer.productId !== productId) throw new NotFoundException('Offer not found')
+    await this.prisma.productOffer.delete({ where: { id: offerId } })
+    await this.audit.log({ actor, action: 'Delete', entity: 'ProductOffer', entityId: offerId, metadata: { productId } })
+    return { id: offerId, deleted: true }
+  }
+
+  // ---- Upsells system: ProductUpsell CRUD ----
+  // Same shape as Offer CRUD above — per-product, admin-configured pairings
+  // (see ProductUpsell's Prisma comment). upsellProduct is always joined in
+  // so the admin editor and the public order-upsell lookup never need a
+  // second product fetch.
+  private readonly upsellInclude = {
+    upsellProduct: { select: { id: true, name: true, slug: true, imageUrl: true, priceCents: true } }
+  } satisfies Prisma.ProductUpsellInclude
+
+  async listUpsells(productId: string) {
+    return this.prisma.productUpsell.findMany({
+      where: { productId },
+      include: this.upsellInclude,
+      orderBy: { createdAt: 'asc' }
+    })
+  }
+
+  async createUpsell(productId: string, input: CreateProductUpsell, actor: AuditActor) {
+    const product = await this.prisma.product.findUnique({ where: { id: productId } })
+    if (!product) throw new NotFoundException('Product not found')
+    if (input.upsellProductId === productId) throw new BadRequestException("A product can't be its own upsell")
+    const upsellProduct = await this.prisma.product.findUnique({ where: { id: input.upsellProductId } })
+    if (!upsellProduct) throw new NotFoundException('Upsell product not found')
+
+    let created
+    try {
+      created = await this.prisma.productUpsell.create({
+        data: { productId, upsellProductId: input.upsellProductId, priceCentsOverride: input.priceCentsOverride ?? null },
+        include: this.upsellInclude
+      })
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+        throw new BadRequestException('This upsell is already configured for this product')
+      }
+      throw err
+    }
+    await this.audit.log({ actor, action: 'Create', entity: 'ProductUpsell', entityId: created.id, metadata: { productId, upsellProductId: input.upsellProductId } })
+    return created
+  }
+
+  async updateUpsell(productId: string, upsellId: string, input: UpdateProductUpsell, actor: AuditActor) {
+    const upsell = await this.prisma.productUpsell.findUnique({ where: { id: upsellId } })
+    if (!upsell || upsell.productId !== productId) throw new NotFoundException('Upsell not found')
+
+    const updated = await this.prisma.productUpsell.update({
+      where: { id: upsellId },
+      data: { enabled: input.enabled, priceCentsOverride: input.priceCentsOverride },
+      include: this.upsellInclude
+    })
+    await this.audit.log({ actor, action: 'Update', entity: 'ProductUpsell', entityId: upsellId, metadata: { productId, changes: input } })
+    return updated
+  }
+
+  async deleteUpsell(productId: string, upsellId: string, actor: AuditActor) {
+    const upsell = await this.prisma.productUpsell.findUnique({ where: { id: upsellId } })
+    if (!upsell || upsell.productId !== productId) throw new NotFoundException('Upsell not found')
+    await this.prisma.productUpsell.delete({ where: { id: upsellId } })
+    await this.audit.log({ actor, action: 'Delete', entity: 'ProductUpsell', entityId: upsellId, metadata: { productId } })
+    return { id: upsellId, deleted: true }
   }
 
   // ---- Product-Attribute management ----

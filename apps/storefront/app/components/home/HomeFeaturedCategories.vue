@@ -6,7 +6,7 @@ defineProps<{ categories: Category[] }>()
 
 <template>
   <section v-if="categories?.length" class="mx-auto max-w-7xl px-4 py-16">
-    <h2 class="mb-6 text-2xl font-semibold">Shop by category</h2>
+    <h2 class="mb-6 text-2xl font-semibold">تسوق حسب الفئة</h2>
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <NuxtLink
         v-for="cat in categories"

@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   Req,
   UseGuards
@@ -15,6 +16,12 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import {
   AdjustStockSchema,
   CreateProductSchema,
+  CreateProductOfferSchema,
+  UpdateProductOfferSchema,
+  UpdateWilayaShippingRatesSchema,
+  AddOrderItemSchema,
+  CreateProductUpsellSchema,
+  UpdateProductUpsellSchema,
   OrderState,
   type AdjustStock,
   type CreateProduct
@@ -26,11 +33,13 @@ import { AdminOrdersService } from './admin-orders.service'
 import { AdminStatsService } from './admin-stats.service'
 import { AdminUsersService } from './admin-users.service'
 import { AdminProductManagementService } from './admin-product-management.service'
+import { AdminShippingService } from './admin-shipping.service'
 import { JwtAuthGuard } from '../identity/admin-auth/jwt-auth.guard'
 import { RolesGuard } from '../identity/admin-auth/roles.guard'
 import { Roles } from '../identity/admin-auth/roles.decorator'
 import type { AdminJwtPayload } from '../identity/admin-auth/jwt-payload.interface'
 import { AuditService, type AuditActor } from '../common/audit.service'
+import { OrderItemsService } from '../order-items/order-items.service'
 
 // The admin-facing API surface. Every route is JwtAuthGuard + role-gated
 // (client-side nav hiding is UX only — plan §ADM-02). The actor for audit
@@ -39,6 +48,12 @@ import { AuditService, type AuditActor } from '../common/audit.service'
 
 class CreateProductDto extends createZodDto(CreateProductSchema) {}
 class AdjustStockDto extends createZodDto(AdjustStockSchema) {}
+class CreateProductOfferDto extends createZodDto(CreateProductOfferSchema) {}
+class UpdateProductOfferDto extends createZodDto(UpdateProductOfferSchema) {}
+class UpdateWilayaShippingRatesDto extends createZodDto(UpdateWilayaShippingRatesSchema) {}
+class AddOrderItemDto extends createZodDto(AddOrderItemSchema) {}
+class CreateProductUpsellDto extends createZodDto(CreateProductUpsellSchema) {}
+class UpdateProductUpsellDto extends createZodDto(UpdateProductUpsellSchema) {}
 
 interface AuthedRequest extends Request {
   user: AdminJwtPayload
@@ -59,7 +74,9 @@ export class AdminController {
     private readonly usersSvc: AdminUsersService,
     private readonly stats: AdminStatsService,
     private readonly productMgmt: AdminProductManagementService,
-    private readonly audit: AuditService
+    private readonly shipping: AdminShippingService,
+    private readonly audit: AuditService,
+    private readonly orderItems: OrderItemsService
   ) {}
 
   // ---- ADM-09 dashboard ---------------------------------------------------
@@ -104,10 +121,28 @@ export class AdminController {
     return this.orders.findOne(id)
   }
 
+  // Support included alongside SuperAdmin/OpsManager: call-center staff (the
+  // Support role) need to perform the PendingCallCenter → Confirmed/
+  // CallCenterNoAnswer/Cancelled transitions from their own queue page —
+  // the same generic transition endpoint every other stage already uses.
   @Post('orders/:id/transition')
-  @Roles('SuperAdmin', 'OpsManager')
+  @Roles('SuperAdmin', 'OpsManager', 'Support')
   transition(@Param('id') id: string, @Body() body: { to: OrderState }, @Req() req: AuthedRequest) {
     return this.orders.transition(id, body.to, actorFrom(req))
+  }
+
+  // Upsells system — call-center/admin manual add. Support included: a
+  // call-center agent pitching an add-on during the confirmation call is
+  // the primary use case, same reasoning as their access to transition().
+  @Post('orders/:id/items')
+  @Roles('SuperAdmin', 'OpsManager', 'Support')
+  async addOrderItem(@Param('id') id: string, @Body() body: AddOrderItemDto, @Req() req: AuthedRequest) {
+    await this.orderItems.addItem(id, body, actorFrom(req))
+    // Re-fetch through AdminOrdersService so the response has the same
+    // fully-joined shape (variantLabel, offer, etc.) as GET orders/:id —
+    // OrderItemsService's own return value is intentionally minimal since
+    // its other caller (the public upsell accept endpoint) doesn't need that.
+    return this.orders.findOne(id)
   }
 
   // ---- ADM-07 catalog -----------------------------------------------------
@@ -202,6 +237,64 @@ export class AdminController {
   @Roles('SuperAdmin', 'OpsManager')
   reorderImages(@Param('id') id: string, @Body() body: { orderedIds: string[] }, @Req() req: AuthedRequest) {
     return this.productMgmt.reorderImages(id, body.orderedIds, actorFrom(req))
+  }
+
+  // Offers (buy-X bundle price / buy-X-get-Y-free / free-shipping badge)
+  @Post('products/:id/offers')
+  @Roles('SuperAdmin', 'OpsManager')
+  createOffer(@Param('id') id: string, @Body() body: CreateProductOfferDto, @Req() req: AuthedRequest) {
+    return this.productMgmt.createOffer(id, body, actorFrom(req))
+  }
+
+  @Patch('products/:id/offers/:oid')
+  @Roles('SuperAdmin', 'OpsManager')
+  updateOffer(@Param('id') id: string, @Param('oid') oid: string, @Body() body: UpdateProductOfferDto, @Req() req: AuthedRequest) {
+    return this.productMgmt.updateOffer(id, oid, body, actorFrom(req))
+  }
+
+  @Delete('products/:id/offers/:oid')
+  @Roles('SuperAdmin', 'OpsManager')
+  deleteOffer(@Param('id') id: string, @Param('oid') oid: string, @Req() req: AuthedRequest) {
+    return this.productMgmt.deleteOffer(id, oid, actorFrom(req))
+  }
+
+  // Upsells system — which product(s) get suggested when this one is
+  // bought (see ProductUpsell's Prisma comment).
+  @Get('products/:id/upsells')
+  @Roles('SuperAdmin', 'OpsManager')
+  listUpsells(@Param('id') id: string) {
+    return this.productMgmt.listUpsells(id)
+  }
+
+  @Post('products/:id/upsells')
+  @Roles('SuperAdmin', 'OpsManager')
+  createUpsell(@Param('id') id: string, @Body() body: CreateProductUpsellDto, @Req() req: AuthedRequest) {
+    return this.productMgmt.createUpsell(id, body, actorFrom(req))
+  }
+
+  @Patch('products/:id/upsells/:uid')
+  @Roles('SuperAdmin', 'OpsManager')
+  updateUpsell(@Param('id') id: string, @Param('uid') uid: string, @Body() body: UpdateProductUpsellDto, @Req() req: AuthedRequest) {
+    return this.productMgmt.updateUpsell(id, uid, body, actorFrom(req))
+  }
+
+  @Delete('products/:id/upsells/:uid')
+  @Roles('SuperAdmin', 'OpsManager')
+  deleteUpsell(@Param('id') id: string, @Param('uid') uid: string, @Req() req: AuthedRequest) {
+    return this.productMgmt.deleteUpsell(id, uid, actorFrom(req))
+  }
+
+  // ---- Shipping (per-wilaya home/desk delivery pricing) -------------------
+  @Get('shipping/rates')
+  @Roles('SuperAdmin', 'OpsManager')
+  listShippingRates() {
+    return this.shipping.listRates()
+  }
+
+  @Put('shipping/rates')
+  @Roles('SuperAdmin', 'OpsManager')
+  updateShippingRates(@Body() body: UpdateWilayaShippingRatesDto, @Req() req: AuthedRequest) {
+    return this.shipping.updateRates(body, actorFrom(req))
   }
 
   // Product-attribute management (which attributes a product varies on)

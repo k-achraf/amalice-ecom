@@ -23,11 +23,11 @@ const props = defineProps<{
     <div class="border-b border-neutral-200 bg-white">
       <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <nav class="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-neutral-400">
-          <NuxtLink to="/" class="hover:text-primary-600">Home</NuxtLink>
-          <Icon name="i-lucide-chevron-right" class="size-3" />
-          <span class="text-neutral-600">Cart</span>
+          <NuxtLink to="/" class="hover:text-primary-600">الرئيسية</NuxtLink>
+          <Icon name="i-lucide-chevron-left" class="size-3" />
+          <span class="text-neutral-600">السلة</span>
         </nav>
-        <h1 class="font-display text-4xl text-[var(--color-hearth-ink)] sm:text-5xl">Your cart</h1>
+        <h1 class="font-display text-4xl text-[var(--color-hearth-ink)] sm:text-5xl">سلتك</h1>
       </div>
     </div>
 
@@ -37,11 +37,11 @@ const props = defineProps<{
           v-if="props.notice"
           color="warning"
           icon="i-lucide-alert-triangle"
-          title="Your cart changed"
+          title="تغيرت سلتك"
           :description="
             [
-              ...props.notice.removed.map((n) => `${n} is no longer available and was removed.`),
-              ...props.notice.changed.map((c) => `${c.name}'s price changed.`)
+              ...props.notice.removed.map((n) => `${n} لم يعد متوفراً وتمت إزالته.`),
+              ...props.notice.changed.map((c) => `تغير سعر ${c.name}.`)
             ].join(' ')
           "
           closable
@@ -49,8 +49,8 @@ const props = defineProps<{
           @close="props.onDismissNotice"
         />
 
-        <EmptyState v-if="props.cart.items.length === 0" icon="i-lucide-shopping-bag" title="Your cart is empty" description="Browse the shop to add a piece.">
-          <HearthButton to="/catalog" class="mt-4">Continue shopping</HearthButton>
+        <EmptyState v-if="props.cart.items.length === 0" icon="i-lucide-shopping-bag" title="سلتك فارغة" description="تصفح المتجر لإضافة قطعة.">
+          <HearthButton to="/catalog" class="mt-4">متابعة التسوق</HearthButton>
         </EmptyState>
 
         <div v-else class="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -67,8 +67,8 @@ const props = defineProps<{
                   <PriceDisplay :amount-cents="item.priceCents" class="mt-0.5 block text-sm text-neutral-400" />
                 </div>
                 <HearthQuantityStepper :model-value="item.quantity" :min="1" :max="item.stockQuantity" @update:model-value="(v) => props.cart.setQuantity(item.productId, v)" />
-                <PriceDisplay :amount-cents="item.priceCents * item.quantity" class="w-24 text-right font-semibold text-[var(--color-hearth-ink)]" />
-                <button class="flex size-9 items-center justify-center rounded-xl text-neutral-400 transition-colors hover:bg-primary-50 hover:text-primary-600" aria-label="Remove item" @click="props.cart.removeItem(item.productId)">
+                <PriceDisplay :amount-cents="item.priceCents * item.quantity" class="w-24 text-end font-semibold text-[var(--color-hearth-ink)]" />
+                <button class="flex size-9 items-center justify-center rounded-xl text-neutral-400 transition-colors hover:bg-primary-50 hover:text-primary-600" aria-label="إزالة المنتج" @click="props.cart.removeItem(item.productId)">
                   <Icon name="i-lucide-trash-2" class="size-4" />
                 </button>
               </div>
@@ -77,25 +77,25 @@ const props = defineProps<{
 
           <div class="lg:col-span-1">
             <div class="hearth-card sticky top-24 p-6">
-              <h2 class="font-display mb-4 text-xl text-[var(--color-hearth-ink)]">Summary</h2>
+              <h2 class="font-display mb-4 text-xl text-[var(--color-hearth-ink)]">الملخص</h2>
               <div class="space-y-3 text-sm">
-                <div class="flex items-center justify-between"><span class="text-neutral-500">Items ({{ props.cart.itemCount }})</span><PriceDisplay :amount-cents="props.cart.totalCents" class="font-medium" /></div>
-                <div class="flex items-center justify-between"><span class="text-neutral-500">Shipping</span><span class="font-medium text-primary-600">Free</span></div>
+                <div class="flex items-center justify-between"><span class="text-neutral-500">المنتجات ({{ props.cart.itemCount }})</span><PriceDisplay :amount-cents="props.cart.totalCents" class="font-medium" /></div>
+                <div class="flex items-center justify-between"><span class="text-neutral-500">الشحن</span><span class="font-medium text-primary-600">مجاني</span></div>
               </div>
               <div class="mt-4 flex items-center justify-between border-t border-neutral-100 pt-4">
-                <span class="font-medium text-[var(--color-hearth-ink)]">Total</span>
+                <span class="font-medium text-[var(--color-hearth-ink)]">المجموع</span>
                 <PriceDisplay :amount-cents="props.cart.totalCents" class="text-xl font-semibold text-primary-600" />
               </div>
-              <p class="mt-2 flex items-center gap-1.5 text-xs text-neutral-400"><Icon name="i-lucide-banknote" class="size-3.5" /> Cash on delivery available</p>
-              <HearthButton to="/checkout" block size="lg" trailing-icon="i-lucide-arrow-right" class="mt-5">Checkout</HearthButton>
-              <HearthButton to="/catalog" block variant="ghost" class="mt-2">Continue shopping</HearthButton>
+              <p class="mt-2 flex items-center gap-1.5 text-xs text-neutral-400"><Icon name="i-lucide-banknote" class="size-3.5" /> الدفع عند الاستلام متاح</p>
+              <HearthButton to="/checkout" block size="lg" trailing-icon="i-lucide-arrow-left" class="mt-5">إتمام الطلب</HearthButton>
+              <HearthButton to="/catalog" block variant="ghost" class="mt-2">متابعة التسوق</HearthButton>
             </div>
           </div>
         </div>
 
         <template #fallback>
           <div class="flex items-center justify-center py-24 text-neutral-400">
-            <Icon name="i-lucide-loader-circle" class="mr-2 size-5 animate-spin" /> Loading…
+            <Icon name="i-lucide-loader-circle" class="me-2 size-5 animate-spin" /> جارٍ التحميل...
           </div>
         </template>
       </ClientOnly>

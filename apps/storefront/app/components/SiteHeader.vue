@@ -34,7 +34,7 @@ watch(() => route.path, () => { mobileOpen.value = false })
       class="flex items-center justify-center gap-3 bg-primary px-4 py-2 text-center text-sm text-white"
     >
       <span class="font-medium">{{ settings.announcementText }}</span>
-      <button class="text-white/70 hover:text-white" aria-label="Dismiss" @click="dismissAnnouncement">
+      <button class="text-white/70 hover:text-white" aria-label="إغلاق" @click="dismissAnnouncement">
         <Icon name="i-lucide-x" class="size-4" />
       </button>
     </div>
@@ -48,7 +48,7 @@ watch(() => route.path, () => { mobileOpen.value = false })
         color="neutral"
         variant="ghost"
         square
-        aria-label="Open menu"
+        aria-label="فتح القائمة"
         @click="mobileOpen = true"
       />
 
@@ -56,7 +56,7 @@ watch(() => route.path, () => { mobileOpen.value = false })
 
       <!-- Desktop category nav -->
       <nav class="hidden items-center gap-6 text-sm font-medium lg:flex">
-        <NuxtLink to="/catalog" class="text-muted hover:text-highlighted">All products</NuxtLink>
+        <NuxtLink to="/catalog" class="text-muted hover:text-highlighted">كل المنتجات</NuxtLink>
         <NuxtLink
           v-for="cat in categories"
           :key="cat.id"
@@ -68,17 +68,17 @@ watch(() => route.path, () => { mobileOpen.value = false })
       </nav>
 
       <!-- Search (desktop) -->
-      <form class="ml-auto hidden flex-1 max-w-sm lg:block" @submit.prevent="onSearch">
-        <Input v-model="searchInput" placeholder="Search products…" icon="i-lucide-search" class="w-full" />
+      <form class="ms-auto hidden flex-1 max-w-sm lg:block" @submit.prevent="onSearch">
+        <Input v-model="searchInput" placeholder="ابحث عن المنتجات..." icon="i-lucide-search" class="w-full" />
       </form>
 
       <!-- Right actions -->
-      <div class="ml-auto flex items-center gap-4 lg:ml-0">
+      <div class="ms-auto flex items-center gap-4 lg:ms-0">
         <Button to="/track" color="neutral" variant="ghost" icon="i-lucide-package-search" class="hidden sm:inline-flex">
-          Track order
+          تتبع الطلب
         </Button>
         <Button to="/orders" color="neutral" variant="ghost" icon="i-lucide-user" class="hidden sm:inline-flex">
-          My orders
+          طلباتي
         </Button>
         <NuxtLink v-if="settings.displayCart" to="/cart" class="relative flex items-center gap-2 text-sm font-medium">
           <Icon name="i-lucide-shopping-cart" class="size-5" />
@@ -92,7 +92,7 @@ watch(() => route.path, () => { mobileOpen.value = false })
     <!-- Mobile search -->
     <div class="border-t border-default px-4 py-3 lg:hidden">
       <form @submit.prevent="onSearch">
-        <Input v-model="searchInput" placeholder="Search products…" icon="i-lucide-search" class="w-full" />
+        <Input v-model="searchInput" placeholder="ابحث عن المنتجات..." icon="i-lucide-search" class="w-full" />
       </form>
     </div>
 
@@ -111,15 +111,15 @@ watch(() => route.path, () => { mobileOpen.value = false })
       leave-active-class="transition-transform duration-150"
       leave-to-class="-translate-x-full"
     >
-      <div v-if="mobileOpen" class="fixed inset-y-0 left-0 z-[70] flex w-80 max-w-[85vw] flex-col bg-default p-6 lg:hidden">
+      <div v-if="mobileOpen" class="fixed inset-y-0 start-0 z-[70] flex w-80 max-w-[85vw] flex-col bg-default p-6 lg:hidden">
         <div class="mb-6 flex items-center justify-between">
-          <span class="text-lg font-semibold text-highlighted">Menu</span>
-          <Button variant="ghost" color="neutral" size="sm" square aria-label="Close menu" @click="mobileOpen = false">
+          <span class="text-lg font-semibold text-highlighted">القائمة</span>
+          <Button variant="ghost" color="neutral" size="sm" square aria-label="إغلاق القائمة" @click="mobileOpen = false">
             <Icon name="i-lucide-x" class="size-4" />
           </Button>
         </div>
         <nav class="flex flex-1 flex-col gap-1 overflow-y-auto text-base font-medium">
-          <Button to="/catalog" color="neutral" variant="ghost" block class="!justify-start" @click="mobileOpen = false">All products</Button>
+          <Button to="/catalog" color="neutral" variant="ghost" block class="!justify-start" @click="mobileOpen = false">كل المنتجات</Button>
           <Button
             v-for="cat in categories"
             :key="cat.id"
@@ -133,10 +133,10 @@ watch(() => route.path, () => { mobileOpen.value = false })
             {{ cat.name }}
           </Button>
           <div class="my-2 border-t border-default" />
-          <Button to="/track" color="neutral" variant="ghost" block class="!justify-start" icon="i-lucide-package-search" @click="mobileOpen = false">Track order</Button>
-          <Button to="/orders" color="neutral" variant="ghost" block class="!justify-start" icon="i-lucide-user" @click="mobileOpen = false">My orders</Button>
-          <Button to="/about" color="neutral" variant="ghost" block class="!justify-start" @click="mobileOpen = false">About</Button>
-          <Button to="/contact" color="neutral" variant="ghost" block class="!justify-start" @click="mobileOpen = false">Contact</Button>
+          <Button to="/track" color="neutral" variant="ghost" block class="!justify-start" icon="i-lucide-package-search" @click="mobileOpen = false">تتبع الطلب</Button>
+          <Button to="/orders" color="neutral" variant="ghost" block class="!justify-start" icon="i-lucide-user" @click="mobileOpen = false">طلباتي</Button>
+          <Button to="/about" color="neutral" variant="ghost" block class="!justify-start" @click="mobileOpen = false">من نحن</Button>
+          <Button to="/contact" color="neutral" variant="ghost" block class="!justify-start" @click="mobileOpen = false">اتصل بنا</Button>
         </nav>
       </div>
     </Transition>

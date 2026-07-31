@@ -3,9 +3,9 @@ import type { ZodTypeAny } from 'zod'
 import type { CartItem } from '~/stores/cart'
 
 // Lumiere checkout — bordered form left, sticky order summary right. No
-// UForm/UStepper/UPinInput: address validation runs the passed Zod schema
-// directly on submit (same gate UForm applied internally), the step
-// indicator is plain divs, and OTP uses LumierePinInput.
+// UForm/UStepper: address validation runs the passed Zod schema directly on
+// submit (same gate UForm applied internally), the step indicator is plain
+// divs.
 const props = defineProps<{
   cart: { items: CartItem[]; totalCents: number }
   step: string
@@ -13,21 +13,18 @@ const props = defineProps<{
   form: {
     phone: string
     name: string
+    wilayaId: string
+    shippingType: string
+    shippingPriceCents: number
     address: { line1: string; line2: string; city: string; region: string; postalCode: string; country: string }
   }
   addressSchema: ZodTypeAny
+  addressError: string | null
+  totalCents: number
   placing: boolean
   placeError: string | null
-  order: { id: string; totalCents: number } | null
-  otpCode: string[]
-  otpCodeString: string
-  otpError: string | null
-  verifying: boolean
-  resendCooldown: number
   onAddressSubmit: () => void
   onPlaceOrder: () => void
-  onVerifyCode: () => void
-  onResendCode: () => void
   onBack: () => void
 }>()
 
@@ -106,30 +103,8 @@ function submitAddress() {
                       <label class="mb-1.5 block text-xs font-bold uppercase tracking-wide text-black/60">Address line 2 (optional)</label>
                       <LumiereInput v-model="props.form.address.line2" />
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
-                      <div>
-                        <label class="mb-1.5 block text-xs font-bold uppercase tracking-wide text-black/60">City</label>
-                        <LumiereInput v-model="props.form.address.city" />
-                        <p v-if="fieldErrors['address.city']" class="mt-1 text-xs font-semibold text-primary-700">{{ fieldErrors['address.city'] }}</p>
-                      </div>
-                      <div>
-                        <label class="mb-1.5 block text-xs font-bold uppercase tracking-wide text-black/60">Region / State</label>
-                        <LumiereInput v-model="props.form.address.region" />
-                        <p v-if="fieldErrors['address.region']" class="mt-1 text-xs font-semibold text-primary-700">{{ fieldErrors['address.region'] }}</p>
-                      </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                      <div>
-                        <label class="mb-1.5 block text-xs font-bold uppercase tracking-wide text-black/60">Postal code</label>
-                        <LumiereInput v-model="props.form.address.postalCode" />
-                        <p v-if="fieldErrors['address.postalCode']" class="mt-1 text-xs font-semibold text-primary-700">{{ fieldErrors['address.postalCode'] }}</p>
-                      </div>
-                      <div>
-                        <label class="mb-1.5 block text-xs font-bold uppercase tracking-wide text-black/60">Country (2-letter)</label>
-                        <LumiereInput v-model="props.form.address.country" :maxlength="2" class="uppercase" />
-                        <p v-if="fieldErrors['address.country']" class="mt-1 text-xs font-semibold text-primary-700">{{ fieldErrors['address.country'] }}</p>
-                      </div>
-                    </div>
+                    <LumiereCheckoutShippingFields :form="props.form" />
+                    <p v-if="props.addressError" class="mt-1 text-xs font-semibold text-primary-700">{{ props.addressError }}</p>
                     <LumiereButton type="submit" block size="lg" trailing-icon="i-lucide-arrow-right">Continue to review</LumiereButton>
                   </form>
                 </div>
@@ -153,14 +128,18 @@ function submitAddress() {
                     <h3 class="mb-2 font-bold uppercase tracking-wide text-black">Deliver to</h3>
                     <p class="font-bold text-black">{{ props.form.name || props.form.phone }}</p>
                     <p class="text-black/65">{{ props.form.address.line1 }}<template v-if="props.form.address.line2">, {{ props.form.address.line2 }}</template></p>
-                    <p class="text-black/65">{{ props.form.address.city }}, {{ props.form.address.region }} {{ props.form.address.postalCode }}</p>
-                    <p class="text-black/65">{{ props.form.address.country }}</p>
+                    <p class="text-black/65">{{ props.form.address.city }}, {{ props.form.address.region }}</p>
                     <p class="text-black/65">{{ props.form.phone }}</p>
+                  </div>
+
+                  <div class="mt-4 flex items-center justify-between rounded border border-black/10 p-4 text-sm">
+                    <span class="text-black/55">Shipping ({{ props.form.shippingType === 'Home' ? 'Home delivery' : 'Desk delivery' }})</span>
+                    <PriceDisplay :amount-cents="props.form.shippingPriceCents" class="font-bold" />
                   </div>
 
                   <div class="mt-4 flex items-center justify-between rounded bg-primary-600 p-4 text-white">
                     <span class="font-bold uppercase tracking-wide">Cash due on delivery</span>
-                    <PriceDisplay :amount-cents="props.cart.totalCents" class="text-lg font-bold" />
+                    <PriceDisplay :amount-cents="props.totalCents" class="text-lg font-bold" />
                   </div>
 
                   <p v-if="props.placeError" class="mt-4 rounded border border-primary-600 bg-primary-50 p-3 text-sm font-semibold text-primary-800">{{ props.placeError }}</p>
@@ -169,22 +148,6 @@ function submitAddress() {
                     <LumiereButton color="neutral" variant="outline" icon="i-lucide-arrow-left" @click="props.onBack">Back</LumiereButton>
                     <LumiereButton block size="lg" :loading="props.placing" @click="props.onPlaceOrder">Place order</LumiereButton>
                   </div>
-                </div>
-
-                <!-- Step 3: OTP -->
-                <div v-else-if="props.step === 'otp'">
-                  <h2 class="font-display mb-1 text-2xl text-black">Confirm your order</h2>
-                  <p class="mb-6 leading-relaxed text-black/60">
-                    We sent a 6-digit code to <span class="font-bold text-black">{{ props.form.phone }}</span>. Enter it below to confirm.
-                  </p>
-                  <div class="rounded border border-black/10 p-6">
-                    <LumierePinInput v-model="props.otpCode" :length="6" />
-                  </div>
-                  <p v-if="props.otpError" class="mt-4 rounded border border-primary-600 bg-primary-50 p-3 text-sm font-semibold text-primary-800">{{ props.otpError }}</p>
-                  <LumiereButton block size="lg" :loading="props.verifying" :disabled="props.otpCodeString.length !== 6" class="mt-6" @click="props.onVerifyCode">Confirm order</LumiereButton>
-                  <LumiereButton color="neutral" variant="ghost" block class="mt-2" :disabled="props.resendCooldown > 0" @click="props.onResendCode">
-                    {{ props.resendCooldown > 0 ? `Resend code in ${props.resendCooldown}s` : 'Resend code' }}
-                  </LumiereButton>
                 </div>
               </div>
             </div>
@@ -206,11 +169,11 @@ function submitAddress() {
                 </ul>
                 <div class="space-y-2 border-t border-black/10 pt-4 text-sm">
                   <div class="flex items-center justify-between"><span class="text-black/55">Subtotal</span><PriceDisplay :amount-cents="props.cart.totalCents" class="font-bold" /></div>
-                  <div class="flex items-center justify-between"><span class="text-black/55">Shipping</span><span class="font-bold text-primary-700">Free</span></div>
+                  <div class="flex items-center justify-between"><span class="text-black/55">Shipping</span><span v-if="!props.form.shippingType" class="font-bold text-primary-700">Free</span><PriceDisplay v-else :amount-cents="props.form.shippingPriceCents" class="font-bold" /></div>
                 </div>
                 <div class="mt-4 flex items-center justify-between border-t border-black pt-4">
                   <span class="font-bold uppercase tracking-wide">Total</span>
-                  <PriceDisplay :amount-cents="props.cart.totalCents" class="text-2xl font-bold" />
+                  <PriceDisplay :amount-cents="props.totalCents" class="text-2xl font-bold" />
                 </div>
                 <p class="mt-2 flex items-center gap-1.5 text-xs text-black/45"><Icon name="i-lucide-banknote" class="size-3.5" /> Cash on delivery</p>
               </div>

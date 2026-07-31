@@ -101,7 +101,7 @@ void refresh
     </template>
 
     <template #body>
-      <div class="admin-kpi-card overflow-hidden">
+      <div class="admin-table-wrap">
         <table class="admin-table w-full text-sm">
           <thead>
             <tr>

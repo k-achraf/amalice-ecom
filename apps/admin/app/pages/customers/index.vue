@@ -41,7 +41,7 @@ async function applySearch() {
     <template #body>
       <div class="space-y-4">
         <UInput v-model="search" placeholder="Search by name or phone…" icon="i-lucide-search" @keydown.enter="applySearch" />
-        <div class="admin-kpi-card overflow-hidden">
+        <div class="admin-table-wrap">
           <table class="admin-table w-full text-sm">
             <thead>
               <tr>

@@ -7,17 +7,6 @@ import { z } from 'zod'
 export const AdminRoleNameSchema = z.enum(['SuperAdmin', 'OpsManager', 'Finance', 'Support', 'Warehouse'])
 export type AdminRoleName = z.infer<typeof AdminRoleNameSchema>
 
-export const RequestOtpSchema = z.object({
-  phone: z.e164()
-})
-export type RequestOtp = z.infer<typeof RequestOtpSchema>
-
-export const VerifyOtpSchema = z.object({
-  phone: z.e164(),
-  code: z.string().length(6).regex(/^\d+$/, 'must be a 6-digit code')
-})
-export type VerifyOtp = z.infer<typeof VerifyOtpSchema>
-
 export const AdminLoginSchema = z.object({
   email: z.email(),
   password: z.string().min(8)

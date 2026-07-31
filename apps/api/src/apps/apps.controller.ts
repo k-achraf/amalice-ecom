@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Param, Put, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
-import { SkipThrottle } from '@nestjs/throttler'
-import { UpdateAppInstallationSchema } from '@amalice/shared'
+import { SkipThrottle, Throttle } from '@nestjs/throttler'
+import { SendMetaPixelTestEventSchema, SendTikTokPixelTestEventSchema, UpdateAppInstallationSchema } from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
 import { AppsService } from './apps.service'
@@ -12,6 +12,8 @@ import type { AdminJwtPayload } from '../identity/admin-auth/jwt-payload.interfa
 import type { AuditActor } from '../common/audit.service'
 
 class UpdateAppInstallationDto extends createZodDto(UpdateAppInstallationSchema) {}
+class SendMetaPixelTestEventDto extends createZodDto(SendMetaPixelTestEventSchema) {}
+class SendTikTokPixelTestEventDto extends createZodDto(SendTikTokPixelTestEventSchema) {}
 
 interface AuthedRequest extends Request {
   user: AdminJwtPayload
@@ -35,6 +37,13 @@ export class AppsController {
     return this.apps.getPublicMetaPixel()
   }
 
+  // Same as above, for the TikTok Pixel app.
+  @Get('apps/tiktok-pixel')
+  @SkipThrottle({ default: true })
+  getTikTokPixelPublic() {
+    return this.apps.getPublicTikTokPixel()
+  }
+
   @Get('admin/apps')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -50,5 +59,28 @@ export class AppsController {
   update(@Param('appId') appId: string, @Body() body: UpdateAppInstallationDto, @Req() req: AuthedRequest) {
     const actor: AuditActor = { id: req.user.sub, email: req.user.email }
     return this.apps.update(appId, body, actor)
+  }
+
+  // Fires one real request at Meta's Conversions API so the admin can watch
+  // it land in Events Manager's Test Events tab without waiting for an
+  // actual order. Throttled tighter than the default — it's an outbound
+  // call to a third party, not a cheap local read.
+  @Post('admin/apps/meta-pixel/test-event')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin')
+  @Throttle({ default: { limit: 10, ttl: 5 * 60 * 1000 } })
+  sendMetaPixelTestEvent(@Body() body: SendMetaPixelTestEventDto) {
+    return this.apps.sendMetaPixelTestEvent(body.eventName)
+  }
+
+  // Same as above, for TikTok's Events API.
+  @Post('admin/apps/tiktok-pixel/test-event')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin')
+  @Throttle({ default: { limit: 10, ttl: 5 * 60 * 1000 } })
+  sendTikTokPixelTestEvent(@Body() body: SendTikTokPixelTestEventDto) {
+    return this.apps.sendTikTokPixelTestEvent(body.eventName)
   }
 }

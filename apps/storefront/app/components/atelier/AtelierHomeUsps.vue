@@ -17,7 +17,7 @@
         <div class="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-primary-50">
           <Icon name="i-lucide-shield-check" class="size-5 text-primary-600" />
         </div>
-        <h3 class="font-display text-xl text-[var(--color-atelier-ink)]">Phone-verified</h3>
+        <h3 class="font-display text-xl text-[var(--color-atelier-ink)]">Confirmed by phone</h3>
         <p class="mt-2 text-sm text-neutral-500">A quick call confirms every order before it ships.</p>
       </div>
       <div class="glow-card p-7 text-center">

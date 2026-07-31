@@ -18,8 +18,8 @@
         <div class="mb-4 flex size-12 items-center justify-center rounded-2xl bg-white/15">
           <Icon name="i-lucide-shield-check" class="size-6 text-white" />
         </div>
-        <h3 class="text-base font-semibold text-white">Phone-verified</h3>
-        <p class="mt-1 text-sm text-white/70">A quick OTP at checkout keeps fake orders out.</p>
+        <h3 class="text-base font-semibold text-white">Confirmed by phone</h3>
+        <p class="mt-1 text-sm text-white/70">Our team calls to confirm every order before it ships.</p>
       </div>
       <div class="flex flex-col items-center text-center">
         <div class="mb-4 flex size-12 items-center justify-center rounded-2xl bg-white/15">

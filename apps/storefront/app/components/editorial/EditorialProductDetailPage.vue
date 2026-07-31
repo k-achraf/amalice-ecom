@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product, ProductImage, ProductVariant, RatingSummary, Review, LeadFormField } from '@amalice/shared'
+import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review, LeadFormField } from '@amalice/shared'
 
 // Editorial PDP — full-width magazine spread. Gallery left, bold headline
 // overlapping, story-style description, big pull-quote reviews. Distinct from
@@ -14,6 +14,7 @@ interface RichProduct extends Product {
 const props = defineProps<{
   product: RichProduct | null
   reviewData: { summary: RatingSummary; items: Review[] } | null
+  landingPageImageUrl?: string | null
   galleryImages: { url: string; alt: string }[]
   activeImageIndex: number
   quantity: number
@@ -29,11 +30,14 @@ const props = defineProps<{
   leadFormData?: Record<string, string>
   leadPlacing?: boolean
   leadError?: string | null
+  offers?: ProductOffer[]
+  selectedOfferId?: string | null
   onSelectImage: (i: number) => void
   onSelectVariantByKey: (key: string, val: string) => void
   onUpdateQuantity: (v: number) => void
   onAddToCart: () => void
   onSubmitLead?: () => void
+  onSelectOffer?: (offer: ProductOffer) => void
 }>()
 </script>
 
@@ -50,7 +54,12 @@ const props = defineProps<{
 
     <!-- Spread: oversized gallery left, story right -->
     <section class="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-16 sm:py-20 lg:grid-cols-12">
-      <div class="lg:col-span-7">
+      <!-- AI landing page image — replaces the gallery+description when the
+      merchant has generated and enabled one (see landing-page.ts). -->
+      <div v-if="props.landingPageImageUrl" class="lg:col-span-7">
+        <img :src="props.landingPageImageUrl" :alt="props.product.name" class="w-full rounded-sm" />
+      </div>
+      <div v-else class="lg:col-span-7">
         <div class="aspect-[4/5] overflow-hidden rounded-sm bg-elevated">
           <NuxtImg v-if="props.galleryImages.length" :src="props.galleryImages[props.activeImageIndex]?.url" :alt="props.galleryImages[props.activeImageIndex]?.alt" class="size-full object-cover" width="800" height="1000" loading="eager" format="webp" />
         </div>
@@ -77,7 +86,25 @@ const props = defineProps<{
           <span v-if="!props.inStock" class="lozenge" style="background-color: var(--color-error-50); color: var(--color-error-700);">Sold out</span>
         </div>
 
-        <p v-if="props.product.description" class="mt-6 text-lg leading-relaxed text-muted">{{ props.product.description }}</p>
+        <div v-if="props.product.description && !props.landingPageImageUrl" class="product-description-html mt-6 text-lg leading-relaxed text-muted" v-html="sanitizeDescriptionHtml(props.product.description)" />
+
+        <div v-if="props.offers?.length" class="mt-6 space-y-2">
+          <button
+            v-for="offer in props.offers"
+            :key="offer.id"
+            type="button"
+            class="flex w-full items-center justify-between border-2 px-4 py-2.5 text-left text-sm font-medium transition-colors"
+            :class="props.selectedOfferId === offer.id ? 'border-highlighted bg-highlighted text-inverted' : 'border-default hover:border-highlighted'"
+            @click="props.onSelectOffer?.(offer)"
+          >
+            <span>
+              <template v-if="offer.type === 'FixedBundlePrice'">Buy {{ offer.requiredQuantity }} for <PriceDisplay :amount-cents="offer.bundlePriceCents ?? 0" /></template>
+              <template v-else-if="offer.type === 'BuyXGetYFree'">Buy {{ offer.requiredQuantity }}, get {{ offer.freeQuantity }} free</template>
+              <template v-else>Buy {{ offer.requiredQuantity }}, free shipping</template>
+            </span>
+            <Icon v-if="props.selectedOfferId === offer.id" name="i-lucide-check" class="size-4" />
+          </button>
+        </div>
 
         <div v-for="(values, key) in props.variantOptions" :key="key" class="mt-6 space-y-2">
           <p class="text-xs font-semibold text-muted">{{ key }}</p>

@@ -15,7 +15,7 @@ import { z } from 'zod'
 // go further still — they render zero @nuxt/ui components at all, hand-built
 // from plain Tailwind (components/{nova,atelier}/ui/*), so there's nothing
 // to re-skin via Nuxt UI's tokens in the first place.
-export const STORE_TEMPLATES = ['minimal', 'editorial', 'boutique', 'promify', 'nova', 'atelier', 'drop', 'bloom', 'hearth', 'volt', 'pulse', 'lumiere', 'trove', 'forge'] as const
+export const STORE_TEMPLATES = ['minimal', 'editorial', 'boutique', 'promify', 'nova', 'atelier', 'drop', 'bloom', 'hearth', 'volt', 'pulse', 'lumiere', 'trove', 'forge', 'impulse'] as const
 export type StoreTemplate = (typeof STORE_TEMPLATES)[number]
 
 export const StoreTemplateSchema = z.enum(STORE_TEMPLATES)
@@ -95,6 +95,11 @@ export const TEMPLATE_META: Record<
     label: 'Forge',
     description: 'Raw industrial workshop system, built with plain Tailwind (no component library at all). Concrete-gray surface, a safety-yellow accent, condensed Oswald display type, sharp corners, thick 3px borders, a hazard-stripe motif, no shadow.',
     bestFor: 'Tools, hardware, and workshop supplies'
+  },
+  impulse: {
+    label: 'Impulse',
+    description: 'Direct-response funnel system — unlike every other template, it is built around conversion, not browsing. Distraction-free chrome with no nav links, single-column persuasion-ordered pages, an animated glowing CTA, countdown urgency, scarcity bars, social-proof tickers, and trust/guarantee blocks on every page.',
+    bestFor: 'Single-product offers and high-converting COD funnels'
   }
 }
 

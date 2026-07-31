@@ -12,9 +12,13 @@ datasource db {
 // there is no single source of truth across Prisma and Zod, so changing one
 // means changing both.
 enum OrderState {
-  PendingOTP
+  PendingCallCenter
+  CallCenterNoAnswer
+  WrongNumber
+  Postponed
   Cancelled
   Confirmed
+  OnHold
   Packed
   HandedToCourier
   OutForDelivery
@@ -87,19 +91,19 @@ model Category {
 }
 
 model Product {
-  id                String           @id @default(uuid())
+  id                String               @id @default(uuid())
   name              String
-  slug              String           @unique
+  slug              String               @unique
   description       String?
   // Flat tag kept for back-compat with seeded data and the existing
   // ?category= filter; categoryId is the normalized FK (SF-17). Both can
   // coexist — categoryId is authoritative when set.
   category          String?
-  categoryId        String?          @map("category_id")
-  categoryRef       Category?        @relation(fields: [categoryId], references: [id])
+  categoryId        String?              @map("category_id")
+  categoryRef       Category?            @relation(fields: [categoryId], references: [id])
   // SF-15: primary image (gallery's first/hero). The ProductImage rows are
   // the full gallery; this denormalized field is the fast path for cards.
-  imageUrl          String?          @map("image_url")
+  imageUrl          String?              @map("image_url")
   images            ProductImage[]
   // SF-15: variants (size/color/etc.). A product with no variants is
   // single-SKU and behaves exactly as before — variant rows are optional.
@@ -110,31 +114,97 @@ model Product {
   productAttributes ProductAttribute[]
   // Curated "featured/best-seller" flags for SF-18 marketing home, not a
   // separate marketing table.
-  featured          Boolean          @default(false)
-  bestSeller        Boolean          @default(false) @map("best_seller")
-  priceCents        Int              @map("price_cents")
-  stockQuantity     Int              @default(0) @map("stock_quantity")
-  lowStockThreshold Int              @default(5) @map("low_stock_threshold")
+  featured          Boolean              @default(false)
+  bestSeller        Boolean              @default(false) @map("best_seller")
+  priceCents        Int                  @map("price_cents")
+  stockQuantity     Int                  @default(0) @map("stock_quantity")
+  lowStockThreshold Int                  @default(5) @map("low_stock_threshold")
   orderItems        OrderItem[]
   reviews           Review[]
   stockAdjustments  StockAdjustment[]
-  createdAt         DateTime         @default(now()) @map("created_at")
-  updatedAt         DateTime         @updatedAt @map("updated_at")
+  // AI-generated long-scroll landing page image — one per product, see
+  // ProductLandingPage below.
+  landingPage       ProductLandingPage?
+  // Quantity-based promos (buy 2 for a bundle price, buy 2 get 1 free, buy 2
+  // free shipping) — see ProductOffer below.
+  offers            ProductOffer[]
+  // Upsells system — products suggested when THIS product is bought
+  // (upsellsOffered) vs configs where THIS product IS the suggested upsell
+  // for some other product (upsellsAsTarget). See ProductUpsell below.
+  upsellsOffered    ProductUpsell[]      @relation("UpsellTrigger")
+  upsellsAsTarget   ProductUpsell[]      @relation("UpsellTarget")
+  googleSheets      ProductGoogleSheet[]
+  // Reverse of SourcedProduct.linkedProductId — the research/ad-testing
+  // candidate this product came from, when it went through that pipeline
+  // rather than being created directly.
+  sourcedFrom       SourcedProduct?
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
 
   @@index([category])
   @@index([categoryId])
   @@map("products")
 }
 
+// AI landing page builder — sends the product's photos + description to an
+// image-generation model, which produces a handful of section images (hero,
+// feature highlights, CTA), each with marketing copy and visual effects
+// baked in; the sections are then stitched vertically into one long image
+// (the classic AliExpress/TikTok-ad style product funnel image). One row
+// per product; regenerating replaces it rather than keeping history — this
+// is a working draft the merchant iterates on, not an audit trail.
+enum LandingPageStatus {
+  Pending
+  Generating
+  Completed
+  Failed
+}
+
+// Which backend produces the section images. Gemini (Nano Banana) edits the
+// product's own photos and draws on-image text itself, but Google now
+// requires Cloud billing enabled for any image-output model — even at
+// near-zero cost, it's not in the truly free tier. Pollinations is free and
+// keyless with no billing step, but it's text-to-image only (generates a
+// generic product-style image rather than editing the real photos) and can't
+// render legible on-image text, so text is composited on afterwards in code
+// (see text-overlay.util.ts) instead of drawn by the model.
+enum LandingPageImageProvider {
+  Gemini
+  Pollinations
+}
+
+model ProductLandingPage {
+  id            String                   @id @default(uuid())
+  productId     String                   @unique @map("product_id")
+  product       Product                  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  // Whether the storefront PDP shows this generated image instead of the
+  // normal gallery+description. Independent of `status` — a merchant can
+  // generate, preview, and only flip this on once they like the result.
+  enabled       Boolean                  @default(false)
+  status        LandingPageStatus        @default(Pending)
+  imageProvider LandingPageImageProvider @default(Gemini) @map("image_provider")
+  // The final vertically-stitched long image — null until status=Completed.
+  finalImageUrl String?                  @map("final_image_url")
+  // Array of LandingPageSection (packages/shared/src/landing-page.ts) — each
+  // section's copy, source images, generated image, and per-section status,
+  // so a single bad section can be regenerated without redoing the rest.
+  sections      Json                     @default("[]")
+  errorMessage  String?                  @map("error_message")
+  createdAt     DateTime                 @default(now()) @map("created_at")
+  updatedAt     DateTime                 @updatedAt @map("updated_at")
+
+  @@map("product_landing_pages")
+}
+
 // SF-15 — multi-image gallery, ordered. Falls back to Product.imageUrl when
 // a product has no gallery rows (single-image behavior unchanged).
 model ProductImage {
-  id        String   @id @default(uuid())
-  productId String   @map("product_id")
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id        String  @id @default(uuid())
+  productId String  @map("product_id")
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   url       String
-  altText   String?  @map("alt_text")
-  sortOrder Int      @default(0) @map("sort_order")
+  altText   String? @map("alt_text")
+  sortOrder Int     @default(0) @map("sort_order")
 
   @@index([productId])
   @@map("product_images")
@@ -145,19 +215,20 @@ model ProductImage {
 // aggregate for single-SKU products; when variants exist, per-variant stock
 // is authoritative.
 model ProductVariant {
-  id            String   @id @default(uuid())
-  productId     String   @map("product_id")
-  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  sku           String   @unique
+  id            String          @id @default(uuid())
+  productId     String          @map("product_id")
+  product       Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku           String          @unique
   // Legacy free-form JSON attribute map, kept for back-compat. Superseded by
   // the normalized VariantOption relation below — new code reads options[]
   // and builds the same {key: value} shape. This field is no longer the
   // source of truth but remains populated for older variants.
   attributes    Json
-  priceCents    Int      @map("price_cents")
-  stockQuantity Int      @default(0) @map("stock_quantity")
+  priceCents    Int             @map("price_cents")
+  stockQuantity Int             @default(0) @map("stock_quantity")
   // Normalized: which option this variant picked for each of its attributes.
   options       VariantOption[]
+  orderItems    OrderItem[]
 
   @@index([productId])
   @@map("product_variants")
@@ -211,27 +282,27 @@ enum AttributeType {
 }
 
 model Attribute {
-  id        String            @id @default(uuid())
-  name      String            @unique
-  type      AttributeType     @default(Text)
-  sortOrder Int               @default(0) @map("sort_order")
+  id        String             @id @default(uuid())
+  name      String             @unique
+  type      AttributeType      @default(Text)
+  sortOrder Int                @default(0) @map("sort_order")
   options   AttributeOption[]
   products  ProductAttribute[]
-  createdAt DateTime          @default(now()) @map("created_at")
-  updatedAt DateTime          @updatedAt @map("updated_at")
+  createdAt DateTime           @default(now()) @map("created_at")
+  updatedAt DateTime           @updatedAt @map("updated_at")
 
   @@map("attributes")
 }
 
 model AttributeOption {
-  id           String            @id @default(uuid())
-  attributeId  String            @map("attribute_id")
-  attribute    Attribute         @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  id           String          @id @default(uuid())
+  attributeId  String          @map("attribute_id")
+  attribute    Attribute       @relation(fields: [attributeId], references: [id], onDelete: Cascade)
   value        String
-  displayValue String?           @map("display_value")
+  displayValue String?         @map("display_value")
   // For Color-type attributes: the hex swatch. Null for non-color attributes.
-  colorHex     String?           @map("color_hex")
-  sortOrder    Int               @default(0) @map("sort_order")
+  colorHex     String?         @map("color_hex")
+  sortOrder    Int             @default(0) @map("sort_order")
   variants     VariantOption[]
 
   @@unique([attributeId, value])
@@ -296,31 +367,40 @@ model Review {
 }
 
 model Courier {
-  id              String            @id @default(uuid())
-  name            String
-  slug            String            @unique
-  shipments       Shipment[]
+  id                String            @id @default(uuid())
+  name              String
+  slug              String            @unique
+  shipments         Shipment[]
   remittanceBatches RemittanceBatch[]
-  createdAt       DateTime          @default(now()) @map("created_at")
+  createdAt         DateTime          @default(now()) @map("created_at")
 
   @@map("couriers")
 }
 
 model Order {
-  id                 String               @id @default(uuid())
-  customerId         String               @map("customer_id")
-  customer           Customer             @relation(fields: [customerId], references: [id])
-  addressId          String               @map("address_id")
-  address            Address              @relation(fields: [addressId], references: [id])
-  state              OrderState           @default(PendingOTP)
-  totalCents         Int                  @map("total_cents")
+  id                 String                @id @default(uuid())
+  customerId         String                @map("customer_id")
+  customer           Customer              @relation(fields: [customerId], references: [id])
+  addressId          String                @map("address_id")
+  address            Address               @relation(fields: [addressId], references: [id])
+  state              OrderState            @default(PendingCallCenter)
+  // Total amount actually due (items + shipping) — the number shown as
+  // "cash due on delivery" everywhere. shippingPriceCents is the shipping
+  // portion of it, priced server-side from WilayaShippingRate at order time
+  // (never trusts a client-submitted price — same rule as ProductOffer
+  // pricing); shippingType is null only for pre-shipping-feature historical
+  // orders, never for new ones.
+  totalCents         Int                   @map("total_cents")
+  shippingType       ShippingType?         @map("shipping_type")
+  shippingPriceCents Int                   @default(0) @map("shipping_price_cents")
   items              OrderItem[]
   shipment           Shipment?
   cashReconciliation CashReconciliation?
   ledgerEntries      LedgerEntry[]
   notifications      Notification[]
-  createdAt          DateTime             @default(now()) @map("created_at")
-  updatedAt          DateTime             @updatedAt @map("updated_at")
+  googleSheetRows    GoogleSheetOrderRow[]
+  createdAt          DateTime              @default(now()) @map("created_at")
+  updatedAt          DateTime              @updatedAt @map("updated_at")
 
   @@index([customerId])
   @@index([state])
@@ -328,16 +408,101 @@ model Order {
 }
 
 model OrderItem {
-  id             String  @id @default(uuid())
-  orderId        String  @map("order_id")
-  order          Order   @relation(fields: [orderId], references: [id])
-  productId      String  @map("product_id")
-  product        Product @relation(fields: [productId], references: [id])
+  id             String          @id @default(uuid())
+  orderId        String          @map("order_id")
+  order          Order           @relation(fields: [orderId], references: [id])
+  productId      String          @map("product_id")
+  product        Product         @relation(fields: [productId], references: [id])
+  // Which variant (if any) was ordered — null for a variant-less product, or
+  // for a variant-less purchase of one that has variants (rare but allowed).
+  // Kept even if the variant is later deleted, same traceability reasoning
+  // as offerId below (SetNull, not cascade-delete of order history).
+  variantId      String?         @map("variant_id")
+  variant        ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
   quantity       Int
-  unitPriceCents Int     @map("unit_price_cents")
+  // Reference (undiscounted) per-unit price at order time — for "was $X"
+  // messaging, NOT the amount actually charged for this line. Use
+  // lineTotalCents for that; it's what's actually summed into Order.totalCents.
+  unitPriceCents Int             @map("unit_price_cents")
+  // What was actually charged for this line. Equals unitPriceCents*quantity
+  // for a plain purchase, but a ProductOffer (bundle price, or buy-X-get-Y
+  // where quantity includes the free units) can make it diverge — stored
+  // explicitly rather than reconstructed, since bundle/free-unit math doesn't
+  // always divide evenly back into a clean per-unit cents figure.
+  lineTotalCents Int             @default(0) @map("line_total_cents")
+  // Which offer (if any) produced lineTotalCents — kept even if the offer is
+  // later deleted, purely for admin/order-history traceability.
+  offerId        String?         @map("offer_id")
+  offer          ProductOffer?   @relation(fields: [offerId], references: [id], onDelete: SetNull)
+  // True when added via the upsells system (call-center manual add, admin
+  // add-item, or the storefront post-checkout upsell page) rather than being
+  // part of the original checkout — see OrderItemsService.
+  isUpsell       Boolean         @default(false) @map("is_upsell")
 
   @@index([orderId])
+  @@index([variantId])
   @@map("order_items")
+}
+
+// Quantity-triggered product promos — the storefront PDP shows these as
+// pickable "offer cards" (see the customer-picks-a-card decision in the
+// landing-page/offers design discussion): choosing one sets the buy
+// quantity to exactly what the offer needs and locks in its pricing. Not
+// auto-detected from an arbitrary quantity — avoids ambiguity when multiple
+// offers could technically apply to the same number of units.
+enum ProductOfferType {
+  // "Buy 2 for $40" — requiredQuantity units for a flat bundlePriceCents.
+  FixedBundlePrice
+  // "Buy 2, get 1 free" — pay for requiredQuantity, receive
+  // requiredQuantity+freeQuantity units total.
+  BuyXGetYFree
+  // "Buy 2, free shipping" — display-only for now: there is no shipping-fee
+  // concept in the system yet, so this doesn't change the order total, only
+  // shows a badge. Wire it to a real discount once shipping fees exist.
+  FreeShipping
+}
+
+model ProductOffer {
+  id               String           @id @default(uuid())
+  productId        String           @map("product_id")
+  product          Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type             ProductOfferType
+  enabled          Boolean          @default(true)
+  requiredQuantity Int              @map("required_quantity")
+  // BuyXGetYFree only — extra free units on top of requiredQuantity.
+  freeQuantity     Int              @default(0) @map("free_quantity")
+  // FixedBundlePrice only — total price (cents) for requiredQuantity units.
+  bundlePriceCents Int?             @map("bundle_price_cents")
+  orderItems       OrderItem[]
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  @@index([productId])
+  @@map("product_offers")
+}
+
+// Upsells system — "customers who buy productId are offered
+// upsellProductId", surfaced on the storefront's post-checkout upsell page
+// after a customer places an order. Per-trigger-product (not global),
+// same granularity as ProductOffer. priceCentsOverride lets the upsell be
+// pitched at a special price distinct from the target product's normal
+// price (null = normal price). A (productId, upsellProductId) pair is
+// unique — configuring the same pairing twice would just be ambiguous
+// about which row wins.
+model ProductUpsell {
+  id                 String   @id @default(uuid())
+  productId          String   @map("product_id")
+  product            Product  @relation("UpsellTrigger", fields: [productId], references: [id], onDelete: Cascade)
+  upsellProductId    String   @map("upsell_product_id")
+  upsellProduct      Product  @relation("UpsellTarget", fields: [upsellProductId], references: [id], onDelete: Cascade)
+  enabled            Boolean  @default(true)
+  priceCentsOverride Int?     @map("price_cents_override")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@unique([productId, upsellProductId])
+  @@index([productId])
+  @@map("product_upsells")
 }
 
 model Shipment {
@@ -383,18 +548,18 @@ enum RemittanceBatchStatus {
 }
 
 model RemittanceBatch {
-  id             String                 @id @default(uuid())
-  courierId      String                 @map("courier_id")
-  courier        Courier                @relation(fields: [courierId], references: [id])
+  id            String                @id @default(uuid())
+  courierId     String                @map("courier_id")
+  courier       Courier               @relation(fields: [courierId], references: [id])
   // The courier's own reference for this cash handover (date range, batch id).
-  reference      String
+  reference     String
   // Period the batch covers — the dates the cash was collected over.
-  periodStart    DateTime               @map("period_start")
-  periodEnd      DateTime               @map("period_end")
-  totalCents     Int                    @map("total_cents")
-  status         RemittanceBatchStatus  @default(Imported)
-  ledgerEntries  LedgerEntry[]
-  createdAt      DateTime               @default(now()) @map("created_at")
+  periodStart   DateTime              @map("period_start")
+  periodEnd     DateTime              @map("period_end")
+  totalCents    Int                   @map("total_cents")
+  status        RemittanceBatchStatus @default(Imported)
+  ledgerEntries LedgerEntry[]
+  createdAt     DateTime              @default(now()) @map("created_at")
 
   @@unique([courierId, reference])
   @@index([courierId])
@@ -412,19 +577,19 @@ enum LedgerEntryStatus {
 }
 
 model LedgerEntry {
-  id              String           @id @default(uuid())
-  batchId         String           @map("batch_id")
-  batch           RemittanceBatch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  orderId         String?          @map("order_id")
-  order           Order?           @relation(fields: [orderId], references: [id])
+  id             String            @id @default(uuid())
+  batchId        String            @map("batch_id")
+  batch          RemittanceBatch   @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  orderId        String?           @map("order_id")
+  order          Order?            @relation(fields: [orderId], references: [id])
   // The courier's reference for this line (tracking id, order ref) — what
   // auto-matching joins on.
-  courierRef      String           @map("courier_ref")
-  expectedCents   Int?             @map("expected_cents") // resolved when matched to an order
-  collectedCents  Int              @map("collected_cents")
-  status          LedgerEntryStatus @default(Unmatched)
-  resolutionNote  String?          @map("resolution_note")
-  createdAt       DateTime         @default(now()) @map("created_at")
+  courierRef     String            @map("courier_ref")
+  expectedCents  Int?              @map("expected_cents") // resolved when matched to an order
+  collectedCents Int               @map("collected_cents")
+  status         LedgerEntryStatus @default(Unmatched)
+  resolutionNote String?           @map("resolution_note")
+  createdAt      DateTime          @default(now()) @map("created_at")
 
   // One order per batch — structural double-count prevention.
   @@unique([batchId, orderId])
@@ -501,20 +666,20 @@ enum AuditAction {
 }
 
 model AuditLog {
-  id        String      @id @default(uuid())
-  actorId   String?     @map("actor_id") // nullable: system/seed events have no human actor
-  actorEmail String?    @map("actor_email")
-  action    AuditAction
+  id         String      @id @default(uuid())
+  actorId    String?     @map("actor_id") // nullable: system/seed events have no human actor
+  actorEmail String?     @map("actor_email")
+  action     AuditAction
   // "Order", "Product", "CashReconciliation", etc. — not a polymorphic FK
   // (Prisma doesn't do those cleanly), just a typed entity discriminator +
   // the target's id. The viewer joins in code by (entity, entityId).
-  entity    String
-  entityId  String      @map("entity_id")
+  entity     String
+  entityId   String      @map("entity_id")
   // Structured before/after — e.g. { from: "Confirmed", to: "Packed" } for a
   // state transition, or { field: "stockQuantity", from: 5, to: 40 } for a
   // stock adjustment.
-  metadata  Json?
-  createdAt DateTime    @default(now()) @map("created_at")
+  metadata   Json?
+  createdAt  DateTime    @default(now()) @map("created_at")
 
   @@index([entity, entityId])
   @@index([actorId])
@@ -563,6 +728,78 @@ model AppInstallation {
   @@map("app_installations")
 }
 
+// Google Sheets integration (appId "google-sheets" on AppInstallation gates
+// the whole feature as a master on/off switch, same as every other app) —
+// one row per connected spreadsheet+tab. Deliberately NOT a single
+// AppInstallation.config blob like the pixel apps: this needs many rows
+// (a store can push to several sheets) plus a many-to-many product mapping,
+// neither of which fits a JSON blob well.
+//
+// Routing is dynamic per the two bullet points this was built for: a sheet
+// with appliesToAllProducts=true receives every order regardless of what was
+// bought (the "connect all products to the same sheet" case); otherwise it
+// only receives orders containing at least one product in `products` below
+// (the "connect a product to multiple sheets" case — a product can appear in
+// many ProductGoogleSheet rows, one per sheet). An order can therefore fan
+// out to more than one sheet if it matches more than one.
+model GoogleSheet {
+  id                   String                @id @default(uuid())
+  // Admin-facing label only — not sent to Google.
+  name                 String
+  // The long id segment from the sheet's URL
+  // (docs.google.com/spreadsheets/d/{spreadsheetId}/edit), not the full URL —
+  // validated/extracted server-side so admins can just paste the URL.
+  spreadsheetId        String                @map("spreadsheet_id")
+  // Tab name within the spreadsheet, e.g. "Orders". Created if missing on
+  // first successful push (see GoogleSheetsClientService.ensureSheetReady).
+  sheetName            String                @default("Orders") @map("sheet_name")
+  appliesToAllProducts Boolean               @default(false) @map("applies_to_all_products")
+  enabled              Boolean               @default(true)
+  products             ProductGoogleSheet[]
+  orderRows            GoogleSheetOrderRow[]
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+
+  @@map("google_sheets")
+}
+
+// Many-to-many join — see GoogleSheet's comment above for the routing rules
+// this drives. Ignored for sheets where appliesToAllProducts=true.
+model ProductGoogleSheet {
+  productId     String      @map("product_id")
+  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  googleSheetId String      @map("google_sheet_id")
+  googleSheet   GoogleSheet @relation(fields: [googleSheetId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  @@id([productId, googleSheetId])
+  @@index([googleSheetId])
+  @@map("product_google_sheets")
+}
+
+// Tracks which sheet row an order was appended to, so a later status change
+// can target that exact row (Sheets API range update) instead of re-scanning
+// the whole sheet for a matching Order ID on every transition. One row per
+// (order, sheet) pair — an order that fans out to multiple sheets gets one
+// of these per sheet it landed in.
+model GoogleSheetOrderRow {
+  id            String      @id @default(uuid())
+  orderId       String      @map("order_id")
+  order         Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  googleSheetId String      @map("google_sheet_id")
+  googleSheet   GoogleSheet @relation(fields: [googleSheetId], references: [id], onDelete: Cascade)
+  // 1-indexed row number within sheetName at the time of the append. Sheets
+  // never reflows existing rows on its own, so this stays valid for status
+  // updates — it would only go stale if someone manually deletes/reorders
+  // rows in the sheet, which is outside this system's control anyway.
+  rowNumber     Int         @map("row_number")
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  @@unique([orderId, googleSheetId])
+  @@index([googleSheetId])
+  @@map("google_sheet_order_rows")
+}
+
 // Algeria administrative divisions — reference data imported from
 // github.com/Kenandarabeh/algeria-wilayas-communes-2026 (apps/api/prisma/data/,
 // vendored rather than fetched at seed time so seeding never depends on
@@ -574,11 +811,40 @@ model AppInstallation {
 // (GET /wilayas, GET /communes?wilayaId=) — Address.region/city stay plain
 // strings (the commune/wilaya *name*), so no FK from Address into these.
 model Wilaya {
-  id       String    @id
-  name     String
-  communes Commune[]
+  id             String                  @id
+  name           String
+  communes       Commune[]
+  shippingRate   WilayaShippingRate?
+  companyTariffs ShippingCompanyTariff[]
 
   @@map("wilayas")
+}
+
+enum ShippingType {
+  Home
+  Desk
+}
+
+// Per-wilaya delivery pricing — home delivery and desk (courier office
+// pickup) delivery are priced and enabled INDEPENDENTLY, since real Algeria
+// couriers commonly only offer desk delivery to remote wilayas. A wilaya
+// with both disabled (or no row at all — the default until an admin
+// configures it) has no shipping options and can't be ordered to; the
+// storefront's wilaya list stays fully populated regardless (address
+// lookup and delivery availability are separate concerns), it's just the
+// shipping-type picker that comes up empty.
+model WilayaShippingRate {
+  id                     String   @id @default(uuid())
+  wilayaId               String   @unique @map("wilaya_id")
+  wilaya                 Wilaya   @relation(fields: [wilayaId], references: [id], onDelete: Cascade)
+  homeDeliveryEnabled    Boolean  @default(false) @map("home_delivery_enabled")
+  homeDeliveryPriceCents Int?     @map("home_delivery_price_cents")
+  deskDeliveryEnabled    Boolean  @default(false) @map("desk_delivery_enabled")
+  deskDeliveryPriceCents Int?     @map("desk_delivery_price_cents")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  @@map("wilaya_shipping_rates")
 }
 
 model Commune {
@@ -590,4 +856,228 @@ model Commune {
 
   @@index([wilayaId])
   @@map("communes")
+}
+
+// Third-party courier integrations (DHD first, more to come — see the
+// "Shipping Companies" admin section). One row per provider: `apiToken` is a
+// write-only secret from the admin's perspective (masked to hasApiToken on
+// every read, same convention as AppInstallation's accessToken fields in
+// apps.service.ts). `isLinked` flips true only after the token has been
+// verified against the provider's own token-validation endpoint — a row can
+// exist (baseUrl pre-filled) without ever having been successfully linked.
+// `isDefault` marks which linked company the order-fulfillment flow should
+// prefer when more than one is linked; enforced single-true by
+// ShippingCompaniesService, not a DB constraint (Prisma/Postgres can't
+// express "at most one true" as a unique index without a partial index this
+// schema doesn't otherwise use).
+enum ShippingCompanyProvider {
+  Dhd
+}
+
+model ShippingCompany {
+  id           String                  @id @default(uuid())
+  provider     ShippingCompanyProvider @unique
+  name         String
+  baseUrl      String                  @map("base_url")
+  apiToken     String?                 @map("api_token")
+  isLinked     Boolean                 @default(false) @map("is_linked")
+  isDefault    Boolean                 @default(false) @map("is_default")
+  lastSyncedAt DateTime?               @map("last_synced_at")
+  createdAt    DateTime                @default(now()) @map("created_at")
+  updatedAt    DateTime                @updatedAt @map("updated_at")
+  tariffs      ShippingCompanyTariff[]
+
+  @@map("shipping_companies")
+}
+
+// A synced snapshot of one provider's per-wilaya pricing (GET /api/v1/get/fees
+// for DHD) — reference data only. Deliberately NOT written into
+// WilayaShippingRate automatically: syncing just refreshes this table, and
+// an admin explicitly applies chosen wilayas' delivery price into the live
+// WilayaShippingRate via a separate action, so a sync can never silently
+// overwrite hand-tuned live prices. Home/stopdesk are independent per
+// service the same way WilayaShippingRate splits home/desk delivery — a
+// provider commonly prices (or even offers) stop-desk differently per
+// wilaya, sometimes not at all (priced as 0 by DHD, which callers should
+// treat the same as WilayaShippingRate treats a disabled price).
+model ShippingCompanyTariff {
+  id                         String          @id @default(uuid())
+  shippingCompanyId          String          @map("shipping_company_id")
+  shippingCompany            ShippingCompany @relation(fields: [shippingCompanyId], references: [id], onDelete: Cascade)
+  wilayaId                   String          @map("wilaya_id")
+  wilaya                     Wilaya          @relation(fields: [wilayaId], references: [id], onDelete: Cascade)
+  deliveryPriceCents         Int?            @map("delivery_price_cents")
+  deliveryStopdeskPriceCents Int?            @map("delivery_stopdesk_price_cents")
+  pickupPriceCents           Int?            @map("pickup_price_cents")
+  pickupStopdeskPriceCents   Int?            @map("pickup_stopdesk_price_cents")
+  exchangePriceCents         Int?            @map("exchange_price_cents")
+  exchangeStopdeskPriceCents Int?            @map("exchange_stopdesk_price_cents")
+  codFeePriceCents           Int?            @map("cod_fee_price_cents")
+  codFeeStopdeskPriceCents   Int?            @map("cod_fee_stopdesk_price_cents")
+  returnPriceCents           Int?            @map("return_price_cents")
+  returnStopdeskPriceCents   Int?            @map("return_stopdesk_price_cents")
+  updatedAt                  DateTime        @updatedAt @map("updated_at")
+
+  @@unique([shippingCompanyId, wilayaId])
+  @@map("shipping_company_tariffs")
+}
+
+// ---- Product sourcing / ad-testing operations ----
+//
+// Deliberately a separate pipeline from the live storefront catalog
+// (Product), not a set of extra fields bolted onto it: a product spends
+// most of its early life as a research/testing candidate that may never
+// sell a single unit, and most of that history (ad spend, creative
+// experiments, wholesaler back-and-forth) is meaningless once — or if — it
+// actually goes live. SourcedProduct.linkedProductId is the one bridge
+// between the two worlds, set once a candidate earns a real Product row.
+enum SourcedProductStatus {
+  Researching
+  Testing
+  TestPassed
+  TestFailed
+  Sourcing
+  Received
+  Live
+  Discontinued
+}
+
+model SourcedProduct {
+  id        String               @id @default(uuid())
+  name      String
+  // Where the product was found (AliExpress/CJ/etc listing, competitor ad,
+  // whatever) — a plain link, not a structured marketplace integration.
+  sourceUrl String?              @map("source_url")
+  imageUrl  String?              @map("image_url")
+  // Free-text category/niche tag — same lightweight pattern as Product's
+  // legacy `category` field, no separate niche table for v1.
+  niche     String?
+  notes     String?
+  status    SourcedProductStatus @default(Researching)
+
+  // Set once this candidate is actually listed for sale — links the
+  // research/testing history to the real catalog entry it produced. Nullable
+  // and unique: a Product is sourced from at most one SourcedProduct, and a
+  // SourcedProduct maps to at most one Product.
+  linkedProductId String?  @unique @map("linked_product_id")
+  linkedProduct   Product? @relation(fields: [linkedProductId], references: [id], onDelete: SetNull)
+
+  adTests          ProductAdTest[]
+  sourcingRequests ProductSourcingRequest[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("sourced_products")
+}
+
+enum AdTestPlatform {
+  Facebook
+  TikTok
+  Snapchat
+  Google
+  Other
+}
+
+enum AdCreativeType {
+  Image
+  Video
+}
+
+enum AdTestStatus {
+  Running
+  Passed
+  Failed
+}
+
+// One row per (price, creative) combination tested for a candidate — "we
+// test many prices, many video or images creatives and we get the best"
+// (the operation this exists to support). `isWinner` flags the chosen
+// combination once testing concludes; CPA/ROAS are derived from
+// adSpendCents/ordersCount/revenueCents at read time rather than stored, so
+// they never go stale if a number gets corrected after the fact.
+model ProductAdTest {
+  id               String         @id @default(uuid())
+  sourcedProductId String         @map("sourced_product_id")
+  sourcedProduct   SourcedProduct @relation(fields: [sourcedProductId], references: [id], onDelete: Cascade)
+
+  platform     AdTestPlatform  @default(Other)
+  priceCents   Int             @map("price_cents")
+  creativeType AdCreativeType? @map("creative_type")
+  // Link to the actual ad creative (uploaded video/image, or an external
+  // link to it) — not a managed asset, just a reference.
+  creativeUrl  String?         @map("creative_url")
+
+  adSpendCents Int @default(0) @map("ad_spend_cents")
+  ordersCount  Int @default(0) @map("orders_count")
+  revenueCents Int @default(0) @map("revenue_cents")
+
+  status    AdTestStatus @default(Running)
+  isWinner  Boolean      @default(false) @map("is_winner")
+  startedAt DateTime?    @map("started_at")
+  endedAt   DateTime?    @map("ended_at")
+  notes     String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([sourcedProductId])
+  @@map("product_ad_tests")
+}
+
+model Wholesaler {
+  id           String  @id @default(uuid())
+  name         String
+  country      String?
+  contactName  String? @map("contact_name")
+  contactPhone String? @map("contact_phone")
+  contactEmail String? @map("contact_email")
+  website      String?
+  notes        String?
+
+  sourcingRequests ProductSourcingRequest[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("wholesalers")
+}
+
+enum SourcingRequestStatus {
+  Requested
+  Confirmed
+  Shipped
+  Received
+  Cancelled
+}
+
+// A stock request placed with a wholesaler for a sourced product — kept as
+// its own history table (not fields on SourcedProduct) since a product can
+// reasonably be reordered multiple times over its life, each with its own
+// quantity/cost/status.
+model ProductSourcingRequest {
+  id               String         @id @default(uuid())
+  sourcedProductId String         @map("sourced_product_id")
+  sourcedProduct   SourcedProduct @relation(fields: [sourcedProductId], references: [id], onDelete: Cascade)
+  wholesalerId     String         @map("wholesaler_id")
+  wholesaler       Wholesaler     @relation(fields: [wholesalerId], references: [id])
+
+  requestedQuantity Int                   @map("requested_quantity")
+  // Destination country for this request — free text (this is an ops log,
+  // not a shipping-rate integration), e.g. "Algeria".
+  requestedCountry  String                @map("requested_country")
+  unitCostCents     Int?                  @map("unit_cost_cents")
+  status            SourcingRequestStatus @default(Requested)
+  notes             String?
+
+  requestedAt DateTime  @default(now()) @map("requested_at")
+  receivedAt  DateTime? @map("received_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([sourcedProductId])
+  @@index([wholesalerId])
+  @@map("product_sourcing_requests")
 }

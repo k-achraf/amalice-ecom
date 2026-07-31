@@ -159,12 +159,16 @@ export type WilayaWhereInput = {
   id?: Prisma.StringFilter<"Wilaya"> | string
   name?: Prisma.StringFilter<"Wilaya"> | string
   communes?: Prisma.CommuneListRelationFilter
+  shippingRate?: Prisma.XOR<Prisma.WilayaShippingRateNullableScalarRelationFilter, Prisma.WilayaShippingRateWhereInput> | null
+  companyTariffs?: Prisma.ShippingCompanyTariffListRelationFilter
 }
 
 export type WilayaOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   communes?: Prisma.CommuneOrderByRelationAggregateInput
+  shippingRate?: Prisma.WilayaShippingRateOrderByWithRelationInput
+  companyTariffs?: Prisma.ShippingCompanyTariffOrderByRelationAggregateInput
 }
 
 export type WilayaWhereUniqueInput = Prisma.AtLeast<{
@@ -174,6 +178,8 @@ export type WilayaWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.WilayaWhereInput | Prisma.WilayaWhereInput[]
   name?: Prisma.StringFilter<"Wilaya"> | string
   communes?: Prisma.CommuneListRelationFilter
+  shippingRate?: Prisma.XOR<Prisma.WilayaShippingRateNullableScalarRelationFilter, Prisma.WilayaShippingRateWhereInput> | null
+  companyTariffs?: Prisma.ShippingCompanyTariffListRelationFilter
 }, "id">
 
 export type WilayaOrderByWithAggregationInput = {
@@ -196,24 +202,32 @@ export type WilayaCreateInput = {
   id: string
   name: string
   communes?: Prisma.CommuneCreateNestedManyWithoutWilayaInput
+  shippingRate?: Prisma.WilayaShippingRateCreateNestedOneWithoutWilayaInput
+  companyTariffs?: Prisma.ShippingCompanyTariffCreateNestedManyWithoutWilayaInput
 }
 
 export type WilayaUncheckedCreateInput = {
   id: string
   name: string
   communes?: Prisma.CommuneUncheckedCreateNestedManyWithoutWilayaInput
+  shippingRate?: Prisma.WilayaShippingRateUncheckedCreateNestedOneWithoutWilayaInput
+  companyTariffs?: Prisma.ShippingCompanyTariffUncheckedCreateNestedManyWithoutWilayaInput
 }
 
 export type WilayaUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   communes?: Prisma.CommuneUpdateManyWithoutWilayaNestedInput
+  shippingRate?: Prisma.WilayaShippingRateUpdateOneWithoutWilayaNestedInput
+  companyTariffs?: Prisma.ShippingCompanyTariffUpdateManyWithoutWilayaNestedInput
 }
 
 export type WilayaUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   communes?: Prisma.CommuneUncheckedUpdateManyWithoutWilayaNestedInput
+  shippingRate?: Prisma.WilayaShippingRateUncheckedUpdateOneWithoutWilayaNestedInput
+  companyTariffs?: Prisma.ShippingCompanyTariffUncheckedUpdateManyWithoutWilayaNestedInput
 }
 
 export type WilayaCreateManyInput = {
@@ -251,6 +265,20 @@ export type WilayaScalarRelationFilter = {
   isNot?: Prisma.WilayaWhereInput
 }
 
+export type WilayaCreateNestedOneWithoutShippingRateInput = {
+  create?: Prisma.XOR<Prisma.WilayaCreateWithoutShippingRateInput, Prisma.WilayaUncheckedCreateWithoutShippingRateInput>
+  connectOrCreate?: Prisma.WilayaCreateOrConnectWithoutShippingRateInput
+  connect?: Prisma.WilayaWhereUniqueInput
+}
+
+export type WilayaUpdateOneRequiredWithoutShippingRateNestedInput = {
+  create?: Prisma.XOR<Prisma.WilayaCreateWithoutShippingRateInput, Prisma.WilayaUncheckedCreateWithoutShippingRateInput>
+  connectOrCreate?: Prisma.WilayaCreateOrConnectWithoutShippingRateInput
+  upsert?: Prisma.WilayaUpsertWithoutShippingRateInput
+  connect?: Prisma.WilayaWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WilayaUpdateToOneWithWhereWithoutShippingRateInput, Prisma.WilayaUpdateWithoutShippingRateInput>, Prisma.WilayaUncheckedUpdateWithoutShippingRateInput>
+}
+
 export type WilayaCreateNestedOneWithoutCommunesInput = {
   create?: Prisma.XOR<Prisma.WilayaCreateWithoutCommunesInput, Prisma.WilayaUncheckedCreateWithoutCommunesInput>
   connectOrCreate?: Prisma.WilayaCreateOrConnectWithoutCommunesInput
@@ -265,14 +293,76 @@ export type WilayaUpdateOneRequiredWithoutCommunesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.WilayaUpdateToOneWithWhereWithoutCommunesInput, Prisma.WilayaUpdateWithoutCommunesInput>, Prisma.WilayaUncheckedUpdateWithoutCommunesInput>
 }
 
+export type WilayaCreateNestedOneWithoutCompanyTariffsInput = {
+  create?: Prisma.XOR<Prisma.WilayaCreateWithoutCompanyTariffsInput, Prisma.WilayaUncheckedCreateWithoutCompanyTariffsInput>
+  connectOrCreate?: Prisma.WilayaCreateOrConnectWithoutCompanyTariffsInput
+  connect?: Prisma.WilayaWhereUniqueInput
+}
+
+export type WilayaUpdateOneRequiredWithoutCompanyTariffsNestedInput = {
+  create?: Prisma.XOR<Prisma.WilayaCreateWithoutCompanyTariffsInput, Prisma.WilayaUncheckedCreateWithoutCompanyTariffsInput>
+  connectOrCreate?: Prisma.WilayaCreateOrConnectWithoutCompanyTariffsInput
+  upsert?: Prisma.WilayaUpsertWithoutCompanyTariffsInput
+  connect?: Prisma.WilayaWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WilayaUpdateToOneWithWhereWithoutCompanyTariffsInput, Prisma.WilayaUpdateWithoutCompanyTariffsInput>, Prisma.WilayaUncheckedUpdateWithoutCompanyTariffsInput>
+}
+
+export type WilayaCreateWithoutShippingRateInput = {
+  id: string
+  name: string
+  communes?: Prisma.CommuneCreateNestedManyWithoutWilayaInput
+  companyTariffs?: Prisma.ShippingCompanyTariffCreateNestedManyWithoutWilayaInput
+}
+
+export type WilayaUncheckedCreateWithoutShippingRateInput = {
+  id: string
+  name: string
+  communes?: Prisma.CommuneUncheckedCreateNestedManyWithoutWilayaInput
+  companyTariffs?: Prisma.ShippingCompanyTariffUncheckedCreateNestedManyWithoutWilayaInput
+}
+
+export type WilayaCreateOrConnectWithoutShippingRateInput = {
+  where: Prisma.WilayaWhereUniqueInput
+  create: Prisma.XOR<Prisma.WilayaCreateWithoutShippingRateInput, Prisma.WilayaUncheckedCreateWithoutShippingRateInput>
+}
+
+export type WilayaUpsertWithoutShippingRateInput = {
+  update: Prisma.XOR<Prisma.WilayaUpdateWithoutShippingRateInput, Prisma.WilayaUncheckedUpdateWithoutShippingRateInput>
+  create: Prisma.XOR<Prisma.WilayaCreateWithoutShippingRateInput, Prisma.WilayaUncheckedCreateWithoutShippingRateInput>
+  where?: Prisma.WilayaWhereInput
+}
+
+export type WilayaUpdateToOneWithWhereWithoutShippingRateInput = {
+  where?: Prisma.WilayaWhereInput
+  data: Prisma.XOR<Prisma.WilayaUpdateWithoutShippingRateInput, Prisma.WilayaUncheckedUpdateWithoutShippingRateInput>
+}
+
+export type WilayaUpdateWithoutShippingRateInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  communes?: Prisma.CommuneUpdateManyWithoutWilayaNestedInput
+  companyTariffs?: Prisma.ShippingCompanyTariffUpdateManyWithoutWilayaNestedInput
+}
+
+export type WilayaUncheckedUpdateWithoutShippingRateInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  communes?: Prisma.CommuneUncheckedUpdateManyWithoutWilayaNestedInput
+  companyTariffs?: Prisma.ShippingCompanyTariffUncheckedUpdateManyWithoutWilayaNestedInput
+}
+
 export type WilayaCreateWithoutCommunesInput = {
   id: string
   name: string
+  shippingRate?: Prisma.WilayaShippingRateCreateNestedOneWithoutWilayaInput
+  companyTariffs?: Prisma.ShippingCompanyTariffCreateNestedManyWithoutWilayaInput
 }
 
 export type WilayaUncheckedCreateWithoutCommunesInput = {
   id: string
   name: string
+  shippingRate?: Prisma.WilayaShippingRateUncheckedCreateNestedOneWithoutWilayaInput
+  companyTariffs?: Prisma.ShippingCompanyTariffUncheckedCreateNestedManyWithoutWilayaInput
 }
 
 export type WilayaCreateOrConnectWithoutCommunesInput = {
@@ -294,11 +384,59 @@ export type WilayaUpdateToOneWithWhereWithoutCommunesInput = {
 export type WilayaUpdateWithoutCommunesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  shippingRate?: Prisma.WilayaShippingRateUpdateOneWithoutWilayaNestedInput
+  companyTariffs?: Prisma.ShippingCompanyTariffUpdateManyWithoutWilayaNestedInput
 }
 
 export type WilayaUncheckedUpdateWithoutCommunesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  shippingRate?: Prisma.WilayaShippingRateUncheckedUpdateOneWithoutWilayaNestedInput
+  companyTariffs?: Prisma.ShippingCompanyTariffUncheckedUpdateManyWithoutWilayaNestedInput
+}
+
+export type WilayaCreateWithoutCompanyTariffsInput = {
+  id: string
+  name: string
+  communes?: Prisma.CommuneCreateNestedManyWithoutWilayaInput
+  shippingRate?: Prisma.WilayaShippingRateCreateNestedOneWithoutWilayaInput
+}
+
+export type WilayaUncheckedCreateWithoutCompanyTariffsInput = {
+  id: string
+  name: string
+  communes?: Prisma.CommuneUncheckedCreateNestedManyWithoutWilayaInput
+  shippingRate?: Prisma.WilayaShippingRateUncheckedCreateNestedOneWithoutWilayaInput
+}
+
+export type WilayaCreateOrConnectWithoutCompanyTariffsInput = {
+  where: Prisma.WilayaWhereUniqueInput
+  create: Prisma.XOR<Prisma.WilayaCreateWithoutCompanyTariffsInput, Prisma.WilayaUncheckedCreateWithoutCompanyTariffsInput>
+}
+
+export type WilayaUpsertWithoutCompanyTariffsInput = {
+  update: Prisma.XOR<Prisma.WilayaUpdateWithoutCompanyTariffsInput, Prisma.WilayaUncheckedUpdateWithoutCompanyTariffsInput>
+  create: Prisma.XOR<Prisma.WilayaCreateWithoutCompanyTariffsInput, Prisma.WilayaUncheckedCreateWithoutCompanyTariffsInput>
+  where?: Prisma.WilayaWhereInput
+}
+
+export type WilayaUpdateToOneWithWhereWithoutCompanyTariffsInput = {
+  where?: Prisma.WilayaWhereInput
+  data: Prisma.XOR<Prisma.WilayaUpdateWithoutCompanyTariffsInput, Prisma.WilayaUncheckedUpdateWithoutCompanyTariffsInput>
+}
+
+export type WilayaUpdateWithoutCompanyTariffsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  communes?: Prisma.CommuneUpdateManyWithoutWilayaNestedInput
+  shippingRate?: Prisma.WilayaShippingRateUpdateOneWithoutWilayaNestedInput
+}
+
+export type WilayaUncheckedUpdateWithoutCompanyTariffsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  communes?: Prisma.CommuneUncheckedUpdateManyWithoutWilayaNestedInput
+  shippingRate?: Prisma.WilayaShippingRateUncheckedUpdateOneWithoutWilayaNestedInput
 }
 
 
@@ -308,10 +446,12 @@ export type WilayaUncheckedUpdateWithoutCommunesInput = {
 
 export type WilayaCountOutputType = {
   communes: number
+  companyTariffs: number
 }
 
 export type WilayaCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   communes?: boolean | WilayaCountOutputTypeCountCommunesArgs
+  companyTariffs?: boolean | WilayaCountOutputTypeCountCompanyTariffsArgs
 }
 
 /**
@@ -331,11 +471,20 @@ export type WilayaCountOutputTypeCountCommunesArgs<ExtArgs extends runtime.Types
   where?: Prisma.CommuneWhereInput
 }
 
+/**
+ * WilayaCountOutputType without action
+ */
+export type WilayaCountOutputTypeCountCompanyTariffsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ShippingCompanyTariffWhereInput
+}
+
 
 export type WilayaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
   communes?: boolean | Prisma.Wilaya$communesArgs<ExtArgs>
+  shippingRate?: boolean | Prisma.Wilaya$shippingRateArgs<ExtArgs>
+  companyTariffs?: boolean | Prisma.Wilaya$companyTariffsArgs<ExtArgs>
   _count?: boolean | Prisma.WilayaCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["wilaya"]>
 
@@ -357,6 +506,8 @@ export type WilayaSelectScalar = {
 export type WilayaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name", ExtArgs["result"]["wilaya"]>
 export type WilayaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   communes?: boolean | Prisma.Wilaya$communesArgs<ExtArgs>
+  shippingRate?: boolean | Prisma.Wilaya$shippingRateArgs<ExtArgs>
+  companyTariffs?: boolean | Prisma.Wilaya$companyTariffsArgs<ExtArgs>
   _count?: boolean | Prisma.WilayaCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type WilayaIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -366,6 +517,8 @@ export type $WilayaPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   name: "Wilaya"
   objects: {
     communes: Prisma.$CommunePayload<ExtArgs>[]
+    shippingRate: Prisma.$WilayaShippingRatePayload<ExtArgs> | null
+    companyTariffs: Prisma.$ShippingCompanyTariffPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -765,6 +918,8 @@ readonly fields: WilayaFieldRefs;
 export interface Prisma__WilayaClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   communes<T extends Prisma.Wilaya$communesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Wilaya$communesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CommunePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  shippingRate<T extends Prisma.Wilaya$shippingRateArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Wilaya$shippingRateArgs<ExtArgs>>): Prisma.Prisma__WilayaShippingRateClient<runtime.Types.Result.GetResult<Prisma.$WilayaShippingRatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  companyTariffs<T extends Prisma.Wilaya$companyTariffsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Wilaya$companyTariffsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ShippingCompanyTariffPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1210,6 +1365,49 @@ export type Wilaya$communesArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   distinct?: Prisma.CommuneScalarFieldEnum | Prisma.CommuneScalarFieldEnum[]
+}
+
+/**
+ * Wilaya.shippingRate
+ */
+export type Wilaya$shippingRateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WilayaShippingRate
+   */
+  select?: Prisma.WilayaShippingRateSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WilayaShippingRate
+   */
+  omit?: Prisma.WilayaShippingRateOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WilayaShippingRateInclude<ExtArgs> | null
+  where?: Prisma.WilayaShippingRateWhereInput
+}
+
+/**
+ * Wilaya.companyTariffs
+ */
+export type Wilaya$companyTariffsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ShippingCompanyTariff
+   */
+  select?: Prisma.ShippingCompanyTariffSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ShippingCompanyTariff
+   */
+  omit?: Prisma.ShippingCompanyTariffOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ShippingCompanyTariffInclude<ExtArgs> | null
+  where?: Prisma.ShippingCompanyTariffWhereInput
+  orderBy?: Prisma.ShippingCompanyTariffOrderByWithRelationInput | Prisma.ShippingCompanyTariffOrderByWithRelationInput[]
+  cursor?: Prisma.ShippingCompanyTariffWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ShippingCompanyTariffScalarFieldEnum | Prisma.ShippingCompanyTariffScalarFieldEnum[]
 }
 
 /**

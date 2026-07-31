@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { ProductOffer } from './offer'
 
 // SF-17 — collections. `category` is the normalized model behind the
 // collection landing pages; the flat string tag on Product is kept for
@@ -55,6 +56,9 @@ export const ReviewSchema = z.object({
 export type Review = z.infer<typeof ReviewSchema>
 
 export const CreateReviewSchema = z.object({
+  // Phone is the shared secret that identifies the reviewer server-side
+  // (same trust model as order tracking) — no OTP/account system.
+  phone: z.e164(),
   rating: z.number().int().min(1).max(5),
   title: z.string().max(200).optional(),
   body: z.string().max(5000).optional()
@@ -208,4 +212,5 @@ export interface AdminProductDetail {
     options: { id: string; value: string; attributeName: string; colorHex: string | null }[]
   }[]
   attributes: { id: string; name: string; type: string; sortOrder: number; options: { id: string; value: string; colorHex: string | null }[] }[]
+  offers: ProductOffer[]
 }

@@ -16,8 +16,8 @@ export type Address = z.infer<typeof AddressSchema>
 
 export const CustomerSchema = z.object({
   id: z.uuid().optional(),
-  // E.164 — the phone number is the primary identity for OTP-based auth
-  // (plan §7, §11), not an optional contact field.
+  // E.164 — the phone number is the primary identity (order lookup, review
+  // eligibility), not an optional contact field.
   phone: z.e164(),
   name: z.string().min(1).max(200).optional()
 })

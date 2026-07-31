@@ -30,11 +30,11 @@ watch(() => route.path, () => { mobileOpen.value = false })
     <!-- Row 1: nav-left / logo-CENTERED / icons-right, three-column grid -->
     <div class="mx-auto grid h-20 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
       <div class="flex items-center gap-2">
-        <PulseButton variant="ghost" color="neutral" size="sm" square class="lg:hidden" aria-label="Open menu" @click="mobileOpen = true">
+        <PulseButton variant="ghost" color="neutral" size="sm" square class="lg:hidden" aria-label="فتح القائمة" @click="mobileOpen = true">
           <Icon name="i-lucide-menu" class="size-5" />
         </PulseButton>
         <nav class="hidden items-center gap-1 lg:flex">
-          <NuxtLink to="/catalog" class="rounded-full px-4 py-2 text-sm font-medium text-neutral-600 transition-colors hover:bg-primary-50 hover:text-primary-700">Shop</NuxtLink>
+          <NuxtLink to="/catalog" class="rounded-full px-4 py-2 text-sm font-medium text-neutral-600 transition-colors hover:bg-primary-50 hover:text-primary-700">المتجر</NuxtLink>
           <NuxtLink v-for="cat in categories" :key="cat.id" :to="`/collections/${cat.slug}`" class="rounded-full px-4 py-2 text-sm font-medium text-neutral-600 transition-colors hover:bg-primary-50 hover:text-primary-700">
             {{ cat.name }}
           </NuxtLink>
@@ -46,16 +46,16 @@ watch(() => route.path, () => { mobileOpen.value = false })
       </NuxtLink>
 
       <div class="flex items-center justify-end gap-2">
-        <NuxtLink to="/deals" class="hidden rounded-full px-4 py-2 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50 lg:inline-block">Deals</NuxtLink>
-        <PulseButton to="/wishlist" variant="ghost" color="neutral" size="sm" square class="hidden sm:inline-flex" aria-label="Wishlist">
+        <NuxtLink to="/deals" class="hidden rounded-full px-4 py-2 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50 lg:inline-block">العروض</NuxtLink>
+        <PulseButton to="/wishlist" variant="ghost" color="neutral" size="sm" square class="hidden sm:inline-flex" aria-label="المفضلة">
           <Icon name="i-lucide-heart" class="size-4" />
         </PulseButton>
-        <PulseButton v-if="settings.displayCart" to="/cart" variant="ghost" color="neutral" size="sm" square class="relative" aria-label="Cart">
+        <PulseButton v-if="settings.displayCart" to="/cart" variant="ghost" color="neutral" size="sm" square class="relative" aria-label="السلة">
           <Icon name="i-lucide-shopping-bag" class="size-4" />
           <ClientOnly>
             <span
               v-if="cart.itemCount > 0"
-              class="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-primary-500 text-[9px] font-bold text-white"
+              class="absolute -end-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-primary-500 text-[9px] font-bold text-white"
             >{{ cart.itemCount }}</span>
           </ClientOnly>
         </PulseButton>
@@ -65,7 +65,7 @@ watch(() => route.path, () => { mobileOpen.value = false })
     <!-- Row 2: a centered search bar beneath the wordmark -->
     <div class="hidden border-t border-neutral-100 py-2.5 md:block">
       <form class="mx-auto max-w-sm px-4" @submit.prevent="onSearch">
-        <PulseInput v-model="searchInput" placeholder="Search gadgets…" icon="i-lucide-search" />
+        <PulseInput v-model="searchInput" placeholder="ابحث عن المنتجات..." icon="i-lucide-search" />
       </form>
     </div>
 
@@ -87,22 +87,22 @@ watch(() => route.path, () => { mobileOpen.value = false })
       leave-active-class="transition-transform duration-150"
       leave-to-class="-translate-x-full"
     >
-      <div v-if="mobileOpen" class="fixed inset-y-0 left-0 z-[70] flex w-80 max-w-[85vw] flex-col bg-white p-6 shadow-[var(--shadow-pulse-lg)] lg:hidden">
+      <div v-if="mobileOpen" class="fixed inset-y-0 start-0 z-[70] flex w-80 max-w-[85vw] flex-col bg-white p-6 shadow-[var(--shadow-pulse-lg)] lg:hidden">
         <div class="mb-6 flex items-center justify-between">
-          <span class="font-display text-xl text-neutral-900">Menu</span>
-          <PulseButton variant="ghost" color="neutral" size="sm" square aria-label="Close menu" @click="mobileOpen = false">
+          <span class="font-display text-xl text-neutral-900">القائمة</span>
+          <PulseButton variant="ghost" color="neutral" size="sm" square aria-label="إغلاق القائمة" @click="mobileOpen = false">
             <Icon name="i-lucide-x" class="size-4" />
           </PulseButton>
         </div>
         <form class="mb-6" @submit.prevent="onSearch">
-          <PulseInput v-model="searchInput" placeholder="Search…" icon="i-lucide-search" />
+          <PulseInput v-model="searchInput" placeholder="بحث..." icon="i-lucide-search" />
         </form>
         <nav class="flex flex-1 flex-col gap-1 overflow-y-auto text-sm font-medium text-neutral-700">
-          <NuxtLink to="/catalog" class="rounded-xl px-3 py-3 hover:bg-primary-50 hover:text-primary-700" @click="mobileOpen = false">All products</NuxtLink>
+          <NuxtLink to="/catalog" class="rounded-xl px-3 py-3 hover:bg-primary-50 hover:text-primary-700" @click="mobileOpen = false">جميع المنتجات</NuxtLink>
           <NuxtLink v-for="cat in categories" :key="cat.id" :to="`/collections/${cat.slug}`" class="rounded-xl px-3 py-3 hover:bg-primary-50 hover:text-primary-700" @click="mobileOpen = false">{{ cat.name }}</NuxtLink>
-          <NuxtLink to="/deals" class="rounded-xl px-3 py-3 hover:bg-primary-50 hover:text-primary-700" @click="mobileOpen = false">Deals</NuxtLink>
-          <NuxtLink to="/new-arrivals" class="rounded-xl px-3 py-3 hover:bg-primary-50 hover:text-primary-700" @click="mobileOpen = false">New arrivals</NuxtLink>
-          <NuxtLink to="/wishlist" class="rounded-xl px-3 py-3 hover:bg-primary-50 hover:text-primary-700" @click="mobileOpen = false">Wishlist</NuxtLink>
+          <NuxtLink to="/deals" class="rounded-xl px-3 py-3 hover:bg-primary-50 hover:text-primary-700" @click="mobileOpen = false">العروض</NuxtLink>
+          <NuxtLink to="/new-arrivals" class="rounded-xl px-3 py-3 hover:bg-primary-50 hover:text-primary-700" @click="mobileOpen = false">وصل حديثاً</NuxtLink>
+          <NuxtLink to="/wishlist" class="rounded-xl px-3 py-3 hover:bg-primary-50 hover:text-primary-700" @click="mobileOpen = false">المفضلة</NuxtLink>
         </nav>
       </div>
     </Transition>

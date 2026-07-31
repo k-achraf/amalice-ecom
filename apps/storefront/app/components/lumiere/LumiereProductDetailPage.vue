@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product, ProductImage, ProductVariant, RatingSummary, Review, LeadFormField } from '@amalice/shared'
+import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review, LeadFormField } from '@amalice/shared'
 
 // Lumiere PDP — a diagonal-split layout echoing the home hero: a black
 // diagonal color-block bleeds behind the gallery corner (the same
@@ -19,6 +19,7 @@ interface RichProduct extends Product {
 const props = defineProps<{
   product: RichProduct | null
   reviewData: { summary: RatingSummary; items: Review[] } | null
+  landingPageImageUrl?: string | null
   galleryImages: { url: string; alt: string }[]
   activeImageIndex: number
   quantity: number
@@ -34,11 +35,16 @@ const props = defineProps<{
   leadFormData?: Record<string, string>
   leadPlacing?: boolean
   leadError?: string | null
+  offers?: ProductOffer[]
+  selectedOfferId?: string | null
+  offerTotalCents?: number
+  leadShippingPriceCents?: number
   onSelectImage: (i: number) => void
   onSelectVariantByKey: (key: string, val: string) => void
   onUpdateQuantity: (v: number) => void
   onAddToCart: () => void
   onSubmitLead?: () => void
+  onSelectOffer?: (offer: ProductOffer) => void
 }>()
 
 function isSwatchKey(key: string) {
@@ -63,9 +69,13 @@ function isSwatchKey(key: string) {
       <!-- Diagonal color-block accent, bleeding behind the gallery corner — echoes the home hero's clip-path motif -->
       <div class="lumiere-diagonal pointer-events-none absolute -left-4 -top-4 hidden h-72 w-72 bg-black lg:block" aria-hidden="true" />
 
-      <div class="relative grid grid-cols-1 gap-10 lg:grid-cols-5 lg:gap-8">
+      <!-- AI landing page image — replaces the gallery+description when the
+      merchant has generated and enabled one (see landing-page.ts). -->
+      <img v-if="props.landingPageImageUrl" :src="props.landingPageImageUrl" :alt="props.product.name" class="relative mb-10 w-full" />
+
+      <div class="relative grid grid-cols-1 gap-10" :class="props.landingPageImageUrl ? '' : 'lg:grid-cols-5 lg:gap-8'">
         <!-- Gallery — the wider lane, sharp-cornered, sitting above the diagonal accent -->
-        <div class="relative space-y-4 lg:col-span-3">
+        <div v-if="!props.landingPageImageUrl" class="relative space-y-4 lg:col-span-3">
           <div class="aspect-square overflow-hidden bg-neutral-100">
             <NuxtImg
               v-if="props.galleryImages.length"
@@ -92,7 +102,7 @@ function isSwatchKey(key: string) {
         </div>
 
         <!-- Detail + order summary — narrower lane, asymmetric against the gallery -->
-        <div class="space-y-6 lg:col-span-2">
+        <div class="space-y-6" :class="props.landingPageImageUrl ? '' : 'lg:col-span-2'">
           <div>
             <p v-if="props.product.category" class="text-xs font-bold uppercase tracking-[0.14em] text-primary-600">{{ props.product.category }}</p>
             <h1 class="font-display mt-1 text-4xl text-black sm:text-5xl">{{ props.product.name }}</h1>
@@ -120,7 +130,26 @@ function isSwatchKey(key: string) {
             <LumiereBadge v-else-if="props.effectiveStock <= props.product.lowStockThreshold" color="primary">Only {{ props.effectiveStock }} left</LumiereBadge>
           </div>
 
-          <p v-if="props.product.description" class="leading-relaxed text-black/60">{{ props.product.description }}</p>
+          <div v-if="props.product.description && !props.landingPageImageUrl" class="product-description-html leading-relaxed text-black/60" v-html="sanitizeDescriptionHtml(props.product.description)" />
+
+          <!-- Offers -->
+          <div v-if="props.offers?.length" class="space-y-2">
+            <button
+              v-for="offer in props.offers"
+              :key="offer.id"
+              type="button"
+              class="flex w-full items-center justify-between rounded border px-4 py-2 text-left text-sm font-medium transition-all"
+              :class="props.selectedOfferId === offer.id ? 'border-black bg-black text-white' : 'border-black/20 text-black/70 hover:border-black'"
+              @click="props.onSelectOffer?.(offer)"
+            >
+              <span>
+                <template v-if="offer.type === 'FixedBundlePrice'">Buy {{ offer.requiredQuantity }} for <PriceDisplay :amount-cents="offer.bundlePriceCents ?? 0" /></template>
+                <template v-else-if="offer.type === 'BuyXGetYFree'">Buy {{ offer.requiredQuantity }}, get {{ offer.freeQuantity }} free</template>
+                <template v-else>Buy {{ offer.requiredQuantity }}, free shipping</template>
+              </span>
+              <Icon v-if="props.selectedOfferId === offer.id" name="i-lucide-check" class="size-4" />
+            </button>
+          </div>
 
           <!-- Variants: shade-swatch dots for color/shade keys, sharp chips otherwise -->
           <div v-for="(values, key) in props.variantOptions" :key="key" class="space-y-3">
@@ -165,12 +194,12 @@ function isSwatchKey(key: string) {
               <LumiereQuantityStepper :model-value="props.quantity" :min="1" :max="props.effectiveStock" :disabled="!props.inStock" @update:model-value="props.onUpdateQuantity" />
             </div>
             <div class="space-y-2 border-t border-black/10 pt-4 text-sm">
-              <div class="flex items-center justify-between"><span class="text-black/50">Subtotal</span><PriceDisplay :amount-cents="props.effectivePriceCents * props.quantity" class="font-bold" /></div>
+              <div class="flex items-center justify-between"><span class="text-black/50">Subtotal</span><PriceDisplay :amount-cents="props.offerTotalCents ?? props.effectivePriceCents * props.quantity" class="font-bold" /></div>
               <div class="flex items-center justify-between"><span class="text-black/50">Shipping</span><span class="font-bold text-primary-700">Free</span></div>
             </div>
             <div class="mt-4 flex items-center justify-between border-t border-black pt-4">
               <span class="font-bold uppercase tracking-wide">Total</span>
-              <PriceDisplay :amount-cents="props.effectivePriceCents * props.quantity" class="text-xl font-bold" />
+              <PriceDisplay :amount-cents="props.offerTotalCents ?? props.effectivePriceCents * props.quantity" class="text-xl font-bold" />
             </div>
             <p class="mt-2 flex items-center gap-1.5 text-xs text-black/40"><Icon name="i-lucide-banknote" class="size-3.5" /> Cash on delivery</p>
             <LumiereButton :disabled="!props.inStock" icon="i-lucide-shopping-bag" size="lg" block class="mt-5" @click="props.onAddToCart">{{ props.inStock ? 'Add to cart' : 'Out of stock' }}</LumiereButton>
@@ -186,7 +215,7 @@ function isSwatchKey(key: string) {
             <LumiereLeadFormFields :fields="props.leadFields ?? []" :data="props.leadFormData ?? {}" />
             <div class="flex items-center justify-between border-t border-black/10 pt-4">
               <span class="font-bold uppercase tracking-wide">Total</span>
-              <PriceDisplay :amount-cents="props.effectivePriceCents * props.quantity" class="text-xl font-bold" />
+              <PriceDisplay :amount-cents="(props.offerTotalCents ?? props.effectivePriceCents * props.quantity) + (props.leadShippingPriceCents ?? 0)" class="text-xl font-bold" />
             </div>
             <div class="flex items-center gap-3">
               <LumiereQuantityStepper :model-value="props.quantity" :min="1" :max="props.effectiveStock" @update:model-value="props.onUpdateQuantity" />

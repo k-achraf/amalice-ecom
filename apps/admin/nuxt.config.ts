@@ -8,6 +8,18 @@ export default defineNuxtConfig({
   ssr: false,
   compatibilityDate: '2026-07-17',
   devServer: { port: 3001 },
+  // RichTextEditor.vue imports these Tiptap packages directly (it builds the
+  // Editor itself rather than going through @nuxt/ui's <UEditor>) — leaf
+  // imports Vite's dep scanner never sees ahead of time since they're not
+  // package.json entry points. Without this, Vite discovers them only once
+  // that route actually loads and re-optimizes mid-session, which can
+  // surface as odd module-identity mismatches on first visit. Pre-bundling
+  // them here keeps everything in one pass.
+  vite: {
+    optimizeDeps: {
+      include: ['@tiptap/core', '@tiptap/vue-3', '@tiptap/starter-kit', '@tiptap/extension-image', '@tiptap/extension-link']
+    }
+  },
   runtimeConfig: {
     public: {
       // NUXT_PUBLIC_API_BASE_URL overrides this at runtime.

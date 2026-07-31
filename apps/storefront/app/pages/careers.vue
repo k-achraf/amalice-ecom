@@ -1,20 +1,20 @@
 <script setup lang="ts">
 // Careers — static content (no jobs model). Perks grid + open roles list.
-useSeoMeta({ title: 'Careers', description: 'Join the team building the COD commerce platform.' })
+useSeoMeta({ title: 'الوظائف', description: 'انضم إلى فريق بناء منصة التجارة القائمة على الدفع عند الاستلام.' })
 
 const perks = [
-  { icon: 'i-lucide-rocket', title: 'Meaningful work', body: 'Every order you help ship reaches a real customer paying cash on their doorstep.' },
-  { icon: 'i-lucide-clock', title: 'Flexible hours', body: 'We measure outcomes, not hours at a desk. Remote-friendly by default.' },
-  { icon: 'i-lucide-heart-pulse', title: 'Health first', body: 'Comprehensive health cover for you and your dependents.' },
-  { icon: 'i-lucide-graduation-cap', title: 'Learning budget', body: 'An annual budget for courses, books, and conferences.' }
+  { icon: 'i-lucide-rocket', title: 'عمل ذو معنى', body: 'كل طلب تساهم في شحنه يصل إلى زبون حقيقي يدفع نقداً عند بابه.' },
+  { icon: 'i-lucide-clock', title: 'ساعات عمل مرنة', body: 'نقيّم النتائج لا ساعات الحضور. العمل عن بُعد متاح افتراضياً.' },
+  { icon: 'i-lucide-heart-pulse', title: 'الصحة أولاً', body: 'تغطية صحية شاملة لك ولمن تعيلهم.' },
+  { icon: 'i-lucide-graduation-cap', title: 'ميزانية تعلّم', body: 'ميزانية سنوية للدورات والكتب والمؤتمرات.' }
 ]
 
 const openings = [
-  { title: 'Senior Backend Engineer', department: 'Engineering', location: 'Remote', type: 'Full-time' },
-  { title: 'Frontend Engineer (Nuxt/Vue)', department: 'Engineering', location: 'Remote', type: 'Full-time' },
-  { title: 'Operations Manager', department: 'Operations', location: 'On-site', type: 'Full-time' },
-  { title: 'Customer Support Lead', department: 'Support', location: 'Remote', type: 'Full-time' },
-  { title: 'Warehouse Associate', department: 'Operations', location: 'On-site', type: 'Full-time' }
+  { title: 'مهندس باكند أول', department: 'الهندسة', location: 'عن بُعد', type: 'دوام كامل' },
+  { title: 'مهندس فرونت إند (Nuxt/Vue)', department: 'الهندسة', location: 'عن بُعد', type: 'دوام كامل' },
+  { title: 'مدير عمليات', department: 'العمليات', location: 'حضوري', type: 'دوام كامل' },
+  { title: 'مسؤول دعم الزبائن', department: 'الدعم', location: 'عن بُعد', type: 'دوام كامل' },
+  { title: 'عامل مستودع', department: 'العمليات', location: 'حضوري', type: 'دوام كامل' }
 ]
 </script>
 
@@ -22,8 +22,8 @@ const openings = [
   <div>
     <div class="border-b border-neutral-200 bg-neutral-50">
       <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <h1 class="text-3xl font-bold text-neutral-900 sm:text-4xl">Build the future of COD commerce</h1>
-        <p class="mt-3 max-w-2xl text-neutral-500">We are a small team shipping a cash-on-delivery platform for customers who deserve a checkout they can trust. Come help.</p>
+        <h1 class="text-3xl font-bold text-neutral-900 sm:text-4xl">ابنِ معنا مستقبل التجارة بالدفع عند الاستلام</h1>
+        <p class="mt-3 max-w-2xl text-neutral-500">نحن فريق صغير نبني منصة دفع عند الاستلام لزبائن يستحقون تجربة شراء يمكنهم الوثوق بها. انضم إلينا.</p>
       </div>
     </div>
 
@@ -42,7 +42,7 @@ const openings = [
 
     <!-- Open roles -->
     <section class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
-      <h2 class="mb-6 text-2xl font-bold text-neutral-900">Open positions</h2>
+      <h2 class="mb-6 text-2xl font-bold text-neutral-900">الوظائف الشاغرة</h2>
       <div class="overflow-hidden rounded-2xl border border-neutral-100 bg-white">
         <div
           v-for="(role, i) in openings"
@@ -54,7 +54,7 @@ const openings = [
             <h3 class="font-semibold text-neutral-900">{{ role.title }}</h3>
             <p class="text-sm text-neutral-500">{{ role.department }} · {{ role.location }} · {{ role.type }}</p>
           </div>
-          <UButton color="neutral" variant="outline" trailing-icon="i-lucide-arrow-right">Apply</UButton>
+          <UButton color="neutral" variant="outline" trailing-icon="i-lucide-arrow-right">تقدّم الآن</UButton>
         </div>
       </div>
     </section>

@@ -17,8 +17,8 @@
         <div class="mb-4 flex size-12 items-center justify-center border-[3px] border-[var(--color-forge-ink)] bg-primary-500">
           <Icon name="i-lucide-shield-check" class="size-6 text-[var(--color-forge-ink)]" />
         </div>
-        <h3 class="font-display text-lg uppercase">Phone-verified</h3>
-        <p class="mt-1 text-sm text-[var(--color-forge-ink)]/60">A quick OTP at checkout keeps fake orders out.</p>
+        <h3 class="font-display text-lg uppercase">Confirmed by phone</h3>
+        <p class="mt-1 text-sm text-[var(--color-forge-ink)]/60">Our team calls to confirm every order before it ships.</p>
       </div>
       <div class="border-[3px] border-[var(--color-forge-ink)] bg-white p-6">
         <div class="mb-4 flex size-12 items-center justify-center border-[3px] border-[var(--color-forge-ink)] bg-primary-500">

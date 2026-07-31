@@ -9,7 +9,24 @@ const router = useRouter()
 
 const stateOptions = [
   { label: 'All states', value: 'all' },
-  ...(['PendingOTP', 'Confirmed', 'Packed', 'HandedToCourier', 'OutForDelivery', 'Delivered', 'CashCollected', 'Reconciled', 'Cancelled', 'DeliveryFailed', 'ReturnedToOrigin', 'Settled'] as OrderState[]).map((s) => ({ label: s, value: s }))
+  ...([
+    'PendingCallCenter',
+    'CallCenterNoAnswer',
+    'WrongNumber',
+    'Postponed',
+    'Confirmed',
+    'OnHold',
+    'Packed',
+    'HandedToCourier',
+    'OutForDelivery',
+    'Delivered',
+    'CashCollected',
+    'Reconciled',
+    'Cancelled',
+    'DeliveryFailed',
+    'ReturnedToOrigin',
+    'Settled'
+  ] as OrderState[]).map((s) => ({ label: s, value: s }))
 ]
 
 const search = ref((route.query.search as string) ?? '')
@@ -78,12 +95,13 @@ function fmtDate(iso: string) {
         </div>
 
         <!-- Stripe-style table -->
-        <div class="admin-kpi-card overflow-hidden">
+        <div class="admin-table-wrap">
           <table class="admin-table w-full text-sm">
             <thead>
               <tr>
                 <th class="px-4 py-2.5 text-left">Order</th>
                 <th class="px-4 py-2.5 text-left">Customer</th>
+                <th class="px-4 py-2.5 text-left">Wilaya</th>
                 <th class="px-4 py-2.5 text-left">Status</th>
                 <th class="px-4 py-2.5 text-right">COD</th>
                 <th class="px-4 py-2.5 text-left">Date</th>
@@ -92,10 +110,10 @@ function fmtDate(iso: string) {
             </thead>
             <tbody>
               <tr v-if="pending">
-                <td colspan="6" class="px-4 py-12 text-center text-muted">Loading…</td>
+                <td colspan="7" class="px-4 py-12 text-center text-muted">Loading…</td>
               </tr>
               <tr v-else-if="!data?.items.length">
-                <td colspan="6" class="px-4 py-12 text-center text-muted">No orders match these filters.</td>
+                <td colspan="7" class="px-4 py-12 text-center text-muted">No orders match these filters.</td>
               </tr>
               <template v-else>
                 <tr v-for="order in data.items" :key="order.id" class="cursor-pointer" @click="navigateTo(`/orders/${order.id}`)">
@@ -108,6 +126,7 @@ function fmtDate(iso: string) {
                     <div class="text-highlighted">{{ order.customer.name ?? '—' }}</div>
                     <div class="tabular text-xs text-muted">{{ order.customer.phone }}</div>
                   </td>
+                  <td class="px-4 py-3 text-muted">{{ order.address.region }}</td>
                   <td class="px-4 py-3"><StatusBadge :state="order.state" /></td>
                   <td class="tabular px-4 py-3 text-right font-medium"><PriceDisplay :amount-cents="order.totalCents" /></td>
                   <td class="px-4 py-3 text-muted">{{ fmtDate(order.createdAt) }}</td>
