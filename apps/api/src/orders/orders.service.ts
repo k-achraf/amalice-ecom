@@ -46,10 +46,15 @@ export class OrdersService {
     totalCents: number,
     phone: string,
     context: OrderRequestContext,
+    items: { productId: string; quantity: number; unitPriceCents: number }[],
     tracking?: Checkout['tracking']
   ): void {
     const eventId = tracking?.eventId || orderId
-    const valueDzd = totalCents / 100
+    // Always a clean rounded number — TikTok/Meta both reject a `value`
+    // that carries float noise (e.g. 112.49999999999999) or, if this were
+    // ever accidentally templated into a string, a currency symbol/comma.
+    const valueDzd = Math.round(totalCents) / 100
+    const contentIds = items.map((i) => i.productId)
 
     this.apps
       .getMetaPixelCapiCredentials()
@@ -59,7 +64,7 @@ export class OrdersService {
           eventName: 'Purchase',
           eventId,
           userData: { phone, ip: context.ip, userAgent: context.userAgent, fbp: tracking?.fbp, fbc: tracking?.fbc },
-          customData: { value: valueDzd, currency: 'DZD', order_id: orderId }
+          customData: { value: valueDzd, currency: 'DZD', order_id: orderId, content_ids: contentIds, content_type: 'product' }
         })
       })
       .catch(() => {
@@ -73,11 +78,21 @@ export class OrdersService {
       .getTikTokPixelEapiCredentials()
       .then((credentials) => {
         if (!credentials) return
+        // TikTok's Events API validates content_id inside properties.
+        // contents[] — it does NOT read a flat properties.content_id, so
+        // the previous `{ content_id: orderId }` shape silently failed
+        // validation ("Content ID is missing") even though a value was
+        // technically present, just in the wrong place and using the
+        // order id instead of a product id.
         this.tiktokEvents.fireAndForget(credentials, {
           eventName: 'CompletePayment',
           eventId,
           userData: { phone, ip: context.ip, userAgent: context.userAgent, ttp: tracking?.ttp },
-          properties: { value: valueDzd, currency: 'DZD', content_id: orderId }
+          properties: {
+            value: valueDzd,
+            currency: 'DZD',
+            contents: items.map((i) => ({ content_id: i.productId, content_type: 'product', quantity: i.quantity, price: Math.round(i.unitPriceCents) / 100 }))
+          }
         })
       })
       .catch(() => {
@@ -281,7 +296,7 @@ export class OrdersService {
       orderId: order.id
     })
 
-    this.sendPurchaseEvents(order.id, totalCents, checkout.phone, context, checkout.tracking)
+    this.sendPurchaseEvents(order.id, totalCents, checkout.phone, context, order.items, checkout.tracking)
     this.pushToGoogleSheets(order.id)
 
     return order
@@ -401,7 +416,7 @@ export class OrdersService {
       orderId: order.id
     })
 
-    this.sendPurchaseEvents(order.id, totalCents, phone, context, lead.tracking)
+    this.sendPurchaseEvents(order.id, totalCents, phone, context, order.items, lead.tracking)
     this.pushToGoogleSheets(order.id)
 
     return order

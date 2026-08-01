@@ -218,7 +218,9 @@ export class AppsService {
         eventName,
         eventId: `test-${Date.now()}`,
         userData: { phone: '+15555550100', ip: '127.0.0.1', userAgent: 'Amalice-Test-Event/1.0' },
-        properties: eventName === 'CompletePayment' ? { value: 1, currency: 'DZD' } : undefined
+        // Same contents[] shape sendPurchaseEvents uses for the real
+        // event — a flat content_id isn't valid against TikTok's schema.
+        properties: eventName === 'CompletePayment' ? { value: 1, currency: 'DZD', contents: [{ content_id: 'test-product', content_type: 'product', quantity: 1, price: 1 }] } : undefined
       }
     )
     return { eventsReceived: result.eventsReceived, requestId: result.requestId, messages: result.messages }
