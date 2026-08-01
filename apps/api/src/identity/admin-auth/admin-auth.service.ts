@@ -6,7 +6,12 @@ import { PrismaService } from '../../prisma/prisma.service'
 import type { Env } from '../../config/env.validation'
 import type { AdminJwtPayload } from './jwt-payload.interface'
 
-const ACCESS_TOKEN_TTL = '15m'
+// The admin SPA has no silent-refresh flow (see auth.ts's own comment on
+// this) — a 401 just clears the session and bounces to /login. With the
+// original 15m TTL that meant staff got logged out mid-task during normal
+// use; 12h (a full shift) avoids that without going as far as the 7-day
+// refresh token's window.
+const ACCESS_TOKEN_TTL = '12h'
 const REFRESH_TOKEN_TTL = '7d'
 
 @Injectable()
