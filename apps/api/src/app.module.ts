@@ -22,6 +22,7 @@ import { AppsModule } from './apps/apps.module'
 import { LandingPagesModule } from './landing-pages/landing-pages.module'
 import { ShippingCompaniesModule } from './shipping-companies/shipping-companies.module'
 import { SourcingModule } from './sourcing/sourcing.module'
+import { ServerPerformanceModule } from './server-performance/server-performance.module'
 
 @Module({
   imports: [
@@ -64,7 +65,8 @@ import { SourcingModule } from './sourcing/sourcing.module'
     AppsModule,
     LandingPagesModule,
     ShippingCompaniesModule,
-    SourcingModule
+    SourcingModule,
+    ServerPerformanceModule
   ],
   providers: [
     { provide: APP_PIPE, useClass: ZodValidationPipe },
