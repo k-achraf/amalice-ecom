@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { PhoneSchema } from './phone'
 
 // Admin-configured product-to-product upsell pairings — "customers who buy
 // X are offered Y" — powering the upsells system's storefront post-checkout
@@ -57,7 +58,7 @@ export type OrderUpsellOffer = z.infer<typeof OrderUpsellOfferSchema>
 // pattern as order tracking — see TrackOrderQuerySchema) plus which upsell
 // and how many units.
 export const AcceptOrderUpsellSchema = z.object({
-  phone: z.e164(),
+  phone: PhoneSchema,
   upsellId: z.uuid(),
   quantity: z.number().int().positive().default(1)
 })

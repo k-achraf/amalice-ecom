@@ -24,19 +24,25 @@
 // fetched. FALLBACK stays a static import since it's the minimal template's
 // own page and is a likely/default render path either way.
 //
-// NOT wrapped in <Suspense>: that was tried (to fix a PageSpeed "Hydration
-// Mismatch" diagnostic) and reverted after it caused a measured, severe CLS
-// regression (0.001 -> 1.000, the max possible score) in production. On the
-// client, resolving this subtree's async chunk means a real network fetch
-// (no benefit from Node's warm SSR module cache) — while pending, Suspense
-// renders nothing for the whole page-content subtree, so the entire page
-// pops in at once the moment it resolves, and it also gates the LCP element
-// (which lives inside this subtree) from existing in the DOM at all until
-// then. A CLS=1.0 regression on a scored Core Web Vital outweighs an
-// unscored hydration-mismatch diagnostic — if hydration mismatch needs
-// fixing again, it needs a fix that doesn't blank the SSR-rendered DOM on
-// the client while the chunk loads.
-import { defineAsyncComponent, type Component } from 'vue'
+// NOT wrapped in <Suspense>: that was tried (to fix a "Hydration Mismatch"
+// diagnostic) and reverted after it caused a measured, severe CLS regression
+// (0.001 -> 1.000, the max possible score) in production — Suspense renders
+// NOTHING for this whole subtree while the client-side chunk fetch is
+// pending, so the entire page popped in at once, and gated the LCP element
+// (which lives inside this subtree) from existing in the DOM until then.
+//
+// Reverting Suspense brought back the original hydration-mismatch warning
+// though (Vue can't cleanly hydrate an unresolved async component without
+// SOME strategy telling it how). The actual fix for both problems at once is
+// Vue 3.5's lazy-hydration API: `hydrate: hydrateOnIdle()` tells Vue to keep
+// the SSR-rendered DOM exactly as-is (visible, no blanking, no CLS) and only
+// attach interactivity/reactivity once the browser is idle — instead of
+// Suspense's "unmount and wait" behavior. See the `lazy()` helper below.
+import { defineAsyncComponent, hydrateOnIdle, type Component } from 'vue'
+
+function lazy(loader: () => Promise<{ default: Component }>) {
+  return defineAsyncComponent({ loader, hydrate: hydrateOnIdle() })
+}
 
 // ---- fallback (minimal) page components ----
 import CatalogPage from './pages/CatalogPage.vue'
@@ -52,139 +58,139 @@ import ConfirmationPage from './pages/ConfirmationPage.vue'
 // (pageName, template) → component. Missing entry → fallback below.
 const OVERRIDES: Record<string, Record<string, Component>> = {
   Catalog: {
-    editorial: defineAsyncComponent(() => import('./editorial/EditorialCatalogPage.vue')),
-    boutique: defineAsyncComponent(() => import('./boutique/BoutiqueCatalogPage.vue')),
-    promify: defineAsyncComponent(() => import('./promify/PromifyCatalogPage.vue')),
-    nova: defineAsyncComponent(() => import('./nova/NovaCatalogPage.vue')),
-    atelier: defineAsyncComponent(() => import('./atelier/AtelierCatalogPage.vue')),
-    drop: defineAsyncComponent(() => import('./drop/DropCatalogPage.vue')),
-    bloom: defineAsyncComponent(() => import('./bloom/BloomCatalogPage.vue')),
-    hearth: defineAsyncComponent(() => import('./hearth/HearthCatalogPage.vue')),
-    volt: defineAsyncComponent(() => import('./volt/VoltCatalogPage.vue')),
-    pulse: defineAsyncComponent(() => import('./pulse/PulseCatalogPage.vue')),
-    lumiere: defineAsyncComponent(() => import('./lumiere/LumiereCatalogPage.vue')),
-    trove: defineAsyncComponent(() => import('./trove/TroveCatalogPage.vue')),
-    forge: defineAsyncComponent(() => import('./forge/ForgeCatalogPage.vue')),
-    impulse: defineAsyncComponent(() => import('./impulse/ImpulseCatalogPage.vue'))
+    editorial: lazy(() => import('./editorial/EditorialCatalogPage.vue')),
+    boutique: lazy(() => import('./boutique/BoutiqueCatalogPage.vue')),
+    promify: lazy(() => import('./promify/PromifyCatalogPage.vue')),
+    nova: lazy(() => import('./nova/NovaCatalogPage.vue')),
+    atelier: lazy(() => import('./atelier/AtelierCatalogPage.vue')),
+    drop: lazy(() => import('./drop/DropCatalogPage.vue')),
+    bloom: lazy(() => import('./bloom/BloomCatalogPage.vue')),
+    hearth: lazy(() => import('./hearth/HearthCatalogPage.vue')),
+    volt: lazy(() => import('./volt/VoltCatalogPage.vue')),
+    pulse: lazy(() => import('./pulse/PulseCatalogPage.vue')),
+    lumiere: lazy(() => import('./lumiere/LumiereCatalogPage.vue')),
+    trove: lazy(() => import('./trove/TroveCatalogPage.vue')),
+    forge: lazy(() => import('./forge/ForgeCatalogPage.vue')),
+    impulse: lazy(() => import('./impulse/ImpulseCatalogPage.vue'))
   },
   ProductDetail: {
-    editorial: defineAsyncComponent(() => import('./editorial/EditorialProductDetailPage.vue')),
-    boutique: defineAsyncComponent(() => import('./boutique/BoutiqueProductDetailPage.vue')),
-    promify: defineAsyncComponent(() => import('./promify/PromifyProductDetailPage.vue')),
-    nova: defineAsyncComponent(() => import('./nova/NovaProductDetailPage.vue')),
-    atelier: defineAsyncComponent(() => import('./atelier/AtelierProductDetailPage.vue')),
-    drop: defineAsyncComponent(() => import('./drop/DropProductDetailPage.vue')),
-    bloom: defineAsyncComponent(() => import('./bloom/BloomProductDetailPage.vue')),
-    hearth: defineAsyncComponent(() => import('./hearth/HearthProductDetailPage.vue')),
-    volt: defineAsyncComponent(() => import('./volt/VoltProductDetailPage.vue')),
-    pulse: defineAsyncComponent(() => import('./pulse/PulseProductDetailPage.vue')),
-    lumiere: defineAsyncComponent(() => import('./lumiere/LumiereProductDetailPage.vue')),
-    trove: defineAsyncComponent(() => import('./trove/TroveProductDetailPage.vue')),
-    forge: defineAsyncComponent(() => import('./forge/ForgeProductDetailPage.vue')),
-    impulse: defineAsyncComponent(() => import('./impulse/ImpulseProductDetailPage.vue'))
+    editorial: lazy(() => import('./editorial/EditorialProductDetailPage.vue')),
+    boutique: lazy(() => import('./boutique/BoutiqueProductDetailPage.vue')),
+    promify: lazy(() => import('./promify/PromifyProductDetailPage.vue')),
+    nova: lazy(() => import('./nova/NovaProductDetailPage.vue')),
+    atelier: lazy(() => import('./atelier/AtelierProductDetailPage.vue')),
+    drop: lazy(() => import('./drop/DropProductDetailPage.vue')),
+    bloom: lazy(() => import('./bloom/BloomProductDetailPage.vue')),
+    hearth: lazy(() => import('./hearth/HearthProductDetailPage.vue')),
+    volt: lazy(() => import('./volt/VoltProductDetailPage.vue')),
+    pulse: lazy(() => import('./pulse/PulseProductDetailPage.vue')),
+    lumiere: lazy(() => import('./lumiere/LumiereProductDetailPage.vue')),
+    trove: lazy(() => import('./trove/TroveProductDetailPage.vue')),
+    forge: lazy(() => import('./forge/ForgeProductDetailPage.vue')),
+    impulse: lazy(() => import('./impulse/ImpulseProductDetailPage.vue'))
   },
   Cart: {
-    editorial: defineAsyncComponent(() => import('./editorial/EditorialCartPage.vue')),
-    boutique: defineAsyncComponent(() => import('./boutique/BoutiqueCartPage.vue')),
-    promify: defineAsyncComponent(() => import('./promify/PromifyCartPage.vue')),
-    nova: defineAsyncComponent(() => import('./nova/NovaCartPage.vue')),
-    atelier: defineAsyncComponent(() => import('./atelier/AtelierCartPage.vue')),
-    drop: defineAsyncComponent(() => import('./drop/DropCartPage.vue')),
-    bloom: defineAsyncComponent(() => import('./bloom/BloomCartPage.vue')),
-    hearth: defineAsyncComponent(() => import('./hearth/HearthCartPage.vue')),
-    volt: defineAsyncComponent(() => import('./volt/VoltCartPage.vue')),
-    pulse: defineAsyncComponent(() => import('./pulse/PulseCartPage.vue')),
-    lumiere: defineAsyncComponent(() => import('./lumiere/LumiereCartPage.vue')),
-    trove: defineAsyncComponent(() => import('./trove/TroveCartPage.vue')),
-    forge: defineAsyncComponent(() => import('./forge/ForgeCartPage.vue')),
-    impulse: defineAsyncComponent(() => import('./impulse/ImpulseCartPage.vue'))
+    editorial: lazy(() => import('./editorial/EditorialCartPage.vue')),
+    boutique: lazy(() => import('./boutique/BoutiqueCartPage.vue')),
+    promify: lazy(() => import('./promify/PromifyCartPage.vue')),
+    nova: lazy(() => import('./nova/NovaCartPage.vue')),
+    atelier: lazy(() => import('./atelier/AtelierCartPage.vue')),
+    drop: lazy(() => import('./drop/DropCartPage.vue')),
+    bloom: lazy(() => import('./bloom/BloomCartPage.vue')),
+    hearth: lazy(() => import('./hearth/HearthCartPage.vue')),
+    volt: lazy(() => import('./volt/VoltCartPage.vue')),
+    pulse: lazy(() => import('./pulse/PulseCartPage.vue')),
+    lumiere: lazy(() => import('./lumiere/LumiereCartPage.vue')),
+    trove: lazy(() => import('./trove/TroveCartPage.vue')),
+    forge: lazy(() => import('./forge/ForgeCartPage.vue')),
+    impulse: lazy(() => import('./impulse/ImpulseCartPage.vue'))
   },
   Checkout: {
-    editorial: defineAsyncComponent(() => import('./editorial/EditorialCheckoutPage.vue')),
-    boutique: defineAsyncComponent(() => import('./boutique/BoutiqueCheckoutPage.vue')),
-    promify: defineAsyncComponent(() => import('./promify/PromifyCheckoutPage.vue')),
-    nova: defineAsyncComponent(() => import('./nova/NovaCheckoutPage.vue')),
-    atelier: defineAsyncComponent(() => import('./atelier/AtelierCheckoutPage.vue')),
-    drop: defineAsyncComponent(() => import('./drop/DropCheckoutPage.vue')),
-    bloom: defineAsyncComponent(() => import('./bloom/BloomCheckoutPage.vue')),
-    hearth: defineAsyncComponent(() => import('./hearth/HearthCheckoutPage.vue')),
-    volt: defineAsyncComponent(() => import('./volt/VoltCheckoutPage.vue')),
-    pulse: defineAsyncComponent(() => import('./pulse/PulseCheckoutPage.vue')),
-    lumiere: defineAsyncComponent(() => import('./lumiere/LumiereCheckoutPage.vue')),
-    trove: defineAsyncComponent(() => import('./trove/TroveCheckoutPage.vue')),
-    forge: defineAsyncComponent(() => import('./forge/ForgeCheckoutPage.vue')),
-    impulse: defineAsyncComponent(() => import('./impulse/ImpulseCheckoutPage.vue'))
+    editorial: lazy(() => import('./editorial/EditorialCheckoutPage.vue')),
+    boutique: lazy(() => import('./boutique/BoutiqueCheckoutPage.vue')),
+    promify: lazy(() => import('./promify/PromifyCheckoutPage.vue')),
+    nova: lazy(() => import('./nova/NovaCheckoutPage.vue')),
+    atelier: lazy(() => import('./atelier/AtelierCheckoutPage.vue')),
+    drop: lazy(() => import('./drop/DropCheckoutPage.vue')),
+    bloom: lazy(() => import('./bloom/BloomCheckoutPage.vue')),
+    hearth: lazy(() => import('./hearth/HearthCheckoutPage.vue')),
+    volt: lazy(() => import('./volt/VoltCheckoutPage.vue')),
+    pulse: lazy(() => import('./pulse/PulseCheckoutPage.vue')),
+    lumiere: lazy(() => import('./lumiere/LumiereCheckoutPage.vue')),
+    trove: lazy(() => import('./trove/TroveCheckoutPage.vue')),
+    forge: lazy(() => import('./forge/ForgeCheckoutPage.vue')),
+    impulse: lazy(() => import('./impulse/ImpulseCheckoutPage.vue'))
   },
   Collection: {
-    editorial: defineAsyncComponent(() => import('./editorial/EditorialCollectionPage.vue')),
-    boutique: defineAsyncComponent(() => import('./boutique/BoutiqueCollectionPage.vue')),
-    promify: defineAsyncComponent(() => import('./promify/PromifyCollectionPage.vue')),
-    nova: defineAsyncComponent(() => import('./nova/NovaCollectionPage.vue')),
-    atelier: defineAsyncComponent(() => import('./atelier/AtelierCollectionPage.vue')),
-    drop: defineAsyncComponent(() => import('./drop/DropCollectionPage.vue')),
-    bloom: defineAsyncComponent(() => import('./bloom/BloomCollectionPage.vue')),
-    hearth: defineAsyncComponent(() => import('./hearth/HearthCollectionPage.vue')),
-    volt: defineAsyncComponent(() => import('./volt/VoltCollectionPage.vue')),
-    pulse: defineAsyncComponent(() => import('./pulse/PulseCollectionPage.vue')),
-    lumiere: defineAsyncComponent(() => import('./lumiere/LumiereCollectionPage.vue')),
-    trove: defineAsyncComponent(() => import('./trove/TroveCollectionPage.vue')),
-    forge: defineAsyncComponent(() => import('./forge/ForgeCollectionPage.vue')),
-    impulse: defineAsyncComponent(() => import('./impulse/ImpulseCollectionPage.vue'))
+    editorial: lazy(() => import('./editorial/EditorialCollectionPage.vue')),
+    boutique: lazy(() => import('./boutique/BoutiqueCollectionPage.vue')),
+    promify: lazy(() => import('./promify/PromifyCollectionPage.vue')),
+    nova: lazy(() => import('./nova/NovaCollectionPage.vue')),
+    atelier: lazy(() => import('./atelier/AtelierCollectionPage.vue')),
+    drop: lazy(() => import('./drop/DropCollectionPage.vue')),
+    bloom: lazy(() => import('./bloom/BloomCollectionPage.vue')),
+    hearth: lazy(() => import('./hearth/HearthCollectionPage.vue')),
+    volt: lazy(() => import('./volt/VoltCollectionPage.vue')),
+    pulse: lazy(() => import('./pulse/PulseCollectionPage.vue')),
+    lumiere: lazy(() => import('./lumiere/LumiereCollectionPage.vue')),
+    trove: lazy(() => import('./trove/TroveCollectionPage.vue')),
+    forge: lazy(() => import('./forge/ForgeCollectionPage.vue')),
+    impulse: lazy(() => import('./impulse/ImpulseCollectionPage.vue'))
   },
   Deals: {
-    editorial: defineAsyncComponent(() => import('./editorial/EditorialDealsPage.vue')),
-    boutique: defineAsyncComponent(() => import('./boutique/BoutiqueDealsPage.vue')),
-    promify: defineAsyncComponent(() => import('./promify/PromifyDealsPage.vue')),
-    nova: defineAsyncComponent(() => import('./nova/NovaDealsPage.vue')),
-    atelier: defineAsyncComponent(() => import('./atelier/AtelierDealsPage.vue')),
-    drop: defineAsyncComponent(() => import('./drop/DropDealsPage.vue')),
-    bloom: defineAsyncComponent(() => import('./bloom/BloomDealsPage.vue')),
-    hearth: defineAsyncComponent(() => import('./hearth/HearthDealsPage.vue')),
-    volt: defineAsyncComponent(() => import('./volt/VoltDealsPage.vue')),
-    pulse: defineAsyncComponent(() => import('./pulse/PulseDealsPage.vue')),
-    lumiere: defineAsyncComponent(() => import('./lumiere/LumiereDealsPage.vue')),
-    trove: defineAsyncComponent(() => import('./trove/TroveDealsPage.vue')),
-    forge: defineAsyncComponent(() => import('./forge/ForgeDealsPage.vue')),
-    impulse: defineAsyncComponent(() => import('./impulse/ImpulseDealsPage.vue'))
+    editorial: lazy(() => import('./editorial/EditorialDealsPage.vue')),
+    boutique: lazy(() => import('./boutique/BoutiqueDealsPage.vue')),
+    promify: lazy(() => import('./promify/PromifyDealsPage.vue')),
+    nova: lazy(() => import('./nova/NovaDealsPage.vue')),
+    atelier: lazy(() => import('./atelier/AtelierDealsPage.vue')),
+    drop: lazy(() => import('./drop/DropDealsPage.vue')),
+    bloom: lazy(() => import('./bloom/BloomDealsPage.vue')),
+    hearth: lazy(() => import('./hearth/HearthDealsPage.vue')),
+    volt: lazy(() => import('./volt/VoltDealsPage.vue')),
+    pulse: lazy(() => import('./pulse/PulseDealsPage.vue')),
+    lumiere: lazy(() => import('./lumiere/LumiereDealsPage.vue')),
+    trove: lazy(() => import('./trove/TroveDealsPage.vue')),
+    forge: lazy(() => import('./forge/ForgeDealsPage.vue')),
+    impulse: lazy(() => import('./impulse/ImpulseDealsPage.vue'))
   },
   Wishlist: {
-    editorial: defineAsyncComponent(() => import('./editorial/EditorialWishlistPage.vue')),
-    boutique: defineAsyncComponent(() => import('./boutique/BoutiqueWishlistPage.vue')),
-    promify: defineAsyncComponent(() => import('./promify/PromifyWishlistPage.vue')),
-    nova: defineAsyncComponent(() => import('./nova/NovaWishlistPage.vue')),
-    atelier: defineAsyncComponent(() => import('./atelier/AtelierWishlistPage.vue')),
-    drop: defineAsyncComponent(() => import('./drop/DropWishlistPage.vue')),
-    bloom: defineAsyncComponent(() => import('./bloom/BloomWishlistPage.vue')),
-    hearth: defineAsyncComponent(() => import('./hearth/HearthWishlistPage.vue')),
-    volt: defineAsyncComponent(() => import('./volt/VoltWishlistPage.vue')),
-    pulse: defineAsyncComponent(() => import('./pulse/PulseWishlistPage.vue')),
-    lumiere: defineAsyncComponent(() => import('./lumiere/LumiereWishlistPage.vue')),
-    trove: defineAsyncComponent(() => import('./trove/TroveWishlistPage.vue')),
-    forge: defineAsyncComponent(() => import('./forge/ForgeWishlistPage.vue')),
-    impulse: defineAsyncComponent(() => import('./impulse/ImpulseWishlistPage.vue'))
+    editorial: lazy(() => import('./editorial/EditorialWishlistPage.vue')),
+    boutique: lazy(() => import('./boutique/BoutiqueWishlistPage.vue')),
+    promify: lazy(() => import('./promify/PromifyWishlistPage.vue')),
+    nova: lazy(() => import('./nova/NovaWishlistPage.vue')),
+    atelier: lazy(() => import('./atelier/AtelierWishlistPage.vue')),
+    drop: lazy(() => import('./drop/DropWishlistPage.vue')),
+    bloom: lazy(() => import('./bloom/BloomWishlistPage.vue')),
+    hearth: lazy(() => import('./hearth/HearthWishlistPage.vue')),
+    volt: lazy(() => import('./volt/VoltWishlistPage.vue')),
+    pulse: lazy(() => import('./pulse/PulseWishlistPage.vue')),
+    lumiere: lazy(() => import('./lumiere/LumiereWishlistPage.vue')),
+    trove: lazy(() => import('./trove/TroveWishlistPage.vue')),
+    forge: lazy(() => import('./forge/ForgeWishlistPage.vue')),
+    impulse: lazy(() => import('./impulse/ImpulseWishlistPage.vue'))
   },
   NewArrivals: {
-    editorial: defineAsyncComponent(() => import('./editorial/EditorialNewArrivalsPage.vue')),
-    boutique: defineAsyncComponent(() => import('./boutique/BoutiqueNewArrivalsPage.vue')),
-    promify: defineAsyncComponent(() => import('./promify/PromifyNewArrivalsPage.vue')),
-    nova: defineAsyncComponent(() => import('./nova/NovaNewArrivalsPage.vue')),
-    atelier: defineAsyncComponent(() => import('./atelier/AtelierNewArrivalsPage.vue')),
-    drop: defineAsyncComponent(() => import('./drop/DropNewArrivalsPage.vue')),
-    bloom: defineAsyncComponent(() => import('./bloom/BloomNewArrivalsPage.vue')),
-    hearth: defineAsyncComponent(() => import('./hearth/HearthNewArrivalsPage.vue')),
-    volt: defineAsyncComponent(() => import('./volt/VoltNewArrivalsPage.vue')),
-    pulse: defineAsyncComponent(() => import('./pulse/PulseNewArrivalsPage.vue')),
-    lumiere: defineAsyncComponent(() => import('./lumiere/LumiereNewArrivalsPage.vue')),
-    trove: defineAsyncComponent(() => import('./trove/TroveNewArrivalsPage.vue')),
-    forge: defineAsyncComponent(() => import('./forge/ForgeNewArrivalsPage.vue')),
-    impulse: defineAsyncComponent(() => import('./impulse/ImpulseNewArrivalsPage.vue'))
+    editorial: lazy(() => import('./editorial/EditorialNewArrivalsPage.vue')),
+    boutique: lazy(() => import('./boutique/BoutiqueNewArrivalsPage.vue')),
+    promify: lazy(() => import('./promify/PromifyNewArrivalsPage.vue')),
+    nova: lazy(() => import('./nova/NovaNewArrivalsPage.vue')),
+    atelier: lazy(() => import('./atelier/AtelierNewArrivalsPage.vue')),
+    drop: lazy(() => import('./drop/DropNewArrivalsPage.vue')),
+    bloom: lazy(() => import('./bloom/BloomNewArrivalsPage.vue')),
+    hearth: lazy(() => import('./hearth/HearthNewArrivalsPage.vue')),
+    volt: lazy(() => import('./volt/VoltNewArrivalsPage.vue')),
+    pulse: lazy(() => import('./pulse/PulseNewArrivalsPage.vue')),
+    lumiere: lazy(() => import('./lumiere/LumiereNewArrivalsPage.vue')),
+    trove: lazy(() => import('./trove/TroveNewArrivalsPage.vue')),
+    forge: lazy(() => import('./forge/ForgeNewArrivalsPage.vue')),
+    impulse: lazy(() => import('./impulse/ImpulseNewArrivalsPage.vue'))
   },
   // Only impulse has its own confirmation presentation for now — every other
   // template falls through to the generic ConfirmationPage below (see this
   // component's own top-of-file comment: "an unmapped (page, template) pair
   // also renders the fallback").
   Confirmation: {
-    impulse: defineAsyncComponent(() => import('./impulse/ImpulseConfirmationPage.vue'))
+    impulse: lazy(() => import('./impulse/ImpulseConfirmationPage.vue'))
   }
 }
 

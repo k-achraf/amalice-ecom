@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { AddressSchema } from './customer'
 import { CheckoutTrackingSchema } from './apps'
 import { ShippingTypeSchema, type ShippingType } from './shipping'
+import { PhoneSchema } from './phone'
 
 // Every state from the order lifecycle state machine (cod-platform-plan.md
 // §7) — the single source of truth other places (StatusBadge, the DB enum
@@ -197,7 +198,7 @@ export const CheckoutItemSchema = z.object({
 export type CheckoutItem = z.infer<typeof CheckoutItemSchema>
 
 export const CheckoutSchema = z.object({
-  phone: z.e164(),
+  phone: PhoneSchema,
   name: z.string().min(1).max(200).optional(),
   address: AddressSchema.omit({ id: true }),
   // wilayaId + shippingType are the authoritative shipping selection — the
@@ -250,7 +251,7 @@ export type AbandonedLeadOrder = z.infer<typeof AbandonedLeadOrderSchema>
 // Order ID is in the URL; phone is the shared secret that makes this a
 // legitimate public lookup instead of "guess a UUID, read anyone's order."
 export const TrackOrderQuerySchema = z.object({
-  phone: z.e164()
+  phone: PhoneSchema
 })
 export type TrackOrderQuery = z.infer<typeof TrackOrderQuerySchema>
 

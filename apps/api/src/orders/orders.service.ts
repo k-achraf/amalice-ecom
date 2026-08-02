@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import type { AbandonedLeadOrder, AcceptOrderUpsell, Checkout, CheckoutItem, LeadOrder, ShippingType } from '@amalice/shared'
+import { normalizeAlgerianPhone, type AbandonedLeadOrder, type AcceptOrderUpsell, type Checkout, type CheckoutItem, type LeadOrder, type ShippingType } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import type { Product, ProductVariant, Prisma } from '../generated/prisma/client'
 import { NotificationsService } from '../notifications/notifications.service'
@@ -329,7 +329,16 @@ export class OrdersService {
     // wilayaId/shippingType being separate typed fields on LeadOrderSchema.
     const f: Record<string, string> = lead.fields as Record<string, string>
     const name: string = f.name || f.fullName || ''
-    const phone: string = f.phone || f.phoneNumber || ''
+    // Lead-form fields are a free-form record (LeadOrderSchema.fields is
+    // z.record(z.string())), not individually schema-validated — normalize
+    // here so this matches the same canonical E.164 form CheckoutSchema/
+    // TrackOrderQuerySchema/AcceptOrderUpsellSchema produce via PhoneSchema.
+    // Without this, an abandoned-order row created earlier in the same
+    // funnel visit (createAbandonedOrder, below) and this final submit could
+    // store/compare phone in inconsistent formats, silently failing the
+    // convertingAbandoned match further down and creating a duplicate order.
+    const rawPhone = f.phone || f.phoneNumber || ''
+    const phone: string = rawPhone ? normalizeAlgerianPhone(rawPhone) : ''
     const wilaya: string = wilayaName
     const commune: string = f.commune || f.city || ''
 
@@ -459,7 +468,12 @@ export class OrdersService {
 
     const f: Record<string, string> = lead.fields as Record<string, string>
     const name: string = f.name || f.fullName || ''
-    const phone: string = f.phone || f.phoneNumber || ''
+    // Normalized the same way createLeadOrder does — see its comment. This
+    // is what makes createLeadOrder's later `convertingAbandoned` phone
+    // match reliable regardless of how the customer typed their number here
+    // vs. at final submit.
+    const rawPhone = f.phone || f.phoneNumber || ''
+    const phone: string = rawPhone ? normalizeAlgerianPhone(rawPhone) : ''
     const commune: string = f.commune || f.city || ''
     if (!phone) throw new ConflictException('Phone is required')
 

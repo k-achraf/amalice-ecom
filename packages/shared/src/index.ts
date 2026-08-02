@@ -1,4 +1,5 @@
 export * from './order'
+export * from './phone'
 export * from './product'
 export * from './customer'
 export * from './shipment'

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { PhoneSchema } from './phone'
 
 export const AddressSchema = z.object({
   id: z.uuid().optional(),
@@ -16,9 +17,10 @@ export type Address = z.infer<typeof AddressSchema>
 
 export const CustomerSchema = z.object({
   id: z.uuid().optional(),
-  // E.164 — the phone number is the primary identity (order lookup, review
-  // eligibility), not an optional contact field.
-  phone: z.e164(),
+  // E.164 (normalized via PhoneSchema) — the phone number is the primary
+  // identity (order lookup, review eligibility), not an optional contact
+  // field.
+  phone: PhoneSchema,
   name: z.string().min(1).max(200).optional()
 })
 export type Customer = z.infer<typeof CustomerSchema>

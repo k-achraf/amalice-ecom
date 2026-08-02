@@ -51,7 +51,13 @@ export default defineNuxtConfig({
   // e.g. --font-boutique-display: 'Fraunces', that's just an inert fallback
   // token now — the RTL override always wins since dir is always rtl.
   fonts: {
-    families: [{ name: 'Cairo', provider: 'google' }],
+    // subsets: this storefront only ever renders Arabic script + Latin
+    // (brand name, numerals) — restricting away Cairo's other Google-Fonts
+    // subsets (cyrillic, greek, vietnamese, etc.) it would otherwise fetch
+    // is what fixes Chrome's "preloaded but not used within a few seconds"
+    // warning: preload: true (below) was preloading every subset of every
+    // weight unconditionally, most of which no page on this site ever uses.
+    families: [{ name: 'Cairo', provider: 'google', subsets: ['arabic', 'latin'] }],
     // PERFORMANCE: @nuxt/fonts only auto-preloads a @font-face subset when it
     // has NO unicodeRange — Cairo (Latin + Arabic coverage) is served as
     // multiple Google-Fonts unicode-range subsets, so every one of them was

@@ -13,9 +13,16 @@
 //
 // PERFORMANCE: every override is `defineAsyncComponent` (dynamic import), not
 // a static top-level import — see TemplatePage.vue's identical comment for
-// why, INCLUDING why it's deliberately not wrapped in <Suspense> (tried,
-// reverted — caused a measured CLS=1.0 regression in production).
-import { defineAsyncComponent, type Component } from 'vue'
+// why, INCLUDING why it's not wrapped in <Suspense> (tried, reverted — CLS=1.0
+// regression) and instead uses Vue 3.5's `hydrate: hydrateOnIdle()` lazy-
+// hydration strategy via the `lazy()` helper, which avoids both that
+// regression AND the hydration-mismatch warning a bare unresolved async
+// component triggers without it.
+import { defineAsyncComponent, hydrateOnIdle, type Component } from 'vue'
+
+function lazy(loader: () => Promise<{ default: Component }>) {
+  return defineAsyncComponent({ loader, hydrate: hydrateOnIdle() })
+}
 import HomeHero from './home/HomeHero.vue'
 import HomeFeaturedCategories from './home/HomeFeaturedCategories.vue'
 import HomeProductGrid from './home/HomeProductGrid.vue'
@@ -27,52 +34,52 @@ import ProductCard from './ProductCard.vue'
 // override registry lives — add a new section or template here.
 const OVERRIDES: Record<string, Record<string, Component>> = {
   HomeHero: {
-    editorial: defineAsyncComponent(() => import('./editorial/EditorialHomeHero.vue')),
-    boutique: defineAsyncComponent(() => import('./boutique/BoutiqueHomeHero.vue')),
-    promify: defineAsyncComponent(() => import('./promify/PromifyHomeHero.vue')),
-    nova: defineAsyncComponent(() => import('./nova/NovaHomeHero.vue')),
-    atelier: defineAsyncComponent(() => import('./atelier/AtelierHomeHero.vue')),
-    drop: defineAsyncComponent(() => import('./drop/DropHomeHero.vue')),
-    bloom: defineAsyncComponent(() => import('./bloom/BloomHomeHero.vue')),
-    hearth: defineAsyncComponent(() => import('./hearth/HearthHomeHero.vue')),
-    volt: defineAsyncComponent(() => import('./volt/VoltHomeHero.vue')),
-    pulse: defineAsyncComponent(() => import('./pulse/PulseHomeHero.vue')),
-    lumiere: defineAsyncComponent(() => import('./lumiere/LumiereHomeHero.vue')),
-    trove: defineAsyncComponent(() => import('./trove/TroveHomeHero.vue')),
-    forge: defineAsyncComponent(() => import('./forge/ForgeHomeHero.vue')),
-    impulse: defineAsyncComponent(() => import('./impulse/ImpulseHomeHero.vue'))
+    editorial: lazy(() => import('./editorial/EditorialHomeHero.vue')),
+    boutique: lazy(() => import('./boutique/BoutiqueHomeHero.vue')),
+    promify: lazy(() => import('./promify/PromifyHomeHero.vue')),
+    nova: lazy(() => import('./nova/NovaHomeHero.vue')),
+    atelier: lazy(() => import('./atelier/AtelierHomeHero.vue')),
+    drop: lazy(() => import('./drop/DropHomeHero.vue')),
+    bloom: lazy(() => import('./bloom/BloomHomeHero.vue')),
+    hearth: lazy(() => import('./hearth/HearthHomeHero.vue')),
+    volt: lazy(() => import('./volt/VoltHomeHero.vue')),
+    pulse: lazy(() => import('./pulse/PulseHomeHero.vue')),
+    lumiere: lazy(() => import('./lumiere/LumiereHomeHero.vue')),
+    trove: lazy(() => import('./trove/TroveHomeHero.vue')),
+    forge: lazy(() => import('./forge/ForgeHomeHero.vue')),
+    impulse: lazy(() => import('./impulse/ImpulseHomeHero.vue'))
   },
   HomeUsps: {
-    editorial: defineAsyncComponent(() => import('./editorial/EditorialHomeUsps.vue')),
-    boutique: defineAsyncComponent(() => import('./boutique/BoutiqueHomeUsps.vue')),
-    promify: defineAsyncComponent(() => import('./promify/PromifyHomeUsps.vue')),
-    nova: defineAsyncComponent(() => import('./nova/NovaHomeUsps.vue')),
-    atelier: defineAsyncComponent(() => import('./atelier/AtelierHomeUsps.vue')),
-    drop: defineAsyncComponent(() => import('./drop/DropHomeUsps.vue')),
-    bloom: defineAsyncComponent(() => import('./bloom/BloomHomeUsps.vue')),
-    hearth: defineAsyncComponent(() => import('./hearth/HearthHomeUsps.vue')),
-    volt: defineAsyncComponent(() => import('./volt/VoltHomeUsps.vue')),
-    pulse: defineAsyncComponent(() => import('./pulse/PulseHomeUsps.vue')),
-    lumiere: defineAsyncComponent(() => import('./lumiere/LumiereHomeUsps.vue')),
-    trove: defineAsyncComponent(() => import('./trove/TroveHomeUsps.vue')),
-    forge: defineAsyncComponent(() => import('./forge/ForgeHomeUsps.vue')),
-    impulse: defineAsyncComponent(() => import('./impulse/ImpulseHomeUsps.vue'))
+    editorial: lazy(() => import('./editorial/EditorialHomeUsps.vue')),
+    boutique: lazy(() => import('./boutique/BoutiqueHomeUsps.vue')),
+    promify: lazy(() => import('./promify/PromifyHomeUsps.vue')),
+    nova: lazy(() => import('./nova/NovaHomeUsps.vue')),
+    atelier: lazy(() => import('./atelier/AtelierHomeUsps.vue')),
+    drop: lazy(() => import('./drop/DropHomeUsps.vue')),
+    bloom: lazy(() => import('./bloom/BloomHomeUsps.vue')),
+    hearth: lazy(() => import('./hearth/HearthHomeUsps.vue')),
+    volt: lazy(() => import('./volt/VoltHomeUsps.vue')),
+    pulse: lazy(() => import('./pulse/PulseHomeUsps.vue')),
+    lumiere: lazy(() => import('./lumiere/LumiereHomeUsps.vue')),
+    trove: lazy(() => import('./trove/TroveHomeUsps.vue')),
+    forge: lazy(() => import('./forge/ForgeHomeUsps.vue')),
+    impulse: lazy(() => import('./impulse/ImpulseHomeUsps.vue'))
   },
   ProductCard: {
-    editorial: defineAsyncComponent(() => import('./editorial/EditorialProductCard.vue')),
-    boutique: defineAsyncComponent(() => import('./boutique/BoutiqueProductCard.vue')),
-    promify: defineAsyncComponent(() => import('./promify/PromifyProductCard.vue')),
-    nova: defineAsyncComponent(() => import('./nova/NovaProductCard.vue')),
-    atelier: defineAsyncComponent(() => import('./atelier/AtelierProductCard.vue')),
-    drop: defineAsyncComponent(() => import('./drop/DropProductCard.vue')),
-    bloom: defineAsyncComponent(() => import('./bloom/BloomProductCard.vue')),
-    hearth: defineAsyncComponent(() => import('./hearth/HearthProductCard.vue')),
-    volt: defineAsyncComponent(() => import('./volt/VoltProductCard.vue')),
-    pulse: defineAsyncComponent(() => import('./pulse/PulseProductCard.vue')),
-    lumiere: defineAsyncComponent(() => import('./lumiere/LumiereProductCard.vue')),
-    trove: defineAsyncComponent(() => import('./trove/TroveProductCard.vue')),
-    forge: defineAsyncComponent(() => import('./forge/ForgeProductCard.vue')),
-    impulse: defineAsyncComponent(() => import('./impulse/ImpulseProductCard.vue'))
+    editorial: lazy(() => import('./editorial/EditorialProductCard.vue')),
+    boutique: lazy(() => import('./boutique/BoutiqueProductCard.vue')),
+    promify: lazy(() => import('./promify/PromifyProductCard.vue')),
+    nova: lazy(() => import('./nova/NovaProductCard.vue')),
+    atelier: lazy(() => import('./atelier/AtelierProductCard.vue')),
+    drop: lazy(() => import('./drop/DropProductCard.vue')),
+    bloom: lazy(() => import('./bloom/BloomProductCard.vue')),
+    hearth: lazy(() => import('./hearth/HearthProductCard.vue')),
+    volt: lazy(() => import('./volt/VoltProductCard.vue')),
+    pulse: lazy(() => import('./pulse/PulseProductCard.vue')),
+    lumiere: lazy(() => import('./lumiere/LumiereProductCard.vue')),
+    trove: lazy(() => import('./trove/TroveProductCard.vue')),
+    forge: lazy(() => import('./forge/ForgeProductCard.vue')),
+    impulse: lazy(() => import('./impulse/ImpulseProductCard.vue'))
   }
 }
 
