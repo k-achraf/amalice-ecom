@@ -45,6 +45,7 @@ function onInput(e: Event) {
       type="text"
       inputmode="numeric"
       :disabled="disabled"
+      aria-label="الكمية"
       class="w-10 border-0 bg-transparent text-center text-base font-bold tabular-nums text-neutral-900 focus:outline-none"
       @input="onInput"
     >

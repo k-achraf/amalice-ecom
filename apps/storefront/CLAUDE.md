@@ -24,6 +24,8 @@ Per-template palette CSS (`app/assets/css/<template>.css`) is **not** in the glo
 
 `nuxt.config.ts`'s `fonts.families` should only ever list what's actually reachable given the RTL-only constraint above: Cairo (full Arabic+Latin coverage) is the only font that ever paints, since `rtl.css` overrides every template's `--font-*-display` token unconditionally. Do not add a template's "native" Latin display font (Fraunces, Anton, etc.) back to this list on the theory that a template needs its own personality — it's dead weight that PageSpeed will flag, and the RTL override always wins anyway. If a genuine LTR mode is ever added, this whole assumption needs revisiting.
 
+`fonts: { defaults: { preload: true } }` is required, not optional, for a font like Cairo. `@nuxt/fonts` only auto-preloads a `@font-face` when it has no `unicodeRange` — but a font covering both Latin and Arabic gets served as multiple Google-Fonts unicode-range subsets, so every one of them is silently excluded from auto-preload by that heuristic unless overridden. Without this, the font is discovered late in the critical request chain (after CSS parse) instead of starting early — measured as ~1s of avoidable critical-path latency.
+
 ## Images
 
 `resolveImageUrl()` (`app/composables/useApi.ts`) turns a relative `/uploads/...` path into an absolute URL against `apiBase`, or passes an already-absolute URL through unchanged. **Always call it before handing a locally-uploaded image URL to `<NuxtImg>`/`<img>`** — uploads only physically exist on `apps/api`'s server, not this one, so a raw relative path resolves to nothing here (this has been a real, shipped bug more than once: `ImpulseProductCard.vue`, `cart.ts`'s `addItem`).
@@ -35,6 +37,8 @@ LCP images (PDP gallery hero) need `loading="eager"`, `preload`, and `fetchprior
 ## Pixel tracking (Meta + TikTok)
 
 `app/composables/useMetaPixel.ts` / `useTikTokPixel.ts` — both retry-safe (`window.fbq`/`window.ttq` stubs are injected asynchronously by `MetaPixelScript.vue`/`TikTokPixelScript.vue`, so an event fired immediately on mount can race ahead of the stub existing; both composables retry via `setInterval`, 200ms × 25 attempts, before giving up).
+
+The actual third-party script tag (`fbevents.js`, TikTok's SDK) is gated behind `useDeferredLoad()` (`app/composables/useDeferredLoad.ts`) — first user interaction or an idle-callback budget (~3.5s), whichever comes first — so it's absent from the initial SSR HTML entirely and never competes with first paint for bandwidth/CPU. The composables' existing retry loop is what makes this safe: an event fired before the script has loaded (e.g. a route-change `PageView`) just retries until `fbq`/`ttq` exists. The small same-origin config fetch (`/apps/meta-pixel`, `/apps/tiktok-pixel`) stays eager and ungated — it's cheap and Meta's `noscript` fallback pixel needs the resolved `pixelId` available at SSR time to still work for no-JS visitors.
 
 `ViewContent`/similar one-per-entity events must key their "already fired" guard to the entity id, not a plain boolean — Vue/Nuxt Router **reuses the same component instance** across client-side navigations that match the same route file (e.g. `/products/A` → `/products/B`, same `[slug].vue`), so a boolean flag doesn't reset and the event only ever fires once per session instead of once per product.
 

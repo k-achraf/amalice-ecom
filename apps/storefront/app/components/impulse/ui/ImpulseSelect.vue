@@ -6,6 +6,7 @@ const props = defineProps<{
   items: { label: string; value: string }[]
   placeholder?: string
   disabled?: boolean
+  ariaLabel?: string
 }>()
 
 defineEmits<{ 'update:modelValue': [value: string] }>()
@@ -16,6 +17,7 @@ defineEmits<{ 'update:modelValue': [value: string] }>()
     <select
       :value="modelValue ?? ''"
       :disabled="disabled"
+      :aria-label="ariaLabel ?? placeholder"
       class="w-full appearance-none rounded-xl border-2 border-neutral-200 bg-white px-4 py-3 pr-11 text-neutral-900 transition-all duration-150 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100 disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:opacity-60"
       @change="$emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
     >

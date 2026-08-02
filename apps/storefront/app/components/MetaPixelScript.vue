@@ -15,11 +15,28 @@ const { data } = useAsyncData<{ pixelId: string | null }>(
   { default: () => ({ pixelId: null }) }
 )
 
+// PERFORMANCE: the actual fbevents.js load (via the script below) is gated
+// behind useDeferredLoad — first user interaction or an idle-callback
+// budget, whichever comes first. PageSpeed flagged this script as
+// competing with first paint for bandwidth/CPU on the critical path; the
+// config fetch itself stays eager (cheap same-origin JSON, not the problem)
+// so the noscript fallback below still has a real pixelId for no-JS
+// visitors even though the tracking script itself loads later.
+const ready = useDeferredLoad()
+
+function noscriptTag(pixelId: string) {
+  return [{
+    key: 'meta-pixel-noscript',
+    innerHTML: `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1" />`
+  }]
+}
+
 // pixelId is validated server-side (packages/shared MetaPixelConfigSchema)
 // to be digits only, so it's safe to interpolate directly into the script.
 useHead(() => {
   const pixelId = data.value?.pixelId
   if (!pixelId) return {}
+  if (!ready.value) return { noscript: noscriptTag(pixelId) }
   return {
     script: [{
       key: 'meta-pixel',
@@ -34,10 +51,7 @@ s.parentNode.insertBefore(t,s)}(window, document,'script',
 fbq('init', '${pixelId}');
 fbq('track', 'PageView');`
     }],
-    noscript: [{
-      key: 'meta-pixel-noscript',
-      innerHTML: `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1" />`
-    }]
+    noscript: noscriptTag(pixelId)
   }
 })
 

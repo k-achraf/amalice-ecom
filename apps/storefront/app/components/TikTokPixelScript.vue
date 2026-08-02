@@ -14,12 +14,18 @@ const { data } = useAsyncData<{ pixelCode: string | null }>(
   { default: () => ({ pixelCode: null }) }
 )
 
+// PERFORMANCE: same gating as MetaPixelScript.vue — the actual TikTok SDK
+// load is deferred to first interaction or an idle-callback budget, keeping
+// it off the critical rendering path. The config fetch stays eager (cheap
+// same-origin JSON); TikTok has no noscript fallback to preserve here.
+const ready = useDeferredLoad()
+
 // pixelCode is validated server-side (packages/shared TikTokPixelConfigSchema)
 // to be letters/digits only, so it's safe to interpolate directly into the
 // script — same reasoning as MetaPixelScript.vue's pixelId.
 useHead(() => {
   const pixelCode = data.value?.pixelCode
-  if (!pixelCode) return {}
+  if (!pixelCode || !ready.value) return {}
   return {
     script: [{
       key: 'tiktok-pixel',

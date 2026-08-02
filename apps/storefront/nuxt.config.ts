@@ -51,7 +51,15 @@ export default defineNuxtConfig({
   // e.g. --font-boutique-display: 'Fraunces', that's just an inert fallback
   // token now — the RTL override always wins since dir is always rtl.
   fonts: {
-    families: [{ name: 'Cairo', provider: 'google' }]
+    families: [{ name: 'Cairo', provider: 'google' }],
+    // PERFORMANCE: @nuxt/fonts only auto-preloads a @font-face subset when it
+    // has NO unicodeRange — Cairo (Latin + Arabic coverage) is served as
+    // multiple Google-Fonts unicode-range subsets, so every one of them was
+    // silently excluded from auto-preload by that heuristic. That's why the
+    // font was discovered late in the critical request chain (after CSS
+    // parse) instead of starting early — PageSpeed measured ~1s lost to it.
+    // Forcing preload on unconditionally overrides that heuristic.
+    defaults: { preload: true }
   },
   compatibilityDate: '2026-07-17',
   devServer: { port: 3000 },
