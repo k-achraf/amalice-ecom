@@ -4,11 +4,22 @@ import type { RemittanceBatch, LedgerEntry, RemittanceBatchStatus } from '@amali
 definePageMeta({ requiredRole: ['SuperAdmin', 'Finance'] })
 useHead({ title: 'Reconciliation' })
 
+const route = useRoute()
+const router = useRouter()
 const api = useAdminApi()
-const { data: batches, pending, refresh } = await useAdminFetch<{ items: RemittanceBatch[]; total: number }>(
+const { data: batches, pending, refresh } = await useAdminFetch<{ items: RemittanceBatch[]; total: number; pageSize: number }>(
   '/admin/reconciliation/batches?pageSize=20',
   { key: 'admin-recon-batches' }
 )
+
+const totalPages = computed(() => (batches.value ? Math.ceil(batches.value.total / (batches.value.pageSize || 20)) : 1))
+const currentPage = computed(() => Number(route.query.page ?? 1))
+async function goToPage(p: number) {
+  await router.push({ query: { ...route.query, page: p } })
+  batches.value = await api<{ items: RemittanceBatch[]; total: number; pageSize: number }>('/admin/reconciliation/batches', {
+    query: { page: String(p), pageSize: '20' }
+  })
+}
 const { data: discrepancies } = await useAdminFetch<(LedgerEntry & { deltaCents?: number | null })[]>(
   '/admin/reconciliation/discrepancies',
   { key: 'admin-recon-discrepancies' }
@@ -150,6 +161,11 @@ async function resolve(entryId: string) {
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <div v-if="totalPages > 1" class="mt-3 flex items-center justify-between">
+            <p class="text-sm text-muted">{{ batches?.total }} batches</p>
+            <UPagination v-model:page="currentPage" :total="batches?.total ?? 0" :items-per-page="batches?.pageSize ?? 20" @update:page="goToPage" />
           </div>
         </section>
       </div>

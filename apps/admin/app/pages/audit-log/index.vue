@@ -7,14 +7,26 @@ const route = useRoute()
 const router = useRouter()
 const entity = ref((route.query.entity as string) ?? '')
 
-const { data, pending } = await useAdminFetch<{ items: AuditLog[]; total: number }>('/admin/audit', { key: 'admin-audit' })
+const { data, pending } = await useAdminFetch<{ items: AuditLog[]; total: number; pageSize: number }>('/admin/audit', { key: 'admin-audit' })
 
 const api = useAdminApi()
+async function load() {
+  const q: Record<string, string> = { page: String(route.query.page ?? 1), pageSize: '50' }
+  if (entity.value) q.entity = entity.value
+  data.value = await api<{ items: AuditLog[]; total: number; pageSize: number }>('/admin/audit', { query: q })
+}
+
 async function applyEntity(v: string) {
+  entity.value = v
   await router.push({ query: { entity: v || undefined, page: 1 } })
-  const q: Record<string, string> = { page: '1', pageSize: '50' }
-  if (v) q.entity = v
-  data.value = await api<{ items: AuditLog[]; total: number }>('/admin/audit', { query: q })
+  await load()
+}
+
+const totalPages = computed(() => (data.value ? Math.ceil(data.value.total / (data.value.pageSize || 50)) : 1))
+const currentPage = computed(() => Number(route.query.page ?? 1))
+async function goToPage(p: number) {
+  await router.push({ query: { ...route.query, page: p } })
+  await load()
 }
 
 const entityOptions = ['', 'Order', 'Product', 'AdminUser', 'RemittanceBatch', 'LedgerEntry']
@@ -79,6 +91,11 @@ function metaPreview(m: unknown): string {
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <div v-if="totalPages > 1" class="flex items-center justify-between">
+          <p class="text-sm text-muted">{{ data?.total }} entries</p>
+          <UPagination v-model:page="currentPage" :total="data?.total ?? 0" :items-per-page="data?.pageSize ?? 50" @update:page="goToPage" />
         </div>
       </div>
     </template>

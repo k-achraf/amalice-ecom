@@ -23,11 +23,22 @@ const search = ref((route.query.search as string) ?? '')
 const { data, pending } = await useAdminFetch<CustomerListResponse>('/admin/customers', { key: 'admin-customers' })
 
 const api = useAdminApi()
-async function applySearch() {
-  await router.push({ query: { search: search.value || undefined, page: 1 } })
-  const q: Record<string, string> = { page: '1', pageSize: '20' }
+async function load() {
+  const q: Record<string, string> = { page: String(route.query.page ?? 1), pageSize: '20' }
   if (search.value) q.search = search.value
   data.value = await api<CustomerListResponse>('/admin/customers', { query: q })
+}
+
+async function applySearch() {
+  await router.push({ query: { search: search.value || undefined, page: 1 } })
+  await load()
+}
+
+const totalPages = computed(() => (data.value ? Math.ceil(data.value.total / data.value.pageSize) : 1))
+const currentPage = computed(() => Number(route.query.page ?? 1))
+async function goToPage(p: number) {
+  await router.push({ query: { ...route.query, page: p } })
+  await load()
 }
 </script>
 
@@ -62,6 +73,11 @@ async function applySearch() {
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <div v-if="totalPages > 1" class="flex items-center justify-between">
+          <p class="text-sm text-muted">{{ data?.total }} customers</p>
+          <UPagination v-model:page="currentPage" :total="data?.total ?? 0" :items-per-page="20" @update:page="goToPage" />
         </div>
       </div>
     </template>
