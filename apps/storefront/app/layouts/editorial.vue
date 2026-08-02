@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '~/assets/css/layers/editorial.css'
 // Editorial template chrome — Atlassian Design System's structural language
 // (not Polaris) reinterpreted at magazine scale: ADS blue #0C66E4, dark navy
 // ink, small radius, elevation shadows, lozenge pills for kickers/tags. The

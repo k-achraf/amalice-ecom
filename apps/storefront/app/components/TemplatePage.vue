@@ -23,6 +23,16 @@
 // storefront) — lazy imports mean only the active template's chunk is ever
 // fetched. FALLBACK stays a static import since it's the minimal template's
 // own page and is a likely/default render path either way.
+//
+// The <Suspense> wrapper below is required, not decorative: Vue's SSR
+// renderer only awaits an async component's resolution when it's inside a
+// Suspense boundary. Without one, `renderToString` serializes full HTML for
+// the resolved component (Node has it in the module cache already), but the
+// CLIENT's hydration pass hits the same unresolved async wrapper, can't
+// hydrate against it, and falls back to discarding + client-rendering that
+// subtree from scratch — a real hydration mismatch (this was PageSpeed's
+// "Hydration Mismatch" finding after this file's original defineAsyncComponent
+// conversion, which shipped without Suspense).
 import { defineAsyncComponent, type Component } from 'vue'
 
 // ---- fallback (minimal) page components ----
@@ -203,7 +213,9 @@ const resolved = computed<Component | null>(() => {
 </script>
 
 <template>
-  <component :is="resolved" v-if="resolved" v-bind="pageProps ?? {}">
-    <slot />
-  </component>
+  <Suspense v-if="resolved">
+    <component :is="resolved" v-bind="pageProps ?? {}">
+      <slot />
+    </component>
+  </Suspense>
 </template>

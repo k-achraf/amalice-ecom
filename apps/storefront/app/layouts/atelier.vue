@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '~/assets/css/layers/atelier.css'
 // Atelier template chrome — a fully custom "fine jewelry & accessories"
 // system, built entirely with plain Tailwind CSS (no @nuxt/ui components
 // anywhere in this template's tree — see components/atelier/ui/ for the

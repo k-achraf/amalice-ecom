@@ -1,0 +1,6 @@
+/* PERFORMANCE: layer-wrapped import (not the raw file) so this template's
+   CSS can be lazy-loaded per-layout (see app/layouts/promify.vue) while still
+   losing the cascade to rtl.css, which always loads in the later-declared
+   rtl-override layer (see ~/assets/css/layer-order.css) regardless of
+   which order the two chunks actually land in the DOM at runtime. */
+@import '../promify.css' layer(template);

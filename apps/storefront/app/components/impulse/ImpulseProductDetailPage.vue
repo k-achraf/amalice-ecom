@@ -106,7 +106,7 @@ function onStickyCta() {
       </div>
 
       <!-- 3. Gallery (or the AI landing-page long image when enabled). -->
-      <img v-if="props.landingPageImageUrl" :src="props.landingPageImageUrl" :alt="props.product.name" class="w-full rounded-2xl" />
+      <img v-if="props.landingPageImageUrl" :src="props.landingPageImageUrl" :alt="props.product.name" class="w-full rounded-2xl" fetchpriority="high" />
       <div v-else class="space-y-3">
         <div class="funnel-card aspect-square overflow-hidden">
           <NuxtImg
@@ -119,6 +119,7 @@ function onStickyCta() {
             loading="eager"
             format="webp"
             preload
+            fetchpriority="high"
           />
         </div>
         <div v-if="props.galleryImages.length > 1" class="flex justify-center gap-2">

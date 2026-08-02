@@ -1,0 +1,11 @@
+/* PERFORMANCE (CSS code-splitting): declares the cascade layer order ONCE,
+ * globally, before either layer is populated. CSS Cascade Layers resolve
+ * priority by this declaration order, NOT by which chunk's rules actually
+ * land in the DOM first — this is what makes it safe to lazy-load each
+ * template's CSS per-layout (see app/layouts/*.vue importing
+ * ~/assets/css/layers/*.css) while a single always-loaded rtl.css still
+ * unconditionally wins the cascade over whichever template is active,
+ * exactly like the old "rtl.css loaded last in a static array" guarantee —
+ * just no longer dependent on insertion order.
+ */
+@layer template, rtl-override;

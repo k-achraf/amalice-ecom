@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '~/assets/css/layers/forge.css'
 // Forge template chrome — a raw industrial workshop system, built entirely
 // with plain Tailwind (no @nuxt/ui components anywhere in this template's
 // tree — see components/forge/ui/ for the hand-built Button/Input/Select/

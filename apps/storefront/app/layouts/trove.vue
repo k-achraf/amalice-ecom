@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '~/assets/css/layers/trove.css'
 // Trove template chrome — a warm collected-treasures accessories system,
 // built entirely with plain Tailwind (no @nuxt/ui components anywhere in
 // this template's tree — see components/trove/ui/ for the hand-built

@@ -13,10 +13,9 @@
 //
 // PERFORMANCE: every override is `defineAsyncComponent` (dynamic import), not
 // a static top-level import — see TemplatePage.vue's identical comment for
-// why. During SSR the active branch still resolves synchronously as part of
-// the render (so this costs nothing for first paint/LCP); it only stops the
-// OTHER 13 templates' Hero/Usps/ProductCard variants from being bundled into
-// every visitor's JS.
+// why, including why the <Suspense> wrapper below is required (not
+// decorative) to avoid a client hydration mismatch against the SSR-rendered
+// async subtree.
 import { defineAsyncComponent, type Component } from 'vue'
 import HomeHero from './home/HomeHero.vue'
 import HomeFeaturedCategories from './home/HomeFeaturedCategories.vue'
@@ -103,7 +102,9 @@ const resolved = computed<Component | null>(() => {
 </script>
 
 <template>
-  <component :is="resolved" v-if="resolved" v-bind="sectionProps ?? {}">
-    <slot />
-  </component>
+  <Suspense v-if="resolved">
+    <component :is="resolved" v-bind="sectionProps ?? {}">
+      <slot />
+    </component>
+  </Suspense>
 </template>

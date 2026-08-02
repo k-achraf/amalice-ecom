@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '~/assets/css/layers/impulse.css'
 // Impulse template chrome — the direct-response funnel system. The layout's
 // job here is deliberately minimal: unlike every other template, Impulse's
 // header carries NO navigation links (the classic funnel move — every exit

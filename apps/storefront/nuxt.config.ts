@@ -19,67 +19,39 @@ export default defineNuxtConfig({
   // HomeHero.vue → <HomeHero> (not <HomeHomeHero>), components/editorial/
   // EditorialHomeHero.vue → <EditorialHomeHero>. The filename IS the name.
   components: [{ path: '~/components', pathPrefix: false }],
-  // Each of these is a scoped per-template palette (loaded globally but only
-  // takes effect under that template's .tpl-* wrapper the layout applies) —
-  // same isolation discipline as the admin's admin.css. minimal has no file
-  // here; it stays on the shared Polaris tokens from packages/ui.
+  // PERFORMANCE: each template's scoped palette CSS (14 files, ~100KB raw
+  // combined) used to ALL load globally here regardless of which single
+  // template a store actually runs — PageSpeed measured this as a large
+  // "unused CSS" chunk shipped to every visitor. Each file now instead lives
+  // behind a lazy JS import inside its own layout (app/layouts/*.vue), so
+  // Vite code-splits it and only the active template's chunk is ever
+  // fetched. minimal has no file; it stays on packages/ui's shared tokens.
+  // What stays global: layer-order.css (declares cascade priority once,
+  // before either layer has content — see its own comment), rtl-layer.css
+  // (rtl.css wrapped so it keeps winning the cascade over every template
+  // regardless of lazy-load order), and product-description.css (shared
+  // rich-text rendering rules, not template-scoped).
   css: [
-    '~/assets/css/promify.css',
-    '~/assets/css/boutique.css',
-    '~/assets/css/editorial.css',
-    '~/assets/css/nova.css',
-    '~/assets/css/atelier.css',
-    '~/assets/css/drop.css',
-    '~/assets/css/bloom.css',
-    '~/assets/css/hearth.css',
-    '~/assets/css/volt.css',
-    '~/assets/css/pulse.css',
-    '~/assets/css/lumiere.css',
-    '~/assets/css/trove.css',
-    '~/assets/css/forge.css',
-    '~/assets/css/impulse.css',
+    '~/assets/css/layer-order.css',
     '~/assets/css/product-description.css',
-    // RTL/Arabic conversion — loaded LAST so it wins the cascade over every
-    // template's own scoped CSS above (all 14 --font-*-display vars, plus
-    // the broad physical-direction utility overrides) without having to
-    // touch each template's own stylesheet.
-    '~/assets/css/rtl.css'
+    '~/assets/css/rtl-layer.css'
   ],
-  // Fraunces (Boutique's serif display face), Space Grotesk (Nova's heavy
-  // display face), Cormorant (Atelier's delicate jewelry-catalog serif),
-  // Anton (Drop's ultra-condensed streetwear display face), Poppins
-  // (Bloom's rounded beauty display face), Lora (Hearth's warm home-goods
-  // serif), Sora (Volt's geometric tech display face), Outfit (Pulse's
-  // rounded gadget display face), Bodoni Moda (Lumière's oversized
-  // beauty-editorial didone serif), Bricolage Grotesque (Trove's quirky
-  // accessories display face), and Oswald (Forge's condensed industrial
-  // display face) — self-hosted via @nuxt/fonts, additive to packages/ui's
-  // Inter/JetBrains Mono families. Referenced as `font-family: '<name>', ...`
-  // solely inside their own template's scoped CSS/classes; other templates
-  // never load them in their critical path since they're only *referenced*,
-  // not force-applied, elsewhere.
+  // PERFORMANCE: every template's own display face (Fraunces, Space Grotesk,
+  // Cormorant, Anton, Poppins, Lora, Sora, Outfit, Bodoni Moda, Bricolage
+  // Grotesque, Oswald, Archivo — 12 Latin-only Google Fonts) is DEAD WEIGHT.
+  // This storefront is 100% RTL/Arabic (htmlAttrs.dir below is hardcoded
+  // 'rtl', no LTR mode exists), and rtl.css unconditionally overrides every
+  // template's --font-*-display token to Cairo (`html[dir='rtl'] .tpl-X { }`
+  // beats each template's own un-scoped base declaration). Those 12 fonts'
+  // own @font-face/preload metadata were shipping and never once rendering —
+  // a real, measured chunk of the "unused files" PageSpeed flagged. Only
+  // Cairo (full Arabic + Latin coverage, weights 200–1000) is ever painted;
+  // Inter/JetBrains Mono still come from packages/ui for prices/SKUs (kept
+  // off Cairo per rtl.css's comment). If a template's own file still sets
+  // e.g. --font-boutique-display: 'Fraunces', that's just an inert fallback
+  // token now — the RTL override always wins since dir is always rtl.
   fonts: {
-    families: [
-      { name: 'Fraunces', provider: 'google' },
-      { name: 'Space Grotesk', provider: 'google' },
-      { name: 'Cormorant', provider: 'google' },
-      { name: 'Anton', provider: 'google' },
-      { name: 'Poppins', provider: 'google' },
-      { name: 'Lora', provider: 'google' },
-      { name: 'Sora', provider: 'google' },
-      { name: 'Outfit', provider: 'google' },
-      { name: 'Bodoni Moda', provider: 'google' },
-      { name: 'Bricolage Grotesque', provider: 'google' },
-      { name: 'Oswald', provider: 'google' },
-      { name: 'Archivo', provider: 'google' },
-      // RTL/Arabic conversion — Cairo has full Arabic + Latin coverage across
-      // a wide weight range (200–1000) and replaces every template's Latin-
-      // only display face (Fraunces, Anton, Cormorant, etc. have zero Arabic
-      // glyphs — without this, headings would silently fall back to whatever
-      // generic Arabic font each OS/browser ships, ugly and inconsistent
-      // across templates). See rtl.css for where it's applied.
-      { name: 'Cairo', provider: 'google' }
-    ]
+    families: [{ name: 'Cairo', provider: 'google' }]
   },
   compatibilityDate: '2026-07-17',
   devServer: { port: 3000 },

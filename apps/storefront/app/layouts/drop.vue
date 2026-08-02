@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '~/assets/css/layers/drop.css'
 // Drop template chrome — a streetwear hype-drop system, built entirely with
 // plain Tailwind (no @nuxt/ui components anywhere in this template's tree —
 // see components/drop/ui/ for the hand-built Button/Input/Select/etc. every

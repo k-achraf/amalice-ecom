@@ -1,0 +1,3 @@
+/* See layer-order.css — wraps rtl.css in the rtl-override layer so it keeps
+   winning the cascade over every template's lazily-loaded CSS. */
+@import './rtl.css' layer(rtl-override);

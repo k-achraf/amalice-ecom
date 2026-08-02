@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '~/assets/css/layers/lumiere.css'
 // Lumière template chrome — a bold black/white/crimson beauty-editorial
 // system, built entirely with plain Tailwind (no @nuxt/ui components
 // anywhere in this template's tree — see components/lumiere/ui/ for the

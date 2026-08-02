@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '~/assets/css/layers/pulse.css'
 // Pulse template chrome — a bright glossy consumer-tech system, built
 // entirely with plain Tailwind (no @nuxt/ui components anywhere in this
 // template's tree — see components/pulse/ui/ for the hand-built Button/

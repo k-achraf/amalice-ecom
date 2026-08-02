@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '~/assets/css/layers/nova.css'
 // Nova template chrome — a fully custom "modern shop" system, built entirely
 // with plain Tailwind CSS (no @nuxt/ui components anywhere in this
 // template's tree — see components/nova/ui/ for the hand-built Button/

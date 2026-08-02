@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '~/assets/css/layers/hearth.css'
 // Hearth template chrome — a warm home & furniture system, built entirely
 // with plain Tailwind (no @nuxt/ui components anywhere in this template's
 // tree — see components/hearth/ui/ for the hand-built Button/Input/Select/

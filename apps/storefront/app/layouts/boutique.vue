@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '~/assets/css/layers/boutique.css'
 // Boutique template chrome — a bespoke "quiet luxury" system (not Polaris):
 // warm ivory/near-black ink, zero radius, no shadows, Fraunces serif display
 // type. The .tpl-boutique wrapper activates the scoped palette (boutique.css),

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '~/assets/css/layers/bloom.css'
 // Bloom template chrome — a soft beauty & cosmetics system, built entirely
 // with plain Tailwind (no @nuxt/ui components anywhere in this template's
 // tree — see components/bloom/ui/ for the hand-built Button/Input/Select/etc.

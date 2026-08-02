@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '~/assets/css/layers/promify.css'
 // Promify template — modern blue-accent retail. The .tpl-promify wrapper
 // activates the scoped Promify palette (promify.css), so bg-primary-600 /
 // text-neutral-900 inside resolve to Promify blue, not Polaris. The chrome
