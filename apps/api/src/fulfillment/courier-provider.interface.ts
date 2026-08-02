@@ -25,6 +25,14 @@ export interface CreateShipmentInput {
   codAmountCents: number
   weightGrams?: number
   notes?: string
+  // Home vs. desk/relay pickup — maps 1:1 from Order.shippingType. Optional
+  // since the mock provider ignores it; a real adapter that distinguishes
+  // the two (DHD does: stop_desk) reads it.
+  stopDesk?: boolean
+  // Line items, for adapters that pass a human-readable product manifest to
+  // the courier (DHD's produit/quantite fields) — descriptive only, never
+  // used for pricing (codAmountCents is authoritative).
+  items?: { name: string; quantity: number }[]
 }
 
 export interface ShipmentResult {

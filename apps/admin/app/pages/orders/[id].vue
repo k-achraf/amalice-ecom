@@ -30,6 +30,57 @@ async function transition(to: OrderState) {
   }
 }
 
+// ---- Shipment actions (DHD "Commandes" API — see apps/api's
+// FulfillmentService for requestPickup/cancelShipmentForOrder/
+// getShipmentLabel) ----
+const shipmentActing = ref<'pickup' | 'cancel' | 'label' | null>(null)
+
+async function requestPickup() {
+  shipmentActing.value = 'pickup'
+  try {
+    await api(`/admin/fulfillment/orders/${id}/request-pickup`, { method: 'POST', body: { askCollection: true } })
+    toast.add({ title: 'Pickup requested with DHD', color: 'success' })
+    await refresh()
+  } catch (err: unknown) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: data?.message ?? 'Could not request pickup', color: 'error' })
+  } finally {
+    shipmentActing.value = null
+  }
+}
+
+async function cancelShipment() {
+  shipmentActing.value = 'cancel'
+  try {
+    await api(`/admin/fulfillment/orders/${id}/cancel-shipment`, { method: 'POST' })
+    toast.add({ title: 'Shipment cancelled', color: 'success' })
+    await refresh()
+  } catch (err: unknown) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: data?.message ?? 'Could not cancel the shipment', color: 'error' })
+  } finally {
+    shipmentActing.value = null
+  }
+}
+
+async function downloadLabel() {
+  shipmentActing.value = 'label'
+  try {
+    const blob = await api<Blob>(`/admin/fulfillment/orders/${id}/label`, { responseType: 'blob' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `label-${id}.pdf`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch (err: unknown) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: data?.message ?? 'Could not download the label', color: 'error' })
+  } finally {
+    shipmentActing.value = null
+  }
+}
+
 function fmtDateTime(iso: string) {
   return new Date(iso).toLocaleString()
 }
@@ -223,6 +274,37 @@ async function submitAddItem() {
               label="Dispatch to courier"
               @click="api(`/admin/fulfillment/orders/${id}/dispatch`, { method: 'POST' }).then(() => refresh())"
             />
+            <!-- The rest of DHD's "Commandes" actions (see FulfillmentService)
+                 — only meaningful once a shipment/tracking reference exists. -->
+            <div v-if="order.shipment.trackingReference" class="mt-4 flex flex-wrap gap-2">
+              <UButton
+                icon="i-lucide-package-check"
+                size="sm"
+                color="primary"
+                variant="soft"
+                :loading="shipmentActing === 'pickup'"
+                label="Request pickup"
+                @click="requestPickup"
+              />
+              <UButton
+                icon="i-lucide-file-down"
+                size="sm"
+                color="neutral"
+                variant="soft"
+                :loading="shipmentActing === 'label'"
+                label="Download label"
+                @click="downloadLabel"
+              />
+              <UButton
+                icon="i-lucide-x"
+                size="sm"
+                color="error"
+                variant="soft"
+                :loading="shipmentActing === 'cancel'"
+                label="Cancel shipment"
+                @click="cancelShipment"
+              />
+            </div>
           </div>
         </div>
 
