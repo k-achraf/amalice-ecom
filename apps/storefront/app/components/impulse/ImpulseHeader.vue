@@ -10,8 +10,14 @@ const settings = useStoreSettings()
 
 <template>
   <header class="sticky top-0 z-50 bg-white shadow-[var(--shadow-impulse-sm)]">
-    <!-- Trust band — the first pixels on every page state the risk-reversal. -->
-    <div class="bg-[var(--color-impulse-green)] py-1.5 text-center text-[11px] font-bold uppercase tracking-[0.12em] text-white">
+    <!-- Trust band — the first pixels on every page state the risk-reversal.
+         truncate (not just a length cap) is load-bearing: this text renders
+         once in a fallback font and again once Cairo swaps in, and without a
+         hard single-line constraint the two fonts' differing character
+         widths can flip the line count (1 → 2 lines) on narrow viewports —
+         a whole-page CLS since every visible element below shifts down.
+         Measured as a CLS score of 1.000 (max possible) via PageSpeed. -->
+    <div class="truncate bg-[var(--color-impulse-green)] px-2 py-1.5 text-center text-[11px] font-bold uppercase tracking-[0.12em] text-white">
       <Icon name="i-lucide-shield-check" class="me-1 inline size-3.5 align-[-2px]" />
       {{ settings.announcementText || 'الدفع عند الاستلام — اطلب الآن وادفع فقط عند وصول طلبك' }}
     </div>
