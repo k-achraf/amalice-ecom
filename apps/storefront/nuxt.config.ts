@@ -91,15 +91,18 @@ export default defineNuxtConfig({
   },
   image: {
     // External image domains (seed uses picsum.photos; production points at
-    // Cloudflare R2 per plan §6). Adding the provider domain here lets
-    // @nuxt/image optimize them — WITHOUT a domain listed here, <NuxtImg>
-    // passes a matching remote URL through completely unoptimized (no
-    // resize, no format conversion), which is exactly what was happening to
-    // every uploaded product image: they're served from the API's own
-    // /uploads/ path (a different origin than the storefront), so without
-    // this entry every thumbnail was shipping its full original resolution
-    // — PageSpeed measured ~113KB wasted on a single PDP from this alone.
-    domains: ['picsum.photos', 'images.unsplash.com', apiHost],
+    // Cloudflare R2 per plan §6). Adding a domain here makes @nuxt/image
+    // route it through IPX's REMOTE proxy: fetch the original from that
+    // origin, decode, resize, re-encode, then respond — real per-request
+    // server-side work, not a cache lookup. Tried adding the API's own
+    // upload host here to shrink oversized thumbnails; it backfired badly —
+    // LCP roughly doubled (measured live) because the transcode round-trip
+    // for the main product image is far slower than just serving the
+    // already-reasonably-sized original AVIF directly. Reverted. The right
+    // fix for oversized uploads is generating properly-sized variants ONCE
+    // at upload time on the API (sharp is already a dependency there), not
+    // an on-demand remote transform on every storefront request.
+    domains: ['picsum.photos', 'images.unsplash.com'],
     format: ['webp', 'jpg']
   },
   runtimeConfig: {
