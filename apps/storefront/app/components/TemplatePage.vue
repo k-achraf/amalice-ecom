@@ -24,15 +24,18 @@
 // fetched. FALLBACK stays a static import since it's the minimal template's
 // own page and is a likely/default render path either way.
 //
-// The <Suspense> wrapper below is required, not decorative: Vue's SSR
-// renderer only awaits an async component's resolution when it's inside a
-// Suspense boundary. Without one, `renderToString` serializes full HTML for
-// the resolved component (Node has it in the module cache already), but the
-// CLIENT's hydration pass hits the same unresolved async wrapper, can't
-// hydrate against it, and falls back to discarding + client-rendering that
-// subtree from scratch — a real hydration mismatch (this was PageSpeed's
-// "Hydration Mismatch" finding after this file's original defineAsyncComponent
-// conversion, which shipped without Suspense).
+// NOT wrapped in <Suspense>: that was tried (to fix a PageSpeed "Hydration
+// Mismatch" diagnostic) and reverted after it caused a measured, severe CLS
+// regression (0.001 -> 1.000, the max possible score) in production. On the
+// client, resolving this subtree's async chunk means a real network fetch
+// (no benefit from Node's warm SSR module cache) — while pending, Suspense
+// renders nothing for the whole page-content subtree, so the entire page
+// pops in at once the moment it resolves, and it also gates the LCP element
+// (which lives inside this subtree) from existing in the DOM at all until
+// then. A CLS=1.0 regression on a scored Core Web Vital outweighs an
+// unscored hydration-mismatch diagnostic — if hydration mismatch needs
+// fixing again, it needs a fix that doesn't blank the SSR-rendered DOM on
+// the client while the chunk loads.
 import { defineAsyncComponent, type Component } from 'vue'
 
 // ---- fallback (minimal) page components ----
@@ -213,9 +216,7 @@ const resolved = computed<Component | null>(() => {
 </script>
 
 <template>
-  <Suspense v-if="resolved">
-    <component :is="resolved" v-bind="pageProps ?? {}">
-      <slot />
-    </component>
-  </Suspense>
+  <component :is="resolved" v-if="resolved" v-bind="pageProps ?? {}">
+    <slot />
+  </component>
 </template>

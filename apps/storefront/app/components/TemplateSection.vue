@@ -13,9 +13,8 @@
 //
 // PERFORMANCE: every override is `defineAsyncComponent` (dynamic import), not
 // a static top-level import — see TemplatePage.vue's identical comment for
-// why, including why the <Suspense> wrapper below is required (not
-// decorative) to avoid a client hydration mismatch against the SSR-rendered
-// async subtree.
+// why, INCLUDING why it's deliberately not wrapped in <Suspense> (tried,
+// reverted — caused a measured CLS=1.0 regression in production).
 import { defineAsyncComponent, type Component } from 'vue'
 import HomeHero from './home/HomeHero.vue'
 import HomeFeaturedCategories from './home/HomeFeaturedCategories.vue'
@@ -102,9 +101,7 @@ const resolved = computed<Component | null>(() => {
 </script>
 
 <template>
-  <Suspense v-if="resolved">
-    <component :is="resolved" v-bind="sectionProps ?? {}">
-      <slot />
-    </component>
-  </Suspense>
+  <component :is="resolved" v-if="resolved" v-bind="sectionProps ?? {}">
+    <slot />
+  </component>
 </template>
