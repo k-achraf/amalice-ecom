@@ -16,7 +16,7 @@ const props = defineProps<{ product: Product }>()
     <div class="relative aspect-square overflow-hidden bg-neutral-100">
       <NuxtImg
         v-if="props.product.imageUrl"
-        :src="props.product.imageUrl"
+        :src="resolveImageUrl(props.product.imageUrl)"
         :alt="props.product.name"
         class="size-full object-cover transition-transform duration-300 group-hover:scale-105"
         width="400"

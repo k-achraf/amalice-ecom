@@ -10,62 +10,72 @@
 // render of <component :is> (they render as unknown custom elements instead).
 // Explicit imports make resolution deterministic and SSR-safe. The set of
 // sections is finite, so a static map is appropriate.
-import type { Component } from 'vue'
+//
+// PERFORMANCE: every override is `defineAsyncComponent` (dynamic import), not
+// a static top-level import — see TemplatePage.vue's identical comment for
+// why. During SSR the active branch still resolves synchronously as part of
+// the render (so this costs nothing for first paint/LCP); it only stops the
+// OTHER 13 templates' Hero/Usps/ProductCard variants from being bundled into
+// every visitor's JS.
+import { defineAsyncComponent, type Component } from 'vue'
 import HomeHero from './home/HomeHero.vue'
 import HomeFeaturedCategories from './home/HomeFeaturedCategories.vue'
 import HomeProductGrid from './home/HomeProductGrid.vue'
 import HomeUsps from './home/HomeUsps.vue'
 import ProductCard from './ProductCard.vue'
-import EditorialHomeHero from './editorial/EditorialHomeHero.vue'
-import EditorialHomeUsps from './editorial/EditorialHomeUsps.vue'
-import EditorialProductCard from './editorial/EditorialProductCard.vue'
-import BoutiqueHomeHero from './boutique/BoutiqueHomeHero.vue'
-import BoutiqueHomeUsps from './boutique/BoutiqueHomeUsps.vue'
-import BoutiqueProductCard from './boutique/BoutiqueProductCard.vue'
-import PromifyHomeHero from './promify/PromifyHomeHero.vue'
-import PromifyHomeUsps from './promify/PromifyHomeUsps.vue'
-import PromifyProductCard from './promify/PromifyProductCard.vue'
-import NovaHomeHero from './nova/NovaHomeHero.vue'
-import NovaHomeUsps from './nova/NovaHomeUsps.vue'
-import NovaProductCard from './nova/NovaProductCard.vue'
-import AtelierHomeHero from './atelier/AtelierHomeHero.vue'
-import AtelierHomeUsps from './atelier/AtelierHomeUsps.vue'
-import AtelierProductCard from './atelier/AtelierProductCard.vue'
-import DropHomeHero from './drop/DropHomeHero.vue'
-import DropHomeUsps from './drop/DropHomeUsps.vue'
-import DropProductCard from './drop/DropProductCard.vue'
-import BloomHomeHero from './bloom/BloomHomeHero.vue'
-import BloomHomeUsps from './bloom/BloomHomeUsps.vue'
-import BloomProductCard from './bloom/BloomProductCard.vue'
-import HearthHomeHero from './hearth/HearthHomeHero.vue'
-import HearthHomeUsps from './hearth/HearthHomeUsps.vue'
-import HearthProductCard from './hearth/HearthProductCard.vue'
-import VoltHomeHero from './volt/VoltHomeHero.vue'
-import VoltHomeUsps from './volt/VoltHomeUsps.vue'
-import VoltProductCard from './volt/VoltProductCard.vue'
-import PulseHomeHero from './pulse/PulseHomeHero.vue'
-import PulseHomeUsps from './pulse/PulseHomeUsps.vue'
-import PulseProductCard from './pulse/PulseProductCard.vue'
-import LumiereHomeHero from './lumiere/LumiereHomeHero.vue'
-import LumiereHomeUsps from './lumiere/LumiereHomeUsps.vue'
-import LumiereProductCard from './lumiere/LumiereProductCard.vue'
-import TroveHomeHero from './trove/TroveHomeHero.vue'
-import TroveHomeUsps from './trove/TroveHomeUsps.vue'
-import TroveProductCard from './trove/TroveProductCard.vue'
-import ForgeHomeHero from './forge/ForgeHomeHero.vue'
-import ForgeHomeUsps from './forge/ForgeHomeUsps.vue'
-import ForgeProductCard from './forge/ForgeProductCard.vue'
-import ImpulseHomeHero from './impulse/ImpulseHomeHero.vue'
-import ImpulseHomeUsps from './impulse/ImpulseHomeUsps.vue'
-import ImpulseProductCard from './impulse/ImpulseProductCard.vue'
 
 // (section, template) → component. Missing entry = fallback to the minimal
 // (bare) component in the FALLBACK map. This is the one place the template-
 // override registry lives — add a new section or template here.
 const OVERRIDES: Record<string, Record<string, Component>> = {
-  HomeHero: { editorial: EditorialHomeHero, boutique: BoutiqueHomeHero, promify: PromifyHomeHero, nova: NovaHomeHero, atelier: AtelierHomeHero, drop: DropHomeHero, bloom: BloomHomeHero, hearth: HearthHomeHero, volt: VoltHomeHero, pulse: PulseHomeHero, lumiere: LumiereHomeHero, trove: TroveHomeHero, forge: ForgeHomeHero, impulse: ImpulseHomeHero },
-  HomeUsps: { editorial: EditorialHomeUsps, boutique: BoutiqueHomeUsps, promify: PromifyHomeUsps, nova: NovaHomeUsps, atelier: AtelierHomeUsps, drop: DropHomeUsps, bloom: BloomHomeUsps, hearth: HearthHomeUsps, volt: VoltHomeUsps, pulse: PulseHomeUsps, lumiere: LumiereHomeUsps, trove: TroveHomeUsps, forge: ForgeHomeUsps, impulse: ImpulseHomeUsps },
-  ProductCard: { editorial: EditorialProductCard, boutique: BoutiqueProductCard, promify: PromifyProductCard, nova: NovaProductCard, atelier: AtelierProductCard, drop: DropProductCard, bloom: BloomProductCard, hearth: HearthProductCard, volt: VoltProductCard, pulse: PulseProductCard, lumiere: LumiereProductCard, trove: TroveProductCard, forge: ForgeProductCard, impulse: ImpulseProductCard }
+  HomeHero: {
+    editorial: defineAsyncComponent(() => import('./editorial/EditorialHomeHero.vue')),
+    boutique: defineAsyncComponent(() => import('./boutique/BoutiqueHomeHero.vue')),
+    promify: defineAsyncComponent(() => import('./promify/PromifyHomeHero.vue')),
+    nova: defineAsyncComponent(() => import('./nova/NovaHomeHero.vue')),
+    atelier: defineAsyncComponent(() => import('./atelier/AtelierHomeHero.vue')),
+    drop: defineAsyncComponent(() => import('./drop/DropHomeHero.vue')),
+    bloom: defineAsyncComponent(() => import('./bloom/BloomHomeHero.vue')),
+    hearth: defineAsyncComponent(() => import('./hearth/HearthHomeHero.vue')),
+    volt: defineAsyncComponent(() => import('./volt/VoltHomeHero.vue')),
+    pulse: defineAsyncComponent(() => import('./pulse/PulseHomeHero.vue')),
+    lumiere: defineAsyncComponent(() => import('./lumiere/LumiereHomeHero.vue')),
+    trove: defineAsyncComponent(() => import('./trove/TroveHomeHero.vue')),
+    forge: defineAsyncComponent(() => import('./forge/ForgeHomeHero.vue')),
+    impulse: defineAsyncComponent(() => import('./impulse/ImpulseHomeHero.vue'))
+  },
+  HomeUsps: {
+    editorial: defineAsyncComponent(() => import('./editorial/EditorialHomeUsps.vue')),
+    boutique: defineAsyncComponent(() => import('./boutique/BoutiqueHomeUsps.vue')),
+    promify: defineAsyncComponent(() => import('./promify/PromifyHomeUsps.vue')),
+    nova: defineAsyncComponent(() => import('./nova/NovaHomeUsps.vue')),
+    atelier: defineAsyncComponent(() => import('./atelier/AtelierHomeUsps.vue')),
+    drop: defineAsyncComponent(() => import('./drop/DropHomeUsps.vue')),
+    bloom: defineAsyncComponent(() => import('./bloom/BloomHomeUsps.vue')),
+    hearth: defineAsyncComponent(() => import('./hearth/HearthHomeUsps.vue')),
+    volt: defineAsyncComponent(() => import('./volt/VoltHomeUsps.vue')),
+    pulse: defineAsyncComponent(() => import('./pulse/PulseHomeUsps.vue')),
+    lumiere: defineAsyncComponent(() => import('./lumiere/LumiereHomeUsps.vue')),
+    trove: defineAsyncComponent(() => import('./trove/TroveHomeUsps.vue')),
+    forge: defineAsyncComponent(() => import('./forge/ForgeHomeUsps.vue')),
+    impulse: defineAsyncComponent(() => import('./impulse/ImpulseHomeUsps.vue'))
+  },
+  ProductCard: {
+    editorial: defineAsyncComponent(() => import('./editorial/EditorialProductCard.vue')),
+    boutique: defineAsyncComponent(() => import('./boutique/BoutiqueProductCard.vue')),
+    promify: defineAsyncComponent(() => import('./promify/PromifyProductCard.vue')),
+    nova: defineAsyncComponent(() => import('./nova/NovaProductCard.vue')),
+    atelier: defineAsyncComponent(() => import('./atelier/AtelierProductCard.vue')),
+    drop: defineAsyncComponent(() => import('./drop/DropProductCard.vue')),
+    bloom: defineAsyncComponent(() => import('./bloom/BloomProductCard.vue')),
+    hearth: defineAsyncComponent(() => import('./hearth/HearthProductCard.vue')),
+    volt: defineAsyncComponent(() => import('./volt/VoltProductCard.vue')),
+    pulse: defineAsyncComponent(() => import('./pulse/PulseProductCard.vue')),
+    lumiere: defineAsyncComponent(() => import('./lumiere/LumiereProductCard.vue')),
+    trove: defineAsyncComponent(() => import('./trove/TroveProductCard.vue')),
+    forge: defineAsyncComponent(() => import('./forge/ForgeProductCard.vue')),
+    impulse: defineAsyncComponent(() => import('./impulse/ImpulseProductCard.vue'))
+  }
 }
 
 // Sections without per-template variants — rendered directly by name.

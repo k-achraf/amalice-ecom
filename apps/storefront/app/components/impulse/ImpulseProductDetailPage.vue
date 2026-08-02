@@ -118,6 +118,7 @@ function onStickyCta() {
             height="700"
             loading="eager"
             format="webp"
+            preload
           />
         </div>
         <div v-if="props.galleryImages.length > 1" class="flex justify-center gap-2">

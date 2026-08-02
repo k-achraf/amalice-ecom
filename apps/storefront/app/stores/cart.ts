@@ -104,7 +104,15 @@ export const useCartStore = defineStore('cart', {
           slug: product.slug,
           name: product.name,
           priceCents,
-          imageUrl: product.imageUrl,
+          // Resolved to an absolute URL at add-to-cart time (not left as
+          // the raw relative /uploads/... path the API returns) — every
+          // template's cart page just renders item.imageUrl directly via
+          // <NuxtImg>, which would otherwise try to resolve a relative
+          // upload path as a local file on the storefront server (where it
+          // doesn't exist; uploads only live on the API server) and fail
+          // to load. Products seeded with an already-absolute image URL
+          // (e.g. picsum.photos) pass through resolveImageUrl unchanged.
+          imageUrl: resolveImageUrl(product.imageUrl),
           stockQuantity,
           quantity: Math.min(quantity, stockQuantity),
           variantId,

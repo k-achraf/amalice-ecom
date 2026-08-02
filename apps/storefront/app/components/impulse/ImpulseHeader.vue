@@ -26,7 +26,7 @@ const settings = useStoreSettings()
           <Icon name="i-lucide-phone-call" class="size-4 text-[var(--color-impulse-green)]" />
           نتصل لتأكيد كل طلب
         </span>
-        <ImpulseButton v-if="settings.displayCart" to="/cart" variant="outline" color="neutral" size="sm" square class="relative" aria-label="السلة">
+        <ImpulseButton v-if="settings.displayCart" to="/cart" variant="outline" color="neutral" size="md" square class="relative" aria-label="السلة">
           <Icon name="i-lucide-shopping-cart" class="size-4" />
           <ClientOnly>
             <span

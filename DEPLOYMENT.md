@@ -315,6 +315,25 @@ always Postgres/Redis connectivity or a missing `JWT_SECRET`/
 
 ## 9. Nginx reverse proxy
 
+First, enable gzip compression at the `http` level — without this, the
+storefront's CSS bundle (500KB+ uncompressed, mostly Tailwind utility
+classes that compress extremely well) is served raw. On fast Wi-Fi this is
+invisible; on a slow mobile connection it can take long enough that the
+page renders with no styling at all before the stylesheet finishes
+downloading. This bit us for real — a customer on a slow Android connection
+saw a completely unstyled page while desktop was fine.
+
+```bash
+sudo tee /etc/nginx/conf.d/gzip.conf <<'EOF'
+gzip on;
+gzip_vary on;
+gzip_min_length 1024;
+gzip_comp_level 6;
+gzip_types text/plain text/css text/xml application/json application/javascript application/xml+rss image/svg+xml font/woff2;
+EOF
+sudo nginx -t && sudo systemctl reload nginx
+```
+
 ```bash
 sudo tee /etc/nginx/sites-available/amalice <<'EOF'
 server {

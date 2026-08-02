@@ -19,7 +19,7 @@ const settings = useStoreSettings()
           <NuxtLink to="/terms" class="hover:text-primary-600">الشروط</NuxtLink>
           <NuxtLink to="/privacy" class="hover:text-primary-600">الخصوصية</NuxtLink>
         </nav>
-        <p class="text-[11px] text-neutral-400">© {{ new Date().getFullYear() }} {{ settings.storeName }} — تجارة الدفع عند الاستلام.</p>
+        <p class="text-[11px] text-neutral-600">© {{ new Date().getFullYear() }} {{ settings.storeName }} — تجارة الدفع عند الاستلام.</p>
       </div>
     </div>
   </footer>

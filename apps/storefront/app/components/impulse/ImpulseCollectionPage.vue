@@ -62,11 +62,11 @@ function onMaxInput(v: string) {
         </div>
 
         <div v-if="props.totalPages > 1" class="mt-10 flex items-center justify-center gap-2">
-          <ImpulseButton variant="outline" color="neutral" size="sm" square :disabled="props.currentPage <= 1" aria-label="الصفحة السابقة" @click="props.onPaginate(props.currentPage - 1)">
+          <ImpulseButton variant="outline" color="neutral" size="md" square :disabled="props.currentPage <= 1" aria-label="الصفحة السابقة" @click="props.onPaginate(props.currentPage - 1)">
             <Icon name="i-lucide-chevron-right" class="size-4" />
           </ImpulseButton>
           <span class="px-2 text-sm font-bold text-neutral-600">{{ props.currentPage }} / {{ props.totalPages }}</span>
-          <ImpulseButton variant="outline" color="neutral" size="sm" square :disabled="props.currentPage >= props.totalPages" aria-label="الصفحة التالية" @click="props.onPaginate(props.currentPage + 1)">
+          <ImpulseButton variant="outline" color="neutral" size="md" square :disabled="props.currentPage >= props.totalPages" aria-label="الصفحة التالية" @click="props.onPaginate(props.currentPage + 1)">
             <Icon name="i-lucide-chevron-left" class="size-4" />
           </ImpulseButton>
         </div>

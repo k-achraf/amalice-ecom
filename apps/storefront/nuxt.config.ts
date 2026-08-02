@@ -1,3 +1,16 @@
+// Hostname-only (no protocol/path) for @nuxt/image's `domains` allowlist
+// below — read directly from the same env var runtimeConfig.public.apiBase
+// resolves at runtime (NUXT_PUBLIC_API_BASE), since nuxt.config itself runs
+// at build time and has no other way to know the real API host per
+// environment (dev vs. the production api.* subdomain).
+const apiHost = (() => {
+  try {
+    return new URL(process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3333').hostname
+  } catch {
+    return 'localhost'
+  }
+})()
+
 export default defineNuxtConfig({
   extends: ['../../packages/ui'],
   modules: ['@nuxt/eslint', '@pinia/nuxt', '@nuxt/image', '@nuxtjs/sitemap'],
@@ -79,8 +92,14 @@ export default defineNuxtConfig({
   image: {
     // External image domains (seed uses picsum.photos; production points at
     // Cloudflare R2 per plan §6). Adding the provider domain here lets
-    // @nuxt/image optimize them.
-    domains: ['picsum.photos', 'images.unsplash.com'],
+    // @nuxt/image optimize them — WITHOUT a domain listed here, <NuxtImg>
+    // passes a matching remote URL through completely unoptimized (no
+    // resize, no format conversion), which is exactly what was happening to
+    // every uploaded product image: they're served from the API's own
+    // /uploads/ path (a different origin than the storefront), so without
+    // this entry every thumbnail was shipping its full original resolution
+    // — PageSpeed measured ~113KB wasted on a single PDP from this alone.
+    domains: ['picsum.photos', 'images.unsplash.com', apiHost],
     format: ['webp', 'jpg']
   },
   runtimeConfig: {
@@ -111,6 +130,18 @@ export default defineNuxtConfig({
           name: 'description',
           content: 'أماليس — تسوق مع الدفع عند الاستلام، بدون حساب.'
         }
+      ],
+      // PageSpeed's "preconnect candidates" flag: the LCP product image and
+      // every API call go to a different origin (api.*) than the document
+      // itself, and the pixel scripts (when enabled) go to Meta/TikTok's
+      // domains — each is a fresh DNS+TLS handshake the browser would
+      // otherwise only start once it discovers the first real request for
+      // that origin partway through parsing. Warming the connection early
+      // shaves that latency off the critical path.
+      link: [
+        { rel: 'preconnect', href: `https://${apiHost}` },
+        { rel: 'preconnect', href: 'https://connect.facebook.net' },
+        { rel: 'preconnect', href: 'https://analytics.tiktok.com' }
       ]
     }
   }

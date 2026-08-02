@@ -17,7 +17,7 @@ const badges = [
         <Icon :name="badge.icon" class="size-5 text-[var(--color-impulse-green)]" />
       </span>
       <span class="text-xs font-bold uppercase tracking-wide text-neutral-900">{{ badge.title }}</span>
-      <span class="text-[11px] leading-snug text-neutral-500">{{ badge.text }}</span>
+      <span class="text-[11px] leading-snug text-neutral-600">{{ badge.text }}</span>
     </div>
   </div>
 </template>
