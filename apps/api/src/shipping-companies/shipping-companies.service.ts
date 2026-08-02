@@ -54,6 +54,27 @@ export class ShippingCompaniesService {
     throw new BadRequestException(`Unsupported shipping company: ${provider}`)
   }
 
+  // The single "which shipping company do we actually ship with" resolver —
+  // FulfillmentService and DhdCourierProvider both call this instead of
+  // hardcoding `provider: 'Dhd'`, so "always use the default shipping
+  // company" holds even once a second provider lands in PROVIDER_CATALOG.
+  // Falls back to "the one linked company" when exactly one is linked but
+  // none has been explicitly marked default yet — linking a single provider
+  // is the common case, and forcing an extra "set as default" click before
+  // dispatch works at all would be a real footgun, not a safety feature.
+  async getDefaultLinked(): Promise<{ provider: ShippingCompanyProvider; name: string; baseUrl: string; apiToken: string }> {
+    const linked = await this.prisma.shippingCompany.findMany({ where: { isLinked: true } })
+    const company = linked.find((c) => c.isDefault) ?? (linked.length === 1 ? linked[0] : undefined)
+    if (!company?.apiToken) {
+      throw new BadRequestException(
+        linked.length > 1
+          ? 'More than one shipping company is linked but none is set as default — set one under Settings → Shipping Companies.'
+          : 'No shipping company is linked — link one under Settings → Shipping Companies first.'
+      )
+    }
+    return { provider: company.provider, name: PROVIDER_CATALOG[company.provider].name, baseUrl: company.baseUrl, apiToken: company.apiToken }
+  }
+
   async link(provider: ShippingCompanyProvider, input: LinkShippingCompany, actor: AuditActor): Promise<ShippingCompanyView> {
     const catalog = PROVIDER_CATALOG[provider]
     const existing = await this.prisma.shippingCompany.findUnique({ where: { provider } })

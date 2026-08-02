@@ -7,6 +7,7 @@ import { CommonModule } from '../common/common.module'
 @Module({
   imports: [CommonModule],
   controllers: [ShippingCompaniesController],
-  providers: [ShippingCompaniesService, DhdApiService]
+  providers: [ShippingCompaniesService, DhdApiService],
+  exports: [ShippingCompaniesService, DhdApiService]
 })
 export class ShippingCompaniesModule {}

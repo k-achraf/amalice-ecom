@@ -5,6 +5,7 @@ import { isValidTransition } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
 import { DhdApiService, type DhdOrderPayload } from '../shipping-companies/dhd-api.service'
+import { ShippingCompaniesService } from '../shipping-companies/shipping-companies.service'
 
 // Maps the courier's normalized status onto the order lifecycle (plan §7).
 // This is the single place that translation happens — COU-04's "one code path
@@ -34,20 +35,36 @@ export class FulfillmentService {
     // retours — the rest of the "Commandes" API section) go straight to
     // DhdApiService rather than through the courier abstraction, since
     // there's no cross-provider equivalent for them to generalize into.
-    private readonly dhd: DhdApiService
+    private readonly dhd: DhdApiService,
+    private readonly shippingCompanies: ShippingCompaniesService
   ) {}
 
   private async dhdCompany() {
-    const company = await this.prisma.shippingCompany.findUnique({ where: { provider: 'Dhd' } })
-    if (!company?.isLinked || !company.apiToken) {
-      throw new BadRequestException('DHD is not linked — link it under Settings → Shipping Companies first.')
+    const company = await this.shippingCompanies.getDefaultLinked()
+    if (company.provider !== 'Dhd') {
+      throw new BadRequestException(`The default shipping company (${company.name}) isn't DHD — this action only speaks DHD's API.`)
     }
     return { baseUrl: company.baseUrl, apiToken: company.apiToken }
   }
 
-  // COU-03 — create the shipment when an order is dispatched. Looks up the
-  // default courier (the first one; multi-courier assignment is ADM-13). On
-  // success, order → HandedToCourier + the tracking reference is stored.
+  // Auto-provisions (upserts, never requires manual seeding) the legacy
+  // Courier row Shipment.courierId's FK still needs, keyed to whichever
+  // shipping company is currently default — "always use the default
+  // shipping company" holds even for this leftover FK.
+  private async courierRowForDefaultCompany() {
+    const company = await this.shippingCompanies.getDefaultLinked()
+    const slug = company.provider.toLowerCase()
+    return this.prisma.courier.upsert({
+      where: { slug },
+      update: { name: company.name },
+      create: { slug, name: company.name }
+    })
+  }
+
+  // COU-03 / "Ajouter une commande" — create the shipment when an order is
+  // dispatched, always against the default linked shipping company (see
+  // ShippingCompaniesService.getDefaultLinked). On success, order →
+  // HandedToCourier + the tracking reference is stored.
   async createShipmentForOrder(orderId: string, actor: AuditActor) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
@@ -61,11 +78,11 @@ export class FulfillmentService {
       throw new BadRequestException('Shipment already exists for this order')
     }
 
-    // The first courier is the default in v1 — real multi-courier assignment
-    // is ADM-13's job. If no couriers exist, the seed (which creates
-    // FastShip) must be run.
-    const courier = await this.prisma.courier.findFirst({ orderBy: { createdAt: 'asc' } })
-    if (!courier) throw new BadRequestException('No courier configured')
+    // Shipment.courierId is still a legacy FK onto the old Courier table
+    // (predates ShippingCompany) — auto-provision (never manually seeded) a
+    // Courier row mirroring whichever shipping company is actually default,
+    // so a fresh environment never needs a separate seeding step for this.
+    const courier = await this.courierRowForDefaultCompany()
 
     const result = await this.courier.createShipment({
       orderId: order.id,
@@ -289,18 +306,14 @@ export class FulfillmentService {
 
     const dispatched: { orderId: string; trackingReference: string }[] = []
     const failed: { orderId: string; reason: string }[] = []
+    const courier = await this.courierRowForDefaultCompany()
 
     await this.prisma.$transaction(async (tx) => {
-      const courier = await tx.courier.findFirst({ orderBy: { createdAt: 'asc' } })
       for (let i = 0; i < dispatchable.length; i++) {
         const order = dispatchable[i]!
         const outcome = result.results[String(i)]
         if (typeof outcome !== 'string') {
           failed.push({ orderId: order.id, reason: outcome ? Object.values(outcome).flat().join(' ') : 'unknown error' })
-          continue
-        }
-        if (!courier) {
-          failed.push({ orderId: order.id, reason: 'No courier configured' })
           continue
         }
         await tx.shipment.create({

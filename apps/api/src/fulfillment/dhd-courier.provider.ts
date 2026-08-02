@@ -1,6 +1,7 @@
-import { BadRequestException, Injectable, NotFoundException, NotImplementedException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotImplementedException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { DhdApiService, type DhdOrderPayload } from '../shipping-companies/dhd-api.service'
+import { ShippingCompaniesService } from '../shipping-companies/shipping-companies.service'
 import type {
   CourierProvider,
   CourierWebhookPayload,
@@ -15,19 +16,22 @@ import type {
 // courier-provider.interface.ts's own header comment anticipated.
 //
 // Unlike MockCourierProvider, this has no in-memory state — every call
-// re-resolves the linked ShippingCompany row (Settings → Shipping Companies
-// must have DHD linked first) and talks to the real DHD API.
+// re-resolves the default linked shipping company (Settings → Shipping
+// Companies — see ShippingCompaniesService.getDefaultLinked's comment on
+// what "default" means with one vs. several linked providers) and talks to
+// the real DHD API.
 @Injectable()
 export class DhdCourierProvider implements CourierProvider {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly dhd: DhdApiService
+    private readonly dhd: DhdApiService,
+    private readonly shippingCompanies: ShippingCompaniesService
   ) {}
 
   private async company() {
-    const company = await this.prisma.shippingCompany.findUnique({ where: { provider: 'Dhd' } })
-    if (!company?.isLinked || !company.apiToken) {
-      throw new BadRequestException('DHD is not linked — link it under Settings → Shipping Companies before dispatching.')
+    const company = await this.shippingCompanies.getDefaultLinked()
+    if (company.provider !== 'Dhd') {
+      throw new BadRequestException(`The default shipping company (${company.name}) isn't DHD — this adapter only speaks DHD's API.`)
     }
     return { baseUrl: company.baseUrl, apiToken: company.apiToken }
   }
