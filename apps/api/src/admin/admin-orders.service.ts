@@ -157,7 +157,7 @@ export class AdminOrdersService {
     // block a status change. GoogleSheetsService itself already no-ops
     // cheaply when the feature is disabled/unconfigured or this order was
     // never pushed to any sheet.
-    this.googleSheets.updateOrderStatus(id, to).catch((error: Error) => {
+    this.googleSheets.updateOrderStatus(id, from, to).catch((error: Error) => {
       this.logger.warn(`Google Sheets status update failed for order ${id}: ${error.message}`)
     })
 

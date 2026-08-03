@@ -5,6 +5,7 @@ import { isValidTransition } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
 import { DhdApiService, type DhdOrderPayload } from '../shipping-companies/dhd-api.service'
+import { GoogleSheetsService } from '../apps/google-sheets.service'
 
 // Maps the courier's normalized status onto the order lifecycle (plan §7).
 // This is the single place that translation happens — COU-04's "one code path
@@ -34,8 +35,19 @@ export class FulfillmentService {
     // retours — the rest of the "Commandes" API section) go straight to
     // DhdApiService rather than through the courier abstraction, since
     // there's no cross-provider equivalent for them to generalize into.
-    private readonly dhd: DhdApiService
+    private readonly dhd: DhdApiService,
+    private readonly googleSheets: GoogleSheetsService
   ) {}
+
+  // Fire-and-forget, same rule as everywhere else GoogleSheetsService is
+  // called: a Sheets outage/misconfiguration must never affect fulfillment.
+  // GoogleSheetsService itself already no-ops cheaply when the feature is
+  // disabled/unconfigured or the order was never pushed to any sheet.
+  private syncShippingInfoToSheets(orderId: string): void {
+    this.googleSheets.updateShippingInfo(orderId).catch((error: Error) => {
+      this.logger.warn(`Google Sheets shipping-info update failed for order ${orderId}: ${error.message}`)
+    })
+  }
 
   // Resolves the shipping company an order was explicitly assigned
   // (assignShippingCompany) — never a "default" company. Every DHD-specific
@@ -106,6 +118,7 @@ export class FulfillmentService {
       entityId: orderId,
       metadata: { assignedShippingCompany: company.name }
     })
+    this.syncShippingInfoToSheets(orderId)
 
     return { orderId, fulfillmentMethod: 'ShippingCompany' as const, shippingCompanyId, shippingCompanyName: company.name }
   }
@@ -129,6 +142,7 @@ export class FulfillmentService {
       entityId: orderId,
       metadata: { assignedShippingCompany: null, manual: true }
     })
+    this.syncShippingInfoToSheets(orderId)
 
     return { orderId, fulfillmentMethod: 'Manual' as const }
   }
@@ -196,6 +210,7 @@ export class FulfillmentService {
       entityId: orderId,
       metadata: { from: 'Packed', to: 'HandedToCourier', trackingReference: result.trackingReference, courier: courier.name }
     })
+    this.syncShippingInfoToSheets(orderId)
 
     return { orderId, trackingReference: result.trackingReference, courierStatus: result.courierStatus }
   }
@@ -245,6 +260,7 @@ export class FulfillmentService {
       entityId: orderId,
       metadata: { from: 'Packed', to: 'HandedToCourier', manual: true, trackingReference, courier: courier.name }
     })
+    this.syncShippingInfoToSheets(orderId)
 
     return { orderId, manual: true, trackingReference }
   }
@@ -355,6 +371,7 @@ export class FulfillmentService {
       entityId: orderId,
       metadata: { dhdAction: 'cancel', trackingReference: order.shipment.trackingReference, revertedTo: canRevert ? 'Packed' : null }
     })
+    this.syncShippingInfoToSheets(orderId)
 
     return { orderId, cancelled: true, revertedToPacked: canRevert }
   }
@@ -477,6 +494,7 @@ export class FulfillmentService {
       entityId: 'bulk',
       metadata: { dhdAction: 'bulk-create', dispatchedCount: dispatched.length, failedCount: failed.length }
     })
+    for (const d of dispatched) this.syncShippingInfoToSheets(d.orderId)
 
     return { dispatched, failed, skipped }
   }

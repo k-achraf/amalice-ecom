@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import {
   extractSpreadsheetId,
+  ORDER_STAGE_BY_STATE,
   ORDER_STATE_LABELS,
   type CreateGoogleSheet,
   type GoogleSheetView,
@@ -11,7 +12,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service'
 import type { Prisma } from '../generated/prisma/client'
 import { AuditService, type AuditActor } from '../common/audit.service'
-import { GoogleSheetsClientService, GOOGLE_SHEET_HEADER_ROW } from './google-sheets-client.service'
+import { GoogleSheetsClientService, GOOGLE_SHEET_COLUMNS, GOOGLE_SHEET_HEADER_ROW, type GoogleSheetStatusColumn } from './google-sheets-client.service'
 
 // Same shape of item include AdminOrdersService uses to build a display-
 // ready order (product name, normalized variant label, offer) — duplicated
@@ -19,6 +20,8 @@ import { GoogleSheetsClientService, GOOGLE_SHEET_HEADER_ROW } from './google-she
 // this is a small enough shape to keep in sync by hand.
 const orderInclude = {
   customer: { select: { name: true, phone: true } },
+  shippingCompany: { select: { name: true } },
+  shipment: { select: { id: true } },
   items: {
     include: {
       product: { select: { name: true } },
@@ -50,6 +53,40 @@ function offerLabel(offer: OrderItemWithRelations['offer']): string {
 
 const dzd = (cents: number) => (cents / 100).toFixed(2)
 
+// "Sent to Shipping Company" — Yes only once an actual shipping company has
+// a shipment recorded against it (real DHD dispatch, or a manual record of a
+// shipment arranged directly with that company — see FulfillmentService.
+// dispatchManual). Manual (in-house driver) deliveries never involve a
+// shipping company at all, so they're always No here even once dispatched.
+function shippingSentLabel(order: Pick<OrderWithRelations, 'fulfillmentMethod' | 'shipment'>): string {
+  return order.fulfillmentMethod === 'ShippingCompany' && order.shipment ? 'Yes' : 'No'
+}
+
+function shippingCompanyLabel(order: Pick<OrderWithRelations, 'fulfillmentMethod' | 'shippingCompany'>): string {
+  if (order.fulfillmentMethod === 'ShippingCompany') return order.shippingCompany?.name ?? '—'
+  if (order.fulfillmentMethod === 'Manual') return 'Delivery man'
+  return '—'
+}
+
+// Which of the 3 status columns a transition's new state belongs in. States
+// in the CallCenter/Fulfillment/Shipping stages map onto their own column
+// directly; Finance (post-delivery reconciliation) and Other (Cancelled/
+// Restocked) states don't get a column of their own (the sheet only asked
+// for 3), so they're attributed to whichever operational column the order
+// was just in — Finance always follows Delivered (Shipping), and every real
+// Cancelled/Restocked transition has a `from` in one of the three stages
+// (see VALID_TRANSITIONS) with 'Shipping' as the last-resort fallback.
+function resolveStatusColumn(from: OrderState, to: OrderState): GoogleSheetStatusColumn {
+  const stage = ORDER_STAGE_BY_STATE[to]
+  if (stage === 'CallCenter') return 'callCenterStatus'
+  if (stage === 'Fulfillment') return 'fulfillmentStatus'
+  if (stage === 'Shipping') return 'deliveryStatus'
+  const fromStage = ORDER_STAGE_BY_STATE[from]
+  if (fromStage === 'CallCenter') return 'callCenterStatus'
+  if (fromStage === 'Fulfillment') return 'fulfillmentStatus'
+  return 'deliveryStatus'
+}
+
 @Injectable()
 export class GoogleSheetsService {
   private readonly logger = new Logger(GoogleSheetsService.name)
@@ -67,6 +104,14 @@ export class GoogleSheetsService {
 
   private sheetUrl(spreadsheetId: string): string {
     return `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`
+  }
+
+  // The live roster for the "Shipping Company" column's dropdown — only
+  // linked companies, matching what FulfillmentService.assignShippingCompany
+  // itself accepts (an order can't actually be assigned to an unlinked one).
+  private async linkedShippingCompanyNames(): Promise<string[]> {
+    const companies = await this.prisma.shippingCompany.findMany({ where: { isLinked: true }, select: { name: true } })
+    return companies.map((c) => c.name)
   }
 
   private toView(
@@ -169,7 +214,7 @@ export class GoogleSheetsService {
     }
     const row = await this.prisma.googleSheet.findUnique({ where: { id } })
     if (!row) throw new NotFoundException('Google Sheet not found')
-    const result = await this.client.testConnection(row.spreadsheetId, row.sheetName)
+    const result = await this.client.testConnection(row.spreadsheetId, row.sheetName, await this.linkedShippingCompanyNames())
     return { ok: true, message: `Connected to "${result.title}" — header row is ${GOOGLE_SHEET_HEADER_ROW.join(', ')}.` }
   }
 
@@ -193,6 +238,11 @@ export class GoogleSheetsService {
     })
     if (!targets.length) return
 
+    // A brand-new order is always PendingCallCenter (CallCenter stage) — see
+    // OrderState's comment on the 3-stage pipeline — so the initial status
+    // always lands in the Call Center column, leaving Fulfillment/Delivery
+    // blank until the order actually reaches those stages.
+    const statusColumn = resolveStatusColumn(order.state, order.state)
     const row = [
       new Date(order.createdAt).toLocaleString(),
       order.id,
@@ -205,12 +255,17 @@ export class GoogleSheetsService {
       order.items.map((i) => dzd(i.lineTotalCents)).join('; '),
       dzd(order.shippingPriceCents),
       dzd(order.totalCents),
-      ORDER_STATE_LABELS[order.state]
+      shippingSentLabel(order),
+      shippingCompanyLabel(order),
+      statusColumn === 'callCenterStatus' ? ORDER_STATE_LABELS[order.state] : '',
+      statusColumn === 'fulfillmentStatus' ? ORDER_STATE_LABELS[order.state] : '',
+      statusColumn === 'deliveryStatus' ? ORDER_STATE_LABELS[order.state] : ''
     ]
 
+    const shippingCompanyNames = await this.linkedShippingCompanyNames()
     for (const sheet of targets) {
       try {
-        await this.client.ensureHeaderRow(sheet.spreadsheetId, sheet.sheetName)
+        await this.client.ensureHeaderRow(sheet.spreadsheetId, sheet.sheetName, shippingCompanyNames)
         const rowNumber = await this.client.appendRow(sheet.spreadsheetId, sheet.sheetName, row)
         await this.prisma.googleSheetOrderRow.upsert({
           where: { orderId_googleSheetId: { orderId: order.id, googleSheetId: sheet.id } },
@@ -225,21 +280,57 @@ export class GoogleSheetsService {
     }
   }
 
-  async updateOrderStatus(orderId: string, state: OrderState): Promise<void> {
+  async updateOrderStatus(orderId: string, from: OrderState, to: OrderState): Promise<void> {
     if (!this.client.isConfigured() || !(await this.isEnabled())) return
 
     const rows = await this.prisma.googleSheetOrderRow.findMany({
       where: { orderId },
       include: { googleSheet: true }
     })
-    const label = ORDER_STATE_LABELS[state]
+    if (!rows.length) return
+
+    const label = ORDER_STATE_LABELS[to]
+    const column = GOOGLE_SHEET_COLUMNS[resolveStatusColumn(from, to)]
 
     for (const row of rows) {
       if (!row.googleSheet.enabled) continue
       try {
-        await this.client.updateStatusCell(row.googleSheet.spreadsheetId, row.googleSheet.sheetName, row.rowNumber, label)
+        await this.client.updateCell(row.googleSheet.spreadsheetId, row.googleSheet.sheetName, column, row.rowNumber, label)
       } catch (error) {
         this.logger.warn(`Failed to update status for order ${orderId} in sheet ${row.googleSheetId}: ${(error as Error).message}`)
+      }
+    }
+  }
+
+  // Refreshes the "Sent to Shipping Company" / "Shipping Company" columns —
+  // called wherever FulfillmentService changes an order's assignment or
+  // dispatch state (assign/dispatch/cancel), since none of those go through
+  // updateOrderStatus's OrderState transition (assignment isn't a state).
+  async updateShippingInfo(orderId: string): Promise<void> {
+    if (!this.client.isConfigured() || !(await this.isEnabled())) return
+
+    const rows = await this.prisma.googleSheetOrderRow.findMany({
+      where: { orderId },
+      include: { googleSheet: true }
+    })
+    if (!rows.length) return
+
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      select: { fulfillmentMethod: true, shippingCompany: { select: { name: true } }, shipment: { select: { id: true } } }
+    })
+    if (!order) return
+
+    const sentLabel = shippingSentLabel(order)
+    const companyLabel = shippingCompanyLabel(order)
+
+    for (const row of rows) {
+      if (!row.googleSheet.enabled) continue
+      try {
+        await this.client.updateCell(row.googleSheet.spreadsheetId, row.googleSheet.sheetName, GOOGLE_SHEET_COLUMNS.sentToShippingCompany, row.rowNumber, sentLabel)
+        await this.client.updateCell(row.googleSheet.spreadsheetId, row.googleSheet.sheetName, GOOGLE_SHEET_COLUMNS.shippingCompany, row.rowNumber, companyLabel)
+      } catch (error) {
+        this.logger.warn(`Failed to update shipping info for order ${orderId} in sheet ${row.googleSheetId}: ${(error as Error).message}`)
       }
     }
   }

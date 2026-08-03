@@ -6,6 +6,7 @@ import { DhdCourierProvider } from './dhd-courier.provider'
 import { COURIER_PROVIDER } from './courier-provider.interface'
 import { CommonModule } from '../common/common.module'
 import { ShippingCompaniesModule } from '../shipping-companies/shipping-companies.module'
+import { AppsModule } from '../apps/apps.module'
 
 // COU-01/COU-02 — the COURIER_PROVIDER binding is the one line that changes
 // to go from mock to real: this now binds DhdCourierProvider, which resolves
@@ -16,7 +17,7 @@ import { ShippingCompaniesModule } from '../shipping-companies/shipping-companie
 // token) purely so the dev-only /admin/fulfillment/mock-status route still
 // works for local testing without a real DHD account.
 @Module({
-  imports: [CommonModule, ShippingCompaniesModule],
+  imports: [CommonModule, ShippingCompaniesModule, AppsModule],
   controllers: [FulfillmentController],
   providers: [
     FulfillmentService,

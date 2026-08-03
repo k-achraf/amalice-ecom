@@ -7,7 +7,8 @@
     "start": "node dist/main.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "create-admin": "tsx prisma/create-admin.ts",
-    "seed-locations": "tsx prisma/seed-locations.ts"
+    "seed-locations": "tsx prisma/seed-locations.ts",
+    "reset-test-data": "tsx prisma/reset-test-data.ts"
   },
   "dependencies": {
     "@amalice/shared": "workspace:*",
