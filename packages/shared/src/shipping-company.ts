@@ -11,6 +11,11 @@ export type ShippingCompanyProvider = z.infer<typeof ShippingCompanyProviderSche
 // hasApiToken: false) so the section can render every supported provider as
 // a card, not just the ones already configured.
 export const ShippingCompanyViewSchema = z.object({
+  // null for a provider that's never been linked — there's no row yet.
+  // Assigning an order to a company (FulfillmentService.assignShippingCompany)
+  // needs this real id, not just the provider enum, since it's the FK
+  // Order.shippingCompanyId actually stores.
+  id: z.uuid().nullable(),
   provider: ShippingCompanyProviderSchema,
   name: z.string(),
   baseUrl: z.string(),

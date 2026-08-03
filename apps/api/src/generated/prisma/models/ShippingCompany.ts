@@ -223,6 +223,7 @@ export type ShippingCompanyWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"ShippingCompany"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ShippingCompany"> | Date | string
   tariffs?: Prisma.ShippingCompanyTariffListRelationFilter
+  orders?: Prisma.OrderListRelationFilter
 }
 
 export type ShippingCompanyOrderByWithRelationInput = {
@@ -237,6 +238,7 @@ export type ShippingCompanyOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   tariffs?: Prisma.ShippingCompanyTariffOrderByRelationAggregateInput
+  orders?: Prisma.OrderOrderByRelationAggregateInput
 }
 
 export type ShippingCompanyWhereUniqueInput = Prisma.AtLeast<{
@@ -254,6 +256,7 @@ export type ShippingCompanyWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"ShippingCompany"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ShippingCompany"> | Date | string
   tariffs?: Prisma.ShippingCompanyTariffListRelationFilter
+  orders?: Prisma.OrderListRelationFilter
 }, "id" | "provider">
 
 export type ShippingCompanyOrderByWithAggregationInput = {
@@ -300,6 +303,7 @@ export type ShippingCompanyCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   tariffs?: Prisma.ShippingCompanyTariffCreateNestedManyWithoutShippingCompanyInput
+  orders?: Prisma.OrderCreateNestedManyWithoutShippingCompanyInput
 }
 
 export type ShippingCompanyUncheckedCreateInput = {
@@ -314,6 +318,7 @@ export type ShippingCompanyUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   tariffs?: Prisma.ShippingCompanyTariffUncheckedCreateNestedManyWithoutShippingCompanyInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutShippingCompanyInput
 }
 
 export type ShippingCompanyUpdateInput = {
@@ -328,6 +333,7 @@ export type ShippingCompanyUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tariffs?: Prisma.ShippingCompanyTariffUpdateManyWithoutShippingCompanyNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutShippingCompanyNestedInput
 }
 
 export type ShippingCompanyUncheckedUpdateInput = {
@@ -342,6 +348,7 @@ export type ShippingCompanyUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tariffs?: Prisma.ShippingCompanyTariffUncheckedUpdateManyWithoutShippingCompanyNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutShippingCompanyNestedInput
 }
 
 export type ShippingCompanyCreateManyInput = {
@@ -381,6 +388,11 @@ export type ShippingCompanyUncheckedUpdateManyInput = {
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ShippingCompanyNullableScalarRelationFilter = {
+  is?: Prisma.ShippingCompanyWhereInput | null
+  isNot?: Prisma.ShippingCompanyWhereInput | null
 }
 
 export type ShippingCompanyCountOrderByAggregateInput = {
@@ -427,6 +439,22 @@ export type ShippingCompanyScalarRelationFilter = {
   isNot?: Prisma.ShippingCompanyWhereInput
 }
 
+export type ShippingCompanyCreateNestedOneWithoutOrdersInput = {
+  create?: Prisma.XOR<Prisma.ShippingCompanyCreateWithoutOrdersInput, Prisma.ShippingCompanyUncheckedCreateWithoutOrdersInput>
+  connectOrCreate?: Prisma.ShippingCompanyCreateOrConnectWithoutOrdersInput
+  connect?: Prisma.ShippingCompanyWhereUniqueInput
+}
+
+export type ShippingCompanyUpdateOneWithoutOrdersNestedInput = {
+  create?: Prisma.XOR<Prisma.ShippingCompanyCreateWithoutOrdersInput, Prisma.ShippingCompanyUncheckedCreateWithoutOrdersInput>
+  connectOrCreate?: Prisma.ShippingCompanyCreateOrConnectWithoutOrdersInput
+  upsert?: Prisma.ShippingCompanyUpsertWithoutOrdersInput
+  disconnect?: Prisma.ShippingCompanyWhereInput | boolean
+  delete?: Prisma.ShippingCompanyWhereInput | boolean
+  connect?: Prisma.ShippingCompanyWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ShippingCompanyUpdateToOneWithWhereWithoutOrdersInput, Prisma.ShippingCompanyUpdateWithoutOrdersInput>, Prisma.ShippingCompanyUncheckedUpdateWithoutOrdersInput>
+}
+
 export type EnumShippingCompanyProviderFieldUpdateOperationsInput = {
   set?: $Enums.ShippingCompanyProvider
 }
@@ -445,6 +473,78 @@ export type ShippingCompanyUpdateOneRequiredWithoutTariffsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ShippingCompanyUpdateToOneWithWhereWithoutTariffsInput, Prisma.ShippingCompanyUpdateWithoutTariffsInput>, Prisma.ShippingCompanyUncheckedUpdateWithoutTariffsInput>
 }
 
+export type ShippingCompanyCreateWithoutOrdersInput = {
+  id?: string
+  provider: $Enums.ShippingCompanyProvider
+  name: string
+  baseUrl: string
+  apiToken?: string | null
+  isLinked?: boolean
+  isDefault?: boolean
+  lastSyncedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tariffs?: Prisma.ShippingCompanyTariffCreateNestedManyWithoutShippingCompanyInput
+}
+
+export type ShippingCompanyUncheckedCreateWithoutOrdersInput = {
+  id?: string
+  provider: $Enums.ShippingCompanyProvider
+  name: string
+  baseUrl: string
+  apiToken?: string | null
+  isLinked?: boolean
+  isDefault?: boolean
+  lastSyncedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tariffs?: Prisma.ShippingCompanyTariffUncheckedCreateNestedManyWithoutShippingCompanyInput
+}
+
+export type ShippingCompanyCreateOrConnectWithoutOrdersInput = {
+  where: Prisma.ShippingCompanyWhereUniqueInput
+  create: Prisma.XOR<Prisma.ShippingCompanyCreateWithoutOrdersInput, Prisma.ShippingCompanyUncheckedCreateWithoutOrdersInput>
+}
+
+export type ShippingCompanyUpsertWithoutOrdersInput = {
+  update: Prisma.XOR<Prisma.ShippingCompanyUpdateWithoutOrdersInput, Prisma.ShippingCompanyUncheckedUpdateWithoutOrdersInput>
+  create: Prisma.XOR<Prisma.ShippingCompanyCreateWithoutOrdersInput, Prisma.ShippingCompanyUncheckedCreateWithoutOrdersInput>
+  where?: Prisma.ShippingCompanyWhereInput
+}
+
+export type ShippingCompanyUpdateToOneWithWhereWithoutOrdersInput = {
+  where?: Prisma.ShippingCompanyWhereInput
+  data: Prisma.XOR<Prisma.ShippingCompanyUpdateWithoutOrdersInput, Prisma.ShippingCompanyUncheckedUpdateWithoutOrdersInput>
+}
+
+export type ShippingCompanyUpdateWithoutOrdersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  provider?: Prisma.EnumShippingCompanyProviderFieldUpdateOperationsInput | $Enums.ShippingCompanyProvider
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  baseUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isLinked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tariffs?: Prisma.ShippingCompanyTariffUpdateManyWithoutShippingCompanyNestedInput
+}
+
+export type ShippingCompanyUncheckedUpdateWithoutOrdersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  provider?: Prisma.EnumShippingCompanyProviderFieldUpdateOperationsInput | $Enums.ShippingCompanyProvider
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  baseUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isLinked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tariffs?: Prisma.ShippingCompanyTariffUncheckedUpdateManyWithoutShippingCompanyNestedInput
+}
+
 export type ShippingCompanyCreateWithoutTariffsInput = {
   id?: string
   provider: $Enums.ShippingCompanyProvider
@@ -456,6 +556,7 @@ export type ShippingCompanyCreateWithoutTariffsInput = {
   lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  orders?: Prisma.OrderCreateNestedManyWithoutShippingCompanyInput
 }
 
 export type ShippingCompanyUncheckedCreateWithoutTariffsInput = {
@@ -469,6 +570,7 @@ export type ShippingCompanyUncheckedCreateWithoutTariffsInput = {
   lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutShippingCompanyInput
 }
 
 export type ShippingCompanyCreateOrConnectWithoutTariffsInput = {
@@ -498,6 +600,7 @@ export type ShippingCompanyUpdateWithoutTariffsInput = {
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUpdateManyWithoutShippingCompanyNestedInput
 }
 
 export type ShippingCompanyUncheckedUpdateWithoutTariffsInput = {
@@ -511,6 +614,7 @@ export type ShippingCompanyUncheckedUpdateWithoutTariffsInput = {
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutShippingCompanyNestedInput
 }
 
 
@@ -520,10 +624,12 @@ export type ShippingCompanyUncheckedUpdateWithoutTariffsInput = {
 
 export type ShippingCompanyCountOutputType = {
   tariffs: number
+  orders: number
 }
 
 export type ShippingCompanyCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tariffs?: boolean | ShippingCompanyCountOutputTypeCountTariffsArgs
+  orders?: boolean | ShippingCompanyCountOutputTypeCountOrdersArgs
 }
 
 /**
@@ -543,6 +649,13 @@ export type ShippingCompanyCountOutputTypeCountTariffsArgs<ExtArgs extends runti
   where?: Prisma.ShippingCompanyTariffWhereInput
 }
 
+/**
+ * ShippingCompanyCountOutputType without action
+ */
+export type ShippingCompanyCountOutputTypeCountOrdersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrderWhereInput
+}
+
 
 export type ShippingCompanySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -556,6 +669,7 @@ export type ShippingCompanySelect<ExtArgs extends runtime.Types.Extensions.Inter
   createdAt?: boolean
   updatedAt?: boolean
   tariffs?: boolean | Prisma.ShippingCompany$tariffsArgs<ExtArgs>
+  orders?: boolean | Prisma.ShippingCompany$ordersArgs<ExtArgs>
   _count?: boolean | Prisma.ShippingCompanyCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["shippingCompany"]>
 
@@ -601,6 +715,7 @@ export type ShippingCompanySelectScalar = {
 export type ShippingCompanyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "provider" | "name" | "baseUrl" | "apiToken" | "isLinked" | "isDefault" | "lastSyncedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["shippingCompany"]>
 export type ShippingCompanyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tariffs?: boolean | Prisma.ShippingCompany$tariffsArgs<ExtArgs>
+  orders?: boolean | Prisma.ShippingCompany$ordersArgs<ExtArgs>
   _count?: boolean | Prisma.ShippingCompanyCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ShippingCompanyIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -610,6 +725,7 @@ export type $ShippingCompanyPayload<ExtArgs extends runtime.Types.Extensions.Int
   name: "ShippingCompany"
   objects: {
     tariffs: Prisma.$ShippingCompanyTariffPayload<ExtArgs>[]
+    orders: Prisma.$OrderPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1017,6 +1133,7 @@ readonly fields: ShippingCompanyFieldRefs;
 export interface Prisma__ShippingCompanyClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   tariffs<T extends Prisma.ShippingCompany$tariffsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ShippingCompany$tariffsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ShippingCompanyTariffPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  orders<T extends Prisma.ShippingCompany$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ShippingCompany$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1470,6 +1587,30 @@ export type ShippingCompany$tariffsArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.ShippingCompanyTariffScalarFieldEnum | Prisma.ShippingCompanyTariffScalarFieldEnum[]
+}
+
+/**
+ * ShippingCompany.orders
+ */
+export type ShippingCompany$ordersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Order
+   */
+  select?: Prisma.OrderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Order
+   */
+  omit?: Prisma.OrderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrderInclude<ExtArgs> | null
+  where?: Prisma.OrderWhereInput
+  orderBy?: Prisma.OrderOrderByWithRelationInput | Prisma.OrderOrderByWithRelationInput[]
+  cursor?: Prisma.OrderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrderScalarFieldEnum | Prisma.OrderScalarFieldEnum[]
 }
 
 /**

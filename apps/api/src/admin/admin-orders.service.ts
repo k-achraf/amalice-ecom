@@ -96,7 +96,8 @@ export class AdminOrdersService {
           customer: { select: { id: true, name: true, phone: true } },
           address: { select: { line1: true, line2: true, city: true, region: true, postalCode: true, country: true } },
           items: { include: itemInclude },
-          shipment: { include: { courier: { select: { name: true } } } }
+          shipment: { include: { courier: { select: { name: true } } } },
+          shippingCompany: { select: { name: true } }
         },
         orderBy: { createdAt: 'desc' },
         skip: (args.page - 1) * args.pageSize,
@@ -104,7 +105,11 @@ export class AdminOrdersService {
       }),
       this.prisma.order.count({ where })
     ])
-    const items = rows.map((order) => ({ ...order, items: order.items.map(toLineItem) }))
+    const items = rows.map((order) => ({
+      ...order,
+      items: order.items.map(toLineItem),
+      shippingCompanyName: order.shippingCompany?.name ?? null
+    }))
     return { items, total, page: args.page, pageSize: args.pageSize }
   }
 
@@ -116,12 +121,13 @@ export class AdminOrdersService {
         address: true,
         items: { include: itemInclude },
         shipment: { include: { courier: true } },
+        shippingCompany: { select: { name: true } },
         cashReconciliation: true,
         notifications: { orderBy: { createdAt: 'desc' }, take: 10 }
       }
     })
     if (!order) throw new NotFoundException('Order not found')
-    return { ...order, items: order.items.map(toLineItem) }
+    return { ...order, items: order.items.map(toLineItem), shippingCompanyName: order.shippingCompany?.name ?? null }
   }
 
   // ADM-05 — manual state transition. Re-validates against the state machine

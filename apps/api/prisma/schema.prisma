@@ -401,6 +401,16 @@ model Order {
   // Cleared in place (never a second row) if the same customer goes on to
   // actually submit the form — see createLeadOrder's convertsAbandonedOrderId.
   isAbandoned        Boolean               @default(false) @map("is_abandoned")
+  // Which shipping company (if any) this order is assigned to before it can
+  // be dispatched — deliberately NOT auto-resolved from whichever company is
+  // "default" at dispatch time (that was the earlier behavior; a manual
+  // in-house delivery has no shipping company at all, and different orders
+  // may legitimately go through different companies). Unassigned is the
+  // starting state for every order reaching fulfillment; dispatch requires
+  // ShippingCompany + shippingCompanyId set, or Manual (see FulfillmentService).
+  fulfillmentMethod  FulfillmentMethod     @default(Unassigned) @map("fulfillment_method")
+  shippingCompanyId  String?               @map("shipping_company_id")
+  shippingCompany    ShippingCompany?      @relation(fields: [shippingCompanyId], references: [id], onDelete: SetNull)
   items              OrderItem[]
   shipment           Shipment?
   cashReconciliation CashReconciliation?
@@ -412,7 +422,14 @@ model Order {
 
   @@index([customerId])
   @@index([state])
+  @@index([shippingCompanyId])
   @@map("orders")
+}
+
+enum FulfillmentMethod {
+  Unassigned
+  ShippingCompany
+  Manual
 }
 
 model OrderItem {
@@ -898,6 +915,7 @@ model ShippingCompany {
   createdAt    DateTime                @default(now()) @map("created_at")
   updatedAt    DateTime                @updatedAt @map("updated_at")
   tariffs      ShippingCompanyTariff[]
+  orders       Order[]
 
   @@map("shipping_companies")
 }

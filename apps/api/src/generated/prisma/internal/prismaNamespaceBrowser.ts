@@ -301,6 +301,8 @@ export const OrderScalarFieldEnum = {
   shippingType: 'shippingType',
   shippingPriceCents: 'shippingPriceCents',
   isAbandoned: 'isAbandoned',
+  fulfillmentMethod: 'fulfillmentMethod',
+  shippingCompanyId: 'shippingCompanyId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

@@ -1,7 +1,6 @@
-import { BadRequestException, Injectable, NotImplementedException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException, NotImplementedException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { DhdApiService, type DhdOrderPayload } from '../shipping-companies/dhd-api.service'
-import { ShippingCompaniesService } from '../shipping-companies/shipping-companies.service'
 import type {
   CourierProvider,
   CourierWebhookPayload,
@@ -16,22 +15,29 @@ import type {
 // courier-provider.interface.ts's own header comment anticipated.
 //
 // Unlike MockCourierProvider, this has no in-memory state — every call
-// re-resolves the default linked shipping company (Settings → Shipping
-// Companies — see ShippingCompaniesService.getDefaultLinked's comment on
-// what "default" means with one vs. several linked providers) and talks to
-// the real DHD API.
+// resolves the SPECIFIC shipping company id it's given (createShipment via
+// input.shippingCompanyId, cancelShipment via its own param) and talks to
+// the real DHD API with that account's credentials. Deliberately never
+// falls back to "whichever company is default" — an order must be
+// explicitly assigned a shipping company first (FulfillmentService.
+// assignShippingCompany), so dispatching always uses the account staff
+// actually chose for that order, not a global default that could silently
+// send a parcel through the wrong carrier.
 @Injectable()
 export class DhdCourierProvider implements CourierProvider {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly dhd: DhdApiService,
-    private readonly shippingCompanies: ShippingCompaniesService
+    private readonly dhd: DhdApiService
   ) {}
 
-  private async company() {
-    const company = await this.shippingCompanies.getDefaultLinked()
+  private async company(shippingCompanyId: string) {
+    const company = await this.prisma.shippingCompany.findUnique({ where: { id: shippingCompanyId } })
+    if (!company) throw new NotFoundException('Assigned shipping company not found.')
+    if (!company.isLinked || !company.apiToken) {
+      throw new BadRequestException(`${company.name} is not linked — link it under Settings → Shipping Companies.`)
+    }
     if (company.provider !== 'Dhd') {
-      throw new BadRequestException(`The default shipping company (${company.name}) isn't DHD — this adapter only speaks DHD's API.`)
+      throw new BadRequestException(`${company.name} isn't DHD — this adapter only speaks DHD's API.`)
     }
     return { baseUrl: company.baseUrl, apiToken: company.apiToken }
   }
@@ -49,7 +55,7 @@ export class DhdCourierProvider implements CourierProvider {
   }
 
   async createShipment(input: CreateShipmentInput): Promise<ShipmentResult> {
-    const { baseUrl, apiToken } = await this.company()
+    const { baseUrl, apiToken } = await this.company(input.shippingCompanyId)
     const codeWilaya = await this.wilayaCode(input.address.region)
 
     const payload: DhdOrderPayload = {
@@ -74,8 +80,8 @@ export class DhdCourierProvider implements CourierProvider {
     return { trackingReference: result.tracking, courierStatus: 'created' }
   }
 
-  async cancelShipment(trackingReference: string): Promise<void> {
-    const { baseUrl, apiToken } = await this.company()
+  async cancelShipment(trackingReference: string, shippingCompanyId: string): Promise<void> {
+    const { baseUrl, apiToken } = await this.company(shippingCompanyId)
     await this.dhd.deleteOrder(baseUrl, apiToken, trackingReference)
   }
 

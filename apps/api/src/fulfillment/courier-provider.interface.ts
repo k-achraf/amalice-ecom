@@ -8,6 +8,12 @@
 
 export interface CreateShipmentInput {
   orderId: string
+  // Which shipping company account to use — set explicitly by an admin
+  // assigning the order (FulfillmentService.assignShippingCompany) BEFORE
+  // dispatch is possible. Never resolved from a "default" company; a real
+  // adapter uses this to look up which account's credentials to call with,
+  // since more than one ShippingCompany row can exist.
+  shippingCompanyId: string
   // The customer's shipping address, normalized — adapters map to the
   // courier's own field names.
   address: {
@@ -70,7 +76,9 @@ export const COURIER_PROVIDER = Symbol('COURIER_PROVIDER')
 export interface CourierProvider {
   createShipment(input: CreateShipmentInput): Promise<ShipmentResult>
   getStatus(trackingReference: string): Promise<{ normalizedStatus: NormalizedCourierStatus; courierStatus: string }>
-  cancelShipment(trackingReference: string): Promise<void>
+  // shippingCompanyId: same reasoning as CreateShipmentInput's — which
+  // account to authenticate the cancel call with.
+  cancelShipment(trackingReference: string, shippingCompanyId: string): Promise<void>
   // Normalizes a raw provider webhook body into the internal status enum.
   // The webhook controller authenticates the request FIRST, then calls this.
   parseWebhook(rawBody: unknown): CourierWebhookPayload

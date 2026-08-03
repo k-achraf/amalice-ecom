@@ -28,9 +28,10 @@ export class ShippingCompaniesService {
     private readonly dhd: DhdApiService
   ) {}
 
-  private toView(provider: ShippingCompanyProvider, row: { baseUrl: string; apiToken: string | null; isLinked: boolean; isDefault: boolean; lastSyncedAt: Date | null } | null): ShippingCompanyView {
+  private toView(provider: ShippingCompanyProvider, row: { id: string; baseUrl: string; apiToken: string | null; isLinked: boolean; isDefault: boolean; lastSyncedAt: Date | null } | null): ShippingCompanyView {
     const catalog = PROVIDER_CATALOG[provider]
     return {
+      id: row?.id ?? null,
       provider,
       name: catalog.name,
       baseUrl: row?.baseUrl ?? catalog.baseUrl,

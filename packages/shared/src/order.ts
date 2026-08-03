@@ -3,6 +3,7 @@ import { AddressSchema } from './customer'
 import { CheckoutTrackingSchema } from './apps'
 import { ShippingTypeSchema, type ShippingType } from './shipping'
 import { PhoneSchema } from './phone'
+import type { FulfillmentMethod } from './shipment'
 
 // Every state from the order lifecycle state machine (cod-platform-plan.md
 // §7) — the single source of truth other places (StatusBadge, the DB enum
@@ -311,6 +312,11 @@ export interface AdminOrderListItem {
   shipment?: { courier: { name: string } } | null
   // See Order.isAbandoned's Prisma comment.
   isAbandoned: boolean
+  // See FulfillmentMethodSchema's comment — dispatch requires this to be
+  // ShippingCompany (with shippingCompanyName set) or Manual, never
+  // Unassigned.
+  fulfillmentMethod: FulfillmentMethod
+  shippingCompanyName: string | null
 }
 
 export interface OrderListResponse {
@@ -340,6 +346,9 @@ export interface AdminOrderDetail {
   cashReconciliation: { expectedCents: number; collectedCents: number | null } | null
   // See Order.isAbandoned's Prisma comment.
   isAbandoned: boolean
+  fulfillmentMethod: FulfillmentMethod
+  shippingCompanyId: string | null
+  shippingCompanyName: string | null
 }
 
 // Admin/call-center "add item to order" — covers the upsells system's

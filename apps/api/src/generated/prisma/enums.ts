@@ -85,6 +85,15 @@ export const AttributeType = {
 export type AttributeType = (typeof AttributeType)[keyof typeof AttributeType]
 
 
+export const FulfillmentMethod = {
+  Unassigned: 'Unassigned',
+  ShippingCompany: 'ShippingCompany',
+  Manual: 'Manual'
+} as const
+
+export type FulfillmentMethod = (typeof FulfillmentMethod)[keyof typeof FulfillmentMethod]
+
+
 export const ProductOfferType = {
   FixedBundlePrice: 'FixedBundlePrice',
   BuyXGetYFree: 'BuyXGetYFree',

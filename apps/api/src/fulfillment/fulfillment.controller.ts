@@ -2,7 +2,7 @@ import { Body, Controller, Get, Header, Param, Post, Req, Res, UseGuards } from 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import type { Request, Response } from 'express'
 import { createZodDto } from 'nestjs-zod'
-import { RequestPickupSchema, UpdateShipmentSchema, BulkDispatchSchema, ValidateOrderReturnsSchema } from '@amalice/shared'
+import { RequestPickupSchema, UpdateShipmentSchema, BulkDispatchSchema, ValidateOrderReturnsSchema, AssignShippingCompanySchema } from '@amalice/shared'
 import { FulfillmentService } from './fulfillment.service'
 import { MockCourierProvider } from './mock-courier.provider'
 import { JwtAuthGuard } from '../identity/admin-auth/jwt-auth.guard'
@@ -15,6 +15,7 @@ class RequestPickupDto extends createZodDto(RequestPickupSchema) {}
 class UpdateShipmentDto extends createZodDto(UpdateShipmentSchema) {}
 class BulkDispatchDto extends createZodDto(BulkDispatchSchema) {}
 class ValidateOrderReturnsDto extends createZodDto(ValidateOrderReturnsSchema) {}
+class AssignShippingCompanyDto extends createZodDto(AssignShippingCompanySchema) {}
 
 interface AuthedRequest extends Request {
   user: AdminJwtPayload
@@ -33,8 +34,30 @@ export class FulfillmentController {
     return { module: 'fulfillment', status: 'ok' }
   }
 
-  // COU-03 / "Ajouter une commande" — dispatch a packed order to the
-  // shipping company (creates the shipment, order -> HandedToCourier).
+  // Assign a shipping company to an order — required before dispatch.
+  // Dispatch deliberately never falls back to a "default" company.
+  @Post('admin/fulfillment/orders/:id/assign-company')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager')
+  assignCompany(@Param('id') id: string, @Body() body: AssignShippingCompanyDto, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.fulfillment.assignShippingCompany(id, body.shippingCompanyId, actor)
+  }
+
+  // Assign an order to manual (in-house) delivery — no shipping company.
+  @Post('admin/fulfillment/orders/:id/assign-manual')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager')
+  assignManual(@Param('id') id: string, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.fulfillment.assignManual(id, actor)
+  }
+
+  // COU-03 / "Ajouter une commande" — dispatch a packed order to whichever
+  // shipping company it was explicitly assigned (creates the shipment,
+  // order -> HandedToCourier). Requires assign-company first.
   @Post('admin/fulfillment/orders/:id/dispatch')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -44,14 +67,26 @@ export class FulfillmentController {
     return this.fulfillment.createShipmentForOrder(id, actor)
   }
 
-  // "Ajouter plusieurs commandes" — dispatch several Packed orders at once.
+  // Manual-delivery equivalent of dispatch — no shipping company API call.
+  // Requires assign-manual first.
+  @Post('admin/fulfillment/orders/:id/dispatch-manual')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager')
+  dispatchManual(@Param('id') id: string, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.fulfillment.dispatchManual(id, actor)
+  }
+
+  // "Ajouter plusieurs commandes" — dispatch several Packed orders at once,
+  // all pre-assigned to the same shipping company.
   @Post('admin/fulfillment/orders/bulk-dispatch')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('SuperAdmin', 'OpsManager')
   bulkDispatch(@Body() body: BulkDispatchDto, @Req() req: AuthedRequest) {
     const actor: AuditActor = { id: req.user.sub, email: req.user.email }
-    return this.fulfillment.bulkDispatch(body.orderIds, actor)
+    return this.fulfillment.bulkDispatch(body.orderIds, body.shippingCompanyId, actor)
   }
 
   // "Expedier une commande" — confirm/dispatch an already-created DHD

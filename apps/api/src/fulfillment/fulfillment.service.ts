@@ -5,7 +5,6 @@ import { isValidTransition } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
 import { DhdApiService, type DhdOrderPayload } from '../shipping-companies/dhd-api.service'
-import { ShippingCompaniesService } from '../shipping-companies/shipping-companies.service'
 
 // Maps the courier's normalized status onto the order lifecycle (plan §7).
 // This is the single place that translation happens — COU-04's "one code path
@@ -35,24 +34,35 @@ export class FulfillmentService {
     // retours — the rest of the "Commandes" API section) go straight to
     // DhdApiService rather than through the courier abstraction, since
     // there's no cross-provider equivalent for them to generalize into.
-    private readonly dhd: DhdApiService,
-    private readonly shippingCompanies: ShippingCompaniesService
+    private readonly dhd: DhdApiService
   ) {}
 
-  private async dhdCompany() {
-    const company = await this.shippingCompanies.getDefaultLinked()
+  // Resolves the shipping company an order was explicitly assigned
+  // (assignShippingCompany) — never a "default" company. Every DHD-specific
+  // action below (requestPickup/updateShipment/label/bulk/returns) reads the
+  // company from the ORDER it's acting on, not a global setting, so two
+  // different orders can legitimately go through two different companies.
+  private async dhdCompanyForOrder(shippingCompanyId: string | null) {
+    if (!shippingCompanyId) {
+      throw new BadRequestException('This order has no shipping company assigned — assign one first.')
+    }
+    const company = await this.prisma.shippingCompany.findUnique({ where: { id: shippingCompanyId } })
+    if (!company) throw new NotFoundException('Assigned shipping company not found.')
+    if (!company.isLinked || !company.apiToken) {
+      throw new BadRequestException(`${company.name} is not linked — link it under Settings → Shipping Companies.`)
+    }
     if (company.provider !== 'Dhd') {
-      throw new BadRequestException(`The default shipping company (${company.name}) isn't DHD — this action only speaks DHD's API.`)
+      throw new BadRequestException(`${company.name} isn't DHD — this action only speaks DHD's API.`)
     }
     return { baseUrl: company.baseUrl, apiToken: company.apiToken }
   }
 
   // Auto-provisions (upserts, never requires manual seeding) the legacy
-  // Courier row Shipment.courierId's FK still needs, keyed to whichever
-  // shipping company is currently default — "always use the default
-  // shipping company" holds even for this leftover FK.
-  private async courierRowForDefaultCompany() {
-    const company = await this.shippingCompanies.getDefaultLinked()
+  // Courier row Shipment.courierId's FK still needs, keyed to the specific
+  // company the order was assigned to.
+  private async courierRowForCompany(shippingCompanyId: string) {
+    const company = await this.prisma.shippingCompany.findUnique({ where: { id: shippingCompanyId } })
+    if (!company) throw new NotFoundException('Assigned shipping company not found.')
     const slug = company.provider.toLowerCase()
     return this.prisma.courier.upsert({
       where: { slug },
@@ -61,9 +71,71 @@ export class FulfillmentService {
     })
   }
 
+  // Same auto-provisioning, for manual (in-house) deliveries — no shipping
+  // company involved at all, but Shipment.courierId still needs a row.
+  private async courierRowForManual() {
+    return this.prisma.courier.upsert({
+      where: { slug: 'manual' },
+      update: {},
+      create: { slug: 'manual', name: 'Manual delivery' }
+    })
+  }
+
+  // Assign a specific shipping company to an order — required before
+  // createShipmentForOrder (dispatch) will accept it. Deliberately a
+  // separate, explicit step: dispatch never silently falls back to
+  // whichever company happens to be marked default.
+  async assignShippingCompany(orderId: string, shippingCompanyId: string, actor: AuditActor) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId }, include: { shipment: true } })
+    if (!order) throw new NotFoundException('Order not found')
+    if (order.shipment) throw new BadRequestException('Order is already dispatched — cancel the existing shipment before reassigning.')
+
+    const company = await this.prisma.shippingCompany.findUnique({ where: { id: shippingCompanyId } })
+    if (!company) throw new NotFoundException('Shipping company not found')
+    if (!company.isLinked) throw new BadRequestException(`${company.name} is not linked — link it under Settings → Shipping Companies first.`)
+
+    await this.prisma.order.update({
+      where: { id: orderId },
+      data: { fulfillmentMethod: 'ShippingCompany', shippingCompanyId }
+    })
+
+    await this.audit.log({
+      actor,
+      action: 'Update',
+      entity: 'Order',
+      entityId: orderId,
+      metadata: { assignedShippingCompany: company.name }
+    })
+
+    return { orderId, fulfillmentMethod: 'ShippingCompany' as const, shippingCompanyId, shippingCompanyName: company.name }
+  }
+
+  // Assign an order to manual (in-house) delivery instead of a shipping
+  // company — our own delivery person, no courier API involved.
+  async assignManual(orderId: string, actor: AuditActor) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId }, include: { shipment: true } })
+    if (!order) throw new NotFoundException('Order not found')
+    if (order.shipment) throw new BadRequestException('Order is already dispatched — cancel the existing shipment before reassigning.')
+
+    await this.prisma.order.update({
+      where: { id: orderId },
+      data: { fulfillmentMethod: 'Manual', shippingCompanyId: null }
+    })
+
+    await this.audit.log({
+      actor,
+      action: 'Update',
+      entity: 'Order',
+      entityId: orderId,
+      metadata: { assignedShippingCompany: null, manual: true }
+    })
+
+    return { orderId, fulfillmentMethod: 'Manual' as const }
+  }
+
   // COU-03 / "Ajouter une commande" — create the shipment when an order is
-  // dispatched, always against the default linked shipping company (see
-  // ShippingCompaniesService.getDefaultLinked). On success, order →
+  // dispatched, against whichever shipping company it was explicitly
+  // assigned (assignShippingCompany) — never a default. On success, order →
   // HandedToCourier + the tracking reference is stored.
   async createShipmentForOrder(orderId: string, actor: AuditActor) {
     const order = await this.prisma.order.findUnique({
@@ -77,15 +149,19 @@ export class FulfillmentService {
     if (order.shipment) {
       throw new BadRequestException('Shipment already exists for this order')
     }
+    if (order.fulfillmentMethod !== 'ShippingCompany' || !order.shippingCompanyId) {
+      throw new BadRequestException(
+        order.fulfillmentMethod === 'Manual'
+          ? 'This order is assigned to manual delivery — use dispatchManual, not dispatch.'
+          : 'Assign a shipping company to this order before dispatching it.'
+      )
+    }
 
-    // Shipment.courierId is still a legacy FK onto the old Courier table
-    // (predates ShippingCompany) — auto-provision (never manually seeded) a
-    // Courier row mirroring whichever shipping company is actually default,
-    // so a fresh environment never needs a separate seeding step for this.
-    const courier = await this.courierRowForDefaultCompany()
+    const courier = await this.courierRowForCompany(order.shippingCompanyId)
 
     const result = await this.courier.createShipment({
       orderId: order.id,
+      shippingCompanyId: order.shippingCompanyId,
       address: {
         line1: order.address.line1,
         line2: order.address.line2,
@@ -122,6 +198,44 @@ export class FulfillmentService {
     })
 
     return { orderId, trackingReference: result.trackingReference, courierStatus: result.courierStatus }
+  }
+
+  // Manual (in-house) delivery equivalent of createShipmentForOrder — no
+  // shipping company, no external API call. Just marks the order as handed
+  // to the shop's own delivery person and records a Shipment row (against
+  // the auto-provisioned "Manual delivery" Courier row) so the rest of the
+  // app (order detail, reconciliation) has somewhere consistent to look.
+  async dispatchManual(orderId: string, actor: AuditActor) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId }, include: { shipment: true } })
+    if (!order) throw new NotFoundException('Order not found')
+    if (order.state !== 'Packed') {
+      throw new BadRequestException(`Order must be Packed to dispatch (currently ${order.state})`)
+    }
+    if (order.shipment) {
+      throw new BadRequestException('Shipment already exists for this order')
+    }
+    if (order.fulfillmentMethod !== 'Manual') {
+      throw new BadRequestException('This order is not assigned to manual delivery — use assignManual first.')
+    }
+
+    const courier = await this.courierRowForManual()
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.shipment.create({
+        data: { orderId: order.id, courierId: courier.id, trackingReference: null, courierStatus: 'manual_delivery' }
+      })
+      await tx.order.update({ where: { id: orderId }, data: { state: 'HandedToCourier' } })
+    })
+
+    await this.audit.log({
+      actor,
+      action: 'StateTransition',
+      entity: 'Order',
+      entityId: orderId,
+      metadata: { from: 'Packed', to: 'HandedToCourier', manual: true }
+    })
+
+    return { orderId, manual: true }
   }
 
   // COU-04 — apply a courier status update through the SAME transition logic
@@ -184,7 +298,7 @@ export class FulfillmentService {
     if (!order) throw new NotFoundException('Order not found')
     if (!order.shipment?.trackingReference) throw new BadRequestException('Order has no DHD shipment yet — dispatch it first.')
 
-    const { baseUrl, apiToken } = await this.dhdCompany()
+    const { baseUrl, apiToken } = await this.dhdCompanyForOrder(order.shippingCompanyId)
     await this.dhd.shipOrder(baseUrl, apiToken, order.shipment.trackingReference, askCollection)
 
     await this.audit.log({
@@ -200,15 +314,22 @@ export class FulfillmentService {
 
   // "Supprimer une commande" — cancels the shipment with DHD (goes through
   // the CourierProvider interface, same as createShipment, so it works
-  // regardless of which provider is bound). The order itself is reverted to
-  // Packed so staff can fix whatever needed changing and re-dispatch, rather
-  // than getting stuck in HandedToCourier with a dead shipment reference.
+  // regardless of which provider is bound). Manual deliveries just drop the
+  // Shipment row — there's no courier API to call. The order itself is
+  // reverted to Packed so staff can fix whatever needed changing and
+  // re-dispatch, rather than getting stuck in HandedToCourier with a dead
+  // shipment reference.
   async cancelShipmentForOrder(orderId: string, actor: AuditActor) {
     const order = await this.prisma.order.findUnique({ where: { id: orderId }, include: { shipment: true } })
     if (!order) throw new NotFoundException('Order not found')
-    if (!order.shipment?.trackingReference) throw new BadRequestException('Order has no shipment to cancel.')
+    if (!order.shipment) throw new BadRequestException('Order has no shipment to cancel.')
 
-    await this.courier.cancelShipment(order.shipment.trackingReference)
+    if (order.fulfillmentMethod === 'ShippingCompany') {
+      if (!order.shipment.trackingReference || !order.shippingCompanyId) {
+        throw new BadRequestException('Order has no shipping-company tracking reference to cancel.')
+      }
+      await this.courier.cancelShipment(order.shipment.trackingReference, order.shippingCompanyId)
+    }
 
     const canRevert = isValidTransition(order.state as never, 'Packed' as never)
     await this.prisma.$transaction(async (tx) => {
@@ -236,7 +357,7 @@ export class FulfillmentService {
     if (!order) throw new NotFoundException('Order not found')
     if (!order.shipment?.trackingReference) throw new BadRequestException('Order has no DHD shipment to update.')
 
-    const { baseUrl, apiToken } = await this.dhdCompany()
+    const { baseUrl, apiToken } = await this.dhdCompanyForOrder(order.shippingCompanyId)
     await this.dhd.updateOrder(baseUrl, apiToken, order.shipment.trackingReference, fields)
 
     await this.audit.log({
@@ -258,30 +379,44 @@ export class FulfillmentService {
     if (!order) throw new NotFoundException('Order not found')
     if (!order.shipment?.trackingReference) throw new BadRequestException('Order has no DHD shipment yet.')
 
-    const { baseUrl, apiToken } = await this.dhdCompany()
+    const { baseUrl, apiToken } = await this.dhdCompanyForOrder(order.shippingCompanyId)
     return this.dhd.getLabel(baseUrl, apiToken, order.shipment.trackingReference)
   }
 
   // "Ajouter plusieurs commandes" — dispatch several Packed orders to DHD in
-  // one request. Per-order results come back independently (DHD partial-
-  // success semantics: some orders in the batch can fail while others
-  // succeed) — only the orders DHD actually returned a tracking number for
-  // get a Shipment row + HandedToCourier transition; the rest are reported
-  // back to the caller as failures, order state untouched so they can be
-  // fixed and retried individually via createShipmentForOrder.
-  async bulkDispatch(orderIds: string[], actor: AuditActor) {
+  // one request. Every order in the batch must already be individually
+  // assigned to the SAME shipping company (bulk-dispatching across
+  // different companies in one call isn't supported — orders assigned
+  // elsewhere, or unassigned, are reported back as skipped). Per-order
+  // results come back independently (DHD partial-success semantics: some
+  // orders in the batch can fail while others succeed) — only the orders
+  // DHD actually returned a tracking number for get a Shipment row +
+  // HandedToCourier transition.
+  async bulkDispatch(orderIds: string[], shippingCompanyId: string, actor: AuditActor) {
     const orders = await this.prisma.order.findMany({
       where: { id: { in: orderIds } },
       include: { customer: true, address: true, shipment: true, items: { include: { product: true } } }
     })
 
-    const dispatchable = orders.filter((o) => o.state === 'Packed' && !o.shipment)
+    const isDispatchable = (o: (typeof orders)[number]) =>
+      o.state === 'Packed' && !o.shipment && o.fulfillmentMethod === 'ShippingCompany' && o.shippingCompanyId === shippingCompanyId
+
+    const dispatchable = orders.filter(isDispatchable)
     const skipped = orders
-      .filter((o) => !(o.state === 'Packed' && !o.shipment))
-      .map((o) => ({ orderId: o.id, reason: o.shipment ? 'already has a shipment' : `not Packed (currently ${o.state})` }))
+      .filter((o) => !isDispatchable(o))
+      .map((o) => ({
+        orderId: o.id,
+        reason: o.shipment
+          ? 'already has a shipment'
+          : o.state !== 'Packed'
+            ? `not Packed (currently ${o.state})`
+            : o.shippingCompanyId !== shippingCompanyId
+              ? 'not assigned to this shipping company'
+              : 'not assigned to a shipping company'
+      }))
     if (dispatchable.length === 0) return { dispatched: [], failed: [], skipped }
 
-    const { baseUrl, apiToken } = await this.dhdCompany()
+    const { baseUrl, apiToken } = await this.dhdCompanyForOrder(shippingCompanyId)
 
     const wilayaNames = [...new Set(dispatchable.map((o) => o.address.region))]
     const wilayas = await this.prisma.wilaya.findMany({ where: { name: { in: wilayaNames } } })
@@ -306,7 +441,7 @@ export class FulfillmentService {
 
     const dispatched: { orderId: string; trackingReference: string }[] = []
     const failed: { orderId: string; reason: string }[] = []
-    const courier = await this.courierRowForDefaultCompany()
+    const courier = await this.courierRowForCompany(shippingCompanyId)
 
     await this.prisma.$transaction(async (tx) => {
       for (let i = 0; i < dispatchable.length; i++) {
@@ -337,24 +472,28 @@ export class FulfillmentService {
 
   // "Valider la réception des retours" — confirms physical receipt of
   // returned parcels back at the shop, by order id (resolved to each
-  // order's shipment tracking reference). Advances state to
-  // ReturnedToOrigin where that's a legal transition from the order's
-  // current state; otherwise the DHD-side confirmation still happens but
-  // the order's state is left alone rather than forcing an illegal jump.
+  // order's shipment tracking reference). Only orders assigned to the same
+  // shipping company as each other in one call are supported — same
+  // reasoning as bulkDispatch. Advances state to ReturnedToOrigin where
+  // that's a legal transition from the order's current state; otherwise the
+  // DHD-side confirmation still happens but the order's state is left
+  // alone rather than forcing an illegal jump.
   async validateReturns(orderIds: string[], actor: AuditActor) {
     const orders = await this.prisma.order.findMany({
       where: { id: { in: orderIds } },
       include: { shipment: true }
     })
-    const withTracking = orders.filter((o) => o.shipment?.trackingReference)
+    const withTracking = orders.filter((o) => o.shipment?.trackingReference && o.shippingCompanyId)
     if (withTracking.length === 0) return { validated: [], skipped: orderIds }
 
-    const { baseUrl, apiToken } = await this.dhdCompany()
-    const trackings = withTracking.map((o) => o.shipment!.trackingReference!)
+    const shippingCompanyId = withTracking[0]!.shippingCompanyId!
+    const sameCompany = withTracking.filter((o) => o.shippingCompanyId === shippingCompanyId)
+    const { baseUrl, apiToken } = await this.dhdCompanyForOrder(shippingCompanyId)
+    const trackings = sameCompany.map((o) => o.shipment!.trackingReference!)
     await this.dhd.validateReturns(baseUrl, apiToken, trackings)
 
     const validated: { orderId: string; advancedTo: string | null }[] = []
-    for (const order of withTracking) {
+    for (const order of sameCompany) {
       const canAdvance = isValidTransition(order.state as never, 'ReturnedToOrigin' as never)
       if (canAdvance) {
         await this.prisma.order.update({ where: { id: order.id }, data: { state: 'ReturnedToOrigin' } })
@@ -362,14 +501,15 @@ export class FulfillmentService {
       validated.push({ orderId: order.id, advancedTo: canAdvance ? 'ReturnedToOrigin' : null })
     }
 
+    const validatedIds = new Set(sameCompany.map((o) => o.id))
     await this.audit.log({
       actor,
       action: 'StateTransition',
       entity: 'Order',
       entityId: 'bulk',
-      metadata: { dhdAction: 'validate-returns', orderIds: withTracking.map((o) => o.id) }
+      metadata: { dhdAction: 'validate-returns', orderIds: [...validatedIds] }
     })
 
-    return { validated, skipped: orders.filter((o) => !o.shipment?.trackingReference).map((o) => o.id) }
+    return { validated, skipped: orders.filter((o) => !validatedIds.has(o.id)).map((o) => o.id) }
   }
 }

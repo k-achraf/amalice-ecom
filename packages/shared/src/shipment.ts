@@ -12,6 +12,20 @@ export const ShipmentSchema = z.object({
 })
 export type Shipment = z.infer<typeof ShipmentSchema>
 
+// How an order is being shipped, assigned explicitly per order before
+// dispatch is possible — never auto-resolved from a "default" shipping
+// company. Unassigned is every order's starting state on reaching
+// fulfillment; ShippingCompany requires shippingCompanyId set (assignCompany);
+// Manual means the shop's own delivery person handles it, with no shipping
+// company/courier API involved at all (assignManual + dispatchManual).
+export const FulfillmentMethodSchema = z.enum(['Unassigned', 'ShippingCompany', 'Manual'])
+export type FulfillmentMethod = z.infer<typeof FulfillmentMethodSchema>
+
+export const AssignShippingCompanySchema = z.object({
+  shippingCompanyId: z.uuid()
+})
+export type AssignShippingCompany = z.infer<typeof AssignShippingCompanySchema>
+
 // The rest of the "Commandes" section actions beyond create (dispatch) —
 // see FulfillmentService's requestPickup/cancelShipmentForOrder/
 // updateShipmentForOrder/bulkDispatch/validateReturns.
@@ -37,7 +51,11 @@ export const UpdateShipmentSchema = z.object({
 export type UpdateShipment = z.infer<typeof UpdateShipmentSchema>
 
 export const BulkDispatchSchema = z.object({
-  orderIds: z.array(z.uuid()).min(1)
+  orderIds: z.array(z.uuid()).min(1),
+  // Every order in the batch must already be individually assigned to this
+  // same company (FulfillmentService.assignShippingCompany) — bulk-dispatch
+  // never picks a company on the caller's behalf.
+  shippingCompanyId: z.uuid()
 })
 export type BulkDispatch = z.infer<typeof BulkDispatchSchema>
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AdminOrderDetail, OrderState } from '@amalice/shared'
+import type { AdminOrderDetail, OrderState, ShippingCompanyView } from '@amalice/shared'
 import { VALID_TRANSITIONS } from '~/composables/order-transitions'
 
 // Orders states that can still take an added item — mirrors
@@ -27,6 +27,57 @@ async function transition(to: OrderState) {
     // 401 → login bounce (handled); 400 illegal transition surfaces on next load
   } finally {
     transitioning.value = null
+  }
+}
+
+// ---- Shipping assignment — required before dispatch is possible; dispatch
+// never falls back to a "default" shipping company (see FulfillmentService.
+// assignShippingCompany/assignManual). ----
+const { data: shippingCompanies } = await useAdminFetch<ShippingCompanyView[]>('/admin/shipping-companies', { key: 'admin-shipping-companies-picker' })
+const linkedCompanies = computed(() => (shippingCompanies.value ?? []).filter((c) => c.isLinked && c.id))
+const companyOptions = computed(() => linkedCompanies.value.map((c) => ({ label: c.name, value: c.id as string })))
+const selectedCompanyId = ref<string | undefined>(undefined)
+const assigning = ref(false)
+
+async function assignCompany() {
+  if (!selectedCompanyId.value) return
+  assigning.value = true
+  try {
+    await api(`/admin/fulfillment/orders/${id}/assign-company`, { method: 'POST', body: { shippingCompanyId: selectedCompanyId.value } })
+    await refresh()
+  } catch (err: unknown) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: data?.message ?? 'Could not assign the shipping company', color: 'error' })
+  } finally {
+    assigning.value = false
+  }
+}
+
+async function assignManual() {
+  assigning.value = true
+  try {
+    await api(`/admin/fulfillment/orders/${id}/assign-manual`, { method: 'POST' })
+    await refresh()
+  } catch (err: unknown) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: data?.message ?? 'Could not assign manual delivery', color: 'error' })
+  } finally {
+    assigning.value = false
+  }
+}
+
+const dispatchingManual = ref(false)
+async function dispatchManual() {
+  dispatchingManual.value = true
+  try {
+    await api(`/admin/fulfillment/orders/${id}/dispatch-manual`, { method: 'POST' })
+    toast.add({ title: 'Handed to delivery driver', color: 'success' })
+    await refresh()
+  } catch (err: unknown) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: data?.message ?? 'Could not dispatch manually', color: 'error' })
+  } finally {
+    dispatchingManual.value = false
   }
 }
 
@@ -258,43 +309,98 @@ async function submitAddItem() {
             <p class="mt-3 text-xs text-muted">Only valid transitions are shown. The server re-validates each one.</p>
           </div>
 
-          <!-- Shipment / fulfillment -->
-          <div v-if="order.shipment" class="admin-kpi-card p-5">
-            <h3 class="mb-3 text-sm font-medium text-muted">Shipment</h3>
-            <dl class="grid grid-cols-2 gap-3 text-sm">
-              <div><dt class="text-muted">Courier</dt><dd>{{ order.shipment.courier.name }}</dd></div>
-              <div><dt class="text-muted">Tracking ref</dt><dd class="tabular">{{ order.shipment.trackingReference ?? '—' }}</dd></div>
-              <div><dt class="text-muted">Courier status</dt><dd>{{ order.shipment.courierStatus ?? '—' }}</dd></div>
-            </dl>
+          <!-- Shipping assignment — required before dispatch; never defaults
+               to any particular company (see FulfillmentService's comments
+               on assignShippingCompany/assignManual/createShipmentForOrder). -->
+          <div v-if="!order.shipment" class="admin-kpi-card p-5">
+            <h3 class="mb-3 text-sm font-medium text-muted">Shipping</h3>
+            <p v-if="order.fulfillmentMethod === 'Unassigned'" class="mb-3 text-xs text-muted">
+              Assign a shipping company or manual (in-house) delivery before this order can be dispatched.
+            </p>
+            <p v-else class="mb-3 text-sm">
+              Assigned to
+              <span class="font-medium text-highlighted">{{ order.fulfillmentMethod === 'Manual' ? 'Manual delivery' : order.shippingCompanyName }}</span>
+              — reassign below if needed.
+            </p>
+            <div class="flex flex-wrap items-center gap-2">
+              <USelect
+                v-model="selectedCompanyId"
+                :items="companyOptions"
+                placeholder="Choose a shipping company…"
+                class="w-56"
+              />
+              <UButton
+                size="sm"
+                :loading="assigning"
+                :disabled="!selectedCompanyId"
+                label="Assign company"
+                @click="assignCompany"
+              />
+              <UButton
+                size="sm"
+                color="neutral"
+                variant="outline"
+                icon="i-lucide-user"
+                :loading="assigning"
+                label="Manual delivery (own driver)"
+                @click="assignManual"
+              />
+            </div>
+            <p v-if="!companyOptions.length" class="mt-2 text-xs text-muted">
+              No shipping companies linked yet — link one under Settings → Shipping Companies, or use manual delivery.
+            </p>
+
             <UButton
-              v-if="order.state === 'Packed'"
+              v-if="order.state === 'Packed' && order.fulfillmentMethod === 'ShippingCompany'"
               class="mt-4"
               icon="i-lucide-truck"
               size="sm"
               label="Dispatch to courier"
               @click="api(`/admin/fulfillment/orders/${id}/dispatch`, { method: 'POST' }).then(() => refresh())"
             />
-            <!-- The rest of DHD's "Commandes" actions (see FulfillmentService)
-                 — only meaningful once a shipment/tracking reference exists. -->
-            <div v-if="order.shipment.trackingReference" class="mt-4 flex flex-wrap gap-2">
-              <UButton
-                icon="i-lucide-package-check"
-                size="sm"
-                color="primary"
-                variant="soft"
-                :loading="shipmentActing === 'pickup'"
-                label="Request pickup"
-                @click="requestPickup"
-              />
-              <UButton
-                icon="i-lucide-file-down"
-                size="sm"
-                color="neutral"
-                variant="soft"
-                :loading="shipmentActing === 'label'"
-                label="Download label"
-                @click="downloadLabel"
-              />
+            <UButton
+              v-if="order.state === 'Packed' && order.fulfillmentMethod === 'Manual'"
+              class="mt-4"
+              icon="i-lucide-truck"
+              size="sm"
+              :loading="dispatchingManual"
+              label="Hand to delivery driver"
+              @click="dispatchManual"
+            />
+          </div>
+
+          <!-- Shipment / fulfillment -->
+          <div v-if="order.shipment" class="admin-kpi-card p-5">
+            <h3 class="mb-3 text-sm font-medium text-muted">Shipment</h3>
+            <dl class="grid grid-cols-2 gap-3 text-sm">
+              <div><dt class="text-muted">Courier</dt><dd>{{ order.shipment.courier.name }}</dd></div>
+              <div><dt class="text-muted">Tracking ref</dt><dd class="tabular">{{ order.shipment.trackingReference ?? '— (manual delivery)' }}</dd></div>
+              <div><dt class="text-muted">Courier status</dt><dd>{{ order.shipment.courierStatus ?? '—' }}</dd></div>
+            </dl>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <!-- The rest of DHD's "Commandes" actions (see FulfillmentService)
+                   — only meaningful for a real courier tracking reference,
+                   not a manual delivery. -->
+              <template v-if="order.shipment.trackingReference">
+                <UButton
+                  icon="i-lucide-package-check"
+                  size="sm"
+                  color="primary"
+                  variant="soft"
+                  :loading="shipmentActing === 'pickup'"
+                  label="Request pickup"
+                  @click="requestPickup"
+                />
+                <UButton
+                  icon="i-lucide-file-down"
+                  size="sm"
+                  color="neutral"
+                  variant="soft"
+                  :loading="shipmentActing === 'label'"
+                  label="Download label"
+                  @click="downloadLabel"
+                />
+              </template>
               <UButton
                 icon="i-lucide-x"
                 size="sm"

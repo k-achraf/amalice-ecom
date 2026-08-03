@@ -40,7 +40,7 @@ export class MockCourierProvider implements CourierProvider {
     return { normalizedStatus: status, courierStatus: status }
   }
 
-  async cancelShipment(trackingReference: string) {
+  async cancelShipment(trackingReference: string, _shippingCompanyId: string) {
     if (!this.shipments.has(trackingReference)) {
       throw new NotFoundException(`Unknown tracking reference: ${trackingReference}`)
     }
