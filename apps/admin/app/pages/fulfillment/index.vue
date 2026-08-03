@@ -78,19 +78,9 @@ async function dispatch(orderId: string) {
   acting.value = null
 }
 
-// Manual (in-house) delivery — same "Packed" queue, no shipping company API
-// call. Both dispatch actions require the order to already be assigned
-// (see orders/[id].vue's assign-company/assign-manual controls); an
-// unassigned order shows a link to the detail page to assign it instead.
-async function dispatchManual(orderId: string) {
-  acting.value = orderId
-  await run(() => api(`/admin/fulfillment/orders/${orderId}/dispatch-manual`, { method: 'POST' }), {
-    success: 'Handed to delivery driver',
-    errorFallback: 'Could not dispatch the order'
-  })
-  await refreshPacked()
-  acting.value = null
-}
+// Manual (in-house) delivery requires a hand-typed tracking reference
+// (FulfillmentService.dispatchManual) — that input lives on the order
+// detail page, so this queue links there rather than dispatching inline.
 </script>
 
 <template>
@@ -212,9 +202,9 @@ async function dispatchManual(orderId: string) {
                       icon="i-lucide-truck"
                       size="xs"
                       color="primary"
-                      :loading="acting === o.id"
+                      variant="outline"
                       label="Hand to driver"
-                      @click="dispatchManual(o.id)"
+                      :to="`/orders/${o.id}`"
                     />
                     <UButton
                       v-else

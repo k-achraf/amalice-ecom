@@ -2,7 +2,7 @@ import { Body, Controller, Get, Header, Param, Post, Req, Res, UseGuards } from 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import type { Request, Response } from 'express'
 import { createZodDto } from 'nestjs-zod'
-import { RequestPickupSchema, UpdateShipmentSchema, BulkDispatchSchema, ValidateOrderReturnsSchema, AssignShippingCompanySchema } from '@amalice/shared'
+import { RequestPickupSchema, UpdateShipmentSchema, BulkDispatchSchema, ValidateOrderReturnsSchema, AssignShippingCompanySchema, DispatchManualSchema } from '@amalice/shared'
 import { FulfillmentService } from './fulfillment.service'
 import { MockCourierProvider } from './mock-courier.provider'
 import { JwtAuthGuard } from '../identity/admin-auth/jwt-auth.guard'
@@ -16,6 +16,7 @@ class UpdateShipmentDto extends createZodDto(UpdateShipmentSchema) {}
 class BulkDispatchDto extends createZodDto(BulkDispatchSchema) {}
 class ValidateOrderReturnsDto extends createZodDto(ValidateOrderReturnsSchema) {}
 class AssignShippingCompanyDto extends createZodDto(AssignShippingCompanySchema) {}
+class DispatchManualDto extends createZodDto(DispatchManualSchema) {}
 
 interface AuthedRequest extends Request {
   user: AdminJwtPayload
@@ -67,15 +68,18 @@ export class FulfillmentController {
     return this.fulfillment.createShipmentForOrder(id, actor)
   }
 
-  // Manual-delivery equivalent of dispatch — no shipping company API call.
-  // Requires assign-manual first.
+  // Manual dispatch — no shipping company API call, tracking reference
+  // entered by hand. Works for an order assigned to manual (in-house)
+  // delivery, or one assigned to a shipping company that staff arranged
+  // directly with that company instead of through our API integration.
+  // Requires assign-company or assign-manual first (never Unassigned).
   @Post('admin/fulfillment/orders/:id/dispatch-manual')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('SuperAdmin', 'OpsManager')
-  dispatchManual(@Param('id') id: string, @Req() req: AuthedRequest) {
+  dispatchManual(@Param('id') id: string, @Body() body: DispatchManualDto, @Req() req: AuthedRequest) {
     const actor: AuditActor = { id: req.user.sub, email: req.user.email }
-    return this.fulfillment.dispatchManual(id, actor)
+    return this.fulfillment.dispatchManual(id, body.trackingReference, actor)
   }
 
   // "Ajouter plusieurs commandes" — dispatch several Packed orders at once,

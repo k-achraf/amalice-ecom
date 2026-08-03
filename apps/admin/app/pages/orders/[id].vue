@@ -60,13 +60,28 @@ async function assignManual() {
   assigning.value = false
 }
 
+// Manual dispatch — records a shipment without calling the shipping
+// company's API (see FulfillmentService.dispatchManual): either true
+// in-house delivery, or an order assigned to a company that staff arranged
+// directly with that company instead of through our DHD integration.
+// Either way there's no API call to generate a tracking number, so it's
+// typed in by hand — required, not optional (server enforces this too).
+const manualTrackingReference = ref('')
 const dispatchingManual = ref(false)
 async function dispatchManual() {
+  if (!manualTrackingReference.value.trim()) {
+    toast.add({ title: 'Enter a tracking reference', color: 'warning' })
+    return
+  }
   dispatchingManual.value = true
-  await run(() => api(`/admin/fulfillment/orders/${id}/dispatch-manual`, { method: 'POST' }), {
-    success: 'Handed to delivery driver',
-    errorFallback: 'Could not dispatch manually'
-  })
+  const result = await run(
+    () => api(`/admin/fulfillment/orders/${id}/dispatch-manual`, { method: 'POST', body: { trackingReference: manualTrackingReference.value.trim() } }),
+    {
+      success: order.value?.fulfillmentMethod === 'Manual' ? 'Handed to delivery driver' : 'Recorded as manually dispatched',
+      errorFallback: 'Could not dispatch manually'
+    }
+  )
+  if (result !== undefined) manualTrackingReference.value = ''
   await refresh()
   dispatchingManual.value = false
 }
@@ -338,24 +353,37 @@ async function submitAddItem() {
               No shipping companies linked yet — link one under Settings → Shipping Companies, or use manual delivery.
             </p>
 
-            <UButton
-              v-if="order.state === 'Packed' && order.fulfillmentMethod === 'ShippingCompany'"
-              class="mt-4"
-              icon="i-lucide-truck"
-              size="sm"
-              :loading="shipmentActing === 'dispatch'"
-              label="Dispatch to courier"
-              @click="dispatchToCourier"
-            />
-            <UButton
-              v-if="order.state === 'Packed' && order.fulfillmentMethod === 'Manual'"
-              class="mt-4"
-              icon="i-lucide-truck"
-              size="sm"
-              :loading="dispatchingManual"
-              label="Hand to delivery driver"
-              @click="dispatchManual"
-            />
+            <div v-if="order.state === 'Packed' && order.fulfillmentMethod !== 'Unassigned'" class="mt-4 flex flex-col gap-3">
+              <UButton
+                v-if="order.fulfillmentMethod === 'ShippingCompany'"
+                icon="i-lucide-truck"
+                size="sm"
+                class="self-start"
+                :loading="shipmentActing === 'dispatch'"
+                label="Dispatch to courier"
+                @click="dispatchToCourier"
+              />
+              <p v-if="order.fulfillmentMethod === 'ShippingCompany'" class="text-xs text-muted">
+                Or, if this shipment was arranged directly with the courier (phone/portal) instead of through our API, record it manually below:
+              </p>
+              <div class="flex flex-wrap items-center gap-2">
+                <UInput
+                  v-model="manualTrackingReference"
+                  placeholder="Tracking reference"
+                  class="w-56"
+                />
+                <UButton
+                  icon="i-lucide-package-check"
+                  size="sm"
+                  color="neutral"
+                  variant="outline"
+                  :loading="dispatchingManual"
+                  :disabled="!manualTrackingReference.trim()"
+                  :label="order.fulfillmentMethod === 'Manual' ? 'Hand to delivery driver' : 'Dispatch manually'"
+                  @click="dispatchManual"
+                />
+              </div>
+            </div>
           </div>
 
           <!-- Shipment / fulfillment -->

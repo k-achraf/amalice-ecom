@@ -26,6 +26,17 @@ export const AssignShippingCompanySchema = z.object({
 })
 export type AssignShippingCompany = z.infer<typeof AssignShippingCompanySchema>
 
+// Manual dispatch — records a shipment without calling any shipping
+// company's API (see FulfillmentService.dispatchManual for the two cases
+// this covers: true manual/in-house delivery, or an order already assigned
+// to a shipping company that staff arranged directly with that company
+// instead of through our API integration). No API call means no
+// automatically-generated tracking number, so the admin types one in.
+export const DispatchManualSchema = z.object({
+  trackingReference: z.string().min(1, 'Tracking reference is required').max(200)
+})
+export type DispatchManual = z.infer<typeof DispatchManualSchema>
+
 // The rest of the "Commandes" section actions beyond create (dispatch) —
 // see FulfillmentService's requestPickup/cancelShipmentForOrder/
 // updateShipmentForOrder/bulkDispatch/validateReturns.

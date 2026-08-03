@@ -200,12 +200,21 @@ export class FulfillmentService {
     return { orderId, trackingReference: result.trackingReference, courierStatus: result.courierStatus }
   }
 
-  // Manual (in-house) delivery equivalent of createShipmentForOrder — no
-  // shipping company, no external API call. Just marks the order as handed
-  // to the shop's own delivery person and records a Shipment row (against
-  // the auto-provisioned "Manual delivery" Courier row) so the rest of the
-  // app (order detail, reconciliation) has somewhere consistent to look.
-  async dispatchManual(orderId: string, actor: AuditActor) {
+  // Manual dispatch — records a shipment WITHOUT calling any shipping
+  // company's API, entering the tracking reference by hand instead. Two
+  // real cases this covers:
+  //  1. fulfillmentMethod = 'Manual' (in-house delivery) — no shipping
+  //     company at all, courier row is the auto-provisioned "Manual
+  //     delivery" row.
+  //  2. fulfillmentMethod = 'ShippingCompany' — staff already arranged the
+  //     shipment with that company directly (phone call, the company's own
+  //     portal, etc.) instead of through our DHD integration, and just needs
+  //     to record it here; the courier row is still the ASSIGNED company's,
+  //     so reconciliation attributes it correctly.
+  // Either way requires an order already assigned (never Unassigned — see
+  // assignShippingCompany/assignManual) and a tracking reference the admin
+  // typed in, since there's no API call here to generate one automatically.
+  async dispatchManual(orderId: string, trackingReference: string, actor: AuditActor) {
     const order = await this.prisma.order.findUnique({ where: { id: orderId }, include: { shipment: true } })
     if (!order) throw new NotFoundException('Order not found')
     if (order.state !== 'Packed') {
@@ -214,15 +223,17 @@ export class FulfillmentService {
     if (order.shipment) {
       throw new BadRequestException('Shipment already exists for this order')
     }
-    if (order.fulfillmentMethod !== 'Manual') {
-      throw new BadRequestException('This order is not assigned to manual delivery — use assignManual first.')
+    if (order.fulfillmentMethod === 'Unassigned') {
+      throw new BadRequestException('Assign a shipping company or manual delivery to this order before dispatching it.')
     }
 
-    const courier = await this.courierRowForManual()
+    const courier = order.fulfillmentMethod === 'ShippingCompany'
+      ? await this.courierRowForCompany(order.shippingCompanyId!)
+      : await this.courierRowForManual()
 
     await this.prisma.$transaction(async (tx) => {
       await tx.shipment.create({
-        data: { orderId: order.id, courierId: courier.id, trackingReference: null, courierStatus: 'manual_delivery' }
+        data: { orderId: order.id, courierId: courier.id, trackingReference, courierStatus: 'manual_dispatch' }
       })
       await tx.order.update({ where: { id: orderId }, data: { state: 'HandedToCourier' } })
     })
@@ -232,10 +243,10 @@ export class FulfillmentService {
       action: 'StateTransition',
       entity: 'Order',
       entityId: orderId,
-      metadata: { from: 'Packed', to: 'HandedToCourier', manual: true }
+      metadata: { from: 'Packed', to: 'HandedToCourier', manual: true, trackingReference, courier: courier.name }
     })
 
-    return { orderId, manual: true }
+    return { orderId, manual: true, trackingReference }
   }
 
   // COU-04 — apply a courier status update through the SAME transition logic
