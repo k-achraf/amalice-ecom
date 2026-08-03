@@ -7,18 +7,28 @@ useHead({ title: 'Reconciliation' })
 const route = useRoute()
 const router = useRouter()
 const api = useAdminApi()
-const { data: batches, pending, refresh } = await useAdminFetch<{ items: RemittanceBatch[]; total: number; pageSize: number }>(
-  '/admin/reconciliation/batches?pageSize=20',
-  { key: 'admin-recon-batches' }
+const currentPage = computed(() => Number(route.query.page ?? 1))
+const currentPageSize = computed(() => Number(route.query.pageSize ?? 20))
+
+const { data: batches, pending } = await useAdminFetch<{ items: RemittanceBatch[]; total: number; pageSize: number }>(
+  '/admin/reconciliation/batches',
+  { key: 'admin-recon-batches', query: { page: route.query.page ?? '1', pageSize: route.query.pageSize ?? '20' } }
 )
 
-const totalPages = computed(() => (batches.value ? Math.ceil(batches.value.total / (batches.value.pageSize || 20)) : 1))
-const currentPage = computed(() => Number(route.query.page ?? 1))
+async function loadBatches() {
+  batches.value = await api<{ items: RemittanceBatch[]; total: number; pageSize: number }>('/admin/reconciliation/batches', {
+    query: { page: String(currentPage.value), pageSize: String(currentPageSize.value) }
+  })
+}
+
 async function goToPage(p: number) {
   await router.push({ query: { ...route.query, page: p } })
-  batches.value = await api<{ items: RemittanceBatch[]; total: number; pageSize: number }>('/admin/reconciliation/batches', {
-    query: { page: String(p), pageSize: '20' }
-  })
+  await loadBatches()
+}
+
+async function changePageSize(size: number) {
+  await router.push({ query: { ...route.query, pageSize: size, page: 1 } })
+  await loadBatches()
 }
 const { data: discrepancies } = await useAdminFetch<(LedgerEntry & { deltaCents?: number | null })[]>(
   '/admin/reconciliation/discrepancies',
@@ -60,7 +70,7 @@ async function runImport() {
     showImport.value = false
     importRows.value = ''
     reference.value = ''
-    await refresh()
+    await loadBatches()
   } finally {
     saving.value = false
   }
@@ -68,7 +78,7 @@ async function runImport() {
 
 async function runMatch(batchId: string) {
   await api(`/admin/reconciliation/batches/${batchId}/match`, { method: 'POST' })
-  await refresh()
+  await loadBatches()
 }
 
 const resolving = ref<string | null>(null)
@@ -80,7 +90,7 @@ async function resolve(entryId: string) {
     await api(`/admin/reconciliation/entries/${entryId}/resolve`, { method: 'POST', body: { resolutionNote: resolveNote.value } })
     resolveNote.value = ''
     resolving.value = null
-    await refresh()
+    await loadBatches()
   } finally {
     resolving.value = null
   }
@@ -163,10 +173,15 @@ async function resolve(entryId: string) {
             </table>
           </div>
 
-          <div v-if="totalPages > 1" class="mt-3 flex items-center justify-between">
-            <p class="text-sm text-muted">{{ batches?.total }} batches</p>
-            <UPagination v-model:page="currentPage" :total="batches?.total ?? 0" :items-per-page="batches?.pageSize ?? 20" @update:page="goToPage" />
-          </div>
+          <AdminPagination
+            class="mt-3"
+            :total="batches?.total ?? 0"
+            :page="currentPage"
+            :page-size="currentPageSize"
+            item-label="batches"
+            @update:page="goToPage"
+            @update:page-size="changePageSize"
+          />
         </section>
       </div>
 

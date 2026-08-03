@@ -5,17 +5,32 @@ useHead({ title: 'Products' })
 
 const route = useRoute()
 const router = useRouter()
-const { data: products, pending, refresh } = await useAdminFetch<ProductListResponse>('/products?pageSize=50', { key: 'admin-inventory' })
+const currentPage = computed(() => Number(route.query.page ?? 1))
+const currentPageSize = computed(() => Number(route.query.pageSize ?? 50))
+
+const { data: products, pending } = await useAdminFetch<ProductListResponse>('/products', {
+  key: 'admin-inventory',
+  query: { page: route.query.page ?? '1', pageSize: route.query.pageSize ?? '50' }
+})
 const rows = computed<Product[]>(() => products.value?.items ?? [])
 
 const api = useAdminApi()
 const toast = useToast()
 
-const totalPages = computed(() => (products.value ? Math.ceil(products.value.total / (products.value.pageSize || 50)) : 1))
-const currentPage = computed(() => Number(route.query.page ?? 1))
+async function loadProducts() {
+  products.value = await api<ProductListResponse>('/products', {
+    query: { page: String(currentPage.value), pageSize: String(currentPageSize.value) }
+  })
+}
+
 async function goToPage(p: number) {
   await router.push({ query: { ...route.query, page: p } })
-  products.value = await api<ProductListResponse>('/products', { query: { page: String(p), pageSize: '50' } })
+  await loadProducts()
+}
+
+async function changePageSize(size: number) {
+  await router.push({ query: { ...route.query, pageSize: size, page: 1 } })
+  await loadProducts()
 }
 
 // Quick-create product → redirect to the full editor
@@ -82,7 +97,7 @@ async function saveAdjust() {
       body: { delta: adjustDelta.value, reason: adjustReason.value, note: adjustNote.value || undefined }
     })
     adjusting.value = null
-    await refresh()
+    await loadProducts()
     toast.add({ title: 'Stock adjusted', color: 'success' })
   } finally {
     savingAdjust.value = false
@@ -94,7 +109,6 @@ function stockState(p: Product): 'out' | 'low' | 'ok' {
   if (p.stockQuantity <= p.lowStockThreshold) return 'low'
   return 'ok'
 }
-void refresh
 </script>
 
 <template>
@@ -143,10 +157,15 @@ void refresh
         </table>
       </div>
 
-      <div v-if="totalPages > 1" class="mt-3 flex items-center justify-between">
-        <p class="text-sm text-muted">{{ products?.total }} products</p>
-        <UPagination v-model:page="currentPage" :total="products?.total ?? 0" :items-per-page="products?.pageSize ?? 50" @update:page="goToPage" />
-      </div>
+      <AdminPagination
+        class="mt-3"
+        :total="products?.total ?? 0"
+        :page="currentPage"
+        :page-size="currentPageSize"
+        item-label="products"
+        @update:page="goToPage"
+        @update:page-size="changePageSize"
+      />
 
       <!-- Quick-create modal -->
       <UModal v-model:open="showCreate">

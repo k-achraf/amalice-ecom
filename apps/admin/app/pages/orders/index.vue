@@ -32,13 +32,22 @@ const stateOptions = [
 const search = ref((route.query.search as string) ?? '')
 const stateFilter = ref((route.query.state as string) ?? 'all')
 
-const { data, pending, refresh } = await useAdminFetch<OrderListResponse>('/admin/orders', { key: 'admin-orders' })
+const { data, pending } = await useAdminFetch<OrderListResponse>('/admin/orders', {
+  key: 'admin-orders',
+  query: { page: route.query.page ?? '1', pageSize: route.query.pageSize ?? '20' }
+})
 
 // useAdminFetch is keyed without reactive query (its option surface is narrow
-// by design). After filter changes we re-fetch manually via the api client.
+// by design). After filter/page/pageSize changes we re-fetch manually via
+// the api client — this IS the server-side pagination: every page or
+// page-size change hits the API again with the new page/pageSize, never
+// slices an already-fetched array client-side.
 const api = useAdminApi()
+const currentPage = computed(() => Number(route.query.page ?? 1))
+const currentPageSize = computed(() => Number(route.query.pageSize ?? 20))
+
 async function loadWithFilters() {
-  const q: Record<string, string> = { page: String(route.query.page ?? 1), pageSize: '20' }
+  const q: Record<string, string> = { page: String(currentPage.value), pageSize: String(currentPageSize.value) }
   if (stateFilter.value !== 'all') q.state = route.query.state as string
   if (route.query.search) q.search = route.query.search as string
   data.value = await api<OrderListResponse>('/admin/orders', { query: q })
@@ -48,8 +57,15 @@ function applyFilters() {
   router.push({ query: { ...route.query, search: search.value || undefined, state: stateFilter.value !== 'all' ? stateFilter.value : undefined, page: 1 } }).then(() => loadWithFilters())
 }
 
-const totalPages = computed(() => (data.value ? Math.ceil(data.value.total / data.value.pageSize) : 1))
-const currentPage = computed(() => Number(route.query.page ?? 1))
+async function goToPage(p: number) {
+  await router.push({ query: { ...route.query, page: p } })
+  await loadWithFilters()
+}
+
+async function changePageSize(size: number) {
+  await router.push({ query: { ...route.query, pageSize: size, page: 1 } })
+  await loadWithFilters()
+}
 
 // Inline state transition (ADM-04 bulk-action feel): advance an order to its
 // next valid state without opening the detail page. The detail page (ADM-05)
@@ -62,7 +78,7 @@ async function advance(orderId: string, currentState: OrderState) {
   transitioning.value = orderId
   try {
     await api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to: next } })
-    await refresh()
+    await loadWithFilters()
   } catch {
     // The 401 handler bounces to login; other errors surface via the table state on next load.
   } finally {
@@ -147,10 +163,14 @@ function fmtDate(iso: string) {
           </table>
         </div>
 
-        <div v-if="totalPages > 1" class="flex items-center justify-between">
-          <p class="text-sm text-muted">{{ data?.total }} orders</p>
-          <UPagination v-model:page="currentPage" :total="data?.total ?? 0" :items-per-page="20" @update:page="(p) => router.push({ query: { ...route.query, page: p } })" />
-        </div>
+        <AdminPagination
+          :total="data?.total ?? 0"
+          :page="currentPage"
+          :page-size="currentPageSize"
+          item-label="orders"
+          @update:page="goToPage"
+          @update:page-size="changePageSize"
+        />
       </div>
     </template>
   </UDashboardPanel>

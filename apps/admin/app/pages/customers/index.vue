@@ -20,11 +20,17 @@ const route = useRoute()
 const router = useRouter()
 const search = ref((route.query.search as string) ?? '')
 
-const { data, pending } = await useAdminFetch<CustomerListResponse>('/admin/customers', { key: 'admin-customers' })
+const currentPage = computed(() => Number(route.query.page ?? 1))
+const currentPageSize = computed(() => Number(route.query.pageSize ?? 20))
+
+const { data, pending } = await useAdminFetch<CustomerListResponse>('/admin/customers', {
+  key: 'admin-customers',
+  query: { page: route.query.page ?? '1', pageSize: route.query.pageSize ?? '20', search: route.query.search }
+})
 
 const api = useAdminApi()
 async function load() {
-  const q: Record<string, string> = { page: String(route.query.page ?? 1), pageSize: '20' }
+  const q: Record<string, string> = { page: String(currentPage.value), pageSize: String(currentPageSize.value) }
   if (search.value) q.search = search.value
   data.value = await api<CustomerListResponse>('/admin/customers', { query: q })
 }
@@ -34,10 +40,13 @@ async function applySearch() {
   await load()
 }
 
-const totalPages = computed(() => (data.value ? Math.ceil(data.value.total / data.value.pageSize) : 1))
-const currentPage = computed(() => Number(route.query.page ?? 1))
 async function goToPage(p: number) {
   await router.push({ query: { ...route.query, page: p } })
+  await load()
+}
+
+async function changePageSize(size: number) {
+  await router.push({ query: { ...route.query, pageSize: size, page: 1 } })
   await load()
 }
 </script>
@@ -75,10 +84,14 @@ async function goToPage(p: number) {
           </table>
         </div>
 
-        <div v-if="totalPages > 1" class="flex items-center justify-between">
-          <p class="text-sm text-muted">{{ data?.total }} customers</p>
-          <UPagination v-model:page="currentPage" :total="data?.total ?? 0" :items-per-page="20" @update:page="goToPage" />
-        </div>
+        <AdminPagination
+          :total="data?.total ?? 0"
+          :page="currentPage"
+          :page-size="currentPageSize"
+          item-label="customers"
+          @update:page="goToPage"
+          @update:page-size="changePageSize"
+        />
       </div>
     </template>
   </UDashboardPanel>

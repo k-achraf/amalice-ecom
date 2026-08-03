@@ -7,11 +7,17 @@ const route = useRoute()
 const router = useRouter()
 const entity = ref((route.query.entity as string) ?? '')
 
-const { data, pending } = await useAdminFetch<{ items: AuditLog[]; total: number; pageSize: number }>('/admin/audit', { key: 'admin-audit' })
+const currentPage = computed(() => Number(route.query.page ?? 1))
+const currentPageSize = computed(() => Number(route.query.pageSize ?? 50))
+
+const { data, pending } = await useAdminFetch<{ items: AuditLog[]; total: number; pageSize: number }>('/admin/audit', {
+  key: 'admin-audit',
+  query: { page: route.query.page ?? '1', pageSize: route.query.pageSize ?? '50', entity: route.query.entity }
+})
 
 const api = useAdminApi()
 async function load() {
-  const q: Record<string, string> = { page: String(route.query.page ?? 1), pageSize: '50' }
+  const q: Record<string, string> = { page: String(currentPage.value), pageSize: String(currentPageSize.value) }
   if (entity.value) q.entity = entity.value
   data.value = await api<{ items: AuditLog[]; total: number; pageSize: number }>('/admin/audit', { query: q })
 }
@@ -22,10 +28,13 @@ async function applyEntity(v: string) {
   await load()
 }
 
-const totalPages = computed(() => (data.value ? Math.ceil(data.value.total / (data.value.pageSize || 50)) : 1))
-const currentPage = computed(() => Number(route.query.page ?? 1))
 async function goToPage(p: number) {
   await router.push({ query: { ...route.query, page: p } })
+  await load()
+}
+
+async function changePageSize(size: number) {
+  await router.push({ query: { ...route.query, pageSize: size, page: 1 } })
   await load()
 }
 
@@ -93,10 +102,14 @@ function metaPreview(m: unknown): string {
           </table>
         </div>
 
-        <div v-if="totalPages > 1" class="flex items-center justify-between">
-          <p class="text-sm text-muted">{{ data?.total }} entries</p>
-          <UPagination v-model:page="currentPage" :total="data?.total ?? 0" :items-per-page="data?.pageSize ?? 50" @update:page="goToPage" />
-        </div>
+        <AdminPagination
+          :total="data?.total ?? 0"
+          :page="currentPage"
+          :page-size="currentPageSize"
+          item-label="entries"
+          @update:page="goToPage"
+          @update:page-size="changePageSize"
+        />
       </div>
     </template>
   </UDashboardPanel>
