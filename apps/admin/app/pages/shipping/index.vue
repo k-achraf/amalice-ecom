@@ -13,6 +13,7 @@ definePageMeta({ requiredRole: ['SuperAdmin', 'OpsManager'] })
 useHead({ title: 'Shipping' })
 
 const api = useAdminApi()
+const { run } = useApiAction()
 
 const { data: withCourier, refresh: refreshWithCourier } = await useAdminFetch<OrderListResponse>(
   '/admin/orders?state=HandedToCourier&pageSize=50',
@@ -38,12 +39,12 @@ async function refreshAll() {
 const acting = ref<string | null>(null)
 async function transition(orderId: string, to: OrderState) {
   acting.value = `${orderId}:${to}`
-  try {
-    await api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to } })
-    await refreshAll()
-  } finally {
-    acting.value = null
-  }
+  await run(() => api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to } }), {
+    success: `Order moved to ${to}`,
+    errorFallback: 'Could not update the order'
+  })
+  await refreshAll()
+  acting.value = null
 }
 
 // Dev-only mock status driver (COU-01 mock). Drives a shipment through the
@@ -53,16 +54,15 @@ const mockStatus = ref<'picked_up' | 'in_transit' | 'out_for_delivery' | 'delive
 const mockResult = ref('')
 async function sendMockStatus() {
   if (!mockRef.value) return
-  try {
-    const res = await api('/admin/fulfillment/mock-status', {
+  const res = await run(
+    () => api('/admin/fulfillment/mock-status', {
       method: 'POST',
       body: { trackingReference: mockRef.value, normalizedStatus: mockStatus.value }
-    })
-    mockResult.value = JSON.stringify(res)
-    await refreshAll()
-  } catch (e) {
-    mockResult.value = String(e)
-  }
+    }),
+    { success: 'Mock status applied', errorFallback: 'Could not apply the mock status' }
+  )
+  mockResult.value = res !== undefined ? JSON.stringify(res) : ''
+  await refreshAll()
 }
 </script>
 

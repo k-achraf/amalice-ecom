@@ -10,6 +10,7 @@ definePageMeta({ requiredRole: ['SuperAdmin', 'OpsManager', 'Support'] })
 useHead({ title: 'Call Center' })
 
 const api = useAdminApi()
+const { run } = useApiAction()
 
 const { data: pendingQueue, pending, refresh: refreshPending } = await useAdminFetch<OrderListResponse>(
   '/admin/orders?state=PendingCallCenter&pageSize=50',
@@ -34,14 +35,22 @@ const { data: postponedQueue, refresh: refreshPostponed } = await useAdminFetch<
 )
 
 const acting = ref<string | null>(null)
+const actionLabel: Record<string, string> = {
+  Confirmed: 'Order confirmed',
+  CallCenterNoAnswer: 'Marked as no answer',
+  WrongNumber: 'Marked as wrong number',
+  Postponed: 'Order postponed',
+  PendingCallCenter: 'Moved back to the call queue',
+  Cancelled: 'Order cancelled'
+}
 async function act(orderId: string, to: 'Confirmed' | 'CallCenterNoAnswer' | 'WrongNumber' | 'Postponed' | 'PendingCallCenter' | 'Cancelled') {
   acting.value = `${orderId}:${to}`
-  try {
-    await api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to } })
-    await Promise.all([refreshPending(), refreshNoAnswer(), refreshWrongNumber(), refreshPostponed()])
-  } finally {
-    acting.value = null
-  }
+  await run(() => api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to } }), {
+    success: actionLabel[to],
+    errorFallback: 'Could not update the order'
+  })
+  await Promise.all([refreshPending(), refreshNoAnswer(), refreshWrongNumber(), refreshPostponed()])
+  acting.value = null
 }
 
 function fmtDate(iso: string) {

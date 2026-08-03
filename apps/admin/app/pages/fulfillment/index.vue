@@ -8,6 +8,7 @@ definePageMeta({ requiredRole: ['SuperAdmin', 'OpsManager'] })
 useHead({ title: 'Fulfillment' })
 
 const api = useAdminApi()
+const { run } = useApiAction()
 
 const { data: confirmed, pending: pendingConfirmed, refresh: refreshConfirmed } = await useAdminFetch<OrderListResponse>(
   '/admin/orders?state=Confirmed&pageSize=50',
@@ -29,52 +30,52 @@ const acting = ref<string | null>(null)
 
 async function markPacked(orderId: string) {
   acting.value = orderId
-  try {
-    await api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to: 'Packed' } })
-    await Promise.all([refreshConfirmed(), refreshPacked()])
-  } finally {
-    acting.value = null
-  }
+  await run(() => api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to: 'Packed' } }), {
+    success: 'Order marked as packed',
+    errorFallback: 'Could not mark the order as packed'
+  })
+  await Promise.all([refreshConfirmed(), refreshPacked()])
+  acting.value = null
 }
 
 async function putOnHold(orderId: string) {
   acting.value = orderId
-  try {
-    await api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to: 'OnHold' } })
-    await Promise.all([refreshConfirmed(), refreshOnHold()])
-  } finally {
-    acting.value = null
-  }
+  await run(() => api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to: 'OnHold' } }), {
+    success: 'Order put on hold',
+    errorFallback: 'Could not put the order on hold'
+  })
+  await Promise.all([refreshConfirmed(), refreshOnHold()])
+  acting.value = null
 }
 
 async function resumeFromHold(orderId: string) {
   acting.value = orderId
-  try {
-    await api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to: 'Confirmed' } })
-    await Promise.all([refreshConfirmed(), refreshOnHold()])
-  } finally {
-    acting.value = null
-  }
+  await run(() => api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to: 'Confirmed' } }), {
+    success: 'Order resumed',
+    errorFallback: 'Could not resume the order'
+  })
+  await Promise.all([refreshConfirmed(), refreshOnHold()])
+  acting.value = null
 }
 
 async function cancelOnHold(orderId: string) {
   acting.value = orderId
-  try {
-    await api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to: 'Cancelled' } })
-    await refreshOnHold()
-  } finally {
-    acting.value = null
-  }
+  await run(() => api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to: 'Cancelled' } }), {
+    success: 'Order cancelled',
+    errorFallback: 'Could not cancel the order'
+  })
+  await refreshOnHold()
+  acting.value = null
 }
 
 async function dispatch(orderId: string) {
   acting.value = orderId
-  try {
-    await api(`/admin/fulfillment/orders/${orderId}/dispatch`, { method: 'POST' })
-    await refreshPacked()
-  } finally {
-    acting.value = null
-  }
+  await run(() => api(`/admin/fulfillment/orders/${orderId}/dispatch`, { method: 'POST' }), {
+    success: 'Order dispatched to courier',
+    errorFallback: 'Could not dispatch the order'
+  })
+  await refreshPacked()
+  acting.value = null
 }
 
 // Manual (in-house) delivery — same "Packed" queue, no shipping company API
@@ -83,12 +84,12 @@ async function dispatch(orderId: string) {
 // unassigned order shows a link to the detail page to assign it instead.
 async function dispatchManual(orderId: string) {
   acting.value = orderId
-  try {
-    await api(`/admin/fulfillment/orders/${orderId}/dispatch-manual`, { method: 'POST' })
-    await refreshPacked()
-  } finally {
-    acting.value = null
-  }
+  await run(() => api(`/admin/fulfillment/orders/${orderId}/dispatch-manual`, { method: 'POST' }), {
+    success: 'Handed to delivery driver',
+    errorFallback: 'Could not dispatch the order'
+  })
+  await refreshPacked()
+  acting.value = null
 }
 </script>
 

@@ -13,7 +13,7 @@ definePageMeta({ requiredRole: ['SuperAdmin', 'OpsManager', 'Support'] })
 useHead({ title: 'Abandoned Carts' })
 
 const api = useAdminApi()
-const toast = useToast()
+const { run } = useApiAction()
 
 const { data: queue, pending, refresh } = await useAdminFetch<OrderListResponse>(
   '/admin/orders?abandoned=only&pageSize=100',
@@ -26,17 +26,21 @@ const { data: queue, pending, refresh } = await useAdminFetch<OrderListResponse>
 const activeItems = computed(() => (queue.value?.items ?? []).filter((o) => o.state !== 'Cancelled'))
 
 const acting = ref<string | null>(null)
+const actionLabel: Record<string, string> = {
+  Confirmed: 'Order confirmed',
+  CallCenterNoAnswer: 'Marked as no answer',
+  WrongNumber: 'Marked as wrong number',
+  Postponed: 'Order postponed',
+  Cancelled: 'Order cancelled'
+}
 async function act(orderId: string, to: 'Confirmed' | 'CallCenterNoAnswer' | 'WrongNumber' | 'Postponed' | 'Cancelled') {
   acting.value = `${orderId}:${to}`
-  try {
-    await api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to } })
-    await refresh()
-  } catch (err) {
-    const data = (err as { data?: { message?: string } })?.data
-    toast.add({ title: 'Failed to update', description: data?.message, color: 'error' })
-  } finally {
-    acting.value = null
-  }
+  await run(() => api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to } }), {
+    success: actionLabel[to],
+    errorFallback: 'Could not update the order'
+  })
+  await refresh()
+  acting.value = null
 }
 
 function fmtDate(iso: string) {

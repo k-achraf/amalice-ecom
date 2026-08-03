@@ -7,6 +7,7 @@ useHead({ title: 'Reconciliation' })
 const route = useRoute()
 const router = useRouter()
 const api = useAdminApi()
+const { run } = useApiAction()
 const currentPage = computed(() => Number(route.query.page ?? 1))
 const currentPageSize = computed(() => Number(route.query.pageSize ?? 20))
 
@@ -53,31 +54,36 @@ const periodEnd = ref('')
 
 async function runImport() {
   saving.value = true
-  try {
-    // Parse the pasted CSV-ish rows: "courierRef,collectedCents" per line.
-    const rows = importRows.value
-      .split('\n')
-      .map((l) => l.trim())
-      .filter(Boolean)
-      .map((l) => {
-        const [courierRef, collectedCents] = l.split(',').map((s) => s.trim())
-        return { courierRef, collectedCents: Number(collectedCents) }
-      })
-    await api('/admin/reconciliation/batches', {
+  // Parse the pasted CSV-ish rows: "courierRef,collectedCents" per line.
+  const rows = importRows.value
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l) => {
+      const [courierRef, collectedCents] = l.split(',').map((s) => s.trim())
+      return { courierRef, collectedCents: Number(collectedCents) }
+    })
+  const result = await run(
+    () => api('/admin/reconciliation/batches', {
       method: 'POST',
       body: { courierId: courierId.value, reference: reference.value, periodStart: periodStart.value, periodEnd: periodEnd.value, rows }
-    })
+    }),
+    { success: 'Batch imported', errorFallback: 'Could not import the batch' }
+  )
+  if (result !== undefined) {
     showImport.value = false
     importRows.value = ''
     reference.value = ''
-    await loadBatches()
-  } finally {
-    saving.value = false
   }
+  await loadBatches()
+  saving.value = false
 }
 
 async function runMatch(batchId: string) {
-  await api(`/admin/reconciliation/batches/${batchId}/match`, { method: 'POST' })
+  await run(() => api(`/admin/reconciliation/batches/${batchId}/match`, { method: 'POST' }), {
+    success: 'Batch auto-matched',
+    errorFallback: 'Could not auto-match the batch'
+  })
   await loadBatches()
 }
 
@@ -86,14 +92,13 @@ const resolveNote = ref('')
 async function resolve(entryId: string) {
   if (!resolveNote.value) return
   resolving.value = entryId
-  try {
-    await api(`/admin/reconciliation/entries/${entryId}/resolve`, { method: 'POST', body: { resolutionNote: resolveNote.value } })
-    resolveNote.value = ''
-    resolving.value = null
-    await loadBatches()
-  } finally {
-    resolving.value = null
-  }
+  const result = await run(
+    () => api(`/admin/reconciliation/entries/${entryId}/resolve`, { method: 'POST', body: { resolutionNote: resolveNote.value } }),
+    { success: 'Discrepancy resolved', errorFallback: 'Could not resolve the discrepancy' }
+  )
+  if (result !== undefined) resolveNote.value = ''
+  resolving.value = null
+  await loadBatches()
 }
 </script>
 

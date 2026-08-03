@@ -346,7 +346,18 @@ export class OrdersService {
     if (!name) throw new ConflictException('Name is required')
 
     // Collect extra (non-core) fields for storage
-    const coreKeys = new Set(['name', 'fullName', 'phone', 'phoneNumber', 'wilaya', 'region', 'commune', 'city'])
+    // wilayaId/shippingType/shippingPriceCents: the Impulse-style lead form
+    // sets these directly on the shared fields object (see
+    // ImpulseLeadFormFields.vue's selectShipping), but they're already
+    // handled as separate typed values elsewhere (wilayaId -> priceShipping
+    // above; shippingType/shippingPriceCents -> lead.shippingType/the
+    // server-priced total) — excluding them here is what the comment above
+    // already claimed happened. Leaving them out of coreKeys was a bug:
+    // they leaked into `extras`/address.line2 as raw JSON instead.
+    const coreKeys = new Set([
+      'name', 'fullName', 'phone', 'phoneNumber', 'wilaya', 'region', 'commune', 'city',
+      'wilayaId', 'shippingType', 'shippingPriceCents'
+    ])
     const extras: Record<string, string> = {}
     for (const [key, val] of Object.entries(f)) {
       if (!coreKeys.has(key) && val) extras[key] = String(val)
@@ -477,7 +488,18 @@ export class OrdersService {
     const commune: string = f.commune || f.city || ''
     if (!phone) throw new ConflictException('Phone is required')
 
-    const coreKeys = new Set(['name', 'fullName', 'phone', 'phoneNumber', 'wilaya', 'region', 'commune', 'city'])
+    // wilayaId/shippingType/shippingPriceCents: the Impulse-style lead form
+    // sets these directly on the shared fields object (see
+    // ImpulseLeadFormFields.vue's selectShipping), but they're already
+    // handled as separate typed values elsewhere (wilayaId -> priceShipping
+    // above; shippingType/shippingPriceCents -> lead.shippingType/the
+    // server-priced total) — excluding them here is what the comment above
+    // already claimed happened. Leaving them out of coreKeys was a bug:
+    // they leaked into `extras`/address.line2 as raw JSON instead.
+    const coreKeys = new Set([
+      'name', 'fullName', 'phone', 'phoneNumber', 'wilaya', 'region', 'commune', 'city',
+      'wilayaId', 'shippingType', 'shippingPriceCents'
+    ])
     const extras: Record<string, string> = {}
     for (const [key, val] of Object.entries(f)) {
       if (!coreKeys.has(key) && val) extras[key] = String(val)

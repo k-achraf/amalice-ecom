@@ -5,6 +5,7 @@ definePageMeta({ requiredRole: 'SuperAdmin' })
 useHead({ title: 'Users & Roles' })
 
 const api = useAdminApi()
+const { run } = useApiAction()
 const { data: users, pending, refresh } = await useAdminFetch<AdminUser[]>('/admin/users', { key: 'admin-users' })
 const { data: roles } = await useAdminFetch<{ id: string; name: string }[]>('/admin/roles', { key: 'admin-roles' })
 
@@ -17,19 +18,24 @@ const saving = ref(false)
 async function createUser() {
   if (!newEmail.value || !newPassword.value || !newRoleId.value) return
   saving.value = true
-  try {
-    await api('/admin/users', { method: 'POST', body: { email: newEmail.value, password: newPassword.value, roleId: newRoleId.value } })
+  const result = await run(
+    () => api('/admin/users', { method: 'POST', body: { email: newEmail.value, password: newPassword.value, roleId: newRoleId.value } }),
+    { success: 'Admin user created', errorFallback: 'Could not create the user' }
+  )
+  if (result !== undefined) {
     showCreate.value = false
     newEmail.value = ''
     newPassword.value = ''
-    await refresh()
-  } finally {
-    saving.value = false
   }
+  await refresh()
+  saving.value = false
 }
 
 async function toggle(user: AdminUser) {
-  await api(`/admin/users/${user.id}/${user.active ? 'deactivate' : 'reactivate'}`, { method: 'POST' })
+  await run(() => api(`/admin/users/${user.id}/${user.active ? 'deactivate' : 'reactivate'}`, { method: 'POST' }), {
+    success: user.active ? 'User deactivated' : 'User reactivated',
+    errorFallback: 'Could not update the user'
+  })
   await refresh()
 }
 </script>

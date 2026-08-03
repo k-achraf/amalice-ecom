@@ -43,6 +43,7 @@ const { data, pending } = await useAdminFetch<OrderListResponse>('/admin/orders'
 // page-size change hits the API again with the new page/pageSize, never
 // slices an already-fetched array client-side.
 const api = useAdminApi()
+const { run } = useApiAction()
 const currentPage = computed(() => Number(route.query.page ?? 1))
 const currentPageSize = computed(() => Number(route.query.pageSize ?? 20))
 
@@ -76,14 +77,12 @@ async function advance(orderId: string, currentState: OrderState) {
   const next = VALID_TRANSITIONS[currentState]?.[0]
   if (!next) return
   transitioning.value = orderId
-  try {
-    await api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to: next } })
-    await loadWithFilters()
-  } catch {
-    // The 401 handler bounces to login; other errors surface via the table state on next load.
-  } finally {
-    transitioning.value = null
-  }
+  await run(() => api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to: next } }), {
+    success: `Order moved to ${next}`,
+    errorFallback: 'Could not update the order'
+  })
+  await loadWithFilters()
+  transitioning.value = null
 }
 
 function fmtDate(iso: string) {

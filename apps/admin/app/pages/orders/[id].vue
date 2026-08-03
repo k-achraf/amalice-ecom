@@ -14,20 +14,19 @@ useHead({ title: `Order ${id.slice(0, 8)}` })
 
 const api = useAdminApi()
 const toast = useToast()
+const { run } = useApiAction()
 const { data: order, pending, error, refresh } = await useAdminFetch<AdminOrderDetail>(`/admin/orders/${id}`, { key: `admin-order-${id}` })
 
 const transitioning = ref<OrderState | null>(null)
 
 async function transition(to: OrderState) {
   transitioning.value = to
-  try {
-    await api(`/admin/orders/${id}/transition`, { method: 'POST', body: { to } })
-    await refresh()
-  } catch {
-    // 401 → login bounce (handled); 400 illegal transition surfaces on next load
-  } finally {
-    transitioning.value = null
-  }
+  await run(() => api(`/admin/orders/${id}/transition`, { method: 'POST', body: { to } }), {
+    success: `Order moved to ${to}`,
+    errorFallback: 'Could not update the order'
+  })
+  await refresh()
+  transitioning.value = null
 }
 
 // ---- Shipping assignment — required before dispatch is possible; dispatch
@@ -42,81 +41,74 @@ const assigning = ref(false)
 async function assignCompany() {
   if (!selectedCompanyId.value) return
   assigning.value = true
-  try {
-    await api(`/admin/fulfillment/orders/${id}/assign-company`, { method: 'POST', body: { shippingCompanyId: selectedCompanyId.value } })
-    await refresh()
-  } catch (err: unknown) {
-    const data = (err as { data?: { message?: string } })?.data
-    toast.add({ title: data?.message ?? 'Could not assign the shipping company', color: 'error' })
-  } finally {
-    assigning.value = false
-  }
+  const companyName = companyOptions.value.find((c) => c.value === selectedCompanyId.value)?.label
+  await run(() => api(`/admin/fulfillment/orders/${id}/assign-company`, { method: 'POST', body: { shippingCompanyId: selectedCompanyId.value } }), {
+    success: companyName ? `Assigned to ${companyName}` : 'Shipping company assigned',
+    errorFallback: 'Could not assign the shipping company'
+  })
+  await refresh()
+  assigning.value = false
 }
 
 async function assignManual() {
   assigning.value = true
-  try {
-    await api(`/admin/fulfillment/orders/${id}/assign-manual`, { method: 'POST' })
-    await refresh()
-  } catch (err: unknown) {
-    const data = (err as { data?: { message?: string } })?.data
-    toast.add({ title: data?.message ?? 'Could not assign manual delivery', color: 'error' })
-  } finally {
-    assigning.value = false
-  }
+  await run(() => api(`/admin/fulfillment/orders/${id}/assign-manual`, { method: 'POST' }), {
+    success: 'Assigned to manual delivery',
+    errorFallback: 'Could not assign manual delivery'
+  })
+  await refresh()
+  assigning.value = false
 }
 
 const dispatchingManual = ref(false)
 async function dispatchManual() {
   dispatchingManual.value = true
-  try {
-    await api(`/admin/fulfillment/orders/${id}/dispatch-manual`, { method: 'POST' })
-    toast.add({ title: 'Handed to delivery driver', color: 'success' })
-    await refresh()
-  } catch (err: unknown) {
-    const data = (err as { data?: { message?: string } })?.data
-    toast.add({ title: data?.message ?? 'Could not dispatch manually', color: 'error' })
-  } finally {
-    dispatchingManual.value = false
-  }
+  await run(() => api(`/admin/fulfillment/orders/${id}/dispatch-manual`, { method: 'POST' }), {
+    success: 'Handed to delivery driver',
+    errorFallback: 'Could not dispatch manually'
+  })
+  await refresh()
+  dispatchingManual.value = false
 }
 
 // ---- Shipment actions (DHD "Commandes" API — see apps/api's
 // FulfillmentService for requestPickup/cancelShipmentForOrder/
 // getShipmentLabel) ----
-const shipmentActing = ref<'pickup' | 'cancel' | 'label' | null>(null)
+const shipmentActing = ref<'dispatch' | 'pickup' | 'cancel' | 'label' | null>(null)
+
+async function dispatchToCourier() {
+  shipmentActing.value = 'dispatch'
+  await run(() => api(`/admin/fulfillment/orders/${id}/dispatch`, { method: 'POST' }), {
+    success: 'Order dispatched to courier',
+    errorFallback: 'Could not dispatch the order'
+  })
+  await refresh()
+  shipmentActing.value = null
+}
 
 async function requestPickup() {
   shipmentActing.value = 'pickup'
-  try {
-    await api(`/admin/fulfillment/orders/${id}/request-pickup`, { method: 'POST', body: { askCollection: true } })
-    toast.add({ title: 'Pickup requested with DHD', color: 'success' })
-    await refresh()
-  } catch (err: unknown) {
-    const data = (err as { data?: { message?: string } })?.data
-    toast.add({ title: data?.message ?? 'Could not request pickup', color: 'error' })
-  } finally {
-    shipmentActing.value = null
-  }
+  await run(() => api(`/admin/fulfillment/orders/${id}/request-pickup`, { method: 'POST', body: { askCollection: true } }), {
+    success: 'Pickup requested with DHD',
+    errorFallback: 'Could not request pickup'
+  })
+  await refresh()
+  shipmentActing.value = null
 }
 
 async function cancelShipment() {
   shipmentActing.value = 'cancel'
-  try {
-    await api(`/admin/fulfillment/orders/${id}/cancel-shipment`, { method: 'POST' })
-    toast.add({ title: 'Shipment cancelled', color: 'success' })
-    await refresh()
-  } catch (err: unknown) {
-    const data = (err as { data?: { message?: string } })?.data
-    toast.add({ title: data?.message ?? 'Could not cancel the shipment', color: 'error' })
-  } finally {
-    shipmentActing.value = null
-  }
+  await run(() => api(`/admin/fulfillment/orders/${id}/cancel-shipment`, { method: 'POST' }), {
+    success: 'Shipment cancelled',
+    errorFallback: 'Could not cancel the shipment'
+  })
+  await refresh()
+  shipmentActing.value = null
 }
 
 async function downloadLabel() {
   shipmentActing.value = 'label'
-  try {
+  await run(async () => {
     const blob = await api<Blob>(`/admin/fulfillment/orders/${id}/label`, { responseType: 'blob' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -124,12 +116,8 @@ async function downloadLabel() {
     a.download = `label-${id}.pdf`
     a.click()
     URL.revokeObjectURL(url)
-  } catch (err: unknown) {
-    const data = (err as { data?: { message?: string } })?.data
-    toast.add({ title: data?.message ?? 'Could not download the label', color: 'error' })
-  } finally {
-    shipmentActing.value = null
-  }
+  }, { errorFallback: 'Could not download the label' })
+  shipmentActing.value = null
 }
 
 function fmtDateTime(iso: string) {
@@ -355,8 +343,9 @@ async function submitAddItem() {
               class="mt-4"
               icon="i-lucide-truck"
               size="sm"
+              :loading="shipmentActing === 'dispatch'"
               label="Dispatch to courier"
-              @click="api(`/admin/fulfillment/orders/${id}/dispatch`, { method: 'POST' }).then(() => refresh())"
+              @click="dispatchToCourier"
             />
             <UButton
               v-if="order.state === 'Packed' && order.fulfillmentMethod === 'Manual'"
@@ -427,14 +416,14 @@ async function submitAddItem() {
           <div class="admin-kpi-card p-5">
             <h3 class="mb-3 text-sm font-medium text-muted">Delivery address</h3>
             <address class="text-sm not-italic leading-relaxed text-muted">
-              {{ order.address.line1 }}<br />
+              {{ order.address.line1 || '-' }}<br />
               <span v-if="order.address.line2">{{ order.address.line2 }}<br /></span>
-              {{ order.address.city }}, {{ order.address.region }}<br />
-              {{ order.address.country }}
+              {{ order.address.city || '-' }}, {{ order.address.region || '-' }}<br />
+              {{ order.address.country || '-' }}
             </address>
             <div v-if="order.shippingType" class="mt-3 space-y-1 border-t border-[var(--color-admin-border)] pt-3 text-sm">
-              <div class="flex items-center justify-between"><span class="text-muted">Wilaya</span><span>{{ order.address.region }}</span></div>
-              <div class="flex items-center justify-between"><span class="text-muted">City / commune</span><span>{{ order.address.city }}</span></div>
+              <div class="flex items-center justify-between"><span class="text-muted">Wilaya</span><span>{{ order.address.region || '-' }}</span></div>
+              <div class="flex items-center justify-between"><span class="text-muted">City / commune</span><span>{{ order.address.city || '-' }}</span></div>
               <div class="flex items-center justify-between"><span class="text-muted">Shipping method</span><span>{{ shippingTypeLabel[order.shippingType] }}</span></div>
               <div class="flex items-center justify-between"><span class="text-muted">Shipping price</span><PriceDisplay :amount-cents="order.shippingPriceCents" /></div>
             </div>
