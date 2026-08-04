@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ShippingCompanyProvider, ShippingCompanyTariff, ShippingCompanyView } from '@amalice/shared'
+import type { CourierWebhookLogResponse, ShippingCompanyProvider, ShippingCompanyTariff, ShippingCompanyView } from '@amalice/shared'
 
 // Third-party courier integrations — link an account with its API token,
 // sync its per-wilaya tariffs for reference, and optionally apply them into
@@ -31,6 +31,10 @@ const tariffsByProvider = reactive<Record<string, ShippingCompanyTariff[] | unde
 const loadingTariffs = reactive<Record<string, boolean>>({})
 const webhookSecretInput = reactive<Record<string, string>>({})
 const savingWebhookSecret = reactive<Record<string, boolean>>({})
+const webhookLogsByProvider = reactive<Record<string, CourierWebhookLogResponse | undefined>>({})
+const loadingWebhookLogs = reactive<Record<string, boolean>>({})
+const webhookLogPageSize = reactive<Record<string, number>>({})
+const webhookLogSearch = reactive<Record<string, string>>({})
 
 async function link(provider: ShippingCompanyProvider) {
   const token = apiTokenInput[provider]?.trim()
@@ -123,6 +127,35 @@ function toggleTariffs(provider: ShippingCompanyProvider) {
   } else {
     loadTariffs(provider)
   }
+}
+
+// Admin-facing view of DHD's own "Logs de livraison" page — every inbound
+// webhook delivery for this provider, server-side paginated.
+async function loadWebhookLogs(provider: ShippingCompanyProvider, page = 1) {
+  loadingWebhookLogs[provider] = true
+  try {
+    webhookLogsByProvider[provider] = await api<CourierWebhookLogResponse>(`/admin/shipping-companies/${provider}/webhook-logs`, {
+      query: {
+        page,
+        pageSize: webhookLogPageSize[provider] ?? 20,
+        trackingReference: webhookLogSearch[provider]?.trim() || undefined
+      }
+    })
+  } finally {
+    loadingWebhookLogs[provider] = false
+  }
+}
+
+function toggleWebhookLogs(provider: ShippingCompanyProvider) {
+  if (webhookLogsByProvider[provider]) {
+    webhookLogsByProvider[provider] = undefined
+  } else {
+    loadWebhookLogs(provider)
+  }
+}
+
+function searchWebhookLogs(provider: ShippingCompanyProvider) {
+  loadWebhookLogs(provider, 1)
 }
 
 async function applyToRates(provider: ShippingCompanyProvider) {
@@ -235,6 +268,9 @@ async function applyToRates(provider: ShippingCompanyProvider) {
               {{ tariffsByProvider[company.provider] ? 'Hide tariffs' : 'View tariffs' }}
             </UButton>
             <UButton v-if="!company.isDefault" variant="outline" color="neutral" icon="i-lucide-star" @click="setDefault(company.provider)">Set as default</UButton>
+            <UButton v-if="company.webhookUrl" variant="outline" color="neutral" icon="i-lucide-history" @click="toggleWebhookLogs(company.provider)">
+              {{ webhookLogsByProvider[company.provider] ? 'Hide webhook logs' : 'View webhook logs' }}
+            </UButton>
             <UButton variant="ghost" color="error" icon="i-lucide-unlink" @click="unlink(company.provider)">Unlink</UButton>
           </div>
 
@@ -267,6 +303,73 @@ async function applyToRates(provider: ShippingCompanyProvider) {
                 </tbody>
               </table>
             </div>
+          </div>
+
+          <div v-if="loadingWebhookLogs[company.provider] && !webhookLogsByProvider[company.provider]" class="text-sm text-muted">Loading webhook logs…</div>
+          <div v-else-if="webhookLogsByProvider[company.provider]" class="space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <p class="text-sm text-muted">Every inbound webhook delivery from {{ company.name }} — matches their own "Logs de livraison" page.</p>
+              <div class="flex items-center gap-2">
+                <UInput
+                  v-model="webhookLogSearch[company.provider]"
+                  icon="i-lucide-search"
+                  placeholder="Filter by tracking reference…"
+                  size="sm"
+                  class="w-56"
+                  @keyup.enter="searchWebhookLogs(company.provider)"
+                />
+                <UButton size="sm" variant="outline" color="neutral" :loading="loadingWebhookLogs[company.provider]" @click="searchWebhookLogs(company.provider)">Search</UButton>
+              </div>
+            </div>
+
+            <EmptyState
+              v-if="!webhookLogsByProvider[company.provider]!.items.length"
+              icon="i-lucide-history"
+              title="No webhook deliveries yet"
+              description="Once DHD's webhook is configured and an order's state changes, deliveries will show up here."
+            />
+            <template v-else>
+              <div class="max-h-96 overflow-y-auto rounded-md border border-[var(--color-admin-border)]">
+                <table class="w-full text-sm">
+                  <thead class="sticky top-0 border-b border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] text-left text-xs uppercase tracking-wide text-muted">
+                    <tr>
+                      <th class="px-3 py-2 font-medium">Received</th>
+                      <th class="px-3 py-2 font-medium">Tracking</th>
+                      <th class="px-3 py-2 font-medium">Event</th>
+                      <th class="px-3 py-2 font-medium">Order</th>
+                      <th class="px-3 py-2 font-medium">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-[var(--color-admin-border)]">
+                    <tr v-for="log in webhookLogsByProvider[company.provider]!.items" :key="log.id">
+                      <td class="px-3 py-2 whitespace-nowrap text-muted">{{ new Date(log.receivedAt).toLocaleString() }}</td>
+                      <td class="px-3 py-2 tabular">{{ log.trackingReference }}</td>
+                      <td class="px-3 py-2">
+                        <div class="text-highlighted">{{ log.stateTitle ?? log.event }}</div>
+                        <div class="text-xs text-muted">{{ log.event }}</div>
+                      </td>
+                      <td class="px-3 py-2">
+                        <NuxtLink v-if="log.orderId" :to="`/orders/${log.orderId}`" class="tabular text-primary hover:underline">{{ log.orderId.slice(0, 8) }}</NuxtLink>
+                        <span v-else class="text-muted">—</span>
+                      </td>
+                      <td class="px-3 py-2">
+                        <UBadge v-if="log.applied" color="success" variant="subtle" size="sm">Applied</UBadge>
+                        <UBadge v-else-if="log.error" color="error" variant="subtle" size="sm" :title="log.error">Failed</UBadge>
+                        <UBadge v-else color="neutral" variant="subtle" size="sm">Logged only</UBadge>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <AdminPagination
+                :page="webhookLogsByProvider[company.provider]!.page"
+                :total="webhookLogsByProvider[company.provider]!.total"
+                :page-size="webhookLogsByProvider[company.provider]!.pageSize"
+                item-label="webhook deliveries"
+                @update:page="(p) => loadWebhookLogs(company.provider, p)"
+                @update:page-size="(size) => { webhookLogPageSize[company.provider] = size; loadWebhookLogs(company.provider, 1) }"
+              />
+            </template>
           </div>
         </section>
       </div>

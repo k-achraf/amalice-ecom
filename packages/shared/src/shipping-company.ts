@@ -81,3 +81,28 @@ export const ApplyShippingCompanyTariffsResultSchema = z.object({
   appliedCount: z.number().int().nonnegative()
 })
 export type ApplyShippingCompanyTariffsResult = z.infer<typeof ApplyShippingCompanyTariffsResultSchema>
+
+// One row per inbound courier webhook delivery (see CourierWebhookEvent's
+// Prisma comment) — the admin-facing view of DHD's own "Logs de livraison"
+// page, scoped to whichever provider's card it's shown under. stateTitle is
+// pulled from the stored raw payload at read time (not a separate column)
+// since it's purely display sugar over `event`.
+export const CourierWebhookLogItemSchema = z.object({
+  id: z.uuid(),
+  trackingReference: z.string(),
+  event: z.string(),
+  stateTitle: z.string().nullable(),
+  orderId: z.uuid().nullable(),
+  applied: z.boolean(),
+  error: z.string().nullable(),
+  receivedAt: z.string()
+})
+export type CourierWebhookLogItem = z.infer<typeof CourierWebhookLogItemSchema>
+
+export const CourierWebhookLogResponseSchema = z.object({
+  items: z.array(CourierWebhookLogItemSchema),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive()
+})
+export type CourierWebhookLogResponse = z.infer<typeof CourierWebhookLogResponseSchema>

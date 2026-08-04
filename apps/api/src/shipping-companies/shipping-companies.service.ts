@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import type {
   ApplyShippingCompanyTariffs,
   ApplyShippingCompanyTariffsResult,
+  CourierWebhookLogResponse,
   LinkShippingCompany,
   SetWebhookSecret,
   ShippingCompanyProvider,
@@ -137,6 +138,46 @@ export class ShippingCompaniesService {
     await this.audit.log({ actor, action: 'Update', entity: 'ShippingCompany', entityId: provider, metadata: { webhookSecretSet: true } })
 
     return this.toView(provider, row)
+  }
+
+  // Admin-facing view of DHD's own "Logs de livraison" page — every inbound
+  // webhook delivery for this provider, newest first, optionally filtered
+  // by tracking reference. stateTitle is pulled out of the stored raw
+  // payload at read time rather than a separate column, since it's purely
+  // display sugar over `event`.
+  async listWebhookLogs(provider: ShippingCompanyProvider, args: { page: number; pageSize: number; trackingReference?: string }): Promise<CourierWebhookLogResponse> {
+    const company = await this.prisma.shippingCompany.findUnique({ where: { provider } })
+    if (!company) return { items: [], total: 0, page: args.page, pageSize: args.pageSize }
+
+    const where = {
+      shippingCompanyId: company.id,
+      ...(args.trackingReference && { trackingReference: { contains: args.trackingReference, mode: 'insensitive' as const } })
+    }
+    const [rows, total] = await Promise.all([
+      this.prisma.courierWebhookEvent.findMany({
+        where,
+        orderBy: { receivedAt: 'desc' },
+        skip: (args.page - 1) * args.pageSize,
+        take: args.pageSize
+      }),
+      this.prisma.courierWebhookEvent.count({ where })
+    ])
+
+    const items = rows.map((row) => {
+      const payload = row.payload as { data?: { state?: { title?: string } } } | null
+      return {
+        id: row.id,
+        trackingReference: row.trackingReference,
+        event: row.event,
+        stateTitle: payload?.data?.state?.title ?? null,
+        orderId: row.orderId,
+        applied: row.applied,
+        error: row.error,
+        receivedAt: row.receivedAt.toISOString()
+      }
+    })
+
+    return { items, total, page: args.page, pageSize: args.pageSize }
   }
 
   async unlink(provider: ShippingCompanyProvider, actor: AuditActor): Promise<ShippingCompanyView> {

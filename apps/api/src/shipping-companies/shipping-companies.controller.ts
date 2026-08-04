@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common'
+import { BadRequestException, Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { ApplyShippingCompanyTariffsSchema, LinkShippingCompanySchema, SetWebhookSecretSchema, ShippingCompanyProviderSchema, type ShippingCompanyProvider } from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
@@ -82,5 +82,17 @@ export class ShippingCompaniesController {
   applyTariffs(@Param('provider') provider: string, @Body() body: ApplyShippingCompanyTariffsDto, @Req() req: AuthedRequest) {
     const actor: AuditActor = { id: req.user.sub, email: req.user.email }
     return this.shippingCompanies.applyTariffsToRates(parseProvider(provider), body, actor)
+  }
+
+  // Admin-facing view of DHD's own "Logs de livraison" page — see
+  // ShippingCompaniesService.listWebhookLogs.
+  @Get(':provider/webhook-logs')
+  webhookLogs(
+    @Param('provider') provider: string,
+    @Query('page') page: string = '1',
+    @Query('pageSize') pageSize: string = '20',
+    @Query('trackingReference') trackingReference: string | undefined
+  ) {
+    return this.shippingCompanies.listWebhookLogs(parseProvider(provider), { page: Number(page), pageSize: Number(pageSize), trackingReference })
   }
 }
