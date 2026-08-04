@@ -33,7 +33,7 @@ const { data: reviewData } = await useApiFetch<{ summary: RatingSummary; items: 
 )
 
 // AI landing pages (apps/api/src/landing-pages) are now standalone pages at
-// their own URL (/lp/:slug — see app/pages/lp/[slug].vue), never swapped
+// their own URL (/lp/:productSlug/:number — see app/pages/lp/[productSlug]/[number].vue), never swapped
 // into this normal product page. This page always shows the plain
 // gallery+description; landingPageImageUrl stays wired into every
 // template's ProductDetailPage props (always null) rather than removing the
@@ -153,6 +153,14 @@ const offerTotalCents = computed(() =>
   selectedOffer.value ? offerPriceCents(selectedOffer.value, effectivePriceCents.value) : effectivePriceCents.value * quantity.value
 )
 function onSelectOffer(offer: ProductOffer) {
+  // Clicking the already-selected offer card unselects it instead of being
+  // a no-op — previously there was no way back to buying at plain
+  // per-unit pricing/quantity once an offer was picked.
+  if (selectedOfferId.value === offer.id) {
+    selectedOfferId.value = null
+    quantity.value = 1
+    return
+  }
   selectedOfferId.value = offer.id
   quantity.value = offerTotalQuantity(offer)
 }

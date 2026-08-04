@@ -57,7 +57,7 @@ export async function fetchImageAsInline(url: string): Promise<{ base64: string;
 // each to a common width before stacking so the seams line up cleanly.
 //
 // Output is WebP, not JPEG — this final image is the whole page's LCP
-// element (loaded eager/fetchpriority=high on /lp/:slug) and a naive
+// element (loaded eager/fetchpriority=high on /lp/:productSlug/:number) and a naive
 // vertical stack of 5-7 full-bleed sections at quality 88 JPEG routinely
 // landed several MB, which is exactly what made the page slow to load.
 // WebP at quality 78 is typically 25-35% smaller than equivalent-quality

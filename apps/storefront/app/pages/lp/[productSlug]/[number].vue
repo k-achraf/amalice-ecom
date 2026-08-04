@@ -6,15 +6,20 @@ import { DEFAULT_LEAD_FORM_FIELDS, type LeadFormField, type PublicLandingPage } 
 // a SEPARATE, standalone URL from the normal /products/:slug page (never
 // swaps into it — see that page's own comment) — a product reached this way
 // is reached via a different creative angle/ad campaign, not the catalog.
+// URL is /lp/:productSlug/:number — never a raw id/uuid — :number just
+// distinguishes multiple landing pages for the same product (1, 2, 3, ...).
 definePageMeta({ layout: 'blank' })
 
 const route = useRoute()
-const slug = route.params.slug as string
+const productSlug = route.params.productSlug as string
+const number = route.params.number as string
 const settings = useStoreSettings()
 const metaPixel = useMetaPixel()
 const tiktokPixel = useTikTokPixel()
 
-const { data: landingPage, error } = await useApiFetch<PublicLandingPage>(`/landing-pages/${slug}`, { key: `lp-${slug}` })
+const { data: landingPage, error } = await useApiFetch<PublicLandingPage>(`/landing-pages/${productSlug}/${number}`, {
+  key: `lp-${productSlug}-${number}`
+})
 if (error.value || !landingPage.value) {
   throw createError({ statusCode: 404, statusMessage: 'Landing page not found' })
 }
@@ -115,7 +120,7 @@ async function onSubmitLead() {
         <PriceDisplay :amount-cents="page.product.priceCents" class="text-xl font-bold text-primary" />
       </div>
 
-      <LeadFormFields :fields="leadFields" :data="leadFormData" />
+      <TemplateSection name="LeadFormFields" :section-props="{ fields: leadFields, data: leadFormData }" />
 
       <p v-if="placeError" class="text-sm text-error">{{ placeError }}</p>
 

@@ -26,8 +26,13 @@ export default defineNuxtConfig({
       apiBase: 'http://localhost:3333',
       // Base URL of the customer-facing storefront — used to build shareable
       // product-page/landing-page links (product preview, landing-page URL
-      // display/copy). NUXT_PUBLIC_STOREFRONT_BASE overrides this at runtime.
-      storefrontBase: 'http://localhost:3000'
+      // display/copy). Defaults to the real production domain (see
+      // main.ts's CORS list) rather than localhost, since this is an SPA:
+      // runtimeConfig.public is baked in at BUILD time, and a prod build run
+      // without NUXT_PUBLIC_STOREFRONT_BASE set in the shell would otherwise
+      // silently ship localhost links to real admins. Override for local
+      // dev via NUXT_PUBLIC_STOREFRONT_BASE=http://localhost:3000.
+      storefrontBase: 'https://amalice.shop'
     }
   },
   app: {

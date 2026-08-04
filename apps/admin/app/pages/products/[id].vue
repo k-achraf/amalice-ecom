@@ -379,7 +379,6 @@ const selectedSourceImages = ref<string[]>([])
 const landingPageDescription = ref('')
 const landingPageInstructions = ref('')
 const landingPageName = ref('')
-const landingPageSlug = ref('')
 const sectionCount = ref(5)
 // Gemini edits the product's real photos and draws its own on-image text,
 // but needs Google Cloud billing enabled; Pollinations is free/keyless with
@@ -414,7 +413,7 @@ function toggleSectionEdit(sectionId: string) {
 }
 
 function landingPageUrl(lp: ProductLandingPage): string {
-  return `${runtimeConfig.public.storefrontBase}/lp/${lp.slug}`
+  return `${runtimeConfig.public.storefrontBase}/lp/${product.value?.slug}/${lp.number}`
 }
 async function copyLandingPageUrl(lp: ProductLandingPage) {
   await navigator.clipboard.writeText(landingPageUrl(lp))
@@ -485,7 +484,6 @@ async function generateLandingPage() {
         sectionCount: sectionCount.value,
         imageProvider: imageProvider.value,
         name: landingPageName.value.trim() || undefined,
-        slug: landingPageSlug.value.trim() || undefined,
         instructions: landingPageInstructions.value.trim() || undefined
       }
     })
@@ -493,7 +491,6 @@ async function generateLandingPage() {
     expandedLandingPageId.value = created.id
     startLandingPagePollingIfNeeded()
     landingPageName.value = ''
-    landingPageSlug.value = ''
     landingPageInstructions.value = ''
     toast.add({ title: 'Generating landing page…', description: 'This can take a minute or two — feel free to switch tabs.', color: 'info' })
   } catch (err) {
@@ -1094,17 +1091,9 @@ async function deleteUpsell(upsellId: string) {
               </p>
             </div>
 
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <UFormField label="Name" help="To tell multiple landing pages apart later — e.g. “TikTok angle”.">
-                <UInput v-model="landingPageName" placeholder="Landing Page" class="w-full" />
-              </UFormField>
-              <UFormField label="Custom URL (optional)" help="Leave blank to auto-generate from the product name.">
-                <div class="flex items-center gap-1 text-sm">
-                  <span class="shrink-0 text-xs text-muted">/lp/</span>
-                  <UInput v-model="landingPageSlug" placeholder="auto-generated" class="w-full" />
-                </div>
-              </UFormField>
-            </div>
+            <UFormField label="Name" help="To tell multiple landing pages apart later — e.g. “TikTok angle”. Its URL is assigned automatically (/lp/product-slug/1, /2, ...).">
+              <UInput v-model="landingPageName" placeholder="Landing Page" class="w-full" />
+            </UFormField>
 
             <UFormField label="Description to generate from" help="Prefilled from the product description — edit for punchier landing-page copy before generating.">
               <UTextarea v-model="landingPageDescription" class="w-full" :rows="4" />

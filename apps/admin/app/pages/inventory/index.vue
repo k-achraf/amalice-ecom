@@ -122,8 +122,8 @@ const previewLandingPages = ref<Record<string, ProductLandingPage[] | 'loading' 
 function productPageUrl(p: Product): string {
   return `${runtimeConfig.public.storefrontBase}/products/${p.slug}`
 }
-function landingPageUrl(lp: ProductLandingPage): string {
-  return `${runtimeConfig.public.storefrontBase}/lp/${lp.slug}`
+function landingPageUrl(p: Product, lp: ProductLandingPage): string {
+  return `${runtimeConfig.public.storefrontBase}/lp/${p.slug}/${lp.number}`
 }
 
 async function onPreviewToggle(p: Product, open: boolean) {
@@ -193,7 +193,7 @@ async function onPreviewToggle(p: Product, open: boolean) {
                           <a
                             v-for="lp in previewLandingPages[p.id] as ProductLandingPage[]"
                             :key="lp.id"
-                            :href="landingPageUrl(lp)"
+                            :href="landingPageUrl(p, lp)"
                             target="_blank"
                             rel="noopener"
                             class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-[var(--color-admin-row-hover)]"

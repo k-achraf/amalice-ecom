@@ -20,14 +20,24 @@ export type ProductLandingPageModel = runtime.Types.Result.DefaultSelection<Pris
 
 export type AggregateProductLandingPage = {
   _count: ProductLandingPageCountAggregateOutputType | null
+  _avg: ProductLandingPageAvgAggregateOutputType | null
+  _sum: ProductLandingPageSumAggregateOutputType | null
   _min: ProductLandingPageMinAggregateOutputType | null
   _max: ProductLandingPageMaxAggregateOutputType | null
+}
+
+export type ProductLandingPageAvgAggregateOutputType = {
+  number: number | null
+}
+
+export type ProductLandingPageSumAggregateOutputType = {
+  number: number | null
 }
 
 export type ProductLandingPageMinAggregateOutputType = {
   id: string | null
   productId: string | null
-  slug: string | null
+  number: number | null
   name: string | null
   enabled: boolean | null
   status: $Enums.LandingPageStatus | null
@@ -41,7 +51,7 @@ export type ProductLandingPageMinAggregateOutputType = {
 export type ProductLandingPageMaxAggregateOutputType = {
   id: string | null
   productId: string | null
-  slug: string | null
+  number: number | null
   name: string | null
   enabled: boolean | null
   status: $Enums.LandingPageStatus | null
@@ -55,7 +65,7 @@ export type ProductLandingPageMaxAggregateOutputType = {
 export type ProductLandingPageCountAggregateOutputType = {
   id: number
   productId: number
-  slug: number
+  number: number
   name: number
   enabled: number
   status: number
@@ -69,10 +79,18 @@ export type ProductLandingPageCountAggregateOutputType = {
 }
 
 
+export type ProductLandingPageAvgAggregateInputType = {
+  number?: true
+}
+
+export type ProductLandingPageSumAggregateInputType = {
+  number?: true
+}
+
 export type ProductLandingPageMinAggregateInputType = {
   id?: true
   productId?: true
-  slug?: true
+  number?: true
   name?: true
   enabled?: true
   status?: true
@@ -86,7 +104,7 @@ export type ProductLandingPageMinAggregateInputType = {
 export type ProductLandingPageMaxAggregateInputType = {
   id?: true
   productId?: true
-  slug?: true
+  number?: true
   name?: true
   enabled?: true
   status?: true
@@ -100,7 +118,7 @@ export type ProductLandingPageMaxAggregateInputType = {
 export type ProductLandingPageCountAggregateInputType = {
   id?: true
   productId?: true
-  slug?: true
+  number?: true
   name?: true
   enabled?: true
   status?: true
@@ -151,6 +169,18 @@ export type ProductLandingPageAggregateArgs<ExtArgs extends runtime.Types.Extens
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: ProductLandingPageAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: ProductLandingPageSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: ProductLandingPageMinAggregateInputType
@@ -181,6 +211,8 @@ export type ProductLandingPageGroupByArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   _count?: ProductLandingPageCountAggregateInputType | true
+  _avg?: ProductLandingPageAvgAggregateInputType
+  _sum?: ProductLandingPageSumAggregateInputType
   _min?: ProductLandingPageMinAggregateInputType
   _max?: ProductLandingPageMaxAggregateInputType
 }
@@ -188,7 +220,7 @@ export type ProductLandingPageGroupByArgs<ExtArgs extends runtime.Types.Extensio
 export type ProductLandingPageGroupByOutputType = {
   id: string
   productId: string
-  slug: string
+  number: number
   name: string
   enabled: boolean
   status: $Enums.LandingPageStatus
@@ -199,6 +231,8 @@ export type ProductLandingPageGroupByOutputType = {
   createdAt: Date
   updatedAt: Date
   _count: ProductLandingPageCountAggregateOutputType | null
+  _avg: ProductLandingPageAvgAggregateOutputType | null
+  _sum: ProductLandingPageSumAggregateOutputType | null
   _min: ProductLandingPageMinAggregateOutputType | null
   _max: ProductLandingPageMaxAggregateOutputType | null
 }
@@ -224,7 +258,7 @@ export type ProductLandingPageWhereInput = {
   NOT?: Prisma.ProductLandingPageWhereInput | Prisma.ProductLandingPageWhereInput[]
   id?: Prisma.StringFilter<"ProductLandingPage"> | string
   productId?: Prisma.StringFilter<"ProductLandingPage"> | string
-  slug?: Prisma.StringFilter<"ProductLandingPage"> | string
+  number?: Prisma.IntFilter<"ProductLandingPage"> | number
   name?: Prisma.StringFilter<"ProductLandingPage"> | string
   enabled?: Prisma.BoolFilter<"ProductLandingPage"> | boolean
   status?: Prisma.EnumLandingPageStatusFilter<"ProductLandingPage"> | $Enums.LandingPageStatus
@@ -240,7 +274,7 @@ export type ProductLandingPageWhereInput = {
 export type ProductLandingPageOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   productId?: Prisma.SortOrder
-  slug?: Prisma.SortOrder
+  number?: Prisma.SortOrder
   name?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -255,11 +289,12 @@ export type ProductLandingPageOrderByWithRelationInput = {
 
 export type ProductLandingPageWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  slug?: string
+  productId_number?: Prisma.ProductLandingPageProductIdNumberCompoundUniqueInput
   AND?: Prisma.ProductLandingPageWhereInput | Prisma.ProductLandingPageWhereInput[]
   OR?: Prisma.ProductLandingPageWhereInput[]
   NOT?: Prisma.ProductLandingPageWhereInput | Prisma.ProductLandingPageWhereInput[]
   productId?: Prisma.StringFilter<"ProductLandingPage"> | string
+  number?: Prisma.IntFilter<"ProductLandingPage"> | number
   name?: Prisma.StringFilter<"ProductLandingPage"> | string
   enabled?: Prisma.BoolFilter<"ProductLandingPage"> | boolean
   status?: Prisma.EnumLandingPageStatusFilter<"ProductLandingPage"> | $Enums.LandingPageStatus
@@ -270,12 +305,12 @@ export type ProductLandingPageWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"ProductLandingPage"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductLandingPage"> | Date | string
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
-}, "id" | "slug">
+}, "id" | "productId_number">
 
 export type ProductLandingPageOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   productId?: Prisma.SortOrder
-  slug?: Prisma.SortOrder
+  number?: Prisma.SortOrder
   name?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -286,8 +321,10 @@ export type ProductLandingPageOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ProductLandingPageCountOrderByAggregateInput
+  _avg?: Prisma.ProductLandingPageAvgOrderByAggregateInput
   _max?: Prisma.ProductLandingPageMaxOrderByAggregateInput
   _min?: Prisma.ProductLandingPageMinOrderByAggregateInput
+  _sum?: Prisma.ProductLandingPageSumOrderByAggregateInput
 }
 
 export type ProductLandingPageScalarWhereWithAggregatesInput = {
@@ -296,7 +333,7 @@ export type ProductLandingPageScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ProductLandingPageScalarWhereWithAggregatesInput | Prisma.ProductLandingPageScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"ProductLandingPage"> | string
   productId?: Prisma.StringWithAggregatesFilter<"ProductLandingPage"> | string
-  slug?: Prisma.StringWithAggregatesFilter<"ProductLandingPage"> | string
+  number?: Prisma.IntWithAggregatesFilter<"ProductLandingPage"> | number
   name?: Prisma.StringWithAggregatesFilter<"ProductLandingPage"> | string
   enabled?: Prisma.BoolWithAggregatesFilter<"ProductLandingPage"> | boolean
   status?: Prisma.EnumLandingPageStatusWithAggregatesFilter<"ProductLandingPage"> | $Enums.LandingPageStatus
@@ -310,7 +347,7 @@ export type ProductLandingPageScalarWhereWithAggregatesInput = {
 
 export type ProductLandingPageCreateInput = {
   id?: string
-  slug: string
+  number: number
   name?: string
   enabled?: boolean
   status?: $Enums.LandingPageStatus
@@ -326,7 +363,7 @@ export type ProductLandingPageCreateInput = {
 export type ProductLandingPageUncheckedCreateInput = {
   id?: string
   productId: string
-  slug: string
+  number: number
   name?: string
   enabled?: boolean
   status?: $Enums.LandingPageStatus
@@ -340,7 +377,7 @@ export type ProductLandingPageUncheckedCreateInput = {
 
 export type ProductLandingPageUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  number?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumLandingPageStatusFieldUpdateOperationsInput | $Enums.LandingPageStatus
@@ -356,7 +393,7 @@ export type ProductLandingPageUpdateInput = {
 export type ProductLandingPageUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  number?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumLandingPageStatusFieldUpdateOperationsInput | $Enums.LandingPageStatus
@@ -371,7 +408,7 @@ export type ProductLandingPageUncheckedUpdateInput = {
 export type ProductLandingPageCreateManyInput = {
   id?: string
   productId: string
-  slug: string
+  number: number
   name?: string
   enabled?: boolean
   status?: $Enums.LandingPageStatus
@@ -385,7 +422,7 @@ export type ProductLandingPageCreateManyInput = {
 
 export type ProductLandingPageUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  number?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumLandingPageStatusFieldUpdateOperationsInput | $Enums.LandingPageStatus
@@ -400,7 +437,7 @@ export type ProductLandingPageUpdateManyMutationInput = {
 export type ProductLandingPageUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  number?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumLandingPageStatusFieldUpdateOperationsInput | $Enums.LandingPageStatus
@@ -422,10 +459,15 @@ export type ProductLandingPageOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type ProductLandingPageProductIdNumberCompoundUniqueInput = {
+  productId: string
+  number: number
+}
+
 export type ProductLandingPageCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   productId?: Prisma.SortOrder
-  slug?: Prisma.SortOrder
+  number?: Prisma.SortOrder
   name?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -437,10 +479,14 @@ export type ProductLandingPageCountOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type ProductLandingPageAvgOrderByAggregateInput = {
+  number?: Prisma.SortOrder
+}
+
 export type ProductLandingPageMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   productId?: Prisma.SortOrder
-  slug?: Prisma.SortOrder
+  number?: Prisma.SortOrder
   name?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -454,7 +500,7 @@ export type ProductLandingPageMaxOrderByAggregateInput = {
 export type ProductLandingPageMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   productId?: Prisma.SortOrder
-  slug?: Prisma.SortOrder
+  number?: Prisma.SortOrder
   name?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -463,6 +509,10 @@ export type ProductLandingPageMinOrderByAggregateInput = {
   errorMessage?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type ProductLandingPageSumOrderByAggregateInput = {
+  number?: Prisma.SortOrder
 }
 
 export type ProductLandingPageCreateNestedManyWithoutProductInput = {
@@ -517,7 +567,7 @@ export type EnumLandingPageImageProviderFieldUpdateOperationsInput = {
 
 export type ProductLandingPageCreateWithoutProductInput = {
   id?: string
-  slug: string
+  number: number
   name?: string
   enabled?: boolean
   status?: $Enums.LandingPageStatus
@@ -531,7 +581,7 @@ export type ProductLandingPageCreateWithoutProductInput = {
 
 export type ProductLandingPageUncheckedCreateWithoutProductInput = {
   id?: string
-  slug: string
+  number: number
   name?: string
   enabled?: boolean
   status?: $Enums.LandingPageStatus
@@ -575,7 +625,7 @@ export type ProductLandingPageScalarWhereInput = {
   NOT?: Prisma.ProductLandingPageScalarWhereInput | Prisma.ProductLandingPageScalarWhereInput[]
   id?: Prisma.StringFilter<"ProductLandingPage"> | string
   productId?: Prisma.StringFilter<"ProductLandingPage"> | string
-  slug?: Prisma.StringFilter<"ProductLandingPage"> | string
+  number?: Prisma.IntFilter<"ProductLandingPage"> | number
   name?: Prisma.StringFilter<"ProductLandingPage"> | string
   enabled?: Prisma.BoolFilter<"ProductLandingPage"> | boolean
   status?: Prisma.EnumLandingPageStatusFilter<"ProductLandingPage"> | $Enums.LandingPageStatus
@@ -589,7 +639,7 @@ export type ProductLandingPageScalarWhereInput = {
 
 export type ProductLandingPageCreateManyProductInput = {
   id?: string
-  slug: string
+  number: number
   name?: string
   enabled?: boolean
   status?: $Enums.LandingPageStatus
@@ -603,7 +653,7 @@ export type ProductLandingPageCreateManyProductInput = {
 
 export type ProductLandingPageUpdateWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  number?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumLandingPageStatusFieldUpdateOperationsInput | $Enums.LandingPageStatus
@@ -617,7 +667,7 @@ export type ProductLandingPageUpdateWithoutProductInput = {
 
 export type ProductLandingPageUncheckedUpdateWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  number?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumLandingPageStatusFieldUpdateOperationsInput | $Enums.LandingPageStatus
@@ -631,7 +681,7 @@ export type ProductLandingPageUncheckedUpdateWithoutProductInput = {
 
 export type ProductLandingPageUncheckedUpdateManyWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  number?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumLandingPageStatusFieldUpdateOperationsInput | $Enums.LandingPageStatus
@@ -648,7 +698,7 @@ export type ProductLandingPageUncheckedUpdateManyWithoutProductInput = {
 export type ProductLandingPageSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   productId?: boolean
-  slug?: boolean
+  number?: boolean
   name?: boolean
   enabled?: boolean
   status?: boolean
@@ -664,7 +714,7 @@ export type ProductLandingPageSelect<ExtArgs extends runtime.Types.Extensions.In
 export type ProductLandingPageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   productId?: boolean
-  slug?: boolean
+  number?: boolean
   name?: boolean
   enabled?: boolean
   status?: boolean
@@ -680,7 +730,7 @@ export type ProductLandingPageSelectCreateManyAndReturn<ExtArgs extends runtime.
 export type ProductLandingPageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   productId?: boolean
-  slug?: boolean
+  number?: boolean
   name?: boolean
   enabled?: boolean
   status?: boolean
@@ -696,7 +746,7 @@ export type ProductLandingPageSelectUpdateManyAndReturn<ExtArgs extends runtime.
 export type ProductLandingPageSelectScalar = {
   id?: boolean
   productId?: boolean
-  slug?: boolean
+  number?: boolean
   name?: boolean
   enabled?: boolean
   status?: boolean
@@ -708,7 +758,7 @@ export type ProductLandingPageSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProductLandingPageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "slug" | "name" | "enabled" | "status" | "imageProvider" | "finalImageUrl" | "sections" | "errorMessage" | "createdAt" | "updatedAt", ExtArgs["result"]["productLandingPage"]>
+export type ProductLandingPageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "number" | "name" | "enabled" | "status" | "imageProvider" | "finalImageUrl" | "sections" | "errorMessage" | "createdAt" | "updatedAt", ExtArgs["result"]["productLandingPage"]>
 export type ProductLandingPageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
 }
@@ -727,7 +777,7 @@ export type $ProductLandingPagePayload<ExtArgs extends runtime.Types.Extensions.
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     productId: string
-    slug: string
+    number: number
     name: string
     enabled: boolean
     status: $Enums.LandingPageStatus
@@ -1163,7 +1213,7 @@ export interface Prisma__ProductLandingPageClient<T, Null = never, ExtArgs exten
 export interface ProductLandingPageFieldRefs {
   readonly id: Prisma.FieldRef<"ProductLandingPage", 'String'>
   readonly productId: Prisma.FieldRef<"ProductLandingPage", 'String'>
-  readonly slug: Prisma.FieldRef<"ProductLandingPage", 'String'>
+  readonly number: Prisma.FieldRef<"ProductLandingPage", 'Int'>
   readonly name: Prisma.FieldRef<"ProductLandingPage", 'String'>
   readonly enabled: Prisma.FieldRef<"ProductLandingPage", 'Boolean'>
   readonly status: Prisma.FieldRef<"ProductLandingPage", 'LandingPageStatus'>

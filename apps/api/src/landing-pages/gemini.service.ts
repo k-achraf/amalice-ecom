@@ -95,9 +95,9 @@ ${input.instructions ? `\nAdditional instructions from the store owner (follow t
 Write exactly ${input.sectionCount} sections in this order:
 1. One "hero" section — a bold, attention-grabbing headline (max 6 words) and one short supporting line (max 12 words).
 2. ${featureCount} "feature" section(s) — each highlights one distinct benefit or feature from the description, with a punchy headline (max 5 words) and a short supporting line (max 14 words).
-3. One "cta" section — a call-to-action headline creating urgency (max 6 words) and a short line reinforcing cash-on-delivery / easy ordering (max 14 words).
+3. One "cta" section — a confident call-to-action headline (max 6 words) and a short line reinforcing cash-on-delivery / easy ordering (max 14 words).
 
-Keep every line short — this is text overlaid on an image, not a paragraph. Do not invent product claims not supported by the description.`
+Keep every line short — this is text overlaid on an image, not a paragraph. Do not invent product claims not supported by the description, and do NOT invent promotions, discounts, "free delivery", or time-limited/urgency claims ("offer ends soon", "limited stock", countdowns, etc.) unless they are explicitly stated in the description above — cash-on-delivery and easy ordering are the only claims safe to make without support from the description.`
 
     const schema = {
       type: 'ARRAY',
@@ -158,7 +158,7 @@ Keep every line short — this is text overlaid on an image, not a paragraph. Do
     const styleByRole: Record<typeof input.role, string> = {
       hero: 'Bold, attention-grabbing hero banner. Dramatic lighting or a vivid gradient background behind the product. The headline should be large and dominant.',
       feature: 'Clean, product-focused layout with generous white space. Add a small icon or badge visually representing the benefit next to the headline.',
-      cta: 'Urgency-driven call-to-action banner. Use a strong accent color block or button-style graphic. Include a "cash on delivery" / easy-ordering visual cue.'
+      cta: 'Confident call-to-action banner. Use a strong accent color block or button-style graphic. Include a "cash on delivery" / easy-ordering visual cue. Do not add countdown timers, "limited stock", "offer expires", or other fabricated urgency graphics.'
     }
 
     const prompt = input.editImage

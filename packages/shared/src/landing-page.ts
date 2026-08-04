@@ -4,9 +4,9 @@ import { z } from 'zod'
 // for the full picture. This file is the single source of truth for the
 // section JSON shape stored in that model's `sections` column, plus the
 // request/response schemas the admin UI and API share. A product can have
-// MULTIPLE landing pages, each with its own slug/URL (/lp/:slug on the
-// storefront) — separate from and in addition to the normal /products/:slug
-// page, never replacing it.
+// MULTIPLE landing pages, each reachable at /lp/:productSlug/:number on the
+// storefront (never a raw id/slug/uuid) — separate from and in addition to
+// the normal /products/:slug page, never replacing it.
 
 export const LandingPageStatusSchema = z.enum(['Pending', 'Generating', 'Completed', 'Failed'])
 export type LandingPageStatus = z.infer<typeof LandingPageStatusSchema>
@@ -37,20 +37,12 @@ export const LandingPageSectionSchema = z.object({
 })
 export type LandingPageSection = z.infer<typeof LandingPageSectionSchema>
 
-// Slug format shared by both the auto-generated default and an admin-chosen
-// custom one — lowercase, alphanumeric + hyphens, matches how every other
-// slug in this codebase (Product.slug, Category.slug) is shaped.
-export const LandingPageSlugSchema = z
-  .string()
-  .trim()
-  .min(1)
-  .max(100)
-  .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'Use lowercase letters, numbers, and hyphens only')
-
 export const ProductLandingPageSchema = z.object({
   id: z.uuid(),
   productId: z.uuid(),
-  slug: z.string(),
+  // The second segment of /lp/:productSlug/:number — sequential per product
+  // (1, 2, 3, ...), assigned automatically at generation time.
+  number: z.number().int().positive(),
   name: z.string(),
   enabled: z.boolean(),
   status: LandingPageStatusSchema,
@@ -68,16 +60,15 @@ export type ProductLandingPage = z.infer<typeof ProductLandingPageSchema>
 // the product's own ProductImage.url values (validated server-side against
 // the product's actual gallery, not arbitrary URLs) — description is
 // prefilled from Product.description in the admin UI but editable before
-// generating. name/slug are both optional: name defaults to "Landing Page",
-// slug auto-generates from the product's own slug (with a numeric suffix on
-// collision) when omitted.
+// generating. name defaults to "Landing Page"; the URL number is always
+// auto-assigned by the server (see landing-pages.service.ts's `nextNumber`),
+// never admin-supplied.
 export const GenerateLandingPageSchema = z.object({
   sourceImageUrls: z.array(z.string()).min(1).max(10),
   description: z.string().trim().min(1).max(5000),
   sectionCount: z.number().int().min(3).max(7).default(5),
   imageProvider: LandingPageImageProviderSchema.default('Gemini'),
   name: z.string().trim().min(1).max(100).optional(),
-  slug: LandingPageSlugSchema.optional(),
   // Freeform art-direction/copy steer on top of the plain product
   // description — e.g. "target a younger audience", "emphasize the 2-year
   // warranty", "use a beach background". Threaded into both copy drafting
@@ -104,12 +95,13 @@ export const UpdateLandingPageSchema = z.object({
 })
 export type UpdateLandingPage = z.infer<typeof UpdateLandingPageSchema>
 
-// The public, storefront-facing projection for /lp/:slug — the stitched
-// image plus just enough product info to render + submit the lead form
-// beneath it (see apps/storefront/app/pages/lp/[slug].vue). Never exposes
-// admin/generation internals (sections, provider, errors).
+// The public, storefront-facing projection for /lp/:productSlug/:number —
+// the stitched image plus just enough product info to render + submit the
+// lead form beneath it (see apps/storefront/app/pages/lp/[productSlug]/
+// [number].vue). Never exposes admin/generation internals (sections,
+// provider, errors).
 export const PublicLandingPageSchema = z.object({
-  slug: z.string(),
+  number: z.number().int().positive(),
   finalImageUrl: z.string(),
   product: z.object({
     id: z.uuid(),

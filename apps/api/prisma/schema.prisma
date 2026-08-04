@@ -154,10 +154,11 @@ model Product {
 // (the classic AliExpress/TikTok-ad style product funnel image). A product
 // can have MULTIPLE landing pages (different angles/creative for different
 // ad campaigns), each independently generated, named, enabled, and reachable
-// at its own storefront URL (/lp/:slug — a standalone chromeless page: no
-// header/nav, just the stitched image + a lead form at the bottom; separate
-// from and in addition to the normal /products/:slug page, never replacing
-// it). Regenerating a specific landing page still replaces its own content
+// at its own storefront URL (/lp/:productSlug/:number — never a raw id/uuid
+// — a standalone chromeless page: no header/nav, just the stitched image +
+// a lead form at the bottom; separate from and in addition to the normal
+// /products/:slug page, never replacing it). Regenerating a specific landing
+// page still replaces its own content
 // in place — this is a working draft the merchant iterates on, not an audit
 // trail — but generating a NEW one is a new row, not an upsert.
 enum LandingPageStatus {
@@ -184,10 +185,11 @@ model ProductLandingPage {
   id            String                   @id @default(uuid())
   productId     String                   @map("product_id")
   product       Product                  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  // The /lp/:slug path segment — globally unique (not just per-product),
-  // auto-generated from the product's own slug (with a numeric suffix on
-  // collision) unless the admin supplies a custom one at generation time.
-  slug          String                   @unique
+  // The second segment of /lp/:productSlug/:number — sequential per product
+  // (1, 2, 3, ...), assigned automatically at generation time. Deliberately
+  // not a slug/uuid: the product's own slug already carries the SEO/sharing
+  // identity, this just distinguishes multiple landing pages for it.
+  number        Int
   // Admin-facing label to tell multiple landing pages for the same product
   // apart in the list UI (e.g. "TikTok angle", "Black Friday") — purely
   // cosmetic, never shown to a storefront visitor.
@@ -209,6 +211,7 @@ model ProductLandingPage {
   createdAt     DateTime                 @default(now()) @map("created_at")
   updatedAt     DateTime                 @updatedAt @map("updated_at")
 
+  @@unique([productId, number])
   @@map("product_landing_pages")
 }
 

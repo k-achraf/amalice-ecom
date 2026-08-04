@@ -25,7 +25,7 @@ export class LandingPagesService {
   private toView(row: {
     id: string
     productId: string
-    slug: string
+    number: number
     name: string
     enabled: boolean
     status: string
@@ -40,7 +40,7 @@ export class LandingPagesService {
     return {
       id: row.id,
       productId: row.productId,
-      slug: row.slug,
+      number: row.number,
       name: row.name,
       enabled: row.enabled,
       status: row.status as ProductLandingPage['status'],
@@ -65,25 +65,21 @@ export class LandingPagesService {
     return row ? this.toView(row) : null
   }
 
-  // Turns "Cotton T-Shirt" / a desired custom slug into a unique, URL-safe
-  // slug — appends -2, -3, ... on collision. Global uniqueness (not just
-  // per-product), since /lp/:slug is one flat namespace.
-  private async uniqueSlug(desired: string): Promise<string> {
-    const base = desired.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-+|-+$)/g, '') || 'landing-page'
-    let candidate = base
-    let n = 2
-    while (await this.prisma.productLandingPage.findUnique({ where: { slug: candidate }, select: { id: true } })) {
-      candidate = `${base}-${n++}`
-    }
-    return candidate
+  // Next sequential number for this product's landing pages (1, 2, 3, ...) —
+  // the second segment of /lp/:productSlug/:number. Never a slug/uuid: the
+  // product's own slug already carries identity, this just distinguishes
+  // multiple landing pages for the same product.
+  private async nextNumber(productId: string): Promise<number> {
+    const agg = await this.prisma.productLandingPage.aggregate({ where: { productId }, _max: { number: true } })
+    return (agg._max.number ?? 0) + 1
   }
 
   // Kicks off generation of a NEW landing page (a create, not an upsert — a
   // product can have several): validates the chosen source images actually
-  // belong to this product, resolves a unique slug, seeds a "Generating"
-  // row with one placeholder section per requested slot, enqueues the job,
-  // and returns immediately — LandingPagesProcessor does the actual AI work
-  // and the admin UI polls getById() for progress.
+  // belong to this product, assigns the next sequential number, seeds a
+  // "Generating" row with one placeholder section per requested slot,
+  // enqueues the job, and returns immediately — LandingPagesProcessor does
+  // the actual AI work and the admin UI polls getById() for progress.
   async generate(productId: string, input: GenerateLandingPage, actor: AuditActor): Promise<ProductLandingPage> {
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
@@ -97,11 +93,7 @@ export class LandingPagesService {
       throw new BadRequestException(`These images don't belong to this product: ${invalid.join(', ')}`)
     }
 
-    if (input.slug) {
-      const taken = await this.prisma.productLandingPage.findUnique({ where: { slug: input.slug }, select: { id: true } })
-      if (taken) throw new BadRequestException(`The URL "/lp/${input.slug}" is already taken — choose another.`)
-    }
-    const slug = input.slug ?? (await this.uniqueSlug(product.slug))
+    const number = await this.nextNumber(productId)
 
     const placeholderSections: LandingPageSection[] = Array.from({ length: input.sectionCount }, (_, i) => ({
       id: randomUUID(),
@@ -117,7 +109,7 @@ export class LandingPagesService {
     const row = await this.prisma.productLandingPage.create({
       data: {
         productId,
-        slug,
+        number,
         name: input.name ?? 'Landing Page',
         status: 'Generating',
         imageProvider: input.imageProvider,
@@ -134,7 +126,7 @@ export class LandingPagesService {
       entityId: row.id,
       metadata: {
         productId,
-        slug,
+        number,
         sectionCount: input.sectionCount,
         sourceImageCount: input.sourceImageUrls.length,
         imageProvider: input.imageProvider
@@ -211,22 +203,27 @@ export class LandingPagesService {
 
     await this.prisma.productLandingPage.delete({ where: { id } })
 
-    await this.audit.log({ actor, action: 'Delete', entity: 'ProductLandingPage', entityId: id, metadata: { slug: row.slug, productId: row.productId } })
+    await this.audit.log({ actor, action: 'Delete', entity: 'ProductLandingPage', entityId: id, metadata: { number: row.number, productId: row.productId } })
   }
 
-  // Public — the storefront's /lp/:slug page fetches this. Only ever
-  // returns something for a completed, enabled landing page; no admin/
-  // generation internals leak through.
-  async getPublicBySlug(slug: string): Promise<PublicLandingPage | null> {
+  // Public — the storefront's /lp/:productSlug/:number page fetches this.
+  // Only ever returns something for a completed, enabled landing page; no
+  // admin/generation internals leak through.
+  async getPublicByProductSlugAndNumber(productSlug: string, number: number): Promise<PublicLandingPage | null> {
+    const product = await this.prisma.product.findUnique({
+      where: { slug: productSlug },
+      select: { id: true, name: true, slug: true, priceCents: true, imageUrl: true }
+    })
+    if (!product) return null
+
     const row = await this.prisma.productLandingPage.findUnique({
-      where: { slug },
-      include: { product: { select: { id: true, name: true, slug: true, priceCents: true, imageUrl: true } } }
+      where: { productId_number: { productId: product.id, number } }
     })
     if (!row || !row.enabled || row.status !== 'Completed' || !row.finalImageUrl) return null
     return {
-      slug: row.slug,
+      number: row.number,
       finalImageUrl: row.finalImageUrl,
-      product: row.product
+      product
     }
   }
 }

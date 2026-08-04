@@ -21,12 +21,13 @@ interface AuthedRequest extends Request {
 
 // Admin surface (SuperAdmin/OpsManager, same roles as product image
 // management in upload.controller.ts) plus one public read for the
-// storefront's /lp/:slug page. AI generation calls are throttled tighter
-// than default — each one costs real (if free-tier) API quota and takes
-// real wall-clock time, unlike a cheap local read. A product can have
-// multiple landing pages — routes are id-addressable (.../landing-pages/:id)
-// once a page exists, product-scoped (.../products/:productId/landing-pages)
-// only for listing and creating a new one.
+// storefront's /lp/:productSlug/:number page. AI generation calls are
+// throttled tighter than default — each one costs real (if free-tier) API
+// quota and takes real wall-clock time, unlike a cheap local read. A product
+// can have multiple landing pages — routes are id-addressable
+// (.../landing-pages/:id) once a page exists, product-scoped
+// (.../products/:productId/landing-pages) only for listing and creating a
+// new one.
 @ApiTags('landing-pages')
 @Controller()
 export class LandingPagesController {
@@ -94,13 +95,15 @@ export class LandingPagesController {
     return { ok: true }
   }
 
-  // Public — the storefront's standalone /lp/:slug page (no header/nav,
-  // just the stitched image + a lead form). Only ever returns something for
-  // a completed, enabled landing page; no admin/generation internals leak
-  // through.
-  @Get('landing-pages/:slug')
-  async getPublic(@Param('slug') slug: string): Promise<PublicLandingPage> {
-    const landingPage = await this.landingPages.getPublicBySlug(slug)
+  // Public — the storefront's standalone /lp/:productSlug/:number page (no
+  // header/nav, just the stitched image + a lead form). Only ever returns
+  // something for a completed, enabled landing page; no admin/generation
+  // internals leak through.
+  @Get('landing-pages/:productSlug/:number')
+  async getPublic(@Param('productSlug') productSlug: string, @Param('number') numberParam: string): Promise<PublicLandingPage> {
+    const number = Number(numberParam)
+    if (!Number.isInteger(number) || number < 1) throw new NotFoundException('Landing page not found')
+    const landingPage = await this.landingPages.getPublicByProductSlugAndNumber(productSlug, number)
     if (!landingPage) throw new NotFoundException('Landing page not found')
     return landingPage
   }

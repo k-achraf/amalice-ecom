@@ -28,6 +28,7 @@ import HomeFeaturedCategories from './home/HomeFeaturedCategories.vue'
 import HomeProductGrid from './home/HomeProductGrid.vue'
 import HomeUsps from './home/HomeUsps.vue'
 import ProductCard from './ProductCard.vue'
+import LeadFormFields from './LeadFormFields.vue'
 
 // (section, template) → component. Missing entry = fallback to the minimal
 // (bare) component in the FALLBACK map. This is the one place the template-
@@ -80,6 +81,29 @@ const OVERRIDES: Record<string, Record<string, Component>> = {
     trove: lazy(() => import('./trove/TroveProductCard.vue')),
     forge: lazy(() => import('./forge/ForgeProductCard.vue')),
     impulse: lazy(() => import('./impulse/ImpulseProductCard.vue'))
+  },
+  // Used by the PDP lead form of every template AND the standalone AI
+  // landing-page funnel (app/pages/lp/[productSlug]/[number].vue) — the
+  // latter deliberately reuses this instead of the plain base
+  // LeadFormFields.vue so a visitor sees the exact same form UI as the
+  // active template's normal product page, not a generic one. `impulse` has
+  // no entry: it has no per-template lead-form component of its own (see
+  // FALLBACK below).
+  LeadFormFields: {
+    editorial: lazy(() => import('./editorial/EditorialLeadFormFields.vue')),
+    boutique: lazy(() => import('./boutique/BoutiqueLeadFormFields.vue')),
+    promify: lazy(() => import('./promify/PromifyLeadFormFields.vue')),
+    nova: lazy(() => import('./nova/NovaLeadFormFields.vue')),
+    atelier: lazy(() => import('./atelier/AtelierLeadFormFields.vue')),
+    drop: lazy(() => import('./drop/DropLeadFormFields.vue')),
+    bloom: lazy(() => import('./bloom/BloomLeadFormFields.vue')),
+    hearth: lazy(() => import('./hearth/HearthLeadFormFields.vue')),
+    volt: lazy(() => import('./volt/VoltLeadFormFields.vue')),
+    pulse: lazy(() => import('./pulse/PulseLeadFormFields.vue')),
+    lumiere: lazy(() => import('./lumiere/LumiereLeadFormFields.vue')),
+    trove: lazy(() => import('./trove/TroveLeadFormFields.vue')),
+    forge: lazy(() => import('./forge/ForgeLeadFormFields.vue')),
+    impulse: lazy(() => import('./impulse/ImpulseLeadFormFields.vue'))
   }
 }
 
@@ -89,7 +113,8 @@ const FALLBACK: Record<string, Component> = {
   HomeFeaturedCategories,
   HomeProductGrid,
   HomeUsps,
-  ProductCard
+  ProductCard,
+  LeadFormFields
 }
 
 const props = defineProps<{
