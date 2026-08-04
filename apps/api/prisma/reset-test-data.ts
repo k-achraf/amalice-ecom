@@ -48,6 +48,9 @@ async function main() {
       await tx.order.deleteMany({})
       await tx.address.deleteMany({})
       await tx.customer.deleteMany({})
+      // Stock-change audit log — references Product with no cascade, blocks
+      // deleting a product until its history is cleared too.
+      await tx.stockAdjustment.deleteMany({})
       await tx.product.deleteMany({})
     })
 
