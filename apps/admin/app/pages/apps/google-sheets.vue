@@ -13,7 +13,11 @@ const app = computed(() => apps.value?.find((a) => a.appId === 'google-sheets'))
 const { data: sheets, pending: sheetsPending, refresh: refreshSheets } = await useAdminFetch<GoogleSheetView[]>('/admin/google-sheets', { key: 'admin-google-sheets' })
 
 interface ProductOption { id: string; name: string }
-const { data: productsRes } = await useAdminFetch<{ items: ProductOption[] }>('/products?pageSize=200', { key: 'admin-products-for-sheets' })
+// pageSize capped at 100 by ProductListQuerySchema (packages/shared) — a
+// larger value 400s the request, and useAdminFetch swallows that silently
+// (data stays null, no toast), which is exactly what made this select look
+// like it always had "No data" instead of surfacing an error.
+const { data: productsRes } = await useAdminFetch<{ items: ProductOption[] }>('/products?pageSize=100', { key: 'admin-products-for-sheets' })
 const productOptions = computed(() => productsRes.value?.items ?? [])
 
 // ---- Master on/off toggle — same generic AppInstallation switch every
@@ -131,6 +135,24 @@ async function testConnection(sheet: GoogleSheetView) {
   }
 }
 
+// ---- Manual pull sync — pulls back any manual edits made directly in a
+// connected sheet's editable columns (shipping company, the 3 status
+// columns, notes) right now, instead of waiting for the repeatable poll job
+// (every 2 minutes — see GoogleSheetsService.onModuleInit) to pick them up.
+const syncing = ref(false)
+async function syncNow() {
+  syncing.value = true
+  try {
+    await api('/admin/google-sheets/sync-now', { method: 'POST' })
+    toast.add({ title: 'Synced from Google Sheets', color: 'success' })
+  } catch (err) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: 'Sync failed', description: data?.message, color: 'error' })
+  } finally {
+    syncing.value = false
+  }
+}
+
 const pending = computed(() => appsPending.value || sheetsPending.value)
 </script>
 
@@ -140,6 +162,7 @@ const pending = computed(() => appsPending.value || sheetsPending.value)
       <UDashboardNavbar title="Google Sheets">
         <template #leading><UDashboardSidebarCollapse /></template>
         <template #trailing>
+          <UButton icon="i-lucide-refresh-cw" variant="ghost" color="neutral" size="sm" :loading="syncing" @click="syncNow">Sync now</UButton>
           <UButton to="/apps" variant="ghost" color="neutral" icon="i-lucide-arrow-left" size="sm">Apps</UButton>
         </template>
       </UDashboardNavbar>
@@ -155,9 +178,16 @@ const pending = computed(() => appsPending.value || sheetsPending.value)
           <div>
             <h2 class="text-lg font-semibold text-highlighted">Google Sheets</h2>
             <p class="text-sm text-muted">
-              Push every order to a connected Google Sheet as it comes in, and keep its status column in sync as you
+              Push every order to a connected Google Sheet as it comes in, and keep its status columns in sync as you
               work the order. Connect as many sheets as you like — route all products to one sheet, or spread
               different products across different sheets.
+            </p>
+            <p class="mt-2 text-sm text-muted">
+              The Shipping Company, Call Center Status, Fulfillment Status, Delivery Status, and Notes columns are
+              editable directly in the sheet — pick from the dropdown or type a note, and it's pulled back in
+              automatically within a couple of minutes, or immediately with "Sync now" above. "Sent to Shipping
+              Company" is display-only (it only turns Yes once a real dispatch happens) — editing it in the sheet
+              won't do anything.
             </p>
           </div>
         </div>

@@ -163,4 +163,28 @@ export class AdminOrdersService {
 
     return this.findOne(id)
   }
+
+  // Call-center notes — free text, not part of the state machine (no
+  // transition, no isValidTransition check). Mirrored into the Google
+  // Sheets Notes column the same way a state change mirrors into the status
+  // columns.
+  async updateNotes(id: string, notes: string | null, actor: AuditActor) {
+    const order = await this.prisma.order.findUnique({ where: { id } })
+    if (!order) throw new NotFoundException('Order not found')
+
+    await this.prisma.order.update({ where: { id }, data: { notes } })
+    await this.audit.log({
+      actor,
+      action: 'Update',
+      entity: 'Order',
+      entityId: id,
+      metadata: { field: 'notes', from: order.notes, to: notes }
+    })
+
+    this.googleSheets.updateNotes(id, notes).catch((error: Error) => {
+      this.logger.warn(`Google Sheets notes update failed for order ${id}: ${error.message}`)
+    })
+
+    return this.findOne(id)
+  }
 }

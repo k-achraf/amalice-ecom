@@ -411,6 +411,9 @@ model Order {
   fulfillmentMethod  FulfillmentMethod     @default(Unassigned) @map("fulfillment_method")
   shippingCompanyId  String?               @map("shipping_company_id")
   shippingCompany    ShippingCompany?      @relation(fields: [shippingCompanyId], references: [id], onDelete: SetNull)
+  // Free-text call-center notes — see UpdateOrderNotesSchema. Also mirrored
+  // into the Google Sheets integration's Notes column (GoogleSheetsService).
+  notes              String?
   items              OrderItem[]
   shipment           Shipment?
   cashReconciliation CashReconciliation?

@@ -22,6 +22,7 @@ import {
   AddOrderItemSchema,
   CreateProductUpsellSchema,
   UpdateProductUpsellSchema,
+  UpdateOrderNotesSchema,
   OrderState,
   type AdjustStock,
   type CreateProduct
@@ -54,6 +55,7 @@ class UpdateWilayaShippingRatesDto extends createZodDto(UpdateWilayaShippingRate
 class AddOrderItemDto extends createZodDto(AddOrderItemSchema) {}
 class CreateProductUpsellDto extends createZodDto(CreateProductUpsellSchema) {}
 class UpdateProductUpsellDto extends createZodDto(UpdateProductUpsellSchema) {}
+class UpdateOrderNotesDto extends createZodDto(UpdateOrderNotesSchema) {}
 
 interface AuthedRequest extends Request {
   user: AdminJwtPayload
@@ -131,6 +133,14 @@ export class AdminController {
   @Roles('SuperAdmin', 'OpsManager', 'Support')
   transition(@Param('id') id: string, @Body() body: { to: OrderState }, @Req() req: AuthedRequest) {
     return this.orders.transition(id, body.to, actorFrom(req))
+  }
+
+  // Call-center notes — free text, same role set as transition() since it's
+  // the same call-center queue action.
+  @Patch('orders/:id/notes')
+  @Roles('SuperAdmin', 'OpsManager', 'Support')
+  updateNotes(@Param('id') id: string, @Body() body: UpdateOrderNotesDto, @Req() req: AuthedRequest) {
+    return this.orders.updateNotes(id, body.notes, actorFrom(req))
   }
 
   // Upsells system — call-center/admin manual add. Support included: a

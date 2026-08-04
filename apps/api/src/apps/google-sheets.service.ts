@@ -1,8 +1,12 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { Injectable, Logger, NotFoundException, BadRequestException, OnModuleInit } from '@nestjs/common'
+import { InjectQueue } from '@nestjs/bullmq'
+import type { Queue } from 'bullmq'
 import {
   extractSpreadsheetId,
+  isValidTransition,
   ORDER_STAGE_BY_STATE,
   ORDER_STATE_LABELS,
+  ORDER_STATE_SHEET_COLORS,
   type CreateGoogleSheet,
   type GoogleSheetView,
   type OrderState,
@@ -12,7 +16,18 @@ import {
 import { PrismaService } from '../prisma/prisma.service'
 import type { Prisma } from '../generated/prisma/client'
 import { AuditService, type AuditActor } from '../common/audit.service'
-import { GoogleSheetsClientService, GOOGLE_SHEET_COLUMNS, GOOGLE_SHEET_HEADER_ROW, type GoogleSheetStatusColumn } from './google-sheets-client.service'
+import { GoogleSheetsClientService, GOOGLE_SHEET_COLUMNS, GOOGLE_SHEET_HEADER_ROW, COLUMN_INDEX, type GoogleSheetStatusColumn } from './google-sheets-client.service'
+
+// Reverse of ORDER_STATE_LABELS — resolves a sheet cell's label text back to
+// the OrderState it represents, for the poll job (a human typed/picked a
+// label, we need the enum key to validate+apply the transition).
+const LABEL_TO_STATE: Record<string, OrderState> = Object.fromEntries(
+  Object.entries(ORDER_STATE_LABELS).map(([state, label]) => [label, state as OrderState])
+)
+
+// Attributed to sheet-triggered changes in the audit log, so "who changed
+// this" is honest — not a real admin, but not silently blank either.
+const SHEETS_SYNC_ACTOR: AuditActor = { id: 'system:google-sheets', email: 'google-sheets-sync' }
 
 // Same shape of item include AdminOrdersService uses to build a display-
 // ready order (product name, normalized variant label, offer) — duplicated
@@ -87,15 +102,33 @@ function resolveStatusColumn(from: OrderState, to: OrderState): GoogleSheetStatu
   return 'deliveryStatus'
 }
 
+// How often the poll job checks connected sheets for manual edits (item 2 of
+// the "select in the sheet, sync back" request). There's no Apps Script
+// bound to the spreadsheet and no OAuth user session to receive a Google
+// push notification from — a service account has neither — so polling is
+// the only way to notice an edit made directly in the sheet. 2 minutes
+// balances "reasonably prompt" against Sheets API quota for a small number
+// of connected sheets; not configurable since this is the first scheduled
+// job in the codebase and there's no existing convention to extend yet.
+const POLL_INTERVAL_MS = 2 * 60 * 1000
+
 @Injectable()
-export class GoogleSheetsService {
+export class GoogleSheetsService implements OnModuleInit {
   private readonly logger = new Logger(GoogleSheetsService.name)
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
-    private readonly client: GoogleSheetsClientService
+    private readonly client: GoogleSheetsClientService,
+    @InjectQueue('google-sheets-sync') private readonly syncQueue: Queue
   ) {}
+
+  // Registers the repeatable poll job on boot. BullMQ dedupes repeatable
+  // jobs by their name+repeat-options key, so calling this on every app
+  // start is idempotent — it does not create a duplicate schedule.
+  async onModuleInit(): Promise<void> {
+    await this.syncQueue.add('poll', {}, { repeat: { every: POLL_INTERVAL_MS }, jobId: 'poll' })
+  }
 
   private async isEnabled(): Promise<boolean> {
     const row = await this.prisma.appInstallation.findUnique({ where: { appId: 'google-sheets' } })
@@ -259,7 +292,8 @@ export class GoogleSheetsService {
       shippingCompanyLabel(order),
       statusColumn === 'callCenterStatus' ? ORDER_STATE_LABELS[order.state] : '',
       statusColumn === 'fulfillmentStatus' ? ORDER_STATE_LABELS[order.state] : '',
-      statusColumn === 'deliveryStatus' ? ORDER_STATE_LABELS[order.state] : ''
+      statusColumn === 'deliveryStatus' ? ORDER_STATE_LABELS[order.state] : '',
+      ''
     ]
 
     const shippingCompanyNames = await this.linkedShippingCompanyNames()
@@ -272,6 +306,10 @@ export class GoogleSheetsService {
           create: { orderId: order.id, googleSheetId: sheet.id, rowNumber },
           update: { rowNumber }
         })
+        // appendRow's plain values.append can't set cell formatting — apply
+        // the state's color to the one status column that was just written.
+        const columnIndex = COLUMN_INDEX[statusColumn]
+        await this.client.updateStatusCell(sheet.spreadsheetId, sheet.sheetName, columnIndex, rowNumber, ORDER_STATE_LABELS[order.state], ORDER_STATE_SHEET_COLORS[order.state])
       } catch (error) {
         // One sheet failing (bad id, not shared with the service account,
         // Google having a bad day) must not block the others or the order.
@@ -290,14 +328,36 @@ export class GoogleSheetsService {
     if (!rows.length) return
 
     const label = ORDER_STATE_LABELS[to]
-    const column = GOOGLE_SHEET_COLUMNS[resolveStatusColumn(from, to)]
+    const columnIndex = COLUMN_INDEX[resolveStatusColumn(from, to)]
+    const color = ORDER_STATE_SHEET_COLORS[to]
 
     for (const row of rows) {
       if (!row.googleSheet.enabled) continue
       try {
-        await this.client.updateCell(row.googleSheet.spreadsheetId, row.googleSheet.sheetName, column, row.rowNumber, label)
+        await this.client.updateStatusCell(row.googleSheet.spreadsheetId, row.googleSheet.sheetName, columnIndex, row.rowNumber, label, color)
       } catch (error) {
         this.logger.warn(`Failed to update status for order ${orderId} in sheet ${row.googleSheetId}: ${(error as Error).message}`)
+      }
+    }
+  }
+
+  // Call-center notes column — plain text, no color/validation. `notes` may
+  // be an empty string (cleared) — only skip the write for null/undefined.
+  async updateNotes(orderId: string, notes: string | null): Promise<void> {
+    if (!this.client.isConfigured() || !(await this.isEnabled())) return
+
+    const rows = await this.prisma.googleSheetOrderRow.findMany({
+      where: { orderId },
+      include: { googleSheet: true }
+    })
+    if (!rows.length) return
+
+    for (const row of rows) {
+      if (!row.googleSheet.enabled) continue
+      try {
+        await this.client.updateCell(row.googleSheet.spreadsheetId, row.googleSheet.sheetName, GOOGLE_SHEET_COLUMNS.notes, row.rowNumber, notes ?? '')
+      } catch (error) {
+        this.logger.warn(`Failed to update notes for order ${orderId} in sheet ${row.googleSheetId}: ${(error as Error).message}`)
       }
     }
   }
@@ -333,5 +393,144 @@ export class GoogleSheetsService {
         this.logger.warn(`Failed to update shipping info for order ${orderId} in sheet ${row.googleSheetId}: ${(error as Error).message}`)
       }
     }
+  }
+
+  // ---- Pull sync — reads back manual edits made directly in a connected
+  // sheet (item 2 of the "select in the sheet" request) and applies them to
+  // the order, going through the SAME state-machine/assignment rules the
+  // admin dashboard itself is bound by, so a sheet edit can't do anything an
+  // admin couldn't already do from the order detail page. Driven by the
+  // repeatable 'poll' job registered in onModuleInit; also callable directly
+  // for an on-demand "Sync now" (see GoogleSheetsController). ----
+
+  async pollAllSheets(): Promise<void> {
+    if (!this.client.isConfigured() || !(await this.isEnabled())) return
+    const sheets = await this.prisma.googleSheet.findMany({ where: { enabled: true } })
+    for (const sheet of sheets) {
+      try {
+        await this.pollSheet(sheet)
+      } catch (error) {
+        this.logger.warn(`Google Sheets: poll failed for sheet ${sheet.id} (${sheet.name}): ${(error as Error).message}`)
+      }
+    }
+  }
+
+  private async pollSheet(sheet: { id: string; spreadsheetId: string; sheetName: string }): Promise<void> {
+    const orderRows = await this.prisma.googleSheetOrderRow.findMany({ where: { googleSheetId: sheet.id } })
+    if (!orderRows.length) return
+
+    const minRow = Math.min(...orderRows.map((r) => r.rowNumber))
+    const maxRow = Math.max(...orderRows.map((r) => r.rowNumber))
+    const values = await this.client.readEditableRange(sheet.spreadsheetId, sheet.sheetName, minRow, maxRow)
+    const byRow = new Map(orderRows.map((r) => [r.rowNumber, r]))
+
+    for (let i = 0; i < values.length; i++) {
+      const rowNumber = minRow + i
+      const orderRow = byRow.get(rowNumber)
+      if (!orderRow) continue
+      const cells = values[i] ?? [] // M:Q → [shippingCompany, callCenter, fulfillment, delivery, notes]
+      try {
+        await this.reconcileRow(orderRow.orderId, {
+          shippingCompany: (cells[0] ?? '').trim(),
+          callCenterStatus: (cells[1] ?? '').trim(),
+          fulfillmentStatus: (cells[2] ?? '').trim(),
+          deliveryStatus: (cells[3] ?? '').trim(),
+          notes: (cells[4] ?? '').trim()
+        })
+      } catch (error) {
+        this.logger.warn(`Google Sheets: reconcile failed for order ${orderRow.orderId} (row ${rowNumber} of sheet ${sheet.id}): ${(error as Error).message}`)
+      }
+    }
+  }
+
+  private async reconcileRow(
+    orderId: string,
+    sheetValues: { shippingCompany: string; callCenterStatus: string; fulfillmentStatus: string; deliveryStatus: string; notes: string }
+  ): Promise<void> {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      select: { state: true, notes: true, fulfillmentMethod: true, shippingCompanyId: true, shippingCompany: { select: { name: true } }, shipment: { select: { id: true } } }
+    })
+    if (!order) return
+
+    // Notes: only pull in a non-blank sheet value that actually differs —
+    // an untouched (still-blank) cell must never clobber an existing note.
+    if (sheetValues.notes && sheetValues.notes !== (order.notes ?? '')) {
+      await this.prisma.order.update({ where: { id: orderId }, data: { notes: sheetValues.notes } })
+      await this.audit.log({
+        actor: SHEETS_SYNC_ACTOR,
+        action: 'Update',
+        entity: 'Order',
+        entityId: orderId,
+        metadata: { field: 'notes', from: order.notes, to: sheetValues.notes, source: 'google-sheets' }
+      })
+    }
+
+    // Shipping company / manual assignment — only while still unshipped;
+    // once dispatched, reassigning is exactly as unsupported here as it is
+    // from the admin UI (cancel the shipment first).
+    if (!order.shipment) {
+      const currentLabel = shippingCompanyLabel(order)
+      if (sheetValues.shippingCompany && sheetValues.shippingCompany !== currentLabel) {
+        if (sheetValues.shippingCompany === 'Delivery man') {
+          await this.assignManualFromSheet(orderId)
+        } else if (sheetValues.shippingCompany !== '—') {
+          const company = await this.prisma.shippingCompany.findFirst({ where: { name: sheetValues.shippingCompany, isLinked: true } })
+          if (company) await this.assignCompanyFromSheet(orderId, company.id, company.name)
+          else this.logger.warn(`Google Sheets: order ${orderId}'s sheet names unknown/unlinked shipping company "${sheetValues.shippingCompany}" — ignored`)
+        }
+      }
+    }
+
+    // Status columns — apply at most one transition per poll pass; a second
+    // cell changed in the same pass gets picked up on the next cycle rather
+    // than risk chaining two jumps the admin UI would never do in one click.
+    const current = await this.prisma.order.findUnique({ where: { id: orderId }, select: { state: true } })
+    if (!current) return
+    const candidates = [sheetValues.callCenterStatus, sheetValues.fulfillmentStatus, sheetValues.deliveryStatus]
+    for (const label of candidates) {
+      if (!label) continue
+      const targetState = LABEL_TO_STATE[label]
+      if (!targetState || targetState === current.state) continue
+      if (!isValidTransition(current.state, targetState)) continue
+      await this.applyTransitionFromSheet(orderId, current.state, targetState)
+      break
+    }
+  }
+
+  private async applyTransitionFromSheet(orderId: string, from: OrderState, to: OrderState): Promise<void> {
+    await this.prisma.order.update({ where: { id: orderId }, data: { state: to } })
+    await this.audit.log({
+      actor: SHEETS_SYNC_ACTOR,
+      action: 'StateTransition',
+      entity: 'Order',
+      entityId: orderId,
+      metadata: { from, to, source: 'google-sheets' }
+    })
+    await this.updateOrderStatus(orderId, from, to)
+  }
+
+  private async assignManualFromSheet(orderId: string): Promise<void> {
+    await this.prisma.order.update({ where: { id: orderId }, data: { fulfillmentMethod: 'Manual', shippingCompanyId: null } })
+    await this.audit.log({
+      actor: SHEETS_SYNC_ACTOR,
+      action: 'Update',
+      entity: 'Order',
+      entityId: orderId,
+      metadata: { assignedShippingCompany: null, manual: true, source: 'google-sheets' }
+    })
+    await this.updateShippingInfo(orderId)
+  }
+
+  private async assignCompanyFromSheet(orderId: string, shippingCompanyId: string, companyName: string): Promise<void> {
+    await this.prisma.order.update({ where: { id: orderId }, data: { fulfillmentMethod: 'ShippingCompany', shippingCompanyId } })
+    await this.audit.log({
+      actor: SHEETS_SYNC_ACTOR,
+      action: 'Update',
+      entity: 'Order',
+      entityId: orderId,
+      metadata: { assignedShippingCompany: companyName, source: 'google-sheets' }
+    })
+    await this.updateShippingInfo(orderId)
   }
 }

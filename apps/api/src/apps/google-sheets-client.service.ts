@@ -4,6 +4,16 @@ import { ConfigService } from '@nestjs/config'
 import { ORDER_STATE_LABELS, statesForStage } from '@amalice/shared'
 import type { Env } from '../config/env.validation'
 
+interface CellColor {
+  background: string // hex, e.g. "#FEF3C7"
+  text: string
+}
+
+function hexToRgb(hex: string): { red: number; green: number; blue: number } {
+  const n = parseInt(hex.slice(1), 16)
+  return { red: ((n >> 16) & 255) / 255, green: ((n >> 8) & 255) / 255, blue: (n & 255) / 255 }
+}
+
 // The fixed column layout every connected sheet gets — same order the
 // Google Sheets app was built for (see the feature's original request), now
 // extended with shipping-assignment and per-stage status columns (a second
@@ -28,7 +38,8 @@ export const GOOGLE_SHEET_HEADER_ROW = [
   'Shipping Company',
   'Call Center Status',
   'Fulfillment Status',
-  'Delivery Status'
+  'Delivery Status',
+  'Notes'
 ]
 
 // 1-indexed column letters — keep in sync with GOOGLE_SHEET_HEADER_ROW above.
@@ -37,20 +48,31 @@ export const GOOGLE_SHEET_COLUMNS = {
   shippingCompany: 'M',
   callCenterStatus: 'N',
   fulfillmentStatus: 'O',
-  deliveryStatus: 'P'
+  deliveryStatus: 'P',
+  notes: 'Q'
 } as const
 export type GoogleSheetStatusColumn = 'callCenterStatus' | 'fulfillmentStatus' | 'deliveryStatus'
 
 // 0-indexed column numbers for the same cells, for Sheets API GridRange
 // requests (data validation, formatting) — the API uses 0-indexed
 // start/end-exclusive ranges, not the A1 letters used everywhere else here.
-const COLUMN_INDEX: Record<keyof typeof GOOGLE_SHEET_COLUMNS, number> = {
+export const COLUMN_INDEX: Record<keyof typeof GOOGLE_SHEET_COLUMNS, number> = {
   sentToShippingCompany: 11,
   shippingCompany: 12,
   callCenterStatus: 13,
   fulfillmentStatus: 14,
-  deliveryStatus: 15
+  deliveryStatus: 15,
+  notes: 16
 }
+// Columns editable directly in the sheet whose edits get pulled back into
+// our DB by the poll job (GoogleSheetsService.pollAllSheets) — everything
+// except "Sent to Shipping Company", which is display-only: it only ever
+// becomes Yes once a real dispatch (with a system-recorded tracking
+// reference) happens, and there's no safe way to synthesize that from a
+// bare Yes/No flip with no tracking reference attached. A manual edit to
+// that one column gets silently overwritten back to the correct derived
+// value on the next poll.
+export const EDITABLE_COLUMN_RANGE = { first: COLUMN_INDEX.shippingCompany, last: COLUMN_INDEX.notes }
 
 // Data-validation dropdowns only need to cover a generous but finite row
 // range — Sheets doesn't support "the rest of the column" as a target for
@@ -61,7 +83,7 @@ const HEADER_BACKGROUND = { red: 0.114, green: 0.157, blue: 0.290 } // Stripe/Po
 const HEADER_TEXT = { red: 1, green: 1, blue: 1 }
 
 function columnLetterFromRange(updatedRange: string): { sheetName: string; row: number } | null {
-  // updatedRange looks like "Orders!A5:P5" (or "'My Sheet'!A5:P5" when the
+  // updatedRange looks like "Orders!A5:Q5" (or "'My Sheet'!A5:Q5" when the
   // tab name has spaces) — pull the numeric row out of it rather than
   // trusting any row-count math, since Sheets is the one source of truth for
   // where it actually put the row.
@@ -192,7 +214,7 @@ export class GoogleSheetsClientService {
     try {
       const existing = await sheets.spreadsheets.values.get({
         spreadsheetId,
-        range: `${sheetName}!A1:P1`
+        range: `${sheetName}!A1:Q1`
       })
       const current = existing.data.values?.[0]
       if (current && current.length === GOOGLE_SHEET_HEADER_ROW.length && GOOGLE_SHEET_HEADER_ROW.every((h, i) => current[i] === h)) {
@@ -247,6 +269,63 @@ export class GoogleSheetsClientService {
       })
     } catch (error) {
       throw this.wrapError(error, `update cell ${column}${rowNumber}`)
+    }
+  }
+
+  // Writes a status-column cell's value AND background/text color in one
+  // batchUpdate call — used for the 3 per-stage status columns so a sheet
+  // reader can tell an order's state at a glance from color alone, matching
+  // StatusBadge's per-state color in the admin dashboard (see
+  // ORDER_STATE_SHEET_COLORS in packages/shared). Only the single cell
+  // written is colored — never the whole row (rows otherwise stay the
+  // sheet's default background, only the header row is styled).
+  async updateStatusCell(spreadsheetId: string, sheetName: string, columnIndex: number, rowNumber: number, value: string, color: CellColor): Promise<void> {
+    const sheets = this.getClient()
+    try {
+      const sheetId = await this.getSheetId(sheets, spreadsheetId, sheetName)
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+          requests: [
+            {
+              updateCells: {
+                range: { sheetId, startRowIndex: rowNumber - 1, endRowIndex: rowNumber, startColumnIndex: columnIndex, endColumnIndex: columnIndex + 1 },
+                rows: [
+                  {
+                    values: [
+                      {
+                        userEnteredValue: { stringValue: value },
+                        userEnteredFormat: { backgroundColor: hexToRgb(color.background), textFormat: { foregroundColor: hexToRgb(color.text) } }
+                      }
+                    ]
+                  }
+                ],
+                fields: 'userEnteredValue,userEnteredFormat(backgroundColor,textFormat.foregroundColor)'
+              }
+            }
+          ]
+        }
+      })
+    } catch (error) {
+      throw this.wrapError(error, `update status cell at row ${rowNumber}`)
+    }
+  }
+
+  // Batch-reads the editable columns (M:Q — see EDITABLE_COLUMN_RANGE) for a
+  // contiguous row range in one call — used by the poll job so N connected
+  // rows cost one Sheets API read, not N.
+  async readEditableRange(spreadsheetId: string, sheetName: string, minRow: number, maxRow: number): Promise<string[][]> {
+    const sheets = this.getClient()
+    try {
+      const firstLetter = Object.entries(GOOGLE_SHEET_COLUMNS).find(([k]) => COLUMN_INDEX[k as keyof typeof COLUMN_INDEX] === EDITABLE_COLUMN_RANGE.first)![1]
+      const lastLetter = Object.entries(GOOGLE_SHEET_COLUMNS).find(([k]) => COLUMN_INDEX[k as keyof typeof COLUMN_INDEX] === EDITABLE_COLUMN_RANGE.last)![1]
+      const res = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: `${sheetName}!${firstLetter}${minRow}:${lastLetter}${maxRow}`
+      })
+      return res.data.values ?? []
+    } catch (error) {
+      throw this.wrapError(error, 'read the editable columns')
     }
   }
 

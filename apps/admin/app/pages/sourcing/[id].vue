@@ -44,7 +44,10 @@ const runtimeConfig = useRuntimeConfig()
 
 const { data: sourced, pending, refresh } = await useAdminFetch<SourcedProductDetail>(`/admin/sourcing/products/${id}`, { key: `admin-sourcing-product-${id}` })
 const { data: wholesalers } = await useAdminFetch<WholesalerView[]>('/admin/sourcing/wholesalers', { key: 'admin-sourcing-wholesalers' })
-const { data: products } = await useAdminFetch<{ items: Product[] }>('/products?pageSize=200', { key: 'admin-sourcing-all-products' })
+// pageSize capped at 100 by ProductListQuerySchema — see google-sheets.vue's
+// comment on the same fix; a larger value 400s and useAdminFetch swallows it
+// silently, leaving this picker looking empty instead of erroring visibly.
+const { data: products } = await useAdminFetch<{ items: Product[] }>('/products?pageSize=100', { key: 'admin-sourcing-all-products' })
 
 useHead({ title: () => sourced.value?.name ?? 'Sourced product' })
 

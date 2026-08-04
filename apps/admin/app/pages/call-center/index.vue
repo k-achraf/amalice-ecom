@@ -53,6 +53,34 @@ async function act(orderId: string, to: 'Confirmed' | 'CallCenterNoAnswer' | 'Wr
   acting.value = null
 }
 
+// ---- Call-center notes — free text per order, mirrored into the Google
+// Sheets integration's Notes column (see GoogleSheetsService.updateNotes)
+// so both places stay in sync regardless of which one an agent edits.
+const notesModalOpen = ref(false)
+const notesOrderId = ref<string | null>(null)
+const notesText = ref('')
+const savingNotes = ref(false)
+
+function openNotes(order: { id: string; notes: string | null }) {
+  notesOrderId.value = order.id
+  notesText.value = order.notes ?? ''
+  notesModalOpen.value = true
+}
+
+async function saveNotes() {
+  if (!notesOrderId.value) return
+  savingNotes.value = true
+  const result = await run(
+    () => api(`/admin/orders/${notesOrderId.value}/notes`, { method: 'PATCH', body: { notes: notesText.value.trim() || null } }),
+    { success: 'Notes saved', errorFallback: 'Could not save notes' }
+  )
+  savingNotes.value = false
+  if (result !== undefined) {
+    notesModalOpen.value = false
+    await Promise.all([refreshPending(), refreshNoAnswer(), refreshWrongNumber(), refreshPostponed()])
+  }
+}
+
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleString()
 }
@@ -96,6 +124,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
                 </div>
                 <p class="mt-1 text-sm text-muted">{{ addressLine(o) }}</p>
                 <p class="mt-1 text-sm text-muted">{{ o.items.length }} item{{ o.items.length === 1 ? '' : 's' }} · <PriceDisplay :amount-cents="o.totalCents" class="tabular font-medium text-highlighted" /> COD</p>
+                <p v-if="o.notes" class="mt-1 flex items-start gap-1 text-sm text-muted"><UIcon name="i-lucide-sticky-note" class="mt-0.5 size-3.5 shrink-0" />{{ o.notes }}</p>
               </div>
               <div class="flex shrink-0 flex-wrap gap-2">
                 <UButton icon="i-lucide-check" size="sm" color="primary" :loading="acting === `${o.id}:Confirmed`" label="Confirm" @click="act(o.id, 'Confirmed')" />
@@ -103,6 +132,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
                 <UButton icon="i-lucide-phone-off" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:WrongNumber`" label="Wrong number" @click="act(o.id, 'WrongNumber')" />
                 <UButton icon="i-lucide-calendar-clock" size="sm" color="warning" variant="outline" :loading="acting === `${o.id}:Postponed`" label="Postpone" @click="act(o.id, 'Postponed')" />
                 <UButton icon="i-lucide-x" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:Cancelled`" label="Cancel" @click="act(o.id, 'Cancelled')" />
+                <UButton icon="i-lucide-sticky-note" size="sm" color="neutral" variant="ghost" :label="o.notes ? 'Edit note' : 'Add note'" @click="openNotes(o)" />
               </div>
             </div>
           </div>
@@ -125,10 +155,12 @@ function addressLine(o: { address: { line1: string; city: string; region: string
                   </a>
                 </div>
                 <p class="mt-1 text-sm text-muted">{{ addressLine(o) }}</p>
+                <p v-if="o.notes" class="mt-1 flex items-start gap-1 text-sm text-muted"><UIcon name="i-lucide-sticky-note" class="mt-0.5 size-3.5 shrink-0" />{{ o.notes }}</p>
               </div>
               <div class="flex shrink-0 flex-wrap gap-2">
                 <UButton icon="i-lucide-phone-call" size="sm" color="primary" variant="outline" :loading="acting === `${o.id}:PendingCallCenter`" label="Retry call" @click="act(o.id, 'PendingCallCenter')" />
                 <UButton icon="i-lucide-x" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:Cancelled`" label="Cancel" @click="act(o.id, 'Cancelled')" />
+                <UButton icon="i-lucide-sticky-note" size="sm" color="neutral" variant="ghost" :label="o.notes ? 'Edit note' : 'Add note'" @click="openNotes(o)" />
               </div>
             </div>
           </div>
@@ -151,10 +183,12 @@ function addressLine(o: { address: { line1: string; city: string; region: string
                   </a>
                 </div>
                 <p class="mt-1 text-sm text-muted">{{ addressLine(o) }}</p>
+                <p v-if="o.notes" class="mt-1 flex items-start gap-1 text-sm text-muted"><UIcon name="i-lucide-sticky-note" class="mt-0.5 size-3.5 shrink-0" />{{ o.notes }}</p>
               </div>
               <div class="flex shrink-0 flex-wrap gap-2">
                 <UButton icon="i-lucide-phone-call" size="sm" color="primary" variant="outline" :loading="acting === `${o.id}:PendingCallCenter`" label="Retry call" @click="act(o.id, 'PendingCallCenter')" />
                 <UButton icon="i-lucide-x" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:Cancelled`" label="Cancel" @click="act(o.id, 'Cancelled')" />
+                <UButton icon="i-lucide-sticky-note" size="sm" color="neutral" variant="ghost" :label="o.notes ? 'Edit note' : 'Add note'" @click="openNotes(o)" />
               </div>
             </div>
           </div>
@@ -177,10 +211,12 @@ function addressLine(o: { address: { line1: string; city: string; region: string
                   </a>
                 </div>
                 <p class="mt-1 text-sm text-muted">{{ addressLine(o) }}</p>
+                <p v-if="o.notes" class="mt-1 flex items-start gap-1 text-sm text-muted"><UIcon name="i-lucide-sticky-note" class="mt-0.5 size-3.5 shrink-0" />{{ o.notes }}</p>
               </div>
               <div class="flex shrink-0 flex-wrap gap-2">
                 <UButton icon="i-lucide-phone-call" size="sm" color="primary" variant="outline" :loading="acting === `${o.id}:PendingCallCenter`" label="Contact now" @click="act(o.id, 'PendingCallCenter')" />
                 <UButton icon="i-lucide-x" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:Cancelled`" label="Cancel" @click="act(o.id, 'Cancelled')" />
+                <UButton icon="i-lucide-sticky-note" size="sm" color="neutral" variant="ghost" :label="o.notes ? 'Edit note' : 'Add note'" @click="openNotes(o)" />
               </div>
             </div>
           </div>
@@ -188,4 +224,17 @@ function addressLine(o: { address: { line1: string; city: string; region: string
       </div>
     </template>
   </UDashboardPanel>
+
+  <UModal v-model:open="notesModalOpen">
+    <template #content>
+      <div class="space-y-4 p-6">
+        <h3 class="text-lg font-semibold">Call-center note</h3>
+        <UTextarea v-model="notesText" :rows="5" placeholder="Notes for this order…" class="w-full" autofocus />
+        <div class="flex justify-end gap-2">
+          <UButton color="neutral" variant="ghost" @click="notesModalOpen = false">Cancel</UButton>
+          <UButton :loading="savingNotes" color="primary" icon="i-lucide-check" @click="saveNotes">Save</UButton>
+        </div>
+      </div>
+    </template>
+  </UModal>
 </template>

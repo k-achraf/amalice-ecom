@@ -63,4 +63,16 @@ export class GoogleSheetsController {
   testConnection(@Param('id') id: string) {
     return this.googleSheets.testConnection(id)
   }
+
+  // On-demand pull sync — the same reconciliation the repeatable poll job
+  // (every 2 minutes, see GoogleSheetsService.onModuleInit) already runs,
+  // exposed for "I just edited the sheet, don't want to wait" and for
+  // verifying the two-way sync actually works. Throttled like
+  // test-connection since it's also an outbound-heavy third-party call.
+  @Post('sync-now')
+  @Throttle({ default: { limit: 10, ttl: 5 * 60 * 1000 } })
+  async syncNow() {
+    await this.googleSheets.pollAllSheets()
+    return { ok: true }
+  }
 }
