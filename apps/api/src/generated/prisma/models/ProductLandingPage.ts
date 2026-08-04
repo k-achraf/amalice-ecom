@@ -27,6 +27,8 @@ export type AggregateProductLandingPage = {
 export type ProductLandingPageMinAggregateOutputType = {
   id: string | null
   productId: string | null
+  slug: string | null
+  name: string | null
   enabled: boolean | null
   status: $Enums.LandingPageStatus | null
   imageProvider: $Enums.LandingPageImageProvider | null
@@ -39,6 +41,8 @@ export type ProductLandingPageMinAggregateOutputType = {
 export type ProductLandingPageMaxAggregateOutputType = {
   id: string | null
   productId: string | null
+  slug: string | null
+  name: string | null
   enabled: boolean | null
   status: $Enums.LandingPageStatus | null
   imageProvider: $Enums.LandingPageImageProvider | null
@@ -51,6 +55,8 @@ export type ProductLandingPageMaxAggregateOutputType = {
 export type ProductLandingPageCountAggregateOutputType = {
   id: number
   productId: number
+  slug: number
+  name: number
   enabled: number
   status: number
   imageProvider: number
@@ -66,6 +72,8 @@ export type ProductLandingPageCountAggregateOutputType = {
 export type ProductLandingPageMinAggregateInputType = {
   id?: true
   productId?: true
+  slug?: true
+  name?: true
   enabled?: true
   status?: true
   imageProvider?: true
@@ -78,6 +86,8 @@ export type ProductLandingPageMinAggregateInputType = {
 export type ProductLandingPageMaxAggregateInputType = {
   id?: true
   productId?: true
+  slug?: true
+  name?: true
   enabled?: true
   status?: true
   imageProvider?: true
@@ -90,6 +100,8 @@ export type ProductLandingPageMaxAggregateInputType = {
 export type ProductLandingPageCountAggregateInputType = {
   id?: true
   productId?: true
+  slug?: true
+  name?: true
   enabled?: true
   status?: true
   imageProvider?: true
@@ -176,6 +188,8 @@ export type ProductLandingPageGroupByArgs<ExtArgs extends runtime.Types.Extensio
 export type ProductLandingPageGroupByOutputType = {
   id: string
   productId: string
+  slug: string
+  name: string
   enabled: boolean
   status: $Enums.LandingPageStatus
   imageProvider: $Enums.LandingPageImageProvider
@@ -210,6 +224,8 @@ export type ProductLandingPageWhereInput = {
   NOT?: Prisma.ProductLandingPageWhereInput | Prisma.ProductLandingPageWhereInput[]
   id?: Prisma.StringFilter<"ProductLandingPage"> | string
   productId?: Prisma.StringFilter<"ProductLandingPage"> | string
+  slug?: Prisma.StringFilter<"ProductLandingPage"> | string
+  name?: Prisma.StringFilter<"ProductLandingPage"> | string
   enabled?: Prisma.BoolFilter<"ProductLandingPage"> | boolean
   status?: Prisma.EnumLandingPageStatusFilter<"ProductLandingPage"> | $Enums.LandingPageStatus
   imageProvider?: Prisma.EnumLandingPageImageProviderFilter<"ProductLandingPage"> | $Enums.LandingPageImageProvider
@@ -224,6 +240,8 @@ export type ProductLandingPageWhereInput = {
 export type ProductLandingPageOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   productId?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   status?: Prisma.SortOrder
   imageProvider?: Prisma.SortOrder
@@ -237,10 +255,12 @@ export type ProductLandingPageOrderByWithRelationInput = {
 
 export type ProductLandingPageWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  productId?: string
+  slug?: string
   AND?: Prisma.ProductLandingPageWhereInput | Prisma.ProductLandingPageWhereInput[]
   OR?: Prisma.ProductLandingPageWhereInput[]
   NOT?: Prisma.ProductLandingPageWhereInput | Prisma.ProductLandingPageWhereInput[]
+  productId?: Prisma.StringFilter<"ProductLandingPage"> | string
+  name?: Prisma.StringFilter<"ProductLandingPage"> | string
   enabled?: Prisma.BoolFilter<"ProductLandingPage"> | boolean
   status?: Prisma.EnumLandingPageStatusFilter<"ProductLandingPage"> | $Enums.LandingPageStatus
   imageProvider?: Prisma.EnumLandingPageImageProviderFilter<"ProductLandingPage"> | $Enums.LandingPageImageProvider
@@ -250,11 +270,13 @@ export type ProductLandingPageWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"ProductLandingPage"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductLandingPage"> | Date | string
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
-}, "id" | "productId">
+}, "id" | "slug">
 
 export type ProductLandingPageOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   productId?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   status?: Prisma.SortOrder
   imageProvider?: Prisma.SortOrder
@@ -274,6 +296,8 @@ export type ProductLandingPageScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ProductLandingPageScalarWhereWithAggregatesInput | Prisma.ProductLandingPageScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"ProductLandingPage"> | string
   productId?: Prisma.StringWithAggregatesFilter<"ProductLandingPage"> | string
+  slug?: Prisma.StringWithAggregatesFilter<"ProductLandingPage"> | string
+  name?: Prisma.StringWithAggregatesFilter<"ProductLandingPage"> | string
   enabled?: Prisma.BoolWithAggregatesFilter<"ProductLandingPage"> | boolean
   status?: Prisma.EnumLandingPageStatusWithAggregatesFilter<"ProductLandingPage"> | $Enums.LandingPageStatus
   imageProvider?: Prisma.EnumLandingPageImageProviderWithAggregatesFilter<"ProductLandingPage"> | $Enums.LandingPageImageProvider
@@ -286,6 +310,8 @@ export type ProductLandingPageScalarWhereWithAggregatesInput = {
 
 export type ProductLandingPageCreateInput = {
   id?: string
+  slug: string
+  name?: string
   enabled?: boolean
   status?: $Enums.LandingPageStatus
   imageProvider?: $Enums.LandingPageImageProvider
@@ -294,12 +320,14 @@ export type ProductLandingPageCreateInput = {
   errorMessage?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  product: Prisma.ProductCreateNestedOneWithoutLandingPageInput
+  product: Prisma.ProductCreateNestedOneWithoutLandingPagesInput
 }
 
 export type ProductLandingPageUncheckedCreateInput = {
   id?: string
   productId: string
+  slug: string
+  name?: string
   enabled?: boolean
   status?: $Enums.LandingPageStatus
   imageProvider?: $Enums.LandingPageImageProvider
@@ -312,6 +340,8 @@ export type ProductLandingPageUncheckedCreateInput = {
 
 export type ProductLandingPageUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumLandingPageStatusFieldUpdateOperationsInput | $Enums.LandingPageStatus
   imageProvider?: Prisma.EnumLandingPageImageProviderFieldUpdateOperationsInput | $Enums.LandingPageImageProvider
@@ -320,12 +350,14 @@ export type ProductLandingPageUpdateInput = {
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  product?: Prisma.ProductUpdateOneRequiredWithoutLandingPageNestedInput
+  product?: Prisma.ProductUpdateOneRequiredWithoutLandingPagesNestedInput
 }
 
 export type ProductLandingPageUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumLandingPageStatusFieldUpdateOperationsInput | $Enums.LandingPageStatus
   imageProvider?: Prisma.EnumLandingPageImageProviderFieldUpdateOperationsInput | $Enums.LandingPageImageProvider
@@ -339,6 +371,8 @@ export type ProductLandingPageUncheckedUpdateInput = {
 export type ProductLandingPageCreateManyInput = {
   id?: string
   productId: string
+  slug: string
+  name?: string
   enabled?: boolean
   status?: $Enums.LandingPageStatus
   imageProvider?: $Enums.LandingPageImageProvider
@@ -351,6 +385,8 @@ export type ProductLandingPageCreateManyInput = {
 
 export type ProductLandingPageUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumLandingPageStatusFieldUpdateOperationsInput | $Enums.LandingPageStatus
   imageProvider?: Prisma.EnumLandingPageImageProviderFieldUpdateOperationsInput | $Enums.LandingPageImageProvider
@@ -364,6 +400,8 @@ export type ProductLandingPageUpdateManyMutationInput = {
 export type ProductLandingPageUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumLandingPageStatusFieldUpdateOperationsInput | $Enums.LandingPageStatus
   imageProvider?: Prisma.EnumLandingPageImageProviderFieldUpdateOperationsInput | $Enums.LandingPageImageProvider
@@ -374,14 +412,21 @@ export type ProductLandingPageUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
-export type ProductLandingPageNullableScalarRelationFilter = {
-  is?: Prisma.ProductLandingPageWhereInput | null
-  isNot?: Prisma.ProductLandingPageWhereInput | null
+export type ProductLandingPageListRelationFilter = {
+  every?: Prisma.ProductLandingPageWhereInput
+  some?: Prisma.ProductLandingPageWhereInput
+  none?: Prisma.ProductLandingPageWhereInput
+}
+
+export type ProductLandingPageOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type ProductLandingPageCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   productId?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   status?: Prisma.SortOrder
   imageProvider?: Prisma.SortOrder
@@ -395,6 +440,8 @@ export type ProductLandingPageCountOrderByAggregateInput = {
 export type ProductLandingPageMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   productId?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   status?: Prisma.SortOrder
   imageProvider?: Prisma.SortOrder
@@ -407,6 +454,8 @@ export type ProductLandingPageMaxOrderByAggregateInput = {
 export type ProductLandingPageMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   productId?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   status?: Prisma.SortOrder
   imageProvider?: Prisma.SortOrder
@@ -416,36 +465,46 @@ export type ProductLandingPageMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type ProductLandingPageCreateNestedOneWithoutProductInput = {
-  create?: Prisma.XOR<Prisma.ProductLandingPageCreateWithoutProductInput, Prisma.ProductLandingPageUncheckedCreateWithoutProductInput>
-  connectOrCreate?: Prisma.ProductLandingPageCreateOrConnectWithoutProductInput
-  connect?: Prisma.ProductLandingPageWhereUniqueInput
+export type ProductLandingPageCreateNestedManyWithoutProductInput = {
+  create?: Prisma.XOR<Prisma.ProductLandingPageCreateWithoutProductInput, Prisma.ProductLandingPageUncheckedCreateWithoutProductInput> | Prisma.ProductLandingPageCreateWithoutProductInput[] | Prisma.ProductLandingPageUncheckedCreateWithoutProductInput[]
+  connectOrCreate?: Prisma.ProductLandingPageCreateOrConnectWithoutProductInput | Prisma.ProductLandingPageCreateOrConnectWithoutProductInput[]
+  createMany?: Prisma.ProductLandingPageCreateManyProductInputEnvelope
+  connect?: Prisma.ProductLandingPageWhereUniqueInput | Prisma.ProductLandingPageWhereUniqueInput[]
 }
 
-export type ProductLandingPageUncheckedCreateNestedOneWithoutProductInput = {
-  create?: Prisma.XOR<Prisma.ProductLandingPageCreateWithoutProductInput, Prisma.ProductLandingPageUncheckedCreateWithoutProductInput>
-  connectOrCreate?: Prisma.ProductLandingPageCreateOrConnectWithoutProductInput
-  connect?: Prisma.ProductLandingPageWhereUniqueInput
+export type ProductLandingPageUncheckedCreateNestedManyWithoutProductInput = {
+  create?: Prisma.XOR<Prisma.ProductLandingPageCreateWithoutProductInput, Prisma.ProductLandingPageUncheckedCreateWithoutProductInput> | Prisma.ProductLandingPageCreateWithoutProductInput[] | Prisma.ProductLandingPageUncheckedCreateWithoutProductInput[]
+  connectOrCreate?: Prisma.ProductLandingPageCreateOrConnectWithoutProductInput | Prisma.ProductLandingPageCreateOrConnectWithoutProductInput[]
+  createMany?: Prisma.ProductLandingPageCreateManyProductInputEnvelope
+  connect?: Prisma.ProductLandingPageWhereUniqueInput | Prisma.ProductLandingPageWhereUniqueInput[]
 }
 
-export type ProductLandingPageUpdateOneWithoutProductNestedInput = {
-  create?: Prisma.XOR<Prisma.ProductLandingPageCreateWithoutProductInput, Prisma.ProductLandingPageUncheckedCreateWithoutProductInput>
-  connectOrCreate?: Prisma.ProductLandingPageCreateOrConnectWithoutProductInput
-  upsert?: Prisma.ProductLandingPageUpsertWithoutProductInput
-  disconnect?: Prisma.ProductLandingPageWhereInput | boolean
-  delete?: Prisma.ProductLandingPageWhereInput | boolean
-  connect?: Prisma.ProductLandingPageWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.ProductLandingPageUpdateToOneWithWhereWithoutProductInput, Prisma.ProductLandingPageUpdateWithoutProductInput>, Prisma.ProductLandingPageUncheckedUpdateWithoutProductInput>
+export type ProductLandingPageUpdateManyWithoutProductNestedInput = {
+  create?: Prisma.XOR<Prisma.ProductLandingPageCreateWithoutProductInput, Prisma.ProductLandingPageUncheckedCreateWithoutProductInput> | Prisma.ProductLandingPageCreateWithoutProductInput[] | Prisma.ProductLandingPageUncheckedCreateWithoutProductInput[]
+  connectOrCreate?: Prisma.ProductLandingPageCreateOrConnectWithoutProductInput | Prisma.ProductLandingPageCreateOrConnectWithoutProductInput[]
+  upsert?: Prisma.ProductLandingPageUpsertWithWhereUniqueWithoutProductInput | Prisma.ProductLandingPageUpsertWithWhereUniqueWithoutProductInput[]
+  createMany?: Prisma.ProductLandingPageCreateManyProductInputEnvelope
+  set?: Prisma.ProductLandingPageWhereUniqueInput | Prisma.ProductLandingPageWhereUniqueInput[]
+  disconnect?: Prisma.ProductLandingPageWhereUniqueInput | Prisma.ProductLandingPageWhereUniqueInput[]
+  delete?: Prisma.ProductLandingPageWhereUniqueInput | Prisma.ProductLandingPageWhereUniqueInput[]
+  connect?: Prisma.ProductLandingPageWhereUniqueInput | Prisma.ProductLandingPageWhereUniqueInput[]
+  update?: Prisma.ProductLandingPageUpdateWithWhereUniqueWithoutProductInput | Prisma.ProductLandingPageUpdateWithWhereUniqueWithoutProductInput[]
+  updateMany?: Prisma.ProductLandingPageUpdateManyWithWhereWithoutProductInput | Prisma.ProductLandingPageUpdateManyWithWhereWithoutProductInput[]
+  deleteMany?: Prisma.ProductLandingPageScalarWhereInput | Prisma.ProductLandingPageScalarWhereInput[]
 }
 
-export type ProductLandingPageUncheckedUpdateOneWithoutProductNestedInput = {
-  create?: Prisma.XOR<Prisma.ProductLandingPageCreateWithoutProductInput, Prisma.ProductLandingPageUncheckedCreateWithoutProductInput>
-  connectOrCreate?: Prisma.ProductLandingPageCreateOrConnectWithoutProductInput
-  upsert?: Prisma.ProductLandingPageUpsertWithoutProductInput
-  disconnect?: Prisma.ProductLandingPageWhereInput | boolean
-  delete?: Prisma.ProductLandingPageWhereInput | boolean
-  connect?: Prisma.ProductLandingPageWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.ProductLandingPageUpdateToOneWithWhereWithoutProductInput, Prisma.ProductLandingPageUpdateWithoutProductInput>, Prisma.ProductLandingPageUncheckedUpdateWithoutProductInput>
+export type ProductLandingPageUncheckedUpdateManyWithoutProductNestedInput = {
+  create?: Prisma.XOR<Prisma.ProductLandingPageCreateWithoutProductInput, Prisma.ProductLandingPageUncheckedCreateWithoutProductInput> | Prisma.ProductLandingPageCreateWithoutProductInput[] | Prisma.ProductLandingPageUncheckedCreateWithoutProductInput[]
+  connectOrCreate?: Prisma.ProductLandingPageCreateOrConnectWithoutProductInput | Prisma.ProductLandingPageCreateOrConnectWithoutProductInput[]
+  upsert?: Prisma.ProductLandingPageUpsertWithWhereUniqueWithoutProductInput | Prisma.ProductLandingPageUpsertWithWhereUniqueWithoutProductInput[]
+  createMany?: Prisma.ProductLandingPageCreateManyProductInputEnvelope
+  set?: Prisma.ProductLandingPageWhereUniqueInput | Prisma.ProductLandingPageWhereUniqueInput[]
+  disconnect?: Prisma.ProductLandingPageWhereUniqueInput | Prisma.ProductLandingPageWhereUniqueInput[]
+  delete?: Prisma.ProductLandingPageWhereUniqueInput | Prisma.ProductLandingPageWhereUniqueInput[]
+  connect?: Prisma.ProductLandingPageWhereUniqueInput | Prisma.ProductLandingPageWhereUniqueInput[]
+  update?: Prisma.ProductLandingPageUpdateWithWhereUniqueWithoutProductInput | Prisma.ProductLandingPageUpdateWithWhereUniqueWithoutProductInput[]
+  updateMany?: Prisma.ProductLandingPageUpdateManyWithWhereWithoutProductInput | Prisma.ProductLandingPageUpdateManyWithWhereWithoutProductInput[]
+  deleteMany?: Prisma.ProductLandingPageScalarWhereInput | Prisma.ProductLandingPageScalarWhereInput[]
 }
 
 export type EnumLandingPageStatusFieldUpdateOperationsInput = {
@@ -458,6 +517,8 @@ export type EnumLandingPageImageProviderFieldUpdateOperationsInput = {
 
 export type ProductLandingPageCreateWithoutProductInput = {
   id?: string
+  slug: string
+  name?: string
   enabled?: boolean
   status?: $Enums.LandingPageStatus
   imageProvider?: $Enums.LandingPageImageProvider
@@ -470,6 +531,8 @@ export type ProductLandingPageCreateWithoutProductInput = {
 
 export type ProductLandingPageUncheckedCreateWithoutProductInput = {
   id?: string
+  slug: string
+  name?: string
   enabled?: boolean
   status?: $Enums.LandingPageStatus
   imageProvider?: $Enums.LandingPageImageProvider
@@ -485,19 +548,63 @@ export type ProductLandingPageCreateOrConnectWithoutProductInput = {
   create: Prisma.XOR<Prisma.ProductLandingPageCreateWithoutProductInput, Prisma.ProductLandingPageUncheckedCreateWithoutProductInput>
 }
 
-export type ProductLandingPageUpsertWithoutProductInput = {
-  update: Prisma.XOR<Prisma.ProductLandingPageUpdateWithoutProductInput, Prisma.ProductLandingPageUncheckedUpdateWithoutProductInput>
-  create: Prisma.XOR<Prisma.ProductLandingPageCreateWithoutProductInput, Prisma.ProductLandingPageUncheckedCreateWithoutProductInput>
-  where?: Prisma.ProductLandingPageWhereInput
+export type ProductLandingPageCreateManyProductInputEnvelope = {
+  data: Prisma.ProductLandingPageCreateManyProductInput | Prisma.ProductLandingPageCreateManyProductInput[]
+  skipDuplicates?: boolean
 }
 
-export type ProductLandingPageUpdateToOneWithWhereWithoutProductInput = {
-  where?: Prisma.ProductLandingPageWhereInput
+export type ProductLandingPageUpsertWithWhereUniqueWithoutProductInput = {
+  where: Prisma.ProductLandingPageWhereUniqueInput
+  update: Prisma.XOR<Prisma.ProductLandingPageUpdateWithoutProductInput, Prisma.ProductLandingPageUncheckedUpdateWithoutProductInput>
+  create: Prisma.XOR<Prisma.ProductLandingPageCreateWithoutProductInput, Prisma.ProductLandingPageUncheckedCreateWithoutProductInput>
+}
+
+export type ProductLandingPageUpdateWithWhereUniqueWithoutProductInput = {
+  where: Prisma.ProductLandingPageWhereUniqueInput
   data: Prisma.XOR<Prisma.ProductLandingPageUpdateWithoutProductInput, Prisma.ProductLandingPageUncheckedUpdateWithoutProductInput>
+}
+
+export type ProductLandingPageUpdateManyWithWhereWithoutProductInput = {
+  where: Prisma.ProductLandingPageScalarWhereInput
+  data: Prisma.XOR<Prisma.ProductLandingPageUpdateManyMutationInput, Prisma.ProductLandingPageUncheckedUpdateManyWithoutProductInput>
+}
+
+export type ProductLandingPageScalarWhereInput = {
+  AND?: Prisma.ProductLandingPageScalarWhereInput | Prisma.ProductLandingPageScalarWhereInput[]
+  OR?: Prisma.ProductLandingPageScalarWhereInput[]
+  NOT?: Prisma.ProductLandingPageScalarWhereInput | Prisma.ProductLandingPageScalarWhereInput[]
+  id?: Prisma.StringFilter<"ProductLandingPage"> | string
+  productId?: Prisma.StringFilter<"ProductLandingPage"> | string
+  slug?: Prisma.StringFilter<"ProductLandingPage"> | string
+  name?: Prisma.StringFilter<"ProductLandingPage"> | string
+  enabled?: Prisma.BoolFilter<"ProductLandingPage"> | boolean
+  status?: Prisma.EnumLandingPageStatusFilter<"ProductLandingPage"> | $Enums.LandingPageStatus
+  imageProvider?: Prisma.EnumLandingPageImageProviderFilter<"ProductLandingPage"> | $Enums.LandingPageImageProvider
+  finalImageUrl?: Prisma.StringNullableFilter<"ProductLandingPage"> | string | null
+  sections?: Prisma.JsonFilter<"ProductLandingPage">
+  errorMessage?: Prisma.StringNullableFilter<"ProductLandingPage"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"ProductLandingPage"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"ProductLandingPage"> | Date | string
+}
+
+export type ProductLandingPageCreateManyProductInput = {
+  id?: string
+  slug: string
+  name?: string
+  enabled?: boolean
+  status?: $Enums.LandingPageStatus
+  imageProvider?: $Enums.LandingPageImageProvider
+  finalImageUrl?: string | null
+  sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  errorMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type ProductLandingPageUpdateWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumLandingPageStatusFieldUpdateOperationsInput | $Enums.LandingPageStatus
   imageProvider?: Prisma.EnumLandingPageImageProviderFieldUpdateOperationsInput | $Enums.LandingPageImageProvider
@@ -510,6 +617,22 @@ export type ProductLandingPageUpdateWithoutProductInput = {
 
 export type ProductLandingPageUncheckedUpdateWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  status?: Prisma.EnumLandingPageStatusFieldUpdateOperationsInput | $Enums.LandingPageStatus
+  imageProvider?: Prisma.EnumLandingPageImageProviderFieldUpdateOperationsInput | $Enums.LandingPageImageProvider
+  finalImageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ProductLandingPageUncheckedUpdateManyWithoutProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumLandingPageStatusFieldUpdateOperationsInput | $Enums.LandingPageStatus
   imageProvider?: Prisma.EnumLandingPageImageProviderFieldUpdateOperationsInput | $Enums.LandingPageImageProvider
@@ -525,6 +648,8 @@ export type ProductLandingPageUncheckedUpdateWithoutProductInput = {
 export type ProductLandingPageSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   productId?: boolean
+  slug?: boolean
+  name?: boolean
   enabled?: boolean
   status?: boolean
   imageProvider?: boolean
@@ -539,6 +664,8 @@ export type ProductLandingPageSelect<ExtArgs extends runtime.Types.Extensions.In
 export type ProductLandingPageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   productId?: boolean
+  slug?: boolean
+  name?: boolean
   enabled?: boolean
   status?: boolean
   imageProvider?: boolean
@@ -553,6 +680,8 @@ export type ProductLandingPageSelectCreateManyAndReturn<ExtArgs extends runtime.
 export type ProductLandingPageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   productId?: boolean
+  slug?: boolean
+  name?: boolean
   enabled?: boolean
   status?: boolean
   imageProvider?: boolean
@@ -567,6 +696,8 @@ export type ProductLandingPageSelectUpdateManyAndReturn<ExtArgs extends runtime.
 export type ProductLandingPageSelectScalar = {
   id?: boolean
   productId?: boolean
+  slug?: boolean
+  name?: boolean
   enabled?: boolean
   status?: boolean
   imageProvider?: boolean
@@ -577,7 +708,7 @@ export type ProductLandingPageSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProductLandingPageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "enabled" | "status" | "imageProvider" | "finalImageUrl" | "sections" | "errorMessage" | "createdAt" | "updatedAt", ExtArgs["result"]["productLandingPage"]>
+export type ProductLandingPageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "slug" | "name" | "enabled" | "status" | "imageProvider" | "finalImageUrl" | "sections" | "errorMessage" | "createdAt" | "updatedAt", ExtArgs["result"]["productLandingPage"]>
 export type ProductLandingPageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
 }
@@ -596,6 +727,8 @@ export type $ProductLandingPagePayload<ExtArgs extends runtime.Types.Extensions.
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     productId: string
+    slug: string
+    name: string
     enabled: boolean
     status: $Enums.LandingPageStatus
     imageProvider: $Enums.LandingPageImageProvider
@@ -1030,6 +1163,8 @@ export interface Prisma__ProductLandingPageClient<T, Null = never, ExtArgs exten
 export interface ProductLandingPageFieldRefs {
   readonly id: Prisma.FieldRef<"ProductLandingPage", 'String'>
   readonly productId: Prisma.FieldRef<"ProductLandingPage", 'String'>
+  readonly slug: Prisma.FieldRef<"ProductLandingPage", 'String'>
+  readonly name: Prisma.FieldRef<"ProductLandingPage", 'String'>
   readonly enabled: Prisma.FieldRef<"ProductLandingPage", 'Boolean'>
   readonly status: Prisma.FieldRef<"ProductLandingPage", 'LandingPageStatus'>
   readonly imageProvider: Prisma.FieldRef<"ProductLandingPage", 'LandingPageImageProvider'>

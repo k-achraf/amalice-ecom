@@ -303,7 +303,7 @@ export type ProductWhereInput = {
   orderItems?: Prisma.OrderItemListRelationFilter
   reviews?: Prisma.ReviewListRelationFilter
   stockAdjustments?: Prisma.StockAdjustmentListRelationFilter
-  landingPage?: Prisma.XOR<Prisma.ProductLandingPageNullableScalarRelationFilter, Prisma.ProductLandingPageWhereInput> | null
+  landingPages?: Prisma.ProductLandingPageListRelationFilter
   offers?: Prisma.ProductOfferListRelationFilter
   upsellsOffered?: Prisma.ProductUpsellListRelationFilter
   upsellsAsTarget?: Prisma.ProductUpsellListRelationFilter
@@ -333,7 +333,7 @@ export type ProductOrderByWithRelationInput = {
   orderItems?: Prisma.OrderItemOrderByRelationAggregateInput
   reviews?: Prisma.ReviewOrderByRelationAggregateInput
   stockAdjustments?: Prisma.StockAdjustmentOrderByRelationAggregateInput
-  landingPage?: Prisma.ProductLandingPageOrderByWithRelationInput
+  landingPages?: Prisma.ProductLandingPageOrderByRelationAggregateInput
   offers?: Prisma.ProductOfferOrderByRelationAggregateInput
   upsellsOffered?: Prisma.ProductUpsellOrderByRelationAggregateInput
   upsellsAsTarget?: Prisma.ProductUpsellOrderByRelationAggregateInput
@@ -366,7 +366,7 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   orderItems?: Prisma.OrderItemListRelationFilter
   reviews?: Prisma.ReviewListRelationFilter
   stockAdjustments?: Prisma.StockAdjustmentListRelationFilter
-  landingPage?: Prisma.XOR<Prisma.ProductLandingPageNullableScalarRelationFilter, Prisma.ProductLandingPageWhereInput> | null
+  landingPages?: Prisma.ProductLandingPageListRelationFilter
   offers?: Prisma.ProductOfferListRelationFilter
   upsellsOffered?: Prisma.ProductUpsellListRelationFilter
   upsellsAsTarget?: Prisma.ProductUpsellListRelationFilter
@@ -437,7 +437,7 @@ export type ProductCreateInput = {
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellCreateNestedManyWithoutUpsellProductInput
@@ -466,7 +466,7 @@ export type ProductUncheckedCreateInput = {
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageUncheckedCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageUncheckedCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferUncheckedCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutUpsellProductInput
@@ -495,7 +495,7 @@ export type ProductUpdateInput = {
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUpdateManyWithoutUpsellProductNestedInput
@@ -524,7 +524,7 @@ export type ProductUncheckedUpdateInput = {
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUncheckedUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUncheckedUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUncheckedUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedUpdateManyWithoutUpsellProductNestedInput
@@ -707,18 +707,18 @@ export type ProductUncheckedUpdateManyWithoutCategoryRefNestedInput = {
   deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[]
 }
 
-export type ProductCreateNestedOneWithoutLandingPageInput = {
-  create?: Prisma.XOR<Prisma.ProductCreateWithoutLandingPageInput, Prisma.ProductUncheckedCreateWithoutLandingPageInput>
-  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutLandingPageInput
+export type ProductCreateNestedOneWithoutLandingPagesInput = {
+  create?: Prisma.XOR<Prisma.ProductCreateWithoutLandingPagesInput, Prisma.ProductUncheckedCreateWithoutLandingPagesInput>
+  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutLandingPagesInput
   connect?: Prisma.ProductWhereUniqueInput
 }
 
-export type ProductUpdateOneRequiredWithoutLandingPageNestedInput = {
-  create?: Prisma.XOR<Prisma.ProductCreateWithoutLandingPageInput, Prisma.ProductUncheckedCreateWithoutLandingPageInput>
-  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutLandingPageInput
-  upsert?: Prisma.ProductUpsertWithoutLandingPageInput
+export type ProductUpdateOneRequiredWithoutLandingPagesNestedInput = {
+  create?: Prisma.XOR<Prisma.ProductCreateWithoutLandingPagesInput, Prisma.ProductUncheckedCreateWithoutLandingPagesInput>
+  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutLandingPagesInput
+  upsert?: Prisma.ProductUpsertWithoutLandingPagesInput
   connect?: Prisma.ProductWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.ProductUpdateToOneWithWhereWithoutLandingPageInput, Prisma.ProductUpdateWithoutLandingPageInput>, Prisma.ProductUncheckedUpdateWithoutLandingPageInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProductUpdateToOneWithWhereWithoutLandingPagesInput, Prisma.ProductUpdateWithoutLandingPagesInput>, Prisma.ProductUncheckedUpdateWithoutLandingPagesInput>
 }
 
 export type ProductCreateNestedOneWithoutImagesInput = {
@@ -897,7 +897,7 @@ export type ProductCreateWithoutCategoryRefInput = {
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellCreateNestedManyWithoutUpsellProductInput
@@ -925,7 +925,7 @@ export type ProductUncheckedCreateWithoutCategoryRefInput = {
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageUncheckedCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageUncheckedCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferUncheckedCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutUpsellProductInput
@@ -979,7 +979,7 @@ export type ProductScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
 }
 
-export type ProductCreateWithoutLandingPageInput = {
+export type ProductCreateWithoutLandingPagesInput = {
   id?: string
   name: string
   slug: string
@@ -1007,7 +1007,7 @@ export type ProductCreateWithoutLandingPageInput = {
   sourcedFrom?: Prisma.SourcedProductCreateNestedOneWithoutLinkedProductInput
 }
 
-export type ProductUncheckedCreateWithoutLandingPageInput = {
+export type ProductUncheckedCreateWithoutLandingPagesInput = {
   id?: string
   name: string
   slug: string
@@ -1035,23 +1035,23 @@ export type ProductUncheckedCreateWithoutLandingPageInput = {
   sourcedFrom?: Prisma.SourcedProductUncheckedCreateNestedOneWithoutLinkedProductInput
 }
 
-export type ProductCreateOrConnectWithoutLandingPageInput = {
+export type ProductCreateOrConnectWithoutLandingPagesInput = {
   where: Prisma.ProductWhereUniqueInput
-  create: Prisma.XOR<Prisma.ProductCreateWithoutLandingPageInput, Prisma.ProductUncheckedCreateWithoutLandingPageInput>
+  create: Prisma.XOR<Prisma.ProductCreateWithoutLandingPagesInput, Prisma.ProductUncheckedCreateWithoutLandingPagesInput>
 }
 
-export type ProductUpsertWithoutLandingPageInput = {
-  update: Prisma.XOR<Prisma.ProductUpdateWithoutLandingPageInput, Prisma.ProductUncheckedUpdateWithoutLandingPageInput>
-  create: Prisma.XOR<Prisma.ProductCreateWithoutLandingPageInput, Prisma.ProductUncheckedCreateWithoutLandingPageInput>
+export type ProductUpsertWithoutLandingPagesInput = {
+  update: Prisma.XOR<Prisma.ProductUpdateWithoutLandingPagesInput, Prisma.ProductUncheckedUpdateWithoutLandingPagesInput>
+  create: Prisma.XOR<Prisma.ProductCreateWithoutLandingPagesInput, Prisma.ProductUncheckedCreateWithoutLandingPagesInput>
   where?: Prisma.ProductWhereInput
 }
 
-export type ProductUpdateToOneWithWhereWithoutLandingPageInput = {
+export type ProductUpdateToOneWithWhereWithoutLandingPagesInput = {
   where?: Prisma.ProductWhereInput
-  data: Prisma.XOR<Prisma.ProductUpdateWithoutLandingPageInput, Prisma.ProductUncheckedUpdateWithoutLandingPageInput>
+  data: Prisma.XOR<Prisma.ProductUpdateWithoutLandingPagesInput, Prisma.ProductUncheckedUpdateWithoutLandingPagesInput>
 }
 
-export type ProductUpdateWithoutLandingPageInput = {
+export type ProductUpdateWithoutLandingPagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1079,7 +1079,7 @@ export type ProductUpdateWithoutLandingPageInput = {
   sourcedFrom?: Prisma.SourcedProductUpdateOneWithoutLinkedProductNestedInput
 }
 
-export type ProductUncheckedUpdateWithoutLandingPageInput = {
+export type ProductUncheckedUpdateWithoutLandingPagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1127,7 +1127,7 @@ export type ProductCreateWithoutImagesInput = {
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellCreateNestedManyWithoutUpsellProductInput
@@ -1155,7 +1155,7 @@ export type ProductUncheckedCreateWithoutImagesInput = {
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageUncheckedCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageUncheckedCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferUncheckedCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutUpsellProductInput
@@ -1199,7 +1199,7 @@ export type ProductUpdateWithoutImagesInput = {
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUpdateManyWithoutUpsellProductNestedInput
@@ -1227,7 +1227,7 @@ export type ProductUncheckedUpdateWithoutImagesInput = {
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUncheckedUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUncheckedUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUncheckedUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedUpdateManyWithoutUpsellProductNestedInput
@@ -1255,7 +1255,7 @@ export type ProductCreateWithoutVariantsInput = {
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellCreateNestedManyWithoutUpsellProductInput
@@ -1283,7 +1283,7 @@ export type ProductUncheckedCreateWithoutVariantsInput = {
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageUncheckedCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageUncheckedCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferUncheckedCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutUpsellProductInput
@@ -1327,7 +1327,7 @@ export type ProductUpdateWithoutVariantsInput = {
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUpdateManyWithoutUpsellProductNestedInput
@@ -1355,7 +1355,7 @@ export type ProductUncheckedUpdateWithoutVariantsInput = {
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUncheckedUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUncheckedUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUncheckedUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedUpdateManyWithoutUpsellProductNestedInput
@@ -1383,7 +1383,7 @@ export type ProductCreateWithoutStockAdjustmentsInput = {
   productAttributes?: Prisma.ProductAttributeCreateNestedManyWithoutProductInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellCreateNestedManyWithoutUpsellProductInput
@@ -1411,7 +1411,7 @@ export type ProductUncheckedCreateWithoutStockAdjustmentsInput = {
   productAttributes?: Prisma.ProductAttributeUncheckedCreateNestedManyWithoutProductInput
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageUncheckedCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageUncheckedCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferUncheckedCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutUpsellProductInput
@@ -1455,7 +1455,7 @@ export type ProductUpdateWithoutStockAdjustmentsInput = {
   productAttributes?: Prisma.ProductAttributeUpdateManyWithoutProductNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUpdateManyWithoutUpsellProductNestedInput
@@ -1483,7 +1483,7 @@ export type ProductUncheckedUpdateWithoutStockAdjustmentsInput = {
   productAttributes?: Prisma.ProductAttributeUncheckedUpdateManyWithoutProductNestedInput
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUncheckedUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUncheckedUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUncheckedUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedUpdateManyWithoutUpsellProductNestedInput
@@ -1511,7 +1511,7 @@ export type ProductCreateWithoutProductAttributesInput = {
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellCreateNestedManyWithoutUpsellProductInput
@@ -1539,7 +1539,7 @@ export type ProductUncheckedCreateWithoutProductAttributesInput = {
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageUncheckedCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageUncheckedCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferUncheckedCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutUpsellProductInput
@@ -1583,7 +1583,7 @@ export type ProductUpdateWithoutProductAttributesInput = {
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUpdateManyWithoutUpsellProductNestedInput
@@ -1611,7 +1611,7 @@ export type ProductUncheckedUpdateWithoutProductAttributesInput = {
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUncheckedUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUncheckedUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUncheckedUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedUpdateManyWithoutUpsellProductNestedInput
@@ -1639,7 +1639,7 @@ export type ProductCreateWithoutReviewsInput = {
   productAttributes?: Prisma.ProductAttributeCreateNestedManyWithoutProductInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellCreateNestedManyWithoutUpsellProductInput
@@ -1667,7 +1667,7 @@ export type ProductUncheckedCreateWithoutReviewsInput = {
   productAttributes?: Prisma.ProductAttributeUncheckedCreateNestedManyWithoutProductInput
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageUncheckedCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageUncheckedCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferUncheckedCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutUpsellProductInput
@@ -1711,7 +1711,7 @@ export type ProductUpdateWithoutReviewsInput = {
   productAttributes?: Prisma.ProductAttributeUpdateManyWithoutProductNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUpdateManyWithoutUpsellProductNestedInput
@@ -1739,7 +1739,7 @@ export type ProductUncheckedUpdateWithoutReviewsInput = {
   productAttributes?: Prisma.ProductAttributeUncheckedUpdateManyWithoutProductNestedInput
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUncheckedUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUncheckedUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUncheckedUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedUpdateManyWithoutUpsellProductNestedInput
@@ -1767,7 +1767,7 @@ export type ProductCreateWithoutOrderItemsInput = {
   productAttributes?: Prisma.ProductAttributeCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellCreateNestedManyWithoutUpsellProductInput
@@ -1795,7 +1795,7 @@ export type ProductUncheckedCreateWithoutOrderItemsInput = {
   productAttributes?: Prisma.ProductAttributeUncheckedCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageUncheckedCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageUncheckedCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferUncheckedCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutUpsellProductInput
@@ -1839,7 +1839,7 @@ export type ProductUpdateWithoutOrderItemsInput = {
   productAttributes?: Prisma.ProductAttributeUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUpdateManyWithoutUpsellProductNestedInput
@@ -1867,7 +1867,7 @@ export type ProductUncheckedUpdateWithoutOrderItemsInput = {
   productAttributes?: Prisma.ProductAttributeUncheckedUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUncheckedUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUncheckedUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUncheckedUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedUpdateManyWithoutUpsellProductNestedInput
@@ -1896,7 +1896,7 @@ export type ProductCreateWithoutOffersInput = {
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellCreateNestedManyWithoutUpsellProductInput
   googleSheets?: Prisma.ProductGoogleSheetCreateNestedManyWithoutProductInput
@@ -1924,7 +1924,7 @@ export type ProductUncheckedCreateWithoutOffersInput = {
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageUncheckedCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageUncheckedCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutUpsellProductInput
   googleSheets?: Prisma.ProductGoogleSheetUncheckedCreateNestedManyWithoutProductInput
@@ -1968,7 +1968,7 @@ export type ProductUpdateWithoutOffersInput = {
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUpdateManyWithoutUpsellProductNestedInput
   googleSheets?: Prisma.ProductGoogleSheetUpdateManyWithoutProductNestedInput
@@ -1996,7 +1996,7 @@ export type ProductUncheckedUpdateWithoutOffersInput = {
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUncheckedUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUncheckedUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedUpdateManyWithoutUpsellProductNestedInput
   googleSheets?: Prisma.ProductGoogleSheetUncheckedUpdateManyWithoutProductNestedInput
@@ -2024,7 +2024,7 @@ export type ProductCreateWithoutUpsellsOfferedInput = {
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellCreateNestedManyWithoutUpsellProductInput
   googleSheets?: Prisma.ProductGoogleSheetCreateNestedManyWithoutProductInput
@@ -2052,7 +2052,7 @@ export type ProductUncheckedCreateWithoutUpsellsOfferedInput = {
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageUncheckedCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageUncheckedCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferUncheckedCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutUpsellProductInput
   googleSheets?: Prisma.ProductGoogleSheetUncheckedCreateNestedManyWithoutProductInput
@@ -2085,7 +2085,7 @@ export type ProductCreateWithoutUpsellsAsTargetInput = {
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellCreateNestedManyWithoutProductInput
   googleSheets?: Prisma.ProductGoogleSheetCreateNestedManyWithoutProductInput
@@ -2113,7 +2113,7 @@ export type ProductUncheckedCreateWithoutUpsellsAsTargetInput = {
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageUncheckedCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageUncheckedCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferUncheckedCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutProductInput
   googleSheets?: Prisma.ProductGoogleSheetUncheckedCreateNestedManyWithoutProductInput
@@ -2157,7 +2157,7 @@ export type ProductUpdateWithoutUpsellsOfferedInput = {
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUpdateManyWithoutUpsellProductNestedInput
   googleSheets?: Prisma.ProductGoogleSheetUpdateManyWithoutProductNestedInput
@@ -2185,7 +2185,7 @@ export type ProductUncheckedUpdateWithoutUpsellsOfferedInput = {
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUncheckedUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUncheckedUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUncheckedUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedUpdateManyWithoutUpsellProductNestedInput
   googleSheets?: Prisma.ProductGoogleSheetUncheckedUpdateManyWithoutProductNestedInput
@@ -2224,7 +2224,7 @@ export type ProductUpdateWithoutUpsellsAsTargetInput = {
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUpdateManyWithoutProductNestedInput
   googleSheets?: Prisma.ProductGoogleSheetUpdateManyWithoutProductNestedInput
@@ -2252,7 +2252,7 @@ export type ProductUncheckedUpdateWithoutUpsellsAsTargetInput = {
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUncheckedUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUncheckedUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUncheckedUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedUpdateManyWithoutProductNestedInput
   googleSheets?: Prisma.ProductGoogleSheetUncheckedUpdateManyWithoutProductNestedInput
@@ -2280,7 +2280,7 @@ export type ProductCreateWithoutGoogleSheetsInput = {
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellCreateNestedManyWithoutUpsellProductInput
@@ -2308,7 +2308,7 @@ export type ProductUncheckedCreateWithoutGoogleSheetsInput = {
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageUncheckedCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageUncheckedCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferUncheckedCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutUpsellProductInput
@@ -2352,7 +2352,7 @@ export type ProductUpdateWithoutGoogleSheetsInput = {
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUpdateManyWithoutUpsellProductNestedInput
@@ -2380,7 +2380,7 @@ export type ProductUncheckedUpdateWithoutGoogleSheetsInput = {
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUncheckedUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUncheckedUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUncheckedUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedUpdateManyWithoutUpsellProductNestedInput
@@ -2408,7 +2408,7 @@ export type ProductCreateWithoutSourcedFromInput = {
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellCreateNestedManyWithoutUpsellProductInput
@@ -2436,7 +2436,7 @@ export type ProductUncheckedCreateWithoutSourcedFromInput = {
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutProductInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedCreateNestedManyWithoutProductInput
-  landingPage?: Prisma.ProductLandingPageUncheckedCreateNestedOneWithoutProductInput
+  landingPages?: Prisma.ProductLandingPageUncheckedCreateNestedManyWithoutProductInput
   offers?: Prisma.ProductOfferUncheckedCreateNestedManyWithoutProductInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutProductInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedCreateNestedManyWithoutUpsellProductInput
@@ -2480,7 +2480,7 @@ export type ProductUpdateWithoutSourcedFromInput = {
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUpdateManyWithoutUpsellProductNestedInput
@@ -2508,7 +2508,7 @@ export type ProductUncheckedUpdateWithoutSourcedFromInput = {
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUncheckedUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUncheckedUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUncheckedUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedUpdateManyWithoutUpsellProductNestedInput
@@ -2551,7 +2551,7 @@ export type ProductUpdateWithoutCategoryRefInput = {
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUpdateManyWithoutUpsellProductNestedInput
@@ -2579,7 +2579,7 @@ export type ProductUncheckedUpdateWithoutCategoryRefInput = {
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutProductNestedInput
   stockAdjustments?: Prisma.StockAdjustmentUncheckedUpdateManyWithoutProductNestedInput
-  landingPage?: Prisma.ProductLandingPageUncheckedUpdateOneWithoutProductNestedInput
+  landingPages?: Prisma.ProductLandingPageUncheckedUpdateManyWithoutProductNestedInput
   offers?: Prisma.ProductOfferUncheckedUpdateManyWithoutProductNestedInput
   upsellsOffered?: Prisma.ProductUpsellUncheckedUpdateManyWithoutProductNestedInput
   upsellsAsTarget?: Prisma.ProductUpsellUncheckedUpdateManyWithoutUpsellProductNestedInput
@@ -2615,6 +2615,7 @@ export type ProductCountOutputType = {
   orderItems: number
   reviews: number
   stockAdjustments: number
+  landingPages: number
   offers: number
   upsellsOffered: number
   upsellsAsTarget: number
@@ -2628,6 +2629,7 @@ export type ProductCountOutputTypeSelect<ExtArgs extends runtime.Types.Extension
   orderItems?: boolean | ProductCountOutputTypeCountOrderItemsArgs
   reviews?: boolean | ProductCountOutputTypeCountReviewsArgs
   stockAdjustments?: boolean | ProductCountOutputTypeCountStockAdjustmentsArgs
+  landingPages?: boolean | ProductCountOutputTypeCountLandingPagesArgs
   offers?: boolean | ProductCountOutputTypeCountOffersArgs
   upsellsOffered?: boolean | ProductCountOutputTypeCountUpsellsOfferedArgs
   upsellsAsTarget?: boolean | ProductCountOutputTypeCountUpsellsAsTargetArgs
@@ -2689,6 +2691,13 @@ export type ProductCountOutputTypeCountStockAdjustmentsArgs<ExtArgs extends runt
 /**
  * ProductCountOutputType without action
  */
+export type ProductCountOutputTypeCountLandingPagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProductLandingPageWhereInput
+}
+
+/**
+ * ProductCountOutputType without action
+ */
 export type ProductCountOutputTypeCountOffersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ProductOfferWhereInput
 }
@@ -2737,7 +2746,7 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   orderItems?: boolean | Prisma.Product$orderItemsArgs<ExtArgs>
   reviews?: boolean | Prisma.Product$reviewsArgs<ExtArgs>
   stockAdjustments?: boolean | Prisma.Product$stockAdjustmentsArgs<ExtArgs>
-  landingPage?: boolean | Prisma.Product$landingPageArgs<ExtArgs>
+  landingPages?: boolean | Prisma.Product$landingPagesArgs<ExtArgs>
   offers?: boolean | Prisma.Product$offersArgs<ExtArgs>
   upsellsOffered?: boolean | Prisma.Product$upsellsOfferedArgs<ExtArgs>
   upsellsAsTarget?: boolean | Prisma.Product$upsellsAsTargetArgs<ExtArgs>
@@ -2808,7 +2817,7 @@ export type ProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   orderItems?: boolean | Prisma.Product$orderItemsArgs<ExtArgs>
   reviews?: boolean | Prisma.Product$reviewsArgs<ExtArgs>
   stockAdjustments?: boolean | Prisma.Product$stockAdjustmentsArgs<ExtArgs>
-  landingPage?: boolean | Prisma.Product$landingPageArgs<ExtArgs>
+  landingPages?: boolean | Prisma.Product$landingPagesArgs<ExtArgs>
   offers?: boolean | Prisma.Product$offersArgs<ExtArgs>
   upsellsOffered?: boolean | Prisma.Product$upsellsOfferedArgs<ExtArgs>
   upsellsAsTarget?: boolean | Prisma.Product$upsellsAsTargetArgs<ExtArgs>
@@ -2833,7 +2842,7 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     orderItems: Prisma.$OrderItemPayload<ExtArgs>[]
     reviews: Prisma.$ReviewPayload<ExtArgs>[]
     stockAdjustments: Prisma.$StockAdjustmentPayload<ExtArgs>[]
-    landingPage: Prisma.$ProductLandingPagePayload<ExtArgs> | null
+    landingPages: Prisma.$ProductLandingPagePayload<ExtArgs>[]
     offers: Prisma.$ProductOfferPayload<ExtArgs>[]
     upsellsOffered: Prisma.$ProductUpsellPayload<ExtArgs>[]
     upsellsAsTarget: Prisma.$ProductUpsellPayload<ExtArgs>[]
@@ -3256,7 +3265,7 @@ export interface Prisma__ProductClient<T, Null = never, ExtArgs extends runtime.
   orderItems<T extends Prisma.Product$orderItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$orderItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reviews<T extends Prisma.Product$reviewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   stockAdjustments<T extends Prisma.Product$stockAdjustmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$stockAdjustmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StockAdjustmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  landingPage<T extends Prisma.Product$landingPageArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$landingPageArgs<ExtArgs>>): Prisma.Prisma__ProductLandingPageClient<runtime.Types.Result.GetResult<Prisma.$ProductLandingPagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  landingPages<T extends Prisma.Product$landingPagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$landingPagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductLandingPagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   offers<T extends Prisma.Product$offersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$offersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductOfferPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   upsellsOffered<T extends Prisma.Product$upsellsOfferedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$upsellsOfferedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductUpsellPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   upsellsAsTarget<T extends Prisma.Product$upsellsAsTargetArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$upsellsAsTargetArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductUpsellPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -3869,9 +3878,9 @@ export type Product$stockAdjustmentsArgs<ExtArgs extends runtime.Types.Extension
 }
 
 /**
- * Product.landingPage
+ * Product.landingPages
  */
-export type Product$landingPageArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Product$landingPagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the ProductLandingPage
    */
@@ -3885,6 +3894,11 @@ export type Product$landingPageArgs<ExtArgs extends runtime.Types.Extensions.Int
    */
   include?: Prisma.ProductLandingPageInclude<ExtArgs> | null
   where?: Prisma.ProductLandingPageWhereInput
+  orderBy?: Prisma.ProductLandingPageOrderByWithRelationInput | Prisma.ProductLandingPageOrderByWithRelationInput[]
+  cursor?: Prisma.ProductLandingPageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProductLandingPageScalarFieldEnum | Prisma.ProductLandingPageScalarFieldEnum[]
 }
 
 /**

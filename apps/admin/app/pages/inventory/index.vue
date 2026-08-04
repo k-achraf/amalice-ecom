@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import type { Product, ProductListResponse } from '@amalice/shared'
+import type { Product, ProductListResponse, ProductLandingPage } from '@amalice/shared'
 
 useHead({ title: 'Products' })
+
+const runtimeConfig = useRuntimeConfig()
 
 const route = useRoute()
 const router = useRouter()
@@ -109,6 +111,31 @@ function stockState(p: Product): 'out' | 'low' | 'ok' {
   if (p.stockQuantity <= p.lowStockThreshold) return 'low'
   return 'ok'
 }
+
+// Preview popover — normal product page (always available) + any AI landing
+// pages for this product (fetched lazily on open, one product's worth at a
+// time — the inventory list itself has no landing-page data in its row
+// projection, and eagerly fetching per-row on page load would be N+1).
+const previewOpenId = ref<string | null>(null)
+const previewLandingPages = ref<Record<string, ProductLandingPage[] | 'loading' | 'error'>>({})
+
+function productPageUrl(p: Product): string {
+  return `${runtimeConfig.public.storefrontBase}/products/${p.slug}`
+}
+function landingPageUrl(lp: ProductLandingPage): string {
+  return `${runtimeConfig.public.storefrontBase}/lp/${lp.slug}`
+}
+
+async function onPreviewToggle(p: Product, open: boolean) {
+  previewOpenId.value = open ? p.id : null
+  if (!open || previewLandingPages.value[p.id]) return
+  previewLandingPages.value[p.id] = 'loading'
+  try {
+    previewLandingPages.value[p.id] = await api<ProductLandingPage[]>(`/admin/products/${p.id}/landing-pages`)
+  } catch {
+    previewLandingPages.value[p.id] = 'error'
+  }
+}
 </script>
 
 <template>
@@ -148,6 +175,41 @@ function stockState(p: Product): 'out' | 'low' | 'ok' {
                   <UBadge :color="stockState(p) === 'out' ? 'error' : stockState(p) === 'low' ? 'warning' : 'success'" variant="subtle">{{ p.stockQuantity }}</UBadge>
                 </td>
                 <td class="px-4 py-3 text-right" @click.stop>
+                  <UPopover :open="previewOpenId === p.id" @update:open="(v: boolean) => onPreviewToggle(p, v)">
+                    <UButton icon="i-lucide-eye" size="xs" variant="ghost" color="neutral" label="Preview" />
+                    <template #content>
+                      <div class="w-72 space-y-1 p-3">
+                        <p class="px-1 text-xs font-medium uppercase text-muted">Preview</p>
+                        <a :href="productPageUrl(p)" target="_blank" rel="noopener" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-[var(--color-admin-row-hover)]">
+                          <UIcon name="i-lucide-package" class="size-4 shrink-0 text-muted" />
+                          <span class="flex-1 truncate">Product page</span>
+                          <UIcon name="i-lucide-external-link" class="size-3.5 shrink-0 text-muted" />
+                        </a>
+
+                        <div v-if="previewLandingPages[p.id] === 'loading'" class="px-2 py-3 text-center text-xs text-muted">Loading…</div>
+                        <div v-else-if="previewLandingPages[p.id] === 'error'" class="px-2 py-3 text-center text-xs text-error">Failed to load landing pages</div>
+                        <template v-else-if="Array.isArray(previewLandingPages[p.id]) && (previewLandingPages[p.id] as ProductLandingPage[]).length">
+                          <p class="mt-2 px-1 text-xs font-medium uppercase text-muted">Landing pages</p>
+                          <a
+                            v-for="lp in previewLandingPages[p.id] as ProductLandingPage[]"
+                            :key="lp.id"
+                            :href="landingPageUrl(lp)"
+                            target="_blank"
+                            rel="noopener"
+                            class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-[var(--color-admin-row-hover)]"
+                          >
+                            <UIcon name="i-lucide-image" class="size-4 shrink-0 text-muted" />
+                            <span class="flex-1 truncate">{{ lp.name }}</span>
+                            <UBadge v-if="lp.status !== 'Completed' || !lp.enabled" size="xs" color="neutral" variant="subtle">
+                              {{ lp.status !== 'Completed' ? lp.status : 'Hidden' }}
+                            </UBadge>
+                            <UIcon name="i-lucide-external-link" class="size-3.5 shrink-0 text-muted" />
+                          </a>
+                        </template>
+                        <p v-else class="px-2 py-3 text-center text-xs text-muted">No landing pages yet</p>
+                      </div>
+                    </template>
+                  </UPopover>
                   <UButton icon="i-lucide-pencil" size="xs" variant="ghost" color="neutral" label="Edit" :to="`/products/${p.id}`" />
                   <UButton icon="i-lucide-plus-minus" size="xs" variant="ghost" color="neutral" label="Stock" @click="openAdjust(p)" />
                 </td>

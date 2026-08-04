@@ -83,7 +83,7 @@ export class GeminiService {
   // marketing copy — a plain product description reads badly pasted
   // verbatim onto a landing-page image. Uses structured JSON output so the
   // result is directly usable without prompt-parsing heuristics.
-  async draftSectionCopy(input: { productName: string; description: string; sectionCount: number }): Promise<DraftedSection[]> {
+  async draftSectionCopy(input: { productName: string; description: string; sectionCount: number; instructions?: string }): Promise<DraftedSection[]> {
     const apiKey = this.requireApiKey()
 
     const featureCount = Math.max(1, input.sectionCount - 2)
@@ -91,7 +91,7 @@ export class GeminiService {
 
 Product: ${input.productName}
 Description: ${input.description}
-
+${input.instructions ? `\nAdditional instructions from the store owner (follow these closely — they override the defaults below where they conflict): ${input.instructions}\n` : ''}
 Write exactly ${input.sectionCount} sections in this order:
 1. One "hero" section — a bold, attention-grabbing headline (max 6 words) and one short supporting line (max 12 words).
 2. ${featureCount} "feature" section(s) — each highlights one distinct benefit or feature from the description, with a punchy headline (max 5 words) and a short supporting line (max 14 words).
@@ -142,6 +142,16 @@ Keep every line short — this is text overlaid on an image, not a paragraph. Do
     headline: string
     body: string
     sourceImages: InlineImage[]
+    // Freeform art-direction from the store owner — appended to the prompt
+    // whether this is a fresh generation or an edit (below).
+    instructions?: string
+    // When set, this is an EDIT of an already-generated section image
+    // (regenerateSection with instructions) rather than a from-scratch
+    // composition: the previous image is sent as the primary reference and
+    // the model is told to modify it per `instructions`, keeping everything
+    // else the same. The original product photos are still attached too, so
+    // the model can still check itself against the real product.
+    editImage?: InlineImage
   }): Promise<InlineImage> {
     const apiKey = this.requireApiKey()
 
@@ -151,12 +161,18 @@ Keep every line short — this is text overlaid on an image, not a paragraph. Do
       cta: 'Urgency-driven call-to-action banner. Use a strong accent color block or button-style graphic. Include a "cash on delivery" / easy-ordering visual cue.'
     }
 
-    const prompt = `Create ONE professional e-commerce marketing image, portrait/vertical orientation, for one section of a product landing page.
+    const prompt = input.editImage
+      ? `The first attached image is a previously generated e-commerce landing-page section. Edit it according to these instructions, keeping everything else about the composition, text, and product unchanged unless the instructions say otherwise:
+
+Instructions: "${input.instructions}"
+
+The remaining attached image(s) are the real product photo(s) for reference — keep the product itself accurate to them. Keep the existing overlaid text ("${input.headline}" / "${input.body}") unless the instructions ask to change it. Output ONE image, same portrait/vertical orientation, same high-quality advertising photography look.`
+      : `Create ONE professional e-commerce marketing image, portrait/vertical orientation, for one section of a product landing page.
 
 Use the attached product photo(s) as the actual product shown in the image — do not replace, redesign, or reinvent the product itself, only the background/composition/effects around it.
 
 Section style: ${styleByRole[input.role]}
-
+${input.instructions ? `\nAdditional instructions from the store owner (follow these closely): ${input.instructions}\n` : ''}
 Overlay this text directly into the image, cleanly and legibly, in a modern sans-serif style that fits the composition:
 Headline: "${input.headline}"
 Supporting text: "${input.body}"
@@ -164,6 +180,9 @@ Supporting text: "${input.body}"
 High-quality advertising photography look, no watermarks, no placeholder text other than what's specified above.`
 
     const parts: Record<string, unknown>[] = [{ text: prompt }]
+    if (input.editImage) {
+      parts.push({ inlineData: { mimeType: input.editImage.mimeType, data: input.editImage.base64 } })
+    }
     for (const image of input.sourceImages) {
       parts.push({ inlineData: { mimeType: image.mimeType, data: image.base64 } })
     }

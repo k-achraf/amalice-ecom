@@ -23,7 +23,11 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       // NUXT_PUBLIC_API_BASE overrides this at runtime.
-      apiBase: 'http://localhost:3333'
+      apiBase: 'http://localhost:3333',
+      // Base URL of the customer-facing storefront — used to build shareable
+      // product-page/landing-page links (product preview, landing-page URL
+      // display/copy). NUXT_PUBLIC_STOREFRONT_BASE overrides this at runtime.
+      storefrontBase: 'http://localhost:3000'
     }
   },
   app: {

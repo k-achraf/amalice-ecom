@@ -12,11 +12,13 @@ import { fetchImageAsInline, saveGeneratedImage, stitchSectionsVertically } from
 interface GenerateFullJob {
   landingPageId: string
   description: string
+  instructions?: string
 }
 
 interface RegenerateSectionJob {
   landingPageId: string
   sectionId: string
+  instructions?: string
 }
 
 // Does the actual AI work for the landing-page builder — see
@@ -75,7 +77,8 @@ export class LandingPagesProcessor extends WorkerHost {
     sections: LandingPageSection[],
     index: number,
     imageProvider: LandingPageImageProvider,
-    productName: string
+    productName: string,
+    instructions?: string
   ): Promise<LandingPageSection[]> {
     const section = sections[index]
     try {
@@ -85,15 +88,24 @@ export class LandingPagesProcessor extends WorkerHost {
           role: section.role,
           headline: section.headline,
           body: section.body,
-          productName
+          productName,
+          instructions
         })
       } else {
         const sourceImages = await Promise.all(section.sourceImageUrls.map((url) => fetchImageAsInline(url)))
+        // If this section already has a generated image AND we're re-running
+        // it with instructions, treat it as an EDIT of that existing image
+        // (see gemini.service.ts's editImage param) instead of a from-
+        // scratch composition — that's what "regenerate with instructions"
+        // means in the admin UI.
+        const editImage = instructions && section.imageUrl ? await fetchImageAsInline(section.imageUrl) : undefined
         generated = await this.gemini.generateSectionImage({
           role: section.role,
           headline: section.headline,
           body: section.body,
-          sourceImages
+          sourceImages,
+          instructions,
+          editImage
         })
       }
       const imageUrl = saveGeneratedImage(generated.base64, generated.mimeType)
@@ -141,7 +153,7 @@ export class LandingPagesProcessor extends WorkerHost {
   }
 
   private async processGenerateFull(job: Job<GenerateFullJob>): Promise<void> {
-    const { landingPageId, description } = job.data
+    const { landingPageId, description, instructions } = job.data
     const { sections: loadedSections, imageProvider, productName } = await this.loadRow(landingPageId)
     let sections = loadedSections
 
@@ -152,7 +164,7 @@ export class LandingPagesProcessor extends WorkerHost {
       const copy =
         imageProvider === 'Pollinations'
           ? draftSectionCopyHeuristically({ productName, description, sectionCount: sections.length })
-          : await this.gemini.draftSectionCopy({ productName, description, sectionCount: sections.length })
+          : await this.gemini.draftSectionCopy({ productName, description, sectionCount: sections.length, instructions })
       sections = sections.map((section, i) => ({
         ...section,
         role: copy[i]?.role ?? section.role,
@@ -174,7 +186,7 @@ export class LandingPagesProcessor extends WorkerHost {
     // the free tier's per-minute rate limits instead of bursting N
     // simultaneous requests at once.
     for (let i = 0; i < sections.length; i++) {
-      sections = await this.generateOneSection(sections, i, imageProvider, productName)
+      sections = await this.generateOneSection(sections, i, imageProvider, productName, instructions)
       await this.saveSections(landingPageId, sections)
     }
 
@@ -182,7 +194,7 @@ export class LandingPagesProcessor extends WorkerHost {
   }
 
   private async processRegenerateSection(job: Job<RegenerateSectionJob>): Promise<void> {
-    const { landingPageId, sectionId } = job.data
+    const { landingPageId, sectionId, instructions } = job.data
     const { sections: loadedSections, imageProvider, productName } = await this.loadRow(landingPageId)
     let sections = loadedSections
     const index = sections.findIndex((s) => s.id === sectionId)
@@ -191,7 +203,7 @@ export class LandingPagesProcessor extends WorkerHost {
       return
     }
 
-    sections = await this.generateOneSection(sections, index, imageProvider, productName)
+    sections = await this.generateOneSection(sections, index, imageProvider, productName, instructions)
     await this.saveSections(landingPageId, sections)
     await this.finalizeIfComplete(landingPageId, sections)
   }

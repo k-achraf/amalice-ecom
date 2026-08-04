@@ -367,36 +367,66 @@ const showVariantModalBool = computed({
 
 // ---- Landing Page tab ----
 // AI-generated long-scroll marketing image (hero + feature highlights +
-// CTA, stitched together server-side) — see apps/api/src/landing-pages.
-// Generation runs as a background job; this tab polls while status is
-// "Generating" and stops once it lands on Completed/Failed.
-const landingPage = ref<ProductLandingPage | null>(null)
+// CTA, stitched together server-side) — see apps/api/src/landing-pages. A
+// product can have MULTIPLE landing pages (different creative angles), each
+// its own storefront URL — separate from and in addition to the normal
+// product page, never replacing it. Generation runs as a background job;
+// this tab polls the whole list while ANY page is "Generating" and stops
+// once none are.
+const landingPages = ref<ProductLandingPage[]>([])
 const generatingLandingPage = ref(false)
 const selectedSourceImages = ref<string[]>([])
 const landingPageDescription = ref('')
+const landingPageInstructions = ref('')
+const landingPageName = ref('')
+const landingPageSlug = ref('')
 const sectionCount = ref(5)
 // Gemini edits the product's real photos and draws its own on-image text,
 // but needs Google Cloud billing enabled; Pollinations is free/keyless with
 // no billing step, but generates a generic product-style image (not the
 // real photos) and has the text composited on in code instead.
 const imageProvider = ref<'Gemini' | 'Pollinations'>('Gemini')
-let landingPageProviderTouched = false
 let landingPagePollTimer: ReturnType<typeof setInterval> | undefined
+const expandedLandingPageId = ref<string | null>(null)
+const savingEnabledFor = ref<string | null>(null)
+const deletingLandingPageId = ref<string | null>(null)
 
-async function fetchLandingPage() {
+// Full-size preview — clicking any section thumbnail or the final stitched
+// image opens it here instead of squinting at a small crop.
+const lightboxUrl = ref<string | null>(null)
+function openLightbox(url: string) {
+  lightboxUrl.value = resolveImgUrl(url)
+}
+
+// Per-section "edit with instructions" — clicking the chevron next to
+// Regenerate reveals a small instructions field for that section only
+// (kept per-sectionId so multiple can be open at once without clobbering
+// each other). Regenerating with instructions filled in edits the section's
+// existing image in place (see the API's editImage path) rather than
+// starting over from the original source photos.
+const sectionEditOpenFor = ref<Set<string>>(new Set())
+const sectionEditInstructions = reactive<Record<string, string>>({})
+function toggleSectionEdit(sectionId: string) {
+  const next = new Set(sectionEditOpenFor.value)
+  if (next.has(sectionId)) next.delete(sectionId)
+  else next.add(sectionId)
+  sectionEditOpenFor.value = next
+}
+
+function landingPageUrl(lp: ProductLandingPage): string {
+  return `${runtimeConfig.public.storefrontBase}/lp/${lp.slug}`
+}
+async function copyLandingPageUrl(lp: ProductLandingPage) {
+  await navigator.clipboard.writeText(landingPageUrl(lp))
+  toast.add({ title: 'URL copied', color: 'success' })
+}
+const productPageUrl = computed(() => (product.value ? `${runtimeConfig.public.storefrontBase}/products/${product.value.slug}` : ''))
+
+async function fetchLandingPages() {
   try {
-    landingPage.value = await api<ProductLandingPage | null>(`/admin/products/${id}/landing-page`)
+    landingPages.value = await api<ProductLandingPage[]>(`/admin/products/${id}/landing-pages`)
   } catch {
-    landingPage.value = null
-  }
-  // Restore the source-image selection and provider choice from the last
-  // generation so "Regenerate" works immediately without re-picking anything.
-  if (landingPage.value && selectedSourceImages.value.length === 0) {
-    const usedUrls = new Set(landingPage.value.sections.flatMap((s) => s.sourceImageUrls))
-    if (usedUrls.size) selectedSourceImages.value = [...usedUrls]
-  }
-  if (landingPage.value && !landingPageProviderTouched) {
-    imageProvider.value = landingPage.value.imageProvider
+    landingPages.value = []
   }
 }
 
@@ -405,17 +435,18 @@ function stopLandingPagePolling() {
   landingPagePollTimer = undefined
 }
 
-function startLandingPagePolling() {
+function startLandingPagePollingIfNeeded() {
   stopLandingPagePolling()
+  if (!landingPages.value.some((lp) => lp.status === 'Generating')) return
   landingPagePollTimer = setInterval(async () => {
-    await fetchLandingPage()
-    if (landingPage.value && landingPage.value.status !== 'Generating') stopLandingPagePolling()
+    await fetchLandingPages()
+    if (!landingPages.value.some((lp) => lp.status === 'Generating')) stopLandingPagePolling()
   }, 3000)
 }
 
 onMounted(async () => {
-  await fetchLandingPage()
-  if (landingPage.value?.status === 'Generating') startLandingPagePolling()
+  await fetchLandingPages()
+  startLandingPagePollingIfNeeded()
 })
 onUnmounted(() => stopLandingPagePolling())
 
@@ -433,7 +464,6 @@ function toggleSourceImage(url: string) {
 
 function selectImageProvider(provider: 'Gemini' | 'Pollinations') {
   imageProvider.value = provider
-  landingPageProviderTouched = true
 }
 
 async function generateLandingPage() {
@@ -447,16 +477,24 @@ async function generateLandingPage() {
   }
   generatingLandingPage.value = true
   try {
-    landingPage.value = await api<ProductLandingPage>(`/admin/products/${id}/landing-page/generate`, {
+    const created = await api<ProductLandingPage>(`/admin/products/${id}/landing-pages`, {
       method: 'POST',
       body: {
         sourceImageUrls: selectedSourceImages.value,
         description: landingPageDescription.value,
         sectionCount: sectionCount.value,
-        imageProvider: imageProvider.value
+        imageProvider: imageProvider.value,
+        name: landingPageName.value.trim() || undefined,
+        slug: landingPageSlug.value.trim() || undefined,
+        instructions: landingPageInstructions.value.trim() || undefined
       }
     })
-    startLandingPagePolling()
+    landingPages.value = [created, ...landingPages.value]
+    expandedLandingPageId.value = created.id
+    startLandingPagePollingIfNeeded()
+    landingPageName.value = ''
+    landingPageSlug.value = ''
+    landingPageInstructions.value = ''
     toast.add({ title: 'Generating landing page…', description: 'This can take a minute or two — feel free to switch tabs.', color: 'info' })
   } catch (err) {
     const data = (err as { data?: { message?: string } })?.data
@@ -466,23 +504,53 @@ async function generateLandingPage() {
   }
 }
 
-async function regenerateSection(sectionId: string) {
+function replaceInList(updated: ProductLandingPage) {
+  landingPages.value = landingPages.value.map((lp) => (lp.id === updated.id ? updated : lp))
+}
+
+async function regenerateSection(landingPageId: string, sectionId: string) {
+  const instructions = sectionEditInstructions[sectionId]?.trim() || undefined
   try {
-    landingPage.value = await api<ProductLandingPage>(`/admin/products/${id}/landing-page/sections/${sectionId}/regenerate`, { method: 'POST' })
-    startLandingPagePolling()
+    replaceInList(
+      await api<ProductLandingPage>(`/admin/landing-pages/${landingPageId}/sections/${sectionId}/regenerate`, {
+        method: 'POST',
+        body: { instructions }
+      })
+    )
+    startLandingPagePollingIfNeeded()
+    sectionEditInstructions[sectionId] = ''
+    sectionEditOpenFor.value = new Set([...sectionEditOpenFor.value].filter((id) => id !== sectionId))
   } catch (err) {
     const data = (err as { data?: { message?: string } })?.data
     toast.add({ title: 'Failed to regenerate section', description: data?.message, color: 'error' })
   }
 }
 
-async function toggleLandingPageEnabled(enabled: boolean) {
+async function toggleLandingPageEnabled(landingPageId: string, enabled: boolean) {
+  savingEnabledFor.value = landingPageId
   try {
-    landingPage.value = await api<ProductLandingPage>(`/admin/products/${id}/landing-page`, { method: 'PUT', body: { enabled } })
-    toast.add({ title: enabled ? 'Now shown on the storefront' : 'Hidden from the storefront', color: 'success' })
+    replaceInList(await api<ProductLandingPage>(`/admin/landing-pages/${landingPageId}`, { method: 'PUT', body: { enabled } }))
+    toast.add({ title: enabled ? 'Now live at its URL' : 'Hidden', color: 'success' })
   } catch (err) {
     const data = (err as { data?: { message?: string } })?.data
     toast.add({ title: 'Failed to update', description: data?.message, color: 'error' })
+  } finally {
+    savingEnabledFor.value = null
+  }
+}
+
+async function deleteLandingPage(lp: ProductLandingPage) {
+  if (!confirm(`Delete "${lp.name}"? This can't be undone.`)) return
+  deletingLandingPageId.value = lp.id
+  try {
+    await api(`/admin/landing-pages/${lp.id}`, { method: 'DELETE' })
+    landingPages.value = landingPages.value.filter((x) => x.id !== lp.id)
+    toast.add({ title: 'Landing page deleted', color: 'success' })
+  } catch (err) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: 'Failed to delete', description: data?.message, color: 'error' })
+  } finally {
+    deletingLandingPageId.value = null
   }
 }
 
@@ -886,20 +954,164 @@ async function deleteUpsell(upsellId: string) {
 
         <!-- Landing Page Tab -->
         <div v-show="activeTab === 'landingPage'" class="space-y-5">
+          <!-- Normal product page — always reachable, never affected by
+               landing pages below. -->
+          <div class="admin-kpi-card flex items-center justify-between gap-3 p-4">
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-highlighted">Product page</p>
+              <a :href="productPageUrl" target="_blank" rel="noopener" class="truncate text-xs text-primary hover:underline">{{ productPageUrl }}</a>
+            </div>
+            <UButton icon="i-lucide-external-link" size="xs" variant="outline" color="neutral" label="View" :to="productPageUrl" target="_blank" />
+          </div>
+
+          <!-- Existing landing pages — a product can have several, each its
+               own URL, independently enabled. -->
+          <div v-if="landingPages.length" class="space-y-3">
+            <h3 class="text-sm font-medium text-muted">Landing pages ({{ landingPages.length }})</h3>
+            <div v-for="lp in landingPages" :key="lp.id" class="admin-kpi-card space-y-4 p-6">
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h4 class="font-medium text-highlighted">{{ lp.name }}</h4>
+                    <UBadge :color="sectionStatusColor[lp.status.toLowerCase()] ?? 'neutral'" variant="subtle">{{ lp.status }}</UBadge>
+                    <UBadge color="neutral" variant="outline">{{ lp.imageProvider }}</UBadge>
+                    <UIcon v-if="lp.status === 'Generating'" name="i-lucide-loader-circle" class="size-4 animate-spin text-muted" />
+                  </div>
+                  <div class="mt-1 flex items-center gap-1.5">
+                    <a :href="landingPageUrl(lp)" target="_blank" rel="noopener" class="truncate text-xs text-primary hover:underline">{{ landingPageUrl(lp) }}</a>
+                    <UButton icon="i-lucide-copy" size="2xs" variant="ghost" color="neutral" title="Copy URL" @click="copyLandingPageUrl(lp)" />
+                  </div>
+                </div>
+                <div class="flex shrink-0 items-center gap-2">
+                  <div v-if="lp.status === 'Completed'" class="flex items-center gap-1.5">
+                    <span class="text-xs text-muted">Live</span>
+                    <USwitch :model-value="lp.enabled" :loading="savingEnabledFor === lp.id" @update:model-value="toggleLandingPageEnabled(lp.id, $event as boolean)" />
+                  </div>
+                  <UButton
+                    icon="i-lucide-chevron-down"
+                    size="xs"
+                    variant="ghost"
+                    color="neutral"
+                    :class="expandedLandingPageId === lp.id && 'rotate-180'"
+                    @click="expandedLandingPageId = expandedLandingPageId === lp.id ? null : lp.id"
+                  />
+                  <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" :loading="deletingLandingPageId === lp.id" @click="deleteLandingPage(lp)" />
+                </div>
+              </div>
+
+              <p v-if="lp.errorMessage" class="flex items-start gap-1.5 text-sm text-error">
+                <UIcon name="i-lucide-alert-triangle" class="mt-0.5 size-4 shrink-0" />
+                {{ lp.errorMessage }}
+              </p>
+
+              <template v-if="expandedLandingPageId === lp.id">
+                <div v-if="lp.sections.length" class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <div v-for="section in lp.sections" :key="section.id" class="space-y-1.5 rounded-md border border-[var(--color-admin-border)] p-2">
+                    <button
+                      type="button"
+                      class="flex aspect-[3/4] w-full items-center justify-center overflow-hidden rounded bg-[var(--color-admin-surface-tint)]"
+                      :class="section.imageUrl && 'cursor-zoom-in'"
+                      :disabled="!section.imageUrl"
+                      @click="section.imageUrl && openLightbox(section.imageUrl)"
+                    >
+                      <img v-if="section.imageUrl" :src="resolveImgUrl(section.imageUrl)" class="size-full object-cover" />
+                      <UIcon
+                        v-else
+                        :name="section.status === 'failed' ? 'i-lucide-circle-x' : 'i-lucide-loader-circle'"
+                        class="size-6 text-muted"
+                        :class="section.status !== 'failed' && 'animate-spin'"
+                      />
+                    </button>
+                    <p class="line-clamp-2 text-xs font-medium text-highlighted">
+                      <span class="uppercase text-muted">{{ section.role }}</span>
+                      <template v-if="section.headline"> — {{ section.headline }}</template>
+                    </p>
+                    <div class="flex gap-1">
+                      <UButton
+                        size="xs"
+                        variant="soft"
+                        color="neutral"
+                        icon="i-lucide-refresh-cw"
+                        block
+                        class="flex-1"
+                        :disabled="section.status === 'generating'"
+                        @click="regenerateSection(lp.id, section.id)"
+                      >
+                        Regenerate
+                      </UButton>
+                      <UButton
+                        size="xs"
+                        variant="soft"
+                        color="neutral"
+                        icon="i-lucide-pencil"
+                        title="Edit with instructions"
+                        :disabled="section.status === 'generating'"
+                        @click="toggleSectionEdit(section.id)"
+                      />
+                    </div>
+                    <div v-if="sectionEditOpenFor.has(section.id)" class="space-y-1.5">
+                      <UTextarea
+                        v-model="sectionEditInstructions[section.id]"
+                        placeholder="e.g. make the background blue, remove the price tag…"
+                        :rows="2"
+                        class="w-full text-xs"
+                      />
+                      <UButton
+                        size="xs"
+                        variant="solid"
+                        color="primary"
+                        icon="i-lucide-wand-2"
+                        block
+                        :disabled="section.status === 'generating' || !sectionEditInstructions[section.id]?.trim()"
+                        @click="regenerateSection(lp.id, section.id)"
+                      >
+                        {{ section.imageUrl ? 'Edit image' : 'Generate with instructions' }}
+                      </UButton>
+                    </div>
+                  </div>
+                </div>
+
+                <div v-if="lp.finalImageUrl">
+                  <h4 class="mb-2 text-sm font-medium text-muted">Final long image</h4>
+                  <button type="button" class="cursor-zoom-in" @click="openLightbox(lp.finalImageUrl)">
+                    <img :src="resolveImgUrl(lp.finalImageUrl)" class="w-full max-w-sm rounded-md border border-[var(--color-admin-border)]" />
+                  </button>
+                </div>
+              </template>
+            </div>
+          </div>
+
           <div class="admin-kpi-card space-y-5 p-6">
             <div>
               <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
-                <UIcon name="i-lucide-sparkles" class="size-4 text-primary" /> AI Landing Page
+                <UIcon name="i-lucide-sparkles" class="size-4 text-primary" /> Generate a new landing page
               </h3>
               <p class="text-sm text-muted">
                 Turns this product's photos and description into a long-scroll marketing image — a hero section, a
                 few feature highlights, and a call-to-action, each generated with its own text and effects, then
-                combined into one image.
+                combined into one image. Publishes at its own URL, separate from the normal product page above —
+                generate as many as you like (different angles for different ad campaigns).
               </p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <UFormField label="Name" help="To tell multiple landing pages apart later — e.g. “TikTok angle”.">
+                <UInput v-model="landingPageName" placeholder="Landing Page" class="w-full" />
+              </UFormField>
+              <UFormField label="Custom URL (optional)" help="Leave blank to auto-generate from the product name.">
+                <div class="flex items-center gap-1 text-sm">
+                  <span class="shrink-0 text-xs text-muted">/lp/</span>
+                  <UInput v-model="landingPageSlug" placeholder="auto-generated" class="w-full" />
+                </div>
+              </UFormField>
             </div>
 
             <UFormField label="Description to generate from" help="Prefilled from the product description — edit for punchier landing-page copy before generating.">
               <UTextarea v-model="landingPageDescription" class="w-full" :rows="4" />
+            </UFormField>
+
+            <UFormField label="Additional instructions (optional)" help="Art-direction or copy steer on top of the description — e.g. “target a younger audience”, “use a beach background”, “emphasize the 2-year warranty”.">
+              <UTextarea v-model="landingPageInstructions" placeholder="Any specific direction for the copy or visuals…" class="w-full" :rows="2" />
             </UFormField>
 
             <UFormField label="Source images" help="Pick 1–10 of this product's photos — the AI uses the real product shown in these, not an invented one.">
@@ -955,61 +1167,8 @@ async function deleteUpsell(upsellId: string) {
               icon="i-lucide-sparkles"
               @click="generateLandingPage"
             >
-              {{ landingPage ? 'Regenerate landing page' : 'Generate landing page' }}
+              Generate landing page
             </UButton>
-          </div>
-
-          <div v-if="landingPage" class="admin-kpi-card space-y-4 p-6">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <UBadge :color="sectionStatusColor[landingPage.status.toLowerCase()] ?? 'neutral'" variant="subtle">{{ landingPage.status }}</UBadge>
-                <UBadge color="neutral" variant="outline">{{ landingPage.imageProvider }}</UBadge>
-                <UIcon v-if="landingPage.status === 'Generating'" name="i-lucide-loader-circle" class="size-4 animate-spin text-muted" />
-              </div>
-              <div v-if="landingPage.status === 'Completed'" class="flex items-center gap-2">
-                <span class="text-sm text-muted">Show on storefront</span>
-                <USwitch :model-value="landingPage.enabled" @update:model-value="toggleLandingPageEnabled($event as boolean)" />
-              </div>
-            </div>
-
-            <p v-if="landingPage.errorMessage" class="flex items-start gap-1.5 text-sm text-error">
-              <UIcon name="i-lucide-alert-triangle" class="mt-0.5 size-4 shrink-0" />
-              {{ landingPage.errorMessage }}
-            </p>
-
-            <div v-if="landingPage.sections.length" class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              <div v-for="section in landingPage.sections" :key="section.id" class="space-y-1.5 rounded-md border border-[var(--color-admin-border)] p-2">
-                <div class="flex aspect-[3/4] items-center justify-center overflow-hidden rounded bg-[var(--color-admin-surface-tint)]">
-                  <img v-if="section.imageUrl" :src="resolveImgUrl(section.imageUrl)" class="size-full object-cover" />
-                  <UIcon
-                    v-else
-                    :name="section.status === 'failed' ? 'i-lucide-circle-x' : 'i-lucide-loader-circle'"
-                    class="size-6 text-muted"
-                    :class="section.status !== 'failed' && 'animate-spin'"
-                  />
-                </div>
-                <p class="line-clamp-2 text-xs font-medium text-highlighted">
-                  <span class="uppercase text-muted">{{ section.role }}</span>
-                  <template v-if="section.headline"> — {{ section.headline }}</template>
-                </p>
-                <UButton
-                  size="xs"
-                  variant="soft"
-                  color="neutral"
-                  icon="i-lucide-refresh-cw"
-                  block
-                  :disabled="section.status === 'generating'"
-                  @click="regenerateSection(section.id)"
-                >
-                  Regenerate
-                </UButton>
-              </div>
-            </div>
-
-            <div v-if="landingPage.finalImageUrl">
-              <h4 class="mb-2 text-sm font-medium text-muted">Final long image</h4>
-              <img :src="resolveImgUrl(landingPage.finalImageUrl)" class="w-full max-w-sm rounded-md border border-[var(--color-admin-border)]" />
-            </div>
           </div>
         </div>
 
@@ -1282,6 +1441,24 @@ async function deleteUpsell(upsellId: string) {
                 <UButton :loading="generating" icon="i-lucide-check" label="Create all" color="primary" @click="createGeneratedVariants" />
               </div>
             </div>
+          </div>
+        </template>
+      </UModal>
+
+      <!-- Lightbox — full-size preview for any landing-page section/final
+           image (see openLightbox in the Landing Page tab's script). -->
+      <UModal :open="!!lightboxUrl" :ui="{ content: 'max-w-4xl' }" @update:open="(v: boolean) => { if (!v) lightboxUrl = null }">
+        <template #content>
+          <div class="relative">
+            <UButton
+              icon="i-lucide-x"
+              size="sm"
+              variant="solid"
+              color="neutral"
+              class="absolute right-2 top-2 z-10"
+              @click="lightboxUrl = null"
+            />
+            <img v-if="lightboxUrl" :src="lightboxUrl" class="max-h-[85vh] w-full rounded-lg object-contain" />
           </div>
         </template>
       </UModal>

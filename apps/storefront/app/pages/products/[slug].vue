@@ -32,16 +32,13 @@ const { data: reviewData } = await useApiFetch<{ summary: RatingSummary; items: 
   { key: `reviews-${slug}` }
 )
 
-// AI landing page (apps/api/src/landing-pages) — null unless the merchant
-// generated one AND enabled it for this product. When present, the PDP
-// shows this long-scroll image in place of the plain gallery+description;
-// the actual buy mechanism (price/variants/add-to-cart or lead form) stays
-// unchanged either way.
-const { data: landingPage } = await useApiFetch<{ finalImageUrl: string } | null>(
-  `/products/${slug}/landing-page`,
-  { key: `landing-page-${slug}` }
-)
-const landingPageImageUrl = computed(() => (landingPage.value ? resolveImageUrl(landingPage.value.finalImageUrl) : null))
+// AI landing pages (apps/api/src/landing-pages) are now standalone pages at
+// their own URL (/lp/:slug — see app/pages/lp/[slug].vue), never swapped
+// into this normal product page. This page always shows the plain
+// gallery+description; landingPageImageUrl stays wired into every
+// template's ProductDetailPage props (always null) rather than removing the
+// prop from all 15 template components for a behavior that no longer exists.
+const landingPageImageUrl = null
 
 useSeoMeta({
   title: () => product.value?.name,

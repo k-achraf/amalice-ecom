@@ -177,6 +177,8 @@ export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeo
 export const ProductLandingPageScalarFieldEnum = {
   id: 'id',
   productId: 'productId',
+  slug: 'slug',
+  name: 'name',
   enabled: 'enabled',
   status: 'status',
   imageProvider: 'imageProvider',

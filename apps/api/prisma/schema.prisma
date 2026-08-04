@@ -122,9 +122,10 @@ model Product {
   orderItems        OrderItem[]
   reviews           Review[]
   stockAdjustments  StockAdjustment[]
-  // AI-generated long-scroll landing page image — one per product, see
+  // AI-generated long-scroll landing pages — a product can have several
+  // (different creative angles, each its own storefront URL), see
   // ProductLandingPage below.
-  landingPage       ProductLandingPage?
+  landingPages      ProductLandingPage[]
   // Quantity-based promos (buy 2 for a bundle price, buy 2 get 1 free, buy 2
   // free shipping) — see ProductOffer below.
   offers            ProductOffer[]
@@ -150,9 +151,15 @@ model Product {
 // image-generation model, which produces a handful of section images (hero,
 // feature highlights, CTA), each with marketing copy and visual effects
 // baked in; the sections are then stitched vertically into one long image
-// (the classic AliExpress/TikTok-ad style product funnel image). One row
-// per product; regenerating replaces it rather than keeping history — this
-// is a working draft the merchant iterates on, not an audit trail.
+// (the classic AliExpress/TikTok-ad style product funnel image). A product
+// can have MULTIPLE landing pages (different angles/creative for different
+// ad campaigns), each independently generated, named, enabled, and reachable
+// at its own storefront URL (/lp/:slug — a standalone chromeless page: no
+// header/nav, just the stitched image + a lead form at the bottom; separate
+// from and in addition to the normal /products/:slug page, never replacing
+// it). Regenerating a specific landing page still replaces its own content
+// in place — this is a working draft the merchant iterates on, not an audit
+// trail — but generating a NEW one is a new row, not an upsert.
 enum LandingPageStatus {
   Pending
   Generating
@@ -175,11 +182,20 @@ enum LandingPageImageProvider {
 
 model ProductLandingPage {
   id            String                   @id @default(uuid())
-  productId     String                   @unique @map("product_id")
+  productId     String                   @map("product_id")
   product       Product                  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  // Whether the storefront PDP shows this generated image instead of the
-  // normal gallery+description. Independent of `status` — a merchant can
-  // generate, preview, and only flip this on once they like the result.
+  // The /lp/:slug path segment — globally unique (not just per-product),
+  // auto-generated from the product's own slug (with a numeric suffix on
+  // collision) unless the admin supplies a custom one at generation time.
+  slug          String                   @unique
+  // Admin-facing label to tell multiple landing pages for the same product
+  // apart in the list UI (e.g. "TikTok angle", "Black Friday") — purely
+  // cosmetic, never shown to a storefront visitor.
+  name          String                   @default("Landing Page")
+  // Whether this specific landing page is publicly reachable at its URL.
+  // Independent of `status` — a merchant can generate, preview, and only
+  // flip this on once they like the result. Each landing page has its own
+  // switch now that a product can have several.
   enabled       Boolean                  @default(false)
   status        LandingPageStatus        @default(Pending)
   imageProvider LandingPageImageProvider @default(Gemini) @map("image_provider")

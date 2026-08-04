@@ -22,6 +22,11 @@ export class PollinationsService {
     headline: string
     body: string
     productName: string
+    // Pollinations is text-to-image only — it has no editing capability, so
+    // unlike Gemini's `editImage`, instructions here can only steer a fresh
+    // generation (folded into the same prompt), never edit a previous
+    // result in place.
+    instructions?: string
   }): Promise<InlineImage> {
     const styleByRole: Record<typeof input.role, string> = {
       hero: 'dramatic professional product advertising photography, bold vivid gradient background, dramatic lighting',
@@ -29,7 +34,7 @@ export class PollinationsService {
       cta: 'bold vibrant promotional photography, strong accent-colored background, energetic composition'
     }
 
-    const prompt = `${input.productName}, ${styleByRole[input.role]}, high quality e-commerce advertising photo, no text, no watermark, no logo`
+    const prompt = `${input.productName}, ${styleByRole[input.role]}${input.instructions ? `, ${input.instructions}` : ''}, high quality e-commerce advertising photo, no text, no watermark, no logo`
     const seed = Math.floor(Math.random() * 1_000_000)
     const url = `${IMAGE_BASE}/${encodeURIComponent(prompt)}?width=${SECTION_WIDTH}&height=${SECTION_HEIGHT}&nologo=true&seed=${seed}`
 

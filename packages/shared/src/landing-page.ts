@@ -3,7 +3,10 @@ import { z } from 'zod'
 // AI landing page builder — see the ProductLandingPage Prisma model comment
 // for the full picture. This file is the single source of truth for the
 // section JSON shape stored in that model's `sections` column, plus the
-// request/response schemas the admin UI and API share.
+// request/response schemas the admin UI and API share. A product can have
+// MULTIPLE landing pages, each with its own slug/URL (/lp/:slug on the
+// storefront) — separate from and in addition to the normal /products/:slug
+// page, never replacing it.
 
 export const LandingPageStatusSchema = z.enum(['Pending', 'Generating', 'Completed', 'Failed'])
 export type LandingPageStatus = z.infer<typeof LandingPageStatusSchema>
@@ -34,9 +37,21 @@ export const LandingPageSectionSchema = z.object({
 })
 export type LandingPageSection = z.infer<typeof LandingPageSectionSchema>
 
+// Slug format shared by both the auto-generated default and an admin-chosen
+// custom one — lowercase, alphanumeric + hyphens, matches how every other
+// slug in this codebase (Product.slug, Category.slug) is shaped.
+export const LandingPageSlugSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(100)
+  .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'Use lowercase letters, numbers, and hyphens only')
+
 export const ProductLandingPageSchema = z.object({
   id: z.uuid(),
   productId: z.uuid(),
+  slug: z.string(),
+  name: z.string(),
   enabled: z.boolean(),
   status: LandingPageStatusSchema,
   imageProvider: LandingPageImageProviderSchema,
@@ -48,29 +63,60 @@ export const ProductLandingPageSchema = z.object({
 })
 export type ProductLandingPage = z.infer<typeof ProductLandingPageSchema>
 
-// Admin request — (re)generate the whole landing page from scratch.
-// sourceImageUrls are a subset of the product's own ProductImage.url values
-// (validated server-side against the product's actual gallery, not
-// arbitrary URLs) — description is prefilled from Product.description in
-// the admin UI but editable before generating, since the raw stored
-// description may need trimming/framing for a landing page.
+// Admin request — generate a NEW landing page for a product (a create, not
+// an upsert — a product can have several). sourceImageUrls are a subset of
+// the product's own ProductImage.url values (validated server-side against
+// the product's actual gallery, not arbitrary URLs) — description is
+// prefilled from Product.description in the admin UI but editable before
+// generating. name/slug are both optional: name defaults to "Landing Page",
+// slug auto-generates from the product's own slug (with a numeric suffix on
+// collision) when omitted.
 export const GenerateLandingPageSchema = z.object({
   sourceImageUrls: z.array(z.string()).min(1).max(10),
   description: z.string().trim().min(1).max(5000),
   sectionCount: z.number().int().min(3).max(7).default(5),
-  imageProvider: LandingPageImageProviderSchema.default('Gemini')
+  imageProvider: LandingPageImageProviderSchema.default('Gemini'),
+  name: z.string().trim().min(1).max(100).optional(),
+  slug: LandingPageSlugSchema.optional(),
+  // Freeform art-direction/copy steer on top of the plain product
+  // description — e.g. "target a younger audience", "emphasize the 2-year
+  // warranty", "use a beach background". Threaded into both copy drafting
+  // and every section's image prompt (gemini.service.ts).
+  instructions: z.string().trim().max(2000).optional()
 })
 export type GenerateLandingPage = z.infer<typeof GenerateLandingPageSchema>
 
-// Toggle whether the storefront PDP shows the generated image.
+// Regenerating a section optionally carries edit instructions — e.g. "make
+// the background blue", "remove the price tag". When the section already
+// has a generated image, the image provider treats this as an EDIT of that
+// existing image rather than a from-scratch regeneration (see
+// gemini.service.ts's generateSectionImage `editImage` param).
+export const RegenerateLandingPageSectionSchema = z.object({
+  instructions: z.string().trim().max(1000).optional()
+})
+export type RegenerateLandingPageSection = z.infer<typeof RegenerateLandingPageSectionSchema>
+
+// Rename and/or toggle whether this specific landing page is publicly
+// reachable at its URL — both optional, send whichever changed.
 export const UpdateLandingPageSchema = z.object({
-  enabled: z.boolean()
+  name: z.string().trim().min(1).max(100).optional(),
+  enabled: z.boolean().optional()
 })
 export type UpdateLandingPage = z.infer<typeof UpdateLandingPageSchema>
 
-// The public, storefront-facing projection — just enough to decide whether
-// to render the long image instead of the normal gallery+description.
+// The public, storefront-facing projection for /lp/:slug — the stitched
+// image plus just enough product info to render + submit the lead form
+// beneath it (see apps/storefront/app/pages/lp/[slug].vue). Never exposes
+// admin/generation internals (sections, provider, errors).
 export const PublicLandingPageSchema = z.object({
-  finalImageUrl: z.string()
+  slug: z.string(),
+  finalImageUrl: z.string(),
+  product: z.object({
+    id: z.uuid(),
+    name: z.string(),
+    slug: z.string(),
+    priceCents: z.number().int().nonnegative(),
+    imageUrl: z.string().nullable()
+  })
 })
 export type PublicLandingPage = z.infer<typeof PublicLandingPageSchema>

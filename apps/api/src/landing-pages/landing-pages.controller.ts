@@ -1,11 +1,10 @@
-import { Body, Controller, Get, NotFoundException, Param, Post, Put, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Req, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Throttle } from '@nestjs/throttler'
-import { GenerateLandingPageSchema, UpdateLandingPageSchema, type PublicLandingPage } from '@amalice/shared'
+import { GenerateLandingPageSchema, RegenerateLandingPageSectionSchema, UpdateLandingPageSchema, type PublicLandingPage } from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
 import { LandingPagesService } from './landing-pages.service'
-import { PrismaService } from '../prisma/prisma.service'
 import { JwtAuthGuard } from '../identity/admin-auth/jwt-auth.guard'
 import { RolesGuard } from '../identity/admin-auth/roles.guard'
 import { Roles } from '../identity/admin-auth/roles.decorator'
@@ -14,6 +13,7 @@ import type { AuditActor } from '../common/audit.service'
 
 class GenerateLandingPageDto extends createZodDto(GenerateLandingPageSchema) {}
 class UpdateLandingPageDto extends createZodDto(UpdateLandingPageSchema) {}
+class RegenerateLandingPageSectionDto extends createZodDto(RegenerateLandingPageSectionSchema) {}
 
 interface AuthedRequest extends Request {
   user: AdminJwtPayload
@@ -21,26 +21,26 @@ interface AuthedRequest extends Request {
 
 // Admin surface (SuperAdmin/OpsManager, same roles as product image
 // management in upload.controller.ts) plus one public read for the
-// storefront PDP. AI generation calls are throttled tighter than default —
-// each one costs real (if free-tier) API quota and takes real wall-clock
-// time, unlike a cheap local read.
+// storefront's /lp/:slug page. AI generation calls are throttled tighter
+// than default — each one costs real (if free-tier) API quota and takes
+// real wall-clock time, unlike a cheap local read. A product can have
+// multiple landing pages — routes are id-addressable (.../landing-pages/:id)
+// once a page exists, product-scoped (.../products/:productId/landing-pages)
+// only for listing and creating a new one.
 @ApiTags('landing-pages')
 @Controller()
 export class LandingPagesController {
-  constructor(
-    private readonly landingPages: LandingPagesService,
-    private readonly prisma: PrismaService
-  ) {}
+  constructor(private readonly landingPages: LandingPagesService) {}
 
-  @Get('admin/products/:productId/landing-page')
+  @Get('admin/products/:productId/landing-pages')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('SuperAdmin', 'OpsManager')
-  async get(@Param('productId') productId: string) {
-    return this.landingPages.get(productId)
+  list(@Param('productId') productId: string) {
+    return this.landingPages.list(productId)
   }
 
-  @Post('admin/products/:productId/landing-page/generate')
+  @Post('admin/products/:productId/landing-pages')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('SuperAdmin', 'OpsManager')
@@ -50,39 +50,58 @@ export class LandingPagesController {
     return this.landingPages.generate(productId, body, actor)
   }
 
-  @Post('admin/products/:productId/landing-page/sections/:sectionId/regenerate')
+  @Get('admin/landing-pages/:id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager')
+  async get(@Param('id') id: string) {
+    const row = await this.landingPages.getById(id)
+    if (!row) throw new NotFoundException('Landing page not found')
+    return row
+  }
+
+  @Post('admin/landing-pages/:id/sections/:sectionId/regenerate')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('SuperAdmin', 'OpsManager')
   @Throttle({ default: { limit: 10, ttl: 5 * 60 * 1000 } })
   async regenerateSection(
-    @Param('productId') productId: string,
+    @Param('id') id: string,
     @Param('sectionId') sectionId: string,
+    @Body() body: RegenerateLandingPageSectionDto,
     @Req() req: AuthedRequest
   ) {
     const actor: AuditActor = { id: req.user.sub, email: req.user.email }
-    return this.landingPages.regenerateSection(productId, sectionId, actor)
+    return this.landingPages.regenerateSection(id, sectionId, actor, body.instructions)
   }
 
-  @Put('admin/products/:productId/landing-page')
+  @Put('admin/landing-pages/:id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('SuperAdmin', 'OpsManager')
-  async setEnabled(@Param('productId') productId: string, @Body() body: UpdateLandingPageDto, @Req() req: AuthedRequest) {
+  async update(@Param('id') id: string, @Body() body: UpdateLandingPageDto, @Req() req: AuthedRequest) {
     const actor: AuditActor = { id: req.user.sub, email: req.user.email }
-    return this.landingPages.setEnabled(productId, body.enabled, actor)
+    return this.landingPages.update(id, body, actor)
   }
 
-  // Public — the storefront PDP fetches this by slug to decide whether to
-  // render the generated long image instead of the normal gallery. Only
-  // ever returns something when a completed, enabled landing page exists;
-  // no admin/generation internals leak through.
-  @Get('products/:slug/landing-page')
-  async getPublic(@Param('slug') slug: string): Promise<PublicLandingPage | null> {
-    const product = await this.prisma.product.findUnique({ where: { slug }, select: { id: true } })
-    if (!product) throw new NotFoundException('Product not found')
-    const landingPage = await this.landingPages.get(product.id)
-    if (!landingPage?.enabled || landingPage.status !== 'Completed' || !landingPage.finalImageUrl) return null
-    return { finalImageUrl: landingPage.finalImageUrl }
+  @Delete('admin/landing-pages/:id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager')
+  async remove(@Param('id') id: string, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    await this.landingPages.remove(id, actor)
+    return { ok: true }
+  }
+
+  // Public — the storefront's standalone /lp/:slug page (no header/nav,
+  // just the stitched image + a lead form). Only ever returns something for
+  // a completed, enabled landing page; no admin/generation internals leak
+  // through.
+  @Get('landing-pages/:slug')
+  async getPublic(@Param('slug') slug: string): Promise<PublicLandingPage> {
+    const landingPage = await this.landingPages.getPublicBySlug(slug)
+    if (!landingPage) throw new NotFoundException('Landing page not found')
+    return landingPage
   }
 }

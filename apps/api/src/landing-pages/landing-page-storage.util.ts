@@ -55,6 +55,14 @@ export async function fetchImageAsInline(url: string): Promise<{ base64: string;
 // text/effects, baked in by the model) into one long landing-page image.
 // Sections may come back from Gemini at slightly different widths — resize
 // each to a common width before stacking so the seams line up cleanly.
+//
+// Output is WebP, not JPEG — this final image is the whole page's LCP
+// element (loaded eager/fetchpriority=high on /lp/:slug) and a naive
+// vertical stack of 5-7 full-bleed sections at quality 88 JPEG routinely
+// landed several MB, which is exactly what made the page slow to load.
+// WebP at quality 78 is typically 25-35% smaller than equivalent-quality
+// JPEG for this kind of photographic+text content, with no visible
+// difference at web viewing sizes.
 export async function stitchSectionsVertically(sectionImageUrls: string[], targetWidth = 1024): Promise<string> {
   const buffers = await Promise.all(
     sectionImageUrls.map(async (url) => {
@@ -77,11 +85,11 @@ export async function stitchSectionsVertically(sectionImageUrls: string[], targe
     create: { width: targetWidth, height: totalHeight, channels: 3, background: '#ffffff' }
   })
     .composite(composite)
-    .jpeg({ quality: 88 })
+    .webp({ quality: 78, effort: 4 })
     .toBuffer()
 
   fs.mkdirSync(UPLOADS_DIR, { recursive: true })
-  const filename = `${crypto.randomUUID()}.jpg`
+  const filename = `${crypto.randomUUID()}.webp`
   fs.writeFileSync(join(UPLOADS_DIR, filename), finalBuffer)
   return `/uploads/${filename}`
 }
