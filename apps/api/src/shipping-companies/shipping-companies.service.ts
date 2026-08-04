@@ -1,8 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import type {
   ApplyShippingCompanyTariffs,
   ApplyShippingCompanyTariffsResult,
   LinkShippingCompany,
+  SetWebhookSecret,
   ShippingCompanyProvider,
   ShippingCompanyTariff,
   ShippingCompanyView,
@@ -11,6 +13,15 @@ import type {
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
 import { DhdApiService } from './dhd-api.service'
+import type { Env } from '../config/env.validation'
+
+// Which URL path each provider's webhook lands on — see
+// fulfillment/webhooks.controller.ts for the actual handler. Keyed here
+// (not hardcoded per-provider in toView) so a second provider just adds an
+// entry rather than a branch.
+const WEBHOOK_PATH_BY_PROVIDER: Record<ShippingCompanyProvider, string> = {
+  Dhd: 'webhooks/dhd'
+}
 
 // The fixed catalog of supported providers — DHD today, more land here as
 // entries (name + default base URL) plus a DHD-shaped client. Every
@@ -25,10 +36,14 @@ export class ShippingCompaniesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
-    private readonly dhd: DhdApiService
+    private readonly dhd: DhdApiService,
+    private readonly config: ConfigService<Env, true>
   ) {}
 
-  private toView(provider: ShippingCompanyProvider, row: { id: string; baseUrl: string; apiToken: string | null; isLinked: boolean; isDefault: boolean; lastSyncedAt: Date | null } | null): ShippingCompanyView {
+  private toView(
+    provider: ShippingCompanyProvider,
+    row: { id: string; baseUrl: string; apiToken: string | null; webhookSecret: string | null; isLinked: boolean; isDefault: boolean; lastSyncedAt: Date | null } | null
+  ): ShippingCompanyView {
     const catalog = PROVIDER_CATALOG[provider]
     return {
       id: row?.id ?? null,
@@ -38,7 +53,11 @@ export class ShippingCompaniesService {
       hasApiToken: !!row?.apiToken,
       isLinked: row?.isLinked ?? false,
       isDefault: row?.isDefault ?? false,
-      lastSyncedAt: row?.lastSyncedAt?.toISOString() ?? null
+      lastSyncedAt: row?.lastSyncedAt?.toISOString() ?? null,
+      // Only buildable once the row (and its real id) exists — see
+      // ShippingCompanyViewSchema's comment.
+      webhookUrl: row?.id ? `${this.config.get('PUBLIC_API_URL', { infer: true })}/${WEBHOOK_PATH_BY_PROVIDER[provider]}/${row.id}` : null,
+      hasWebhookSecret: !!row?.webhookSecret
     }
   }
 
@@ -98,6 +117,24 @@ export class ShippingCompaniesService {
       entityId: provider,
       metadata: { linked: true }
     })
+
+    return this.toView(provider, row)
+  }
+
+  // The HMAC secret the provider's own webhook config is configured to sign
+  // with — pasted in from there, never generated here (see
+  // SetWebhookSecretSchema's comment). Requires the company already be
+  // linked, since there's no row/id to build a webhook URL from otherwise.
+  async setWebhookSecret(provider: ShippingCompanyProvider, input: SetWebhookSecret, actor: AuditActor): Promise<ShippingCompanyView> {
+    const existing = await this.prisma.shippingCompany.findUnique({ where: { provider } })
+    if (!existing) throw new NotFoundException(`Link ${PROVIDER_CATALOG[provider].name} before configuring its webhook.`)
+
+    const row = await this.prisma.shippingCompany.update({
+      where: { provider },
+      data: { webhookSecret: input.secret }
+    })
+
+    await this.audit.log({ actor, action: 'Update', entity: 'ShippingCompany', entityId: provider, metadata: { webhookSecretSet: true } })
 
     return this.toView(provider, row)
   }

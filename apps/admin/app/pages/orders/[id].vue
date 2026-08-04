@@ -403,6 +403,16 @@ async function submitAddItem() {
               <div><dt class="text-muted">Courier</dt><dd>{{ order.shipment.courier.name }}</dd></div>
               <div><dt class="text-muted">Tracking ref</dt><dd class="tabular">{{ order.shipment.trackingReference ?? '— (manual delivery)' }}</dd></div>
               <div><dt class="text-muted">Courier status</dt><dd>{{ order.shipment.courierStatus ?? '—' }}</dd></div>
+              <!-- Filled in from a courier webhook payload (e.g. DHD's
+                   state-webhooks driver field) once assigned — see
+                   DhdWebhookService. -->
+              <div v-if="order.shipment.driverName || order.shipment.driverPhone">
+                <dt class="text-muted">Driver</dt>
+                <dd>
+                  {{ order.shipment.driverName || '—' }}
+                  <a v-if="order.shipment.driverPhone" :href="`tel:${order.shipment.driverPhone}`" class="tabular text-primary hover:underline">{{ order.shipment.driverPhone }}</a>
+                </dd>
+              </div>
             </dl>
             <div class="mt-4 flex flex-wrap gap-2">
               <!-- The rest of DHD's "Commandes" actions (see FulfillmentService)

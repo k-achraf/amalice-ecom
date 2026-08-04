@@ -29,6 +29,8 @@ const syncing = reactive<Record<string, boolean>>({})
 const applying = reactive<Record<string, boolean>>({})
 const tariffsByProvider = reactive<Record<string, ShippingCompanyTariff[] | undefined>>({})
 const loadingTariffs = reactive<Record<string, boolean>>({})
+const webhookSecretInput = reactive<Record<string, string>>({})
+const savingWebhookSecret = reactive<Record<string, boolean>>({})
 
 async function link(provider: ShippingCompanyProvider) {
   const token = apiTokenInput[provider]?.trim()
@@ -45,6 +47,28 @@ async function link(provider: ShippingCompanyProvider) {
   } finally {
     linking[provider] = false
   }
+}
+
+async function saveWebhookSecret(provider: ShippingCompanyProvider) {
+  const secret = webhookSecretInput[provider]?.trim()
+  if (!secret) return
+  savingWebhookSecret[provider] = true
+  try {
+    await api(`/admin/shipping-companies/${provider}/webhook-secret`, { method: 'POST', body: { secret } })
+    webhookSecretInput[provider] = ''
+    await refresh()
+    toast.add({ title: 'Webhook secret saved', color: 'success' })
+  } catch (err) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: 'Failed to save secret', description: data?.message, color: 'error' })
+  } finally {
+    savingWebhookSecret[provider] = false
+  }
+}
+
+async function copyWebhookUrl(url: string) {
+  await navigator.clipboard.writeText(url)
+  toast.add({ title: 'Webhook URL copied', color: 'success' })
 }
 
 async function unlink(provider: ShippingCompanyProvider) {
@@ -171,6 +195,33 @@ async function applyToRates(provider: ShippingCompanyProvider) {
               </UButton>
             </div>
           </UFormField>
+
+          <template v-if="company.webhookUrl">
+            <UFormField label="Webhook URL" help="Paste this into DHD's own webhook configuration (state-webhooks settings) as the endpoint URL.">
+              <div class="flex items-center gap-2">
+                <UInput :model-value="company.webhookUrl" readonly class="w-full max-w-lg font-mono text-xs" @focus="($event.target as HTMLInputElement)?.select()" />
+                <UButton variant="outline" color="neutral" icon="i-lucide-copy" @click="copyWebhookUrl(company.webhookUrl!)">Copy</UButton>
+              </div>
+            </UFormField>
+
+            <UFormField
+              label="Webhook secret (HMAC-SHA256)"
+              :help="company.hasWebhookSecret ? 'A secret is already saved — leave blank to keep it.' : 'The secret DHD generated (or you set) when configuring the webhook on their side — needed to verify incoming requests.'"
+            >
+              <div class="flex items-center gap-2">
+                <UInput
+                  v-model="webhookSecretInput[company.provider]"
+                  type="password"
+                  autocomplete="new-password"
+                  :placeholder="company.hasWebhookSecret ? '•••••••••••••••••••• (configured)' : 'Webhook secret'"
+                  class="w-full max-w-sm"
+                />
+                <UButton :loading="savingWebhookSecret[company.provider]" :disabled="!webhookSecretInput[company.provider]?.trim()" color="primary" @click="saveWebhookSecret(company.provider)">
+                  Save
+                </UButton>
+              </div>
+            </UFormField>
+          </template>
 
           <div v-if="company.isLinked" class="flex flex-wrap items-center gap-3">
             <UButton :loading="syncing[company.provider]" variant="soft" icon="i-lucide-refresh-cw" @click="sync(company.provider)">Sync tariffs</UButton>

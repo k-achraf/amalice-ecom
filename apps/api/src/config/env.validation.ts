@@ -5,6 +5,12 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3333),
   DATABASE_URL: z.url().default('postgresql://amalice:amalice_dev@localhost:5433/amalice'),
   REDIS_URL: z.url().default('redis://localhost:6379'),
+  // This API's own public URL — needed to construct URLs an outside party
+  // must call (currently: the DHD webhook URL shown in Settings → Shipping
+  // Companies, since DHD's platform needs the full https://... address to
+  // configure, not a relative path). Not used for anything internal, so a
+  // wrong value only breaks that one displayed URL, not the API itself.
+  PUBLIC_API_URL: z.string().default('http://localhost:3333'),
   // No code-level defaults for secrets — that's how a placeholder value
   // quietly ends up in production. Dev-only values live in .env.example.
   JWT_SECRET: z.string().min(32),

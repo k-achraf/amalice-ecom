@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
-import { ApplyShippingCompanyTariffsSchema, LinkShippingCompanySchema, ShippingCompanyProviderSchema, type ShippingCompanyProvider } from '@amalice/shared'
+import { ApplyShippingCompanyTariffsSchema, LinkShippingCompanySchema, SetWebhookSecretSchema, ShippingCompanyProviderSchema, type ShippingCompanyProvider } from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
 import { ShippingCompaniesService } from './shipping-companies.service'
@@ -12,6 +12,7 @@ import type { AuditActor } from '../common/audit.service'
 
 class LinkShippingCompanyDto extends createZodDto(LinkShippingCompanySchema) {}
 class ApplyShippingCompanyTariffsDto extends createZodDto(ApplyShippingCompanyTariffsSchema) {}
+class SetWebhookSecretDto extends createZodDto(SetWebhookSecretSchema) {}
 
 interface AuthedRequest extends Request {
   user: AdminJwtPayload
@@ -44,6 +45,14 @@ export class ShippingCompaniesController {
   link(@Param('provider') provider: string, @Body() body: LinkShippingCompanyDto, @Req() req: AuthedRequest) {
     const actor: AuditActor = { id: req.user.sub, email: req.user.email }
     return this.shippingCompanies.link(parseProvider(provider), body, actor)
+  }
+
+  // The HMAC secret the provider's own webhook config is signing with —
+  // pasted in here so DhdWebhookService can verify inbound requests.
+  @Post(':provider/webhook-secret')
+  setWebhookSecret(@Param('provider') provider: string, @Body() body: SetWebhookSecretDto, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.shippingCompanies.setWebhookSecret(parseProvider(provider), body, actor)
   }
 
   @Post(':provider/unlink')

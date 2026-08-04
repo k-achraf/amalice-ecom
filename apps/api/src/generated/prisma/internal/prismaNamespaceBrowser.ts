@@ -86,6 +86,7 @@ export const ModelName = {
   WilayaShippingRate: 'WilayaShippingRate',
   Commune: 'Commune',
   ShippingCompany: 'ShippingCompany',
+  CourierWebhookEvent: 'CourierWebhookEvent',
   ShippingCompanyTariff: 'ShippingCompanyTariff',
   SourcedProduct: 'SourcedProduct',
   SourcedProductMedia: 'SourcedProductMedia',
@@ -362,6 +363,8 @@ export const ShipmentScalarFieldEnum = {
   courierId: 'courierId',
   trackingReference: 'trackingReference',
   courierStatus: 'courierStatus',
+  driverName: 'driverName',
+  driverPhone: 'driverPhone',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -559,6 +562,7 @@ export const ShippingCompanyScalarFieldEnum = {
   name: 'name',
   baseUrl: 'baseUrl',
   apiToken: 'apiToken',
+  webhookSecret: 'webhookSecret',
   isLinked: 'isLinked',
   isDefault: 'isDefault',
   lastSyncedAt: 'lastSyncedAt',
@@ -567,6 +571,22 @@ export const ShippingCompanyScalarFieldEnum = {
 } as const
 
 export type ShippingCompanyScalarFieldEnum = (typeof ShippingCompanyScalarFieldEnum)[keyof typeof ShippingCompanyScalarFieldEnum]
+
+
+export const CourierWebhookEventScalarFieldEnum = {
+  id: 'id',
+  shippingCompanyId: 'shippingCompanyId',
+  trackingReference: 'trackingReference',
+  event: 'event',
+  stateId: 'stateId',
+  payload: 'payload',
+  orderId: 'orderId',
+  applied: 'applied',
+  error: 'error',
+  receivedAt: 'receivedAt'
+} as const
+
+export type CourierWebhookEventScalarFieldEnum = (typeof CourierWebhookEventScalarFieldEnum)[keyof typeof CourierWebhookEventScalarFieldEnum]
 
 
 export const ShippingCompanyTariffScalarFieldEnum = {

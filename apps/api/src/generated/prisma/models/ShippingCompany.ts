@@ -30,6 +30,7 @@ export type ShippingCompanyMinAggregateOutputType = {
   name: string | null
   baseUrl: string | null
   apiToken: string | null
+  webhookSecret: string | null
   isLinked: boolean | null
   isDefault: boolean | null
   lastSyncedAt: Date | null
@@ -43,6 +44,7 @@ export type ShippingCompanyMaxAggregateOutputType = {
   name: string | null
   baseUrl: string | null
   apiToken: string | null
+  webhookSecret: string | null
   isLinked: boolean | null
   isDefault: boolean | null
   lastSyncedAt: Date | null
@@ -56,6 +58,7 @@ export type ShippingCompanyCountAggregateOutputType = {
   name: number
   baseUrl: number
   apiToken: number
+  webhookSecret: number
   isLinked: number
   isDefault: number
   lastSyncedAt: number
@@ -71,6 +74,7 @@ export type ShippingCompanyMinAggregateInputType = {
   name?: true
   baseUrl?: true
   apiToken?: true
+  webhookSecret?: true
   isLinked?: true
   isDefault?: true
   lastSyncedAt?: true
@@ -84,6 +88,7 @@ export type ShippingCompanyMaxAggregateInputType = {
   name?: true
   baseUrl?: true
   apiToken?: true
+  webhookSecret?: true
   isLinked?: true
   isDefault?: true
   lastSyncedAt?: true
@@ -97,6 +102,7 @@ export type ShippingCompanyCountAggregateInputType = {
   name?: true
   baseUrl?: true
   apiToken?: true
+  webhookSecret?: true
   isLinked?: true
   isDefault?: true
   lastSyncedAt?: true
@@ -183,6 +189,7 @@ export type ShippingCompanyGroupByOutputType = {
   name: string
   baseUrl: string
   apiToken: string | null
+  webhookSecret: string | null
   isLinked: boolean
   isDefault: boolean
   lastSyncedAt: Date | null
@@ -217,6 +224,7 @@ export type ShippingCompanyWhereInput = {
   name?: Prisma.StringFilter<"ShippingCompany"> | string
   baseUrl?: Prisma.StringFilter<"ShippingCompany"> | string
   apiToken?: Prisma.StringNullableFilter<"ShippingCompany"> | string | null
+  webhookSecret?: Prisma.StringNullableFilter<"ShippingCompany"> | string | null
   isLinked?: Prisma.BoolFilter<"ShippingCompany"> | boolean
   isDefault?: Prisma.BoolFilter<"ShippingCompany"> | boolean
   lastSyncedAt?: Prisma.DateTimeNullableFilter<"ShippingCompany"> | Date | string | null
@@ -224,6 +232,7 @@ export type ShippingCompanyWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"ShippingCompany"> | Date | string
   tariffs?: Prisma.ShippingCompanyTariffListRelationFilter
   orders?: Prisma.OrderListRelationFilter
+  webhookEvents?: Prisma.CourierWebhookEventListRelationFilter
 }
 
 export type ShippingCompanyOrderByWithRelationInput = {
@@ -232,6 +241,7 @@ export type ShippingCompanyOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   baseUrl?: Prisma.SortOrder
   apiToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  webhookSecret?: Prisma.SortOrderInput | Prisma.SortOrder
   isLinked?: Prisma.SortOrder
   isDefault?: Prisma.SortOrder
   lastSyncedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -239,6 +249,7 @@ export type ShippingCompanyOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   tariffs?: Prisma.ShippingCompanyTariffOrderByRelationAggregateInput
   orders?: Prisma.OrderOrderByRelationAggregateInput
+  webhookEvents?: Prisma.CourierWebhookEventOrderByRelationAggregateInput
 }
 
 export type ShippingCompanyWhereUniqueInput = Prisma.AtLeast<{
@@ -250,6 +261,7 @@ export type ShippingCompanyWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"ShippingCompany"> | string
   baseUrl?: Prisma.StringFilter<"ShippingCompany"> | string
   apiToken?: Prisma.StringNullableFilter<"ShippingCompany"> | string | null
+  webhookSecret?: Prisma.StringNullableFilter<"ShippingCompany"> | string | null
   isLinked?: Prisma.BoolFilter<"ShippingCompany"> | boolean
   isDefault?: Prisma.BoolFilter<"ShippingCompany"> | boolean
   lastSyncedAt?: Prisma.DateTimeNullableFilter<"ShippingCompany"> | Date | string | null
@@ -257,6 +269,7 @@ export type ShippingCompanyWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"ShippingCompany"> | Date | string
   tariffs?: Prisma.ShippingCompanyTariffListRelationFilter
   orders?: Prisma.OrderListRelationFilter
+  webhookEvents?: Prisma.CourierWebhookEventListRelationFilter
 }, "id" | "provider">
 
 export type ShippingCompanyOrderByWithAggregationInput = {
@@ -265,6 +278,7 @@ export type ShippingCompanyOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   baseUrl?: Prisma.SortOrder
   apiToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  webhookSecret?: Prisma.SortOrderInput | Prisma.SortOrder
   isLinked?: Prisma.SortOrder
   isDefault?: Prisma.SortOrder
   lastSyncedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -284,6 +298,7 @@ export type ShippingCompanyScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"ShippingCompany"> | string
   baseUrl?: Prisma.StringWithAggregatesFilter<"ShippingCompany"> | string
   apiToken?: Prisma.StringNullableWithAggregatesFilter<"ShippingCompany"> | string | null
+  webhookSecret?: Prisma.StringNullableWithAggregatesFilter<"ShippingCompany"> | string | null
   isLinked?: Prisma.BoolWithAggregatesFilter<"ShippingCompany"> | boolean
   isDefault?: Prisma.BoolWithAggregatesFilter<"ShippingCompany"> | boolean
   lastSyncedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ShippingCompany"> | Date | string | null
@@ -297,6 +312,7 @@ export type ShippingCompanyCreateInput = {
   name: string
   baseUrl: string
   apiToken?: string | null
+  webhookSecret?: string | null
   isLinked?: boolean
   isDefault?: boolean
   lastSyncedAt?: Date | string | null
@@ -304,6 +320,7 @@ export type ShippingCompanyCreateInput = {
   updatedAt?: Date | string
   tariffs?: Prisma.ShippingCompanyTariffCreateNestedManyWithoutShippingCompanyInput
   orders?: Prisma.OrderCreateNestedManyWithoutShippingCompanyInput
+  webhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutShippingCompanyInput
 }
 
 export type ShippingCompanyUncheckedCreateInput = {
@@ -312,6 +329,7 @@ export type ShippingCompanyUncheckedCreateInput = {
   name: string
   baseUrl: string
   apiToken?: string | null
+  webhookSecret?: string | null
   isLinked?: boolean
   isDefault?: boolean
   lastSyncedAt?: Date | string | null
@@ -319,6 +337,7 @@ export type ShippingCompanyUncheckedCreateInput = {
   updatedAt?: Date | string
   tariffs?: Prisma.ShippingCompanyTariffUncheckedCreateNestedManyWithoutShippingCompanyInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutShippingCompanyInput
+  webhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutShippingCompanyInput
 }
 
 export type ShippingCompanyUpdateInput = {
@@ -327,6 +346,7 @@ export type ShippingCompanyUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   baseUrl?: Prisma.StringFieldUpdateOperationsInput | string
   apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  webhookSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isLinked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -334,6 +354,7 @@ export type ShippingCompanyUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tariffs?: Prisma.ShippingCompanyTariffUpdateManyWithoutShippingCompanyNestedInput
   orders?: Prisma.OrderUpdateManyWithoutShippingCompanyNestedInput
+  webhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutShippingCompanyNestedInput
 }
 
 export type ShippingCompanyUncheckedUpdateInput = {
@@ -342,6 +363,7 @@ export type ShippingCompanyUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   baseUrl?: Prisma.StringFieldUpdateOperationsInput | string
   apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  webhookSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isLinked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -349,6 +371,7 @@ export type ShippingCompanyUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tariffs?: Prisma.ShippingCompanyTariffUncheckedUpdateManyWithoutShippingCompanyNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutShippingCompanyNestedInput
+  webhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutShippingCompanyNestedInput
 }
 
 export type ShippingCompanyCreateManyInput = {
@@ -357,6 +380,7 @@ export type ShippingCompanyCreateManyInput = {
   name: string
   baseUrl: string
   apiToken?: string | null
+  webhookSecret?: string | null
   isLinked?: boolean
   isDefault?: boolean
   lastSyncedAt?: Date | string | null
@@ -370,6 +394,7 @@ export type ShippingCompanyUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   baseUrl?: Prisma.StringFieldUpdateOperationsInput | string
   apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  webhookSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isLinked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -383,6 +408,7 @@ export type ShippingCompanyUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   baseUrl?: Prisma.StringFieldUpdateOperationsInput | string
   apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  webhookSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isLinked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -401,6 +427,7 @@ export type ShippingCompanyCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   baseUrl?: Prisma.SortOrder
   apiToken?: Prisma.SortOrder
+  webhookSecret?: Prisma.SortOrder
   isLinked?: Prisma.SortOrder
   isDefault?: Prisma.SortOrder
   lastSyncedAt?: Prisma.SortOrder
@@ -414,6 +441,7 @@ export type ShippingCompanyMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   baseUrl?: Prisma.SortOrder
   apiToken?: Prisma.SortOrder
+  webhookSecret?: Prisma.SortOrder
   isLinked?: Prisma.SortOrder
   isDefault?: Prisma.SortOrder
   lastSyncedAt?: Prisma.SortOrder
@@ -427,6 +455,7 @@ export type ShippingCompanyMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   baseUrl?: Prisma.SortOrder
   apiToken?: Prisma.SortOrder
+  webhookSecret?: Prisma.SortOrder
   isLinked?: Prisma.SortOrder
   isDefault?: Prisma.SortOrder
   lastSyncedAt?: Prisma.SortOrder
@@ -459,6 +488,20 @@ export type EnumShippingCompanyProviderFieldUpdateOperationsInput = {
   set?: $Enums.ShippingCompanyProvider
 }
 
+export type ShippingCompanyCreateNestedOneWithoutWebhookEventsInput = {
+  create?: Prisma.XOR<Prisma.ShippingCompanyCreateWithoutWebhookEventsInput, Prisma.ShippingCompanyUncheckedCreateWithoutWebhookEventsInput>
+  connectOrCreate?: Prisma.ShippingCompanyCreateOrConnectWithoutWebhookEventsInput
+  connect?: Prisma.ShippingCompanyWhereUniqueInput
+}
+
+export type ShippingCompanyUpdateOneRequiredWithoutWebhookEventsNestedInput = {
+  create?: Prisma.XOR<Prisma.ShippingCompanyCreateWithoutWebhookEventsInput, Prisma.ShippingCompanyUncheckedCreateWithoutWebhookEventsInput>
+  connectOrCreate?: Prisma.ShippingCompanyCreateOrConnectWithoutWebhookEventsInput
+  upsert?: Prisma.ShippingCompanyUpsertWithoutWebhookEventsInput
+  connect?: Prisma.ShippingCompanyWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ShippingCompanyUpdateToOneWithWhereWithoutWebhookEventsInput, Prisma.ShippingCompanyUpdateWithoutWebhookEventsInput>, Prisma.ShippingCompanyUncheckedUpdateWithoutWebhookEventsInput>
+}
+
 export type ShippingCompanyCreateNestedOneWithoutTariffsInput = {
   create?: Prisma.XOR<Prisma.ShippingCompanyCreateWithoutTariffsInput, Prisma.ShippingCompanyUncheckedCreateWithoutTariffsInput>
   connectOrCreate?: Prisma.ShippingCompanyCreateOrConnectWithoutTariffsInput
@@ -479,12 +522,14 @@ export type ShippingCompanyCreateWithoutOrdersInput = {
   name: string
   baseUrl: string
   apiToken?: string | null
+  webhookSecret?: string | null
   isLinked?: boolean
   isDefault?: boolean
   lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tariffs?: Prisma.ShippingCompanyTariffCreateNestedManyWithoutShippingCompanyInput
+  webhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutShippingCompanyInput
 }
 
 export type ShippingCompanyUncheckedCreateWithoutOrdersInput = {
@@ -493,12 +538,14 @@ export type ShippingCompanyUncheckedCreateWithoutOrdersInput = {
   name: string
   baseUrl: string
   apiToken?: string | null
+  webhookSecret?: string | null
   isLinked?: boolean
   isDefault?: boolean
   lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tariffs?: Prisma.ShippingCompanyTariffUncheckedCreateNestedManyWithoutShippingCompanyInput
+  webhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutShippingCompanyInput
 }
 
 export type ShippingCompanyCreateOrConnectWithoutOrdersInput = {
@@ -523,12 +570,14 @@ export type ShippingCompanyUpdateWithoutOrdersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   baseUrl?: Prisma.StringFieldUpdateOperationsInput | string
   apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  webhookSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isLinked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tariffs?: Prisma.ShippingCompanyTariffUpdateManyWithoutShippingCompanyNestedInput
+  webhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutShippingCompanyNestedInput
 }
 
 export type ShippingCompanyUncheckedUpdateWithoutOrdersInput = {
@@ -537,12 +586,94 @@ export type ShippingCompanyUncheckedUpdateWithoutOrdersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   baseUrl?: Prisma.StringFieldUpdateOperationsInput | string
   apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  webhookSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isLinked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tariffs?: Prisma.ShippingCompanyTariffUncheckedUpdateManyWithoutShippingCompanyNestedInput
+  webhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutShippingCompanyNestedInput
+}
+
+export type ShippingCompanyCreateWithoutWebhookEventsInput = {
+  id?: string
+  provider: $Enums.ShippingCompanyProvider
+  name: string
+  baseUrl: string
+  apiToken?: string | null
+  webhookSecret?: string | null
+  isLinked?: boolean
+  isDefault?: boolean
+  lastSyncedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tariffs?: Prisma.ShippingCompanyTariffCreateNestedManyWithoutShippingCompanyInput
+  orders?: Prisma.OrderCreateNestedManyWithoutShippingCompanyInput
+}
+
+export type ShippingCompanyUncheckedCreateWithoutWebhookEventsInput = {
+  id?: string
+  provider: $Enums.ShippingCompanyProvider
+  name: string
+  baseUrl: string
+  apiToken?: string | null
+  webhookSecret?: string | null
+  isLinked?: boolean
+  isDefault?: boolean
+  lastSyncedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tariffs?: Prisma.ShippingCompanyTariffUncheckedCreateNestedManyWithoutShippingCompanyInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutShippingCompanyInput
+}
+
+export type ShippingCompanyCreateOrConnectWithoutWebhookEventsInput = {
+  where: Prisma.ShippingCompanyWhereUniqueInput
+  create: Prisma.XOR<Prisma.ShippingCompanyCreateWithoutWebhookEventsInput, Prisma.ShippingCompanyUncheckedCreateWithoutWebhookEventsInput>
+}
+
+export type ShippingCompanyUpsertWithoutWebhookEventsInput = {
+  update: Prisma.XOR<Prisma.ShippingCompanyUpdateWithoutWebhookEventsInput, Prisma.ShippingCompanyUncheckedUpdateWithoutWebhookEventsInput>
+  create: Prisma.XOR<Prisma.ShippingCompanyCreateWithoutWebhookEventsInput, Prisma.ShippingCompanyUncheckedCreateWithoutWebhookEventsInput>
+  where?: Prisma.ShippingCompanyWhereInput
+}
+
+export type ShippingCompanyUpdateToOneWithWhereWithoutWebhookEventsInput = {
+  where?: Prisma.ShippingCompanyWhereInput
+  data: Prisma.XOR<Prisma.ShippingCompanyUpdateWithoutWebhookEventsInput, Prisma.ShippingCompanyUncheckedUpdateWithoutWebhookEventsInput>
+}
+
+export type ShippingCompanyUpdateWithoutWebhookEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  provider?: Prisma.EnumShippingCompanyProviderFieldUpdateOperationsInput | $Enums.ShippingCompanyProvider
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  baseUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  webhookSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isLinked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tariffs?: Prisma.ShippingCompanyTariffUpdateManyWithoutShippingCompanyNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutShippingCompanyNestedInput
+}
+
+export type ShippingCompanyUncheckedUpdateWithoutWebhookEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  provider?: Prisma.EnumShippingCompanyProviderFieldUpdateOperationsInput | $Enums.ShippingCompanyProvider
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  baseUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  webhookSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isLinked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tariffs?: Prisma.ShippingCompanyTariffUncheckedUpdateManyWithoutShippingCompanyNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutShippingCompanyNestedInput
 }
 
 export type ShippingCompanyCreateWithoutTariffsInput = {
@@ -551,12 +682,14 @@ export type ShippingCompanyCreateWithoutTariffsInput = {
   name: string
   baseUrl: string
   apiToken?: string | null
+  webhookSecret?: string | null
   isLinked?: boolean
   isDefault?: boolean
   lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.OrderCreateNestedManyWithoutShippingCompanyInput
+  webhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutShippingCompanyInput
 }
 
 export type ShippingCompanyUncheckedCreateWithoutTariffsInput = {
@@ -565,12 +698,14 @@ export type ShippingCompanyUncheckedCreateWithoutTariffsInput = {
   name: string
   baseUrl: string
   apiToken?: string | null
+  webhookSecret?: string | null
   isLinked?: boolean
   isDefault?: boolean
   lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutShippingCompanyInput
+  webhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutShippingCompanyInput
 }
 
 export type ShippingCompanyCreateOrConnectWithoutTariffsInput = {
@@ -595,12 +730,14 @@ export type ShippingCompanyUpdateWithoutTariffsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   baseUrl?: Prisma.StringFieldUpdateOperationsInput | string
   apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  webhookSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isLinked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.OrderUpdateManyWithoutShippingCompanyNestedInput
+  webhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutShippingCompanyNestedInput
 }
 
 export type ShippingCompanyUncheckedUpdateWithoutTariffsInput = {
@@ -609,12 +746,14 @@ export type ShippingCompanyUncheckedUpdateWithoutTariffsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   baseUrl?: Prisma.StringFieldUpdateOperationsInput | string
   apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  webhookSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isLinked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.OrderUncheckedUpdateManyWithoutShippingCompanyNestedInput
+  webhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutShippingCompanyNestedInput
 }
 
 
@@ -625,11 +764,13 @@ export type ShippingCompanyUncheckedUpdateWithoutTariffsInput = {
 export type ShippingCompanyCountOutputType = {
   tariffs: number
   orders: number
+  webhookEvents: number
 }
 
 export type ShippingCompanyCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tariffs?: boolean | ShippingCompanyCountOutputTypeCountTariffsArgs
   orders?: boolean | ShippingCompanyCountOutputTypeCountOrdersArgs
+  webhookEvents?: boolean | ShippingCompanyCountOutputTypeCountWebhookEventsArgs
 }
 
 /**
@@ -656,6 +797,13 @@ export type ShippingCompanyCountOutputTypeCountOrdersArgs<ExtArgs extends runtim
   where?: Prisma.OrderWhereInput
 }
 
+/**
+ * ShippingCompanyCountOutputType without action
+ */
+export type ShippingCompanyCountOutputTypeCountWebhookEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CourierWebhookEventWhereInput
+}
+
 
 export type ShippingCompanySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -663,6 +811,7 @@ export type ShippingCompanySelect<ExtArgs extends runtime.Types.Extensions.Inter
   name?: boolean
   baseUrl?: boolean
   apiToken?: boolean
+  webhookSecret?: boolean
   isLinked?: boolean
   isDefault?: boolean
   lastSyncedAt?: boolean
@@ -670,6 +819,7 @@ export type ShippingCompanySelect<ExtArgs extends runtime.Types.Extensions.Inter
   updatedAt?: boolean
   tariffs?: boolean | Prisma.ShippingCompany$tariffsArgs<ExtArgs>
   orders?: boolean | Prisma.ShippingCompany$ordersArgs<ExtArgs>
+  webhookEvents?: boolean | Prisma.ShippingCompany$webhookEventsArgs<ExtArgs>
   _count?: boolean | Prisma.ShippingCompanyCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["shippingCompany"]>
 
@@ -679,6 +829,7 @@ export type ShippingCompanySelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   name?: boolean
   baseUrl?: boolean
   apiToken?: boolean
+  webhookSecret?: boolean
   isLinked?: boolean
   isDefault?: boolean
   lastSyncedAt?: boolean
@@ -692,6 +843,7 @@ export type ShippingCompanySelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   name?: boolean
   baseUrl?: boolean
   apiToken?: boolean
+  webhookSecret?: boolean
   isLinked?: boolean
   isDefault?: boolean
   lastSyncedAt?: boolean
@@ -705,6 +857,7 @@ export type ShippingCompanySelectScalar = {
   name?: boolean
   baseUrl?: boolean
   apiToken?: boolean
+  webhookSecret?: boolean
   isLinked?: boolean
   isDefault?: boolean
   lastSyncedAt?: boolean
@@ -712,10 +865,11 @@ export type ShippingCompanySelectScalar = {
   updatedAt?: boolean
 }
 
-export type ShippingCompanyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "provider" | "name" | "baseUrl" | "apiToken" | "isLinked" | "isDefault" | "lastSyncedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["shippingCompany"]>
+export type ShippingCompanyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "provider" | "name" | "baseUrl" | "apiToken" | "webhookSecret" | "isLinked" | "isDefault" | "lastSyncedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["shippingCompany"]>
 export type ShippingCompanyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tariffs?: boolean | Prisma.ShippingCompany$tariffsArgs<ExtArgs>
   orders?: boolean | Prisma.ShippingCompany$ordersArgs<ExtArgs>
+  webhookEvents?: boolean | Prisma.ShippingCompany$webhookEventsArgs<ExtArgs>
   _count?: boolean | Prisma.ShippingCompanyCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ShippingCompanyIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -726,6 +880,7 @@ export type $ShippingCompanyPayload<ExtArgs extends runtime.Types.Extensions.Int
   objects: {
     tariffs: Prisma.$ShippingCompanyTariffPayload<ExtArgs>[]
     orders: Prisma.$OrderPayload<ExtArgs>[]
+    webhookEvents: Prisma.$CourierWebhookEventPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -733,6 +888,7 @@ export type $ShippingCompanyPayload<ExtArgs extends runtime.Types.Extensions.Int
     name: string
     baseUrl: string
     apiToken: string | null
+    webhookSecret: string | null
     isLinked: boolean
     isDefault: boolean
     lastSyncedAt: Date | null
@@ -1134,6 +1290,7 @@ export interface Prisma__ShippingCompanyClient<T, Null = never, ExtArgs extends 
   readonly [Symbol.toStringTag]: "PrismaPromise"
   tariffs<T extends Prisma.ShippingCompany$tariffsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ShippingCompany$tariffsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ShippingCompanyTariffPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   orders<T extends Prisma.ShippingCompany$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ShippingCompany$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  webhookEvents<T extends Prisma.ShippingCompany$webhookEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ShippingCompany$webhookEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CourierWebhookEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1168,6 +1325,7 @@ export interface ShippingCompanyFieldRefs {
   readonly name: Prisma.FieldRef<"ShippingCompany", 'String'>
   readonly baseUrl: Prisma.FieldRef<"ShippingCompany", 'String'>
   readonly apiToken: Prisma.FieldRef<"ShippingCompany", 'String'>
+  readonly webhookSecret: Prisma.FieldRef<"ShippingCompany", 'String'>
   readonly isLinked: Prisma.FieldRef<"ShippingCompany", 'Boolean'>
   readonly isDefault: Prisma.FieldRef<"ShippingCompany", 'Boolean'>
   readonly lastSyncedAt: Prisma.FieldRef<"ShippingCompany", 'DateTime'>
@@ -1611,6 +1769,30 @@ export type ShippingCompany$ordersArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.OrderScalarFieldEnum | Prisma.OrderScalarFieldEnum[]
+}
+
+/**
+ * ShippingCompany.webhookEvents
+ */
+export type ShippingCompany$webhookEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CourierWebhookEvent
+   */
+  select?: Prisma.CourierWebhookEventSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CourierWebhookEvent
+   */
+  omit?: Prisma.CourierWebhookEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CourierWebhookEventInclude<ExtArgs> | null
+  where?: Prisma.CourierWebhookEventWhereInput
+  orderBy?: Prisma.CourierWebhookEventOrderByWithRelationInput | Prisma.CourierWebhookEventOrderByWithRelationInput[]
+  cursor?: Prisma.CourierWebhookEventWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CourierWebhookEventScalarFieldEnum | Prisma.CourierWebhookEventScalarFieldEnum[]
 }
 
 /**

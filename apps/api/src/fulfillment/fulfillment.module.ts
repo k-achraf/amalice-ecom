@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common'
 import { FulfillmentController } from './fulfillment.controller'
+import { WebhooksController } from './webhooks.controller'
 import { FulfillmentService } from './fulfillment.service'
+import { DhdWebhookService } from './dhd-webhook.service'
 import { MockCourierProvider } from './mock-courier.provider'
 import { DhdCourierProvider } from './dhd-courier.provider'
 import { COURIER_PROVIDER } from './courier-provider.interface'
@@ -18,9 +20,10 @@ import { AppsModule } from '../apps/apps.module'
 // works for local testing without a real DHD account.
 @Module({
   imports: [CommonModule, ShippingCompaniesModule, AppsModule],
-  controllers: [FulfillmentController],
+  controllers: [FulfillmentController, WebhooksController],
   providers: [
     FulfillmentService,
+    DhdWebhookService,
     MockCourierProvider, // dev-only mock-status route — see comment above
     DhdCourierProvider,
     { provide: COURIER_PROVIDER, useClass: DhdCourierProvider }

@@ -412,7 +412,10 @@ export interface AdminOrderDetail {
   customer: { id: string; name: string | null; phone: string }
   address: { line1: string; line2: string | null; city: string; region: string; postalCode: string; country: string }
   items: AdminOrderLineItem[]
-  shipment: { courier: { name: string }; trackingReference: string | null; courierStatus: string | null } | null
+  // driverName/driverPhone are filled in from a courier webhook payload
+  // when present (see DHD_WEBHOOK_EVENT_TO_STATE / DhdWebhookService) — null
+  // until a courier's webhook actually reports a driver assignment.
+  shipment: { courier: { name: string }; trackingReference: string | null; courierStatus: string | null; driverName: string | null; driverPhone: string | null } | null
   cashReconciliation: { expectedCents: number; collectedCents: number | null } | null
   // See Order.isAbandoned's Prisma comment.
   isAbandoned: boolean

@@ -378,21 +378,21 @@ model Courier {
 }
 
 model Order {
-  id                 String                @id @default(uuid())
-  customerId         String                @map("customer_id")
-  customer           Customer              @relation(fields: [customerId], references: [id])
-  addressId          String                @map("address_id")
-  address            Address               @relation(fields: [addressId], references: [id])
-  state              OrderState            @default(PendingCallCenter)
+  id                   String                @id @default(uuid())
+  customerId           String                @map("customer_id")
+  customer             Customer              @relation(fields: [customerId], references: [id])
+  addressId            String                @map("address_id")
+  address              Address               @relation(fields: [addressId], references: [id])
+  state                OrderState            @default(PendingCallCenter)
   // Total amount actually due (items + shipping) — the number shown as
   // "cash due on delivery" everywhere. shippingPriceCents is the shipping
   // portion of it, priced server-side from WilayaShippingRate at order time
   // (never trusts a client-submitted price — same rule as ProductOffer
   // pricing); shippingType is null only for pre-shipping-feature historical
   // orders, never for new ones.
-  totalCents         Int                   @map("total_cents")
-  shippingType       ShippingType?         @map("shipping_type")
-  shippingPriceCents Int                   @default(0) @map("shipping_price_cents")
+  totalCents           Int                   @map("total_cents")
+  shippingType         ShippingType?         @map("shipping_type")
+  shippingPriceCents   Int                   @default(0) @map("shipping_price_cents")
   // True for an order auto-created from an unfinished lead form (customer
   // typed a phone number, then went idle past the store's configured
   // abandoned-cart delay without submitting — see
@@ -400,7 +400,7 @@ model Order {
   // never actually confirmed by the customer, not a fabricated real order.
   // Cleared in place (never a second row) if the same customer goes on to
   // actually submit the form — see createLeadOrder's convertsAbandonedOrderId.
-  isAbandoned        Boolean               @default(false) @map("is_abandoned")
+  isAbandoned          Boolean               @default(false) @map("is_abandoned")
   // Which shipping company (if any) this order is assigned to before it can
   // be dispatched — deliberately NOT auto-resolved from whichever company is
   // "default" at dispatch time (that was the earlier behavior; a manual
@@ -408,12 +408,12 @@ model Order {
   // may legitimately go through different companies). Unassigned is the
   // starting state for every order reaching fulfillment; dispatch requires
   // ShippingCompany + shippingCompanyId set, or Manual (see FulfillmentService).
-  fulfillmentMethod  FulfillmentMethod     @default(Unassigned) @map("fulfillment_method")
-  shippingCompanyId  String?               @map("shipping_company_id")
-  shippingCompany    ShippingCompany?      @relation(fields: [shippingCompanyId], references: [id], onDelete: SetNull)
+  fulfillmentMethod    FulfillmentMethod     @default(Unassigned) @map("fulfillment_method")
+  shippingCompanyId    String?               @map("shipping_company_id")
+  shippingCompany      ShippingCompany?      @relation(fields: [shippingCompanyId], references: [id], onDelete: SetNull)
   // Free-text call-center notes — see UpdateOrderNotesSchema. Also mirrored
   // into the Google Sheets integration's Notes column (GoogleSheetsService).
-  notes              String?
+  notes                String?
   // Set when OrdersService.findRecentDuplicate finds a prior (non-abandoned)
   // order for the same customer sharing at least one product within the
   // last 2 days — never blocks the order, just flags it so call-center can
@@ -421,18 +421,19 @@ model Order {
   // duplicateOfOrderId points at the earlier order it matched, kept even if
   // that order is later cancelled/deleted-in-spirit (SetNull, not cascade —
   // this flag itself should survive independent of the other row's fate).
-  isDuplicate        Boolean               @default(false) @map("is_duplicate")
-  duplicateOfOrderId String?               @map("duplicate_of_order_id")
-  duplicateOfOrder   Order?                @relation("OrderDuplicate", fields: [duplicateOfOrderId], references: [id], onDelete: SetNull)
-  duplicateOrders    Order[]               @relation("OrderDuplicate")
-  items              OrderItem[]
-  shipment           Shipment?
-  cashReconciliation CashReconciliation?
-  ledgerEntries      LedgerEntry[]
-  notifications      Notification[]
-  googleSheetRows    GoogleSheetOrderRow[]
-  createdAt          DateTime              @default(now()) @map("created_at")
-  updatedAt          DateTime              @updatedAt @map("updated_at")
+  isDuplicate          Boolean               @default(false) @map("is_duplicate")
+  duplicateOfOrderId   String?               @map("duplicate_of_order_id")
+  duplicateOfOrder     Order?                @relation("OrderDuplicate", fields: [duplicateOfOrderId], references: [id], onDelete: SetNull)
+  duplicateOrders      Order[]               @relation("OrderDuplicate")
+  items                OrderItem[]
+  shipment             Shipment?
+  cashReconciliation   CashReconciliation?
+  ledgerEntries        LedgerEntry[]
+  notifications        Notification[]
+  googleSheetRows      GoogleSheetOrderRow[]
+  courierWebhookEvents CourierWebhookEvent[]
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
 
   @@index([customerId])
   @@index([state])
@@ -553,6 +554,12 @@ model Shipment {
   courier           Courier  @relation(fields: [courierId], references: [id])
   trackingReference String?  @map("tracking_reference")
   courierStatus     String?  @map("courier_status")
+  // Filled in from a courier webhook payload when the courier reports a
+  // driver assignment (e.g. DHD's webhook `data.driver` object) — null
+  // until then, and either can independently be blank/absent even once a
+  // driver row exists (some couriers report a name without a phone, etc.).
+  driverName        String?  @map("driver_name")
+  driverPhone       String?  @map("driver_phone")
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
 
@@ -919,20 +926,61 @@ enum ShippingCompanyProvider {
 }
 
 model ShippingCompany {
-  id           String                  @id @default(uuid())
-  provider     ShippingCompanyProvider @unique
-  name         String
-  baseUrl      String                  @map("base_url")
-  apiToken     String?                 @map("api_token")
-  isLinked     Boolean                 @default(false) @map("is_linked")
-  isDefault    Boolean                 @default(false) @map("is_default")
-  lastSyncedAt DateTime?               @map("last_synced_at")
-  createdAt    DateTime                @default(now()) @map("created_at")
-  updatedAt    DateTime                @updatedAt @map("updated_at")
-  tariffs      ShippingCompanyTariff[]
-  orders       Order[]
+  id            String                  @id @default(uuid())
+  provider      ShippingCompanyProvider @unique
+  name          String
+  baseUrl       String                  @map("base_url")
+  apiToken      String?                 @map("api_token")
+  // HMAC-SHA256 secret the provider's webhook config signs each inbound
+  // request with — pasted in from whatever value the provider's own
+  // platform generated/the admin set when configuring the webhook there
+  // (see SetWebhookSecretSchema). Never generated on our side, since it has
+  // to match exactly what the provider is actually signing with.
+  webhookSecret String?                 @map("webhook_secret")
+  isLinked      Boolean                 @default(false) @map("is_linked")
+  isDefault     Boolean                 @default(false) @map("is_default")
+  lastSyncedAt  DateTime?               @map("last_synced_at")
+  createdAt     DateTime                @default(now()) @map("created_at")
+  updatedAt     DateTime                @updatedAt @map("updated_at")
+  tariffs       ShippingCompanyTariff[]
+  orders        Order[]
+  webhookEvents CourierWebhookEvent[]
 
   @@map("shipping_companies")
+}
+
+// One row per inbound courier webhook delivery — audit log AND the
+// idempotency mechanism DHD's own docs recommend ("use tracking + event as
+// a dedup key" — see DhdWebhookService). The unique constraint below IS
+// that dedup key: a retried delivery of the same event for the same
+// tracking number hits it and is treated as already-processed rather than
+// re-applying the state transition a second time.
+model CourierWebhookEvent {
+  id                String          @id @default(uuid())
+  shippingCompanyId String          @map("shipping_company_id")
+  shippingCompany   ShippingCompany @relation(fields: [shippingCompanyId], references: [id], onDelete: Cascade)
+  trackingReference String          @map("tracking_reference")
+  // The raw `event` string (e.g. "order.delivering") — see
+  // DHD_WEBHOOK_EVENT_TO_STATE for how this maps onto our OrderState.
+  event             String
+  stateId           Int             @map("state_id")
+  payload           Json
+  // Order this event resolved to, if the tracking reference matched a real
+  // shipment — null for a delivery from an unrecognized tracking number
+  // (still logged, just can't be linked to an order).
+  orderId           String?         @map("order_id")
+  order             Order?          @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  // Whether an order-state transition was actually applied for this event
+  // (false for informational-only events, an already-current state, an
+  // invalid transition, or an unmatched tracking reference).
+  applied           Boolean         @default(false)
+  error             String?
+  receivedAt        DateTime        @default(now()) @map("received_at")
+
+  @@unique([shippingCompanyId, trackingReference, event])
+  @@index([trackingReference])
+  @@index([orderId])
+  @@map("courier_webhook_events")
 }
 
 // A synced snapshot of one provider's per-wilaya pricing (GET /api/v1/get/fees

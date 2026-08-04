@@ -215,6 +215,11 @@ export type Commune = Prisma.CommuneModel
  */
 export type ShippingCompany = Prisma.ShippingCompanyModel
 /**
+ * Model CourierWebhookEvent
+ * 
+ */
+export type CourierWebhookEvent = Prisma.CourierWebhookEventModel
+/**
  * Model ShippingCompanyTariff
  * 
  */

@@ -22,7 +22,14 @@ export const ShippingCompanyViewSchema = z.object({
   hasApiToken: z.boolean(),
   isLinked: z.boolean(),
   isDefault: z.boolean(),
-  lastSyncedAt: z.string().nullable()
+  lastSyncedAt: z.string().nullable(),
+  // The URL to paste into the provider's own webhook configuration (e.g.
+  // DHD's "state-webhooks" settings) — null until the company is linked
+  // (there's no real id to build it from yet, see `id` above).
+  webhookUrl: z.string().nullable(),
+  // Same write-only/masked convention as hasApiToken — the actual secret is
+  // never echoed back once saved.
+  hasWebhookSecret: z.boolean()
 })
 export type ShippingCompanyView = z.infer<typeof ShippingCompanyViewSchema>
 
@@ -30,6 +37,16 @@ export const LinkShippingCompanySchema = z.object({
   apiToken: z.string().min(1, 'API token is required')
 })
 export type LinkShippingCompany = z.infer<typeof LinkShippingCompanySchema>
+
+// The HMAC-SHA256 secret the provider's webhook config signs each request
+// with (their "Signature: sha256=..." header) — pasted in from whatever
+// value their platform generated/the admin set when configuring the
+// webhook on their end. Ours never generates this value itself, since it
+// has to match exactly what the provider is actually signing with.
+export const SetWebhookSecretSchema = z.object({
+  secret: z.string().min(1, 'Secret is required').max(255)
+})
+export type SetWebhookSecret = z.infer<typeof SetWebhookSecretSchema>
 
 // One provider's synced price for one wilaya — reference data only, never
 // applied to the live WilayaShippingRate automatically (see

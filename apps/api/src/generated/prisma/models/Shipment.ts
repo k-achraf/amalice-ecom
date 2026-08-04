@@ -30,6 +30,8 @@ export type ShipmentMinAggregateOutputType = {
   courierId: string | null
   trackingReference: string | null
   courierStatus: string | null
+  driverName: string | null
+  driverPhone: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -40,6 +42,8 @@ export type ShipmentMaxAggregateOutputType = {
   courierId: string | null
   trackingReference: string | null
   courierStatus: string | null
+  driverName: string | null
+  driverPhone: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -50,6 +54,8 @@ export type ShipmentCountAggregateOutputType = {
   courierId: number
   trackingReference: number
   courierStatus: number
+  driverName: number
+  driverPhone: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -62,6 +68,8 @@ export type ShipmentMinAggregateInputType = {
   courierId?: true
   trackingReference?: true
   courierStatus?: true
+  driverName?: true
+  driverPhone?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -72,6 +80,8 @@ export type ShipmentMaxAggregateInputType = {
   courierId?: true
   trackingReference?: true
   courierStatus?: true
+  driverName?: true
+  driverPhone?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -82,6 +92,8 @@ export type ShipmentCountAggregateInputType = {
   courierId?: true
   trackingReference?: true
   courierStatus?: true
+  driverName?: true
+  driverPhone?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -165,6 +177,8 @@ export type ShipmentGroupByOutputType = {
   courierId: string
   trackingReference: string | null
   courierStatus: string | null
+  driverName: string | null
+  driverPhone: string | null
   createdAt: Date
   updatedAt: Date
   _count: ShipmentCountAggregateOutputType | null
@@ -196,6 +210,8 @@ export type ShipmentWhereInput = {
   courierId?: Prisma.StringFilter<"Shipment"> | string
   trackingReference?: Prisma.StringNullableFilter<"Shipment"> | string | null
   courierStatus?: Prisma.StringNullableFilter<"Shipment"> | string | null
+  driverName?: Prisma.StringNullableFilter<"Shipment"> | string | null
+  driverPhone?: Prisma.StringNullableFilter<"Shipment"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Shipment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Shipment"> | Date | string
   order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>
@@ -208,6 +224,8 @@ export type ShipmentOrderByWithRelationInput = {
   courierId?: Prisma.SortOrder
   trackingReference?: Prisma.SortOrderInput | Prisma.SortOrder
   courierStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  driverName?: Prisma.SortOrderInput | Prisma.SortOrder
+  driverPhone?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   order?: Prisma.OrderOrderByWithRelationInput
@@ -223,6 +241,8 @@ export type ShipmentWhereUniqueInput = Prisma.AtLeast<{
   courierId?: Prisma.StringFilter<"Shipment"> | string
   trackingReference?: Prisma.StringNullableFilter<"Shipment"> | string | null
   courierStatus?: Prisma.StringNullableFilter<"Shipment"> | string | null
+  driverName?: Prisma.StringNullableFilter<"Shipment"> | string | null
+  driverPhone?: Prisma.StringNullableFilter<"Shipment"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Shipment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Shipment"> | Date | string
   order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>
@@ -235,6 +255,8 @@ export type ShipmentOrderByWithAggregationInput = {
   courierId?: Prisma.SortOrder
   trackingReference?: Prisma.SortOrderInput | Prisma.SortOrder
   courierStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  driverName?: Prisma.SortOrderInput | Prisma.SortOrder
+  driverPhone?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ShipmentCountOrderByAggregateInput
@@ -251,6 +273,8 @@ export type ShipmentScalarWhereWithAggregatesInput = {
   courierId?: Prisma.StringWithAggregatesFilter<"Shipment"> | string
   trackingReference?: Prisma.StringNullableWithAggregatesFilter<"Shipment"> | string | null
   courierStatus?: Prisma.StringNullableWithAggregatesFilter<"Shipment"> | string | null
+  driverName?: Prisma.StringNullableWithAggregatesFilter<"Shipment"> | string | null
+  driverPhone?: Prisma.StringNullableWithAggregatesFilter<"Shipment"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Shipment"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Shipment"> | Date | string
 }
@@ -259,6 +283,8 @@ export type ShipmentCreateInput = {
   id?: string
   trackingReference?: string | null
   courierStatus?: string | null
+  driverName?: string | null
+  driverPhone?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   order: Prisma.OrderCreateNestedOneWithoutShipmentInput
@@ -271,6 +297,8 @@ export type ShipmentUncheckedCreateInput = {
   courierId: string
   trackingReference?: string | null
   courierStatus?: string | null
+  driverName?: string | null
+  driverPhone?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -279,6 +307,8 @@ export type ShipmentUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   trackingReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   order?: Prisma.OrderUpdateOneRequiredWithoutShipmentNestedInput
@@ -291,6 +321,8 @@ export type ShipmentUncheckedUpdateInput = {
   courierId?: Prisma.StringFieldUpdateOperationsInput | string
   trackingReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -301,6 +333,8 @@ export type ShipmentCreateManyInput = {
   courierId: string
   trackingReference?: string | null
   courierStatus?: string | null
+  driverName?: string | null
+  driverPhone?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -309,6 +343,8 @@ export type ShipmentUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   trackingReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -319,6 +355,8 @@ export type ShipmentUncheckedUpdateManyInput = {
   courierId?: Prisma.StringFieldUpdateOperationsInput | string
   trackingReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -344,6 +382,8 @@ export type ShipmentCountOrderByAggregateInput = {
   courierId?: Prisma.SortOrder
   trackingReference?: Prisma.SortOrder
   courierStatus?: Prisma.SortOrder
+  driverName?: Prisma.SortOrder
+  driverPhone?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -354,6 +394,8 @@ export type ShipmentMaxOrderByAggregateInput = {
   courierId?: Prisma.SortOrder
   trackingReference?: Prisma.SortOrder
   courierStatus?: Prisma.SortOrder
+  driverName?: Prisma.SortOrder
+  driverPhone?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -364,6 +406,8 @@ export type ShipmentMinOrderByAggregateInput = {
   courierId?: Prisma.SortOrder
   trackingReference?: Prisma.SortOrder
   courierStatus?: Prisma.SortOrder
+  driverName?: Prisma.SortOrder
+  driverPhone?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -446,6 +490,8 @@ export type ShipmentCreateWithoutCourierInput = {
   id?: string
   trackingReference?: string | null
   courierStatus?: string | null
+  driverName?: string | null
+  driverPhone?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   order: Prisma.OrderCreateNestedOneWithoutShipmentInput
@@ -456,6 +502,8 @@ export type ShipmentUncheckedCreateWithoutCourierInput = {
   orderId: string
   trackingReference?: string | null
   courierStatus?: string | null
+  driverName?: string | null
+  driverPhone?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -495,6 +543,8 @@ export type ShipmentScalarWhereInput = {
   courierId?: Prisma.StringFilter<"Shipment"> | string
   trackingReference?: Prisma.StringNullableFilter<"Shipment"> | string | null
   courierStatus?: Prisma.StringNullableFilter<"Shipment"> | string | null
+  driverName?: Prisma.StringNullableFilter<"Shipment"> | string | null
+  driverPhone?: Prisma.StringNullableFilter<"Shipment"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Shipment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Shipment"> | Date | string
 }
@@ -503,6 +553,8 @@ export type ShipmentCreateWithoutOrderInput = {
   id?: string
   trackingReference?: string | null
   courierStatus?: string | null
+  driverName?: string | null
+  driverPhone?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   courier: Prisma.CourierCreateNestedOneWithoutShipmentsInput
@@ -513,6 +565,8 @@ export type ShipmentUncheckedCreateWithoutOrderInput = {
   courierId: string
   trackingReference?: string | null
   courierStatus?: string | null
+  driverName?: string | null
+  driverPhone?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -537,6 +591,8 @@ export type ShipmentUpdateWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   trackingReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   courier?: Prisma.CourierUpdateOneRequiredWithoutShipmentsNestedInput
@@ -547,6 +603,8 @@ export type ShipmentUncheckedUpdateWithoutOrderInput = {
   courierId?: Prisma.StringFieldUpdateOperationsInput | string
   trackingReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -556,6 +614,8 @@ export type ShipmentCreateManyCourierInput = {
   orderId: string
   trackingReference?: string | null
   courierStatus?: string | null
+  driverName?: string | null
+  driverPhone?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -564,6 +624,8 @@ export type ShipmentUpdateWithoutCourierInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   trackingReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   order?: Prisma.OrderUpdateOneRequiredWithoutShipmentNestedInput
@@ -574,6 +636,8 @@ export type ShipmentUncheckedUpdateWithoutCourierInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   trackingReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -583,6 +647,8 @@ export type ShipmentUncheckedUpdateManyWithoutCourierInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   trackingReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -595,6 +661,8 @@ export type ShipmentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   courierId?: boolean
   trackingReference?: boolean
   courierStatus?: boolean
+  driverName?: boolean
+  driverPhone?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
@@ -607,6 +675,8 @@ export type ShipmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   courierId?: boolean
   trackingReference?: boolean
   courierStatus?: boolean
+  driverName?: boolean
+  driverPhone?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
@@ -619,6 +689,8 @@ export type ShipmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   courierId?: boolean
   trackingReference?: boolean
   courierStatus?: boolean
+  driverName?: boolean
+  driverPhone?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
@@ -631,11 +703,13 @@ export type ShipmentSelectScalar = {
   courierId?: boolean
   trackingReference?: boolean
   courierStatus?: boolean
+  driverName?: boolean
+  driverPhone?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ShipmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "courierId" | "trackingReference" | "courierStatus" | "createdAt" | "updatedAt", ExtArgs["result"]["shipment"]>
+export type ShipmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "courierId" | "trackingReference" | "courierStatus" | "driverName" | "driverPhone" | "createdAt" | "updatedAt", ExtArgs["result"]["shipment"]>
 export type ShipmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
   courier?: boolean | Prisma.CourierDefaultArgs<ExtArgs>
@@ -661,6 +735,8 @@ export type $ShipmentPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     courierId: string
     trackingReference: string | null
     courierStatus: string | null
+    driverName: string | null
+    driverPhone: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["shipment"]>
@@ -1093,6 +1169,8 @@ export interface ShipmentFieldRefs {
   readonly courierId: Prisma.FieldRef<"Shipment", 'String'>
   readonly trackingReference: Prisma.FieldRef<"Shipment", 'String'>
   readonly courierStatus: Prisma.FieldRef<"Shipment", 'String'>
+  readonly driverName: Prisma.FieldRef<"Shipment", 'String'>
+  readonly driverPhone: Prisma.FieldRef<"Shipment", 'String'>
   readonly createdAt: Prisma.FieldRef<"Shipment", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Shipment", 'DateTime'>
 }

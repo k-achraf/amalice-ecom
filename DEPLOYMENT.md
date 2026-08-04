@@ -477,3 +477,4 @@ pm2 reload ecosystem.config.cjs
 | `NODE_ENV` | No | defaults to `development` — set `production` |
 | `GEMINI_API_KEY` | No | AI landing-page builder; feature no-ops if unset |
 | `GOOGLE_SHEETS_CLIENT_EMAIL` / `GOOGLE_SHEETS_PRIVATE_KEY` | No | Google Sheets integration; both must be set together or the feature no-ops |
+| `PUBLIC_API_URL` | No (has a dev-only default) | This API's real public `https://...` URL — set it in production or the DHD webhook URL shown in Settings → Shipping Companies will display `http://localhost:3333/...` instead of a usable address |
