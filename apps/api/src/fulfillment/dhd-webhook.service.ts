@@ -40,8 +40,26 @@ export class DhdWebhookService {
     if (!company.webhookSecret) {
       throw new BadRequestException('This webhook has no secret configured yet — set one under Settings → Shipping Companies before enabling it in DHD.')
     }
-    if (!rawBody || !this.verifySignature(rawBody, signatureHeader, company.webhookSecret)) {
-      this.logger.warn(`DHD webhook: signature verification failed for shipping company ${shippingCompanyId}`)
+    // Split into distinct log lines rather than one generic "failed" —
+    // "no rawBody at all" (a server/proxy problem: main.ts's rawBody:true
+    // option didn't take effect, or something upstream is buffering/
+    // re-encoding the body before Nest sees it) and "rawBody present but
+    // doesn't hash to the header" (almost always a wrong/stale/whitespace-
+    // damaged secret) need different fixes, and the response body
+    // deliberately doesn't distinguish them (never help an attacker
+    // fingerprint which check failed).
+    if (!rawBody) {
+      this.logger.warn(`DHD webhook: no raw body captured for shipping company ${shippingCompanyId} — check main.ts's rawBody:true option took effect (API rebuilt/restarted?) and that nothing upstream (reverse proxy) is altering the request body`)
+      throw new UnauthorizedException('Invalid signature')
+    }
+    if (!this.verifySignature(rawBody, signatureHeader, company.webhookSecret)) {
+      const expected = 'sha256=' + crypto.createHmac('sha256', company.webhookSecret).update(rawBody).digest('hex')
+      this.logger.warn(
+        `DHD webhook: signature mismatch for shipping company ${shippingCompanyId} — ` +
+          `received header ${signatureHeader ? `"${signatureHeader.slice(0, 15)}…" (len ${signatureHeader.length})` : '(missing)'}, ` +
+          `expected "${expected.slice(0, 15)}…" (len ${expected.length}) from a ${rawBody.length}-byte body — ` +
+          'check the saved webhook secret matches DHD\'s exactly (no extra whitespace from copy/paste)'
+      )
       throw new UnauthorizedException('Invalid signature')
     }
 

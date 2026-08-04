@@ -130,9 +130,13 @@ export class ShippingCompaniesService {
     const existing = await this.prisma.shippingCompany.findUnique({ where: { provider } })
     if (!existing) throw new NotFoundException(`Link ${PROVIDER_CATALOG[provider].name} before configuring its webhook.`)
 
+    // Trimmed defensively — a copy-pasted secret with a stray leading/
+    // trailing space or newline would silently produce a wrong HMAC on
+    // every webhook (the storefront/admin side has no way to notice; it
+    // just fails as a generic "Invalid signature" on delivery).
     const row = await this.prisma.shippingCompany.update({
       where: { provider },
-      data: { webhookSecret: input.secret }
+      data: { webhookSecret: input.secret.trim() }
     })
 
     await this.audit.log({ actor, action: 'Update', entity: 'ShippingCompany', entityId: provider, metadata: { webhookSecretSet: true } })
