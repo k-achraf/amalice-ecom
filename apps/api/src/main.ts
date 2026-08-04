@@ -6,6 +6,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { join } from 'path'
 import * as fs from 'fs'
 import { AppModule } from './app.module'
+import { PersistentLogger } from './common/persistent-logger.service'
 
 async function bootstrap() {
   // rawBody: true — Nest still parses JSON into req.body as normal, but also
@@ -15,7 +16,15 @@ async function bootstrap() {
   // isn't guaranteed to byte-for-byte match what DHD actually signed (key
   // order/whitespace can differ), which would make every signature check
   // fail.
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true })
+  // bufferLogs: true — hold Nest's own bootstrap log lines in memory instead
+  // of dropping them, until app.useLogger() below swaps in PersistentLogger.
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true, bufferLogs: true })
+  // Every `new Logger(context).warn/error()` call anywhere in the codebase
+  // routes through this same instance once set here — see
+  // PersistentLogger's own comment for why (persists warn/error to
+  // ServerLog for the admin dashboard's Server Logs page, on top of the
+  // normal console/PM2 output).
+  app.useLogger(app.get(PersistentLogger))
   app.enableCors({
     origin: ['https://amalice.shop', 'https://www.amalice.shop', 'https://admin.amalice.shop'],
     credentials: true

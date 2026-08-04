@@ -151,6 +151,14 @@ export const AuditAction = {
 export type AuditAction = (typeof AuditAction)[keyof typeof AuditAction]
 
 
+export const ServerLogLevel = {
+  Warn: 'Warn',
+  Error: 'Error'
+} as const
+
+export type ServerLogLevel = (typeof ServerLogLevel)[keyof typeof ServerLogLevel]
+
+
 export const ShippingType = {
   Home: 'Home',
   Desk: 'Desk'

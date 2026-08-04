@@ -734,6 +734,37 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+// Operational error/warning logs — distinct from AuditLog above (which
+// records business events like "order state changed"): this is every
+// `Logger.warn()`/`Logger.error()` call the API code makes anywhere (stock
+// adjustment races, DHD webhook signature failures, Google Sheets push
+// failures, etc.), captured via PersistentLogger (see common/) so ops staff
+// can see them from the admin dashboard instead of needing SSH + `pm2 logs`.
+// Still prints to stdout/PM2's own log files as before — this is additive,
+// not a replacement — and is capped by PersistentLogger's own periodic
+// pruning (not itself an audit trail, so unlike AuditLog it's fine to age
+// old rows out).
+enum ServerLogLevel {
+  Warn
+  Error
+}
+
+model ServerLog {
+  id        String         @id @default(uuid())
+  level     ServerLogLevel
+  // The Logger instance's context — usually a class name (e.g.
+  // "DhdWebhookService") — null if a call site logged without one.
+  context   String?
+  message   String
+  // Stack trace, only ever present for .error() calls that included one.
+  trace     String?
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  @@index([level])
+  @@index([createdAt])
+  @@map("server_logs")
+}
+
 // Single-row store configuration — the storefront template picker and
 // store-name/announcement that the admin controls and the storefront reads.
 // Singleton row (id = "singleton"); upserted, never deleted. Template changes

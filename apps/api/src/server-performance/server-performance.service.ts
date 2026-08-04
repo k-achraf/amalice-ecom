@@ -2,9 +2,10 @@ import { Injectable, Logger } from '@nestjs/common'
 import * as os from 'node:os'
 import { exec } from 'node:child_process'
 import { promisify } from 'node:util'
-import type { ServerPerformanceDependency, ServerPerformanceDisk, ServerPerformanceProcess, ServerPerformanceSnapshot } from '@amalice/shared'
+import type { ServerLogLevel, ServerLogResponse, ServerPerformanceDependency, ServerPerformanceDisk, ServerPerformanceProcess, ServerPerformanceSnapshot } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import { RedisService } from '../redis/redis.service'
+import type { Prisma } from '../generated/prisma/client'
 
 const execAsync = promisify(exec)
 
@@ -164,6 +165,42 @@ export class ServerPerformanceService {
       pm2Processes,
       dependencies,
       timestamp: new Date().toISOString()
+    }
+  }
+
+  // Backs the admin "Server Logs" page — every `Logger.warn()`/`.error()`
+  // call anywhere in the API, captured by PersistentLogger (see common/).
+  // Distinct from AuditLog (business events): this is operational noise
+  // ops staff would otherwise only see via SSH + `pm2 logs`.
+  async listLogs(args: { level?: ServerLogLevel; search?: string; page: number; pageSize: number }): Promise<ServerLogResponse> {
+    const where: Prisma.ServerLogWhereInput = {
+      ...(args.level && { level: args.level }),
+      ...(args.search && {
+        OR: [{ message: { contains: args.search, mode: 'insensitive' } }, { context: { contains: args.search, mode: 'insensitive' } }]
+      })
+    }
+    const [rows, total] = await Promise.all([
+      this.prisma.serverLog.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (args.page - 1) * args.pageSize,
+        take: args.pageSize
+      }),
+      this.prisma.serverLog.count({ where })
+    ])
+
+    return {
+      items: rows.map((row) => ({
+        id: row.id,
+        level: row.level,
+        context: row.context,
+        message: row.message,
+        trace: row.trace,
+        createdAt: row.createdAt.toISOString()
+      })),
+      total,
+      page: args.page,
+      pageSize: args.pageSize
     }
   }
 }

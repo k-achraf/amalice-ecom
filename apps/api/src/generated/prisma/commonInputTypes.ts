@@ -542,6 +542,23 @@ export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
   _max?: Prisma.NestedJsonNullableFilter<$PrismaModel>
 }
 
+export type EnumServerLogLevelFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServerLogLevel | Prisma.EnumServerLogLevelFieldRefInput<$PrismaModel>
+  in?: $Enums.ServerLogLevel[] | Prisma.ListEnumServerLogLevelFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ServerLogLevel[] | Prisma.ListEnumServerLogLevelFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumServerLogLevelFilter<$PrismaModel> | $Enums.ServerLogLevel
+}
+
+export type EnumServerLogLevelWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServerLogLevel | Prisma.EnumServerLogLevelFieldRefInput<$PrismaModel>
+  in?: $Enums.ServerLogLevel[] | Prisma.ListEnumServerLogLevelFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ServerLogLevel[] | Prisma.ListEnumServerLogLevelFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumServerLogLevelWithAggregatesFilter<$PrismaModel> | $Enums.ServerLogLevel
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumServerLogLevelFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumServerLogLevelFilter<$PrismaModel>
+}
+
 export type EnumShippingCompanyProviderFilter<$PrismaModel = never> = {
   equals?: $Enums.ShippingCompanyProvider | Prisma.EnumShippingCompanyProviderFieldRefInput<$PrismaModel>
   in?: $Enums.ShippingCompanyProvider[] | Prisma.ListEnumShippingCompanyProviderFieldRefInput<$PrismaModel>
@@ -1146,6 +1163,23 @@ export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
   gt?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel>
   gte?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel>
   not?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel> | Prisma.JsonNullValueFilter
+}
+
+export type NestedEnumServerLogLevelFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServerLogLevel | Prisma.EnumServerLogLevelFieldRefInput<$PrismaModel>
+  in?: $Enums.ServerLogLevel[] | Prisma.ListEnumServerLogLevelFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ServerLogLevel[] | Prisma.ListEnumServerLogLevelFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumServerLogLevelFilter<$PrismaModel> | $Enums.ServerLogLevel
+}
+
+export type NestedEnumServerLogLevelWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServerLogLevel | Prisma.EnumServerLogLevelFieldRefInput<$PrismaModel>
+  in?: $Enums.ServerLogLevel[] | Prisma.ListEnumServerLogLevelFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ServerLogLevel[] | Prisma.ListEnumServerLogLevelFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumServerLogLevelWithAggregatesFilter<$PrismaModel> | $Enums.ServerLogLevel
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumServerLogLevelFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumServerLogLevelFilter<$PrismaModel>
 }
 
 export type NestedEnumShippingCompanyProviderFilter<$PrismaModel = never> = {

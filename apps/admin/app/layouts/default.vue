@@ -27,7 +27,8 @@ const allLinks: (NavigationMenuItem & { roles: AdminRoleName[] })[] = [
   { label: 'Shipping Rates', icon: 'i-lucide-map-pinned', to: '/settings/shipping', roles: ['SuperAdmin', 'OpsManager'] },
   { label: 'Shipping Companies', icon: 'i-lucide-plug', to: '/settings/shipping-companies', roles: ['SuperAdmin', 'OpsManager'] },
   { label: 'Audit Log', icon: 'i-lucide-history', to: '/audit-log', roles: ['SuperAdmin', 'Finance', 'OpsManager'] },
-  { label: 'Server Performance', icon: 'i-lucide-server', to: '/server-performance', roles: ['SuperAdmin'] }
+  { label: 'Server Performance', icon: 'i-lucide-server', to: '/server-performance', roles: ['SuperAdmin'] },
+  { label: 'Server Logs', icon: 'i-lucide-file-warning', to: '/logs', roles: ['SuperAdmin'] }
 ]
 
 const links = computed<NavigationMenuItem[]>(() =>

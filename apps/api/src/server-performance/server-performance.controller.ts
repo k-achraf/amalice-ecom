@@ -1,6 +1,7 @@
-import { Controller, Get, UseGuards } from '@nestjs/common'
+import { Controller, Get, Query, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { SkipThrottle } from '@nestjs/throttler'
+import type { ServerLogLevel } from '@amalice/shared'
 import { ServerPerformanceService } from './server-performance.service'
 import { JwtAuthGuard } from '../identity/admin-auth/jwt-auth.guard'
 import { RolesGuard } from '../identity/admin-auth/roles.guard'
@@ -24,5 +25,16 @@ export class ServerPerformanceController {
   @SkipThrottle({ default: true })
   getSnapshot() {
     return this.serverPerformance.getSnapshot()
+  }
+
+  // Admin "Server Logs" page — see ServerPerformanceService.listLogs.
+  @Get('logs')
+  logs(
+    @Query('level') level: ServerLogLevel | undefined,
+    @Query('search') search: string | undefined,
+    @Query('page') page: string = '1',
+    @Query('pageSize') pageSize: string = '50'
+  ) {
+    return this.serverPerformance.listLogs({ level, search, page: Number(page), pageSize: Number(pageSize) })
   }
 }

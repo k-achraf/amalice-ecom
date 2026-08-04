@@ -33,12 +33,24 @@ export class DhdWebhookService {
     return crypto.timingSafeEqual(expectedBuf, actualBuf)
   }
 
-  async handle(shippingCompanyId: string, rawBody: Buffer | undefined, signatureHeader: string | undefined, rawPayload: unknown): Promise<{ received: true; applied: boolean }> {
+  async handle(shippingCompanyId: string, rawBody: Buffer | undefined, signatureHeader: string | undefined, rawPayload: unknown, receivedHeaderNames?: string[]): Promise<{ received: true; applied: boolean }> {
     const company = await this.prisma.shippingCompany.findUnique({ where: { id: shippingCompanyId } })
     if (!company || company.provider !== 'Dhd') throw new NotFoundException('Unknown webhook endpoint')
 
     if (!company.webhookSecret) {
       throw new BadRequestException('This webhook has no secret configured yet — set one under Settings → Shipping Companies before enabling it in DHD.')
+    }
+    // The HMAC key is always this specific company's own saved secret —
+    // never a global/env value, never apiToken — read fresh from the DB on
+    // every request (no caching layer in front of it), so a secret saved
+    // via Settings → Shipping Companies takes effect on the very next
+    // delivery with no restart needed.
+    if (!signatureHeader) {
+      this.logger.warn(
+        `DHD webhook: no "signature" header on this request for shipping company ${shippingCompanyId}. ` +
+          `Headers actually received: ${receivedHeaderNames?.join(', ') ?? '(not captured)'}`
+      )
+      throw new UnauthorizedException('Invalid signature')
     }
     // Split into distinct log lines rather than one generic "failed" —
     // "no rawBody at all" (a server/proxy problem: main.ts's rawBody:true

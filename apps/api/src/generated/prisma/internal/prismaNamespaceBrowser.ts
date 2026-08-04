@@ -77,6 +77,7 @@ export const ModelName = {
   AdminUser: 'AdminUser',
   Notification: 'Notification',
   AuditLog: 'AuditLog',
+  ServerLog: 'ServerLog',
   StoreSettings: 'StoreSettings',
   AppInstallation: 'AppInstallation',
   GoogleSheet: 'GoogleSheet',
@@ -463,6 +464,18 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const ServerLogScalarFieldEnum = {
+  id: 'id',
+  level: 'level',
+  context: 'context',
+  message: 'message',
+  trace: 'trace',
+  createdAt: 'createdAt'
+} as const
+
+export type ServerLogScalarFieldEnum = (typeof ServerLogScalarFieldEnum)[keyof typeof ServerLogScalarFieldEnum]
 
 
 export const StoreSettingsScalarFieldEnum = {

@@ -410,6 +410,7 @@ export const ModelName = {
   AdminUser: 'AdminUser',
   Notification: 'Notification',
   AuditLog: 'AuditLog',
+  ServerLog: 'ServerLog',
   StoreSettings: 'StoreSettings',
   AppInstallation: 'AppInstallation',
   GoogleSheet: 'GoogleSheet',
@@ -442,7 +443,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "courierWebhookEvent" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "productAdTest" | "wholesaler" | "productSourcingRequest"
+    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "courierWebhookEvent" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "productAdTest" | "wholesaler" | "productSourcingRequest"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2370,6 +2371,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ServerLog: {
+      payload: Prisma.$ServerLogPayload<ExtArgs>
+      fields: Prisma.ServerLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ServerLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ServerLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerLogPayload>
+        }
+        findFirst: {
+          args: Prisma.ServerLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ServerLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerLogPayload>
+        }
+        findMany: {
+          args: Prisma.ServerLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerLogPayload>[]
+        }
+        create: {
+          args: Prisma.ServerLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerLogPayload>
+        }
+        createMany: {
+          args: Prisma.ServerLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ServerLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerLogPayload>[]
+        }
+        delete: {
+          args: Prisma.ServerLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerLogPayload>
+        }
+        update: {
+          args: Prisma.ServerLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.ServerLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ServerLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ServerLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.ServerLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerLogPayload>
+        }
+        aggregate: {
+          args: Prisma.ServerLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateServerLog>
+        }
+        groupBy: {
+          args: Prisma.ServerLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ServerLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ServerLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ServerLogCountAggregateOutputType> | number
+        }
+      }
+    }
     StoreSettings: {
       payload: Prisma.$StoreSettingsPayload<ExtArgs>
       fields: Prisma.StoreSettingsFieldRefs
@@ -4020,6 +4095,18 @@ export const AuditLogScalarFieldEnum = {
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
 
 
+export const ServerLogScalarFieldEnum = {
+  id: 'id',
+  level: 'level',
+  context: 'context',
+  message: 'message',
+  trace: 'trace',
+  createdAt: 'createdAt'
+} as const
+
+export type ServerLogScalarFieldEnum = (typeof ServerLogScalarFieldEnum)[keyof typeof ServerLogScalarFieldEnum]
+
+
 export const StoreSettingsScalarFieldEnum = {
   id: 'id',
   activeTemplate: 'activeTemplate',
@@ -4574,6 +4661,20 @@ export type ListEnumAuditActionFieldRefInput<$PrismaModel> = FieldRefInputType<$
 
 
 /**
+ * Reference to a field of type 'ServerLogLevel'
+ */
+export type EnumServerLogLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ServerLogLevel'>
+    
+
+
+/**
+ * Reference to a field of type 'ServerLogLevel[]'
+ */
+export type ListEnumServerLogLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ServerLogLevel[]'>
+    
+
+
+/**
  * Reference to a field of type 'ShippingCompanyProvider'
  */
 export type EnumShippingCompanyProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ShippingCompanyProvider'>
@@ -4820,6 +4921,7 @@ export type GlobalOmitConfig = {
   adminUser?: Prisma.AdminUserOmit
   notification?: Prisma.NotificationOmit
   auditLog?: Prisma.AuditLogOmit
+  serverLog?: Prisma.ServerLogOmit
   storeSettings?: Prisma.StoreSettingsOmit
   appInstallation?: Prisma.AppInstallationOmit
   googleSheet?: Prisma.GoogleSheetOmit
