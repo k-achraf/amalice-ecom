@@ -92,7 +92,10 @@ export const ORDER_STAGE_BY_STATE: Record<OrderState, OrderStage> = {
   WrongNumber: 'CallCenter',
   Postponed: 'CallCenter',
   Cancelled: 'Other',
-  Confirmed: 'Fulfillment',
+  // Confirmed is where call-center's job ends (they confirmed the order is
+  // real) — grouped with the CallCenter stage rather than Fulfillment so it
+  // shows up in the Call Center section/status column, not Fulfillment's.
+  Confirmed: 'CallCenter',
   OnHold: 'Fulfillment',
   Packed: 'Fulfillment',
   HandedToCourier: 'Shipping',
@@ -138,28 +141,34 @@ export const ORDER_STATE_LABELS: Record<OrderState, string> = {
 // Per-state cell color for the Google Sheets integration's 3 status columns
 // (Call Center/Fulfillment/Delivery — see GoogleSheetsService) — deliberately
 // mirrors StatusBadge's STATE_MAP hue assignment in packages/ui (17 states,
-// 17 distinct Tailwind hues, zero repeats) so a sheet's status color always
-// matches what the admin dashboard shows for the same state. Plain hex here
-// (not Tailwind classes) since apps/api has no dependency on packages/ui and
-// the Sheets API's cell-format requests need RGB, not CSS. Background is each
+// 17 distinct Tailwind hues, zero repeats — every state visually
+// distinguishable from every other) so a sheet's status color always matches
+// what the admin dashboard shows for the same state. Plain hex here (not
+// Tailwind classes) since apps/api has no dependency on packages/ui and the
+// Sheets API's cell-format requests need RGB, not CSS. Background is each
 // hue's Tailwind 100 shade, text its 800 shade — same pairing Tailwind's own
 // "soft" badge convention uses, for readable contrast without saturation.
+// Deliberate anchors: Confirmed is green, Delivered is a DIFFERENT green
+// (emerald) — both read as "success" but are still visually distinct from
+// each other; Cancelled and ReturnedToOrigin both sit in the red family
+// (red / rose) since both are negative outcomes, again using different exact
+// hues so neither collides with the other or with any other state.
 export const ORDER_STATE_SHEET_COLORS: Record<OrderState, { background: string; text: string }> = {
   PendingCallCenter: { background: '#FEF3C7', text: '#92400E' }, // amber
   CallCenterNoAnswer: { background: '#FFEDD5', text: '#9A3412' }, // orange
-  WrongNumber: { background: '#FEE2E2', text: '#991B1B' }, // red
+  WrongNumber: { background: '#FAE8FF', text: '#86198F' }, // fuchsia
   Postponed: { background: '#FEF9C3', text: '#854D0E' }, // yellow
-  Cancelled: { background: '#F5F5F4', text: '#292524' }, // stone
-  Confirmed: { background: '#E0F2FE', text: '#075985' }, // sky
-  OnHold: { background: '#FAE8FF', text: '#86198F' }, // fuchsia
+  Cancelled: { background: '#FEE2E2', text: '#991B1B' }, // red
+  Confirmed: { background: '#DCFCE7', text: '#166534' }, // green
+  OnHold: { background: '#EDE9FE', text: '#5B21B6' }, // violet
   Packed: { background: '#DBEAFE', text: '#1E40AF' }, // blue
   HandedToCourier: { background: '#E0E7FF', text: '#3730A3' }, // indigo
-  OutForDelivery: { background: '#EDE9FE', text: '#5B21B6' }, // violet
-  DeliveryFailed: { background: '#FFE4E6', text: '#9F1239' }, // rose
+  OutForDelivery: { background: '#E0F2FE', text: '#075985' }, // sky
+  DeliveryFailed: { background: '#FCE7F3', text: '#9D174D' }, // pink
   Delivered: { background: '#D1FAE5', text: '#065F46' }, // emerald
-  ReturnedToOrigin: { background: '#FCE7F3', text: '#9D174D' }, // pink
+  ReturnedToOrigin: { background: '#FFE4E6', text: '#9F1239' }, // rose
   Restocked: { background: '#F1F5F9', text: '#1E293B' }, // slate
-  CashCollected: { background: '#DCFCE7', text: '#166534' }, // green
+  CashCollected: { background: '#ECFCCB', text: '#3F6212' }, // lime
   Reconciled: { background: '#CCFBF1', text: '#115E59' }, // teal
   Settled: { background: '#CFFAFE', text: '#155E75' } // cyan
 }

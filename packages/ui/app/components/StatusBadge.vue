@@ -11,22 +11,29 @@ import { ORDER_STATE_LABELS, type OrderState } from '@amalice/shared'
 // ORDER_STATE_LABELS map (packages/shared/src/order.ts) — also what the
 // Google Sheets integration writes server-side — so this UI and that sheet
 // column never drift apart.
+// Hue assignment is the single source of truth this component and
+// ORDER_STATE_SHEET_COLORS (packages/shared/src/order.ts) both derive
+// from — keep them in sync by hand if either changes. Deliberate anchors:
+// Confirmed = green, Delivered = a DIFFERENT green (emerald) — both "success"
+// but visually distinct from each other; Cancelled and ReturnedToOrigin both
+// sit in the red family (red / rose) as the two clearly-negative outcomes,
+// again using different exact hues so neither collides with the other.
 const STATE_MAP: Record<OrderState, { hue: string; icon: string }> = {
   PendingCallCenter: { hue: 'amber', icon: 'i-lucide-phone-call' },
   CallCenterNoAnswer: { hue: 'orange', icon: 'i-lucide-phone-missed' },
-  WrongNumber: { hue: 'red', icon: 'i-lucide-phone-off' },
+  WrongNumber: { hue: 'fuchsia', icon: 'i-lucide-phone-off' },
   Postponed: { hue: 'yellow', icon: 'i-lucide-calendar-clock' },
-  Cancelled: { hue: 'stone', icon: 'i-lucide-x-circle' },
-  Confirmed: { hue: 'sky', icon: 'i-lucide-check' },
-  OnHold: { hue: 'fuchsia', icon: 'i-lucide-pause-circle' },
+  Cancelled: { hue: 'red', icon: 'i-lucide-x-circle' },
+  Confirmed: { hue: 'green', icon: 'i-lucide-check' },
+  OnHold: { hue: 'violet', icon: 'i-lucide-pause-circle' },
   Packed: { hue: 'blue', icon: 'i-lucide-package' },
   HandedToCourier: { hue: 'indigo', icon: 'i-lucide-truck' },
-  OutForDelivery: { hue: 'violet', icon: 'i-lucide-truck' },
-  DeliveryFailed: { hue: 'rose', icon: 'i-lucide-alert-triangle' },
+  OutForDelivery: { hue: 'sky', icon: 'i-lucide-truck' },
+  DeliveryFailed: { hue: 'pink', icon: 'i-lucide-alert-triangle' },
   Delivered: { hue: 'emerald', icon: 'i-lucide-check-circle' },
-  ReturnedToOrigin: { hue: 'pink', icon: 'i-lucide-rotate-ccw' },
+  ReturnedToOrigin: { hue: 'rose', icon: 'i-lucide-rotate-ccw' },
   Restocked: { hue: 'slate', icon: 'i-lucide-package-check' },
-  CashCollected: { hue: 'green', icon: 'i-lucide-banknote' },
+  CashCollected: { hue: 'lime', icon: 'i-lucide-banknote' },
   Reconciled: { hue: 'teal', icon: 'i-lucide-check-circle' },
   Settled: { hue: 'cyan', icon: 'i-lucide-badge-check' }
 }
@@ -40,7 +47,6 @@ const HUE_CLASSES: Record<string, string> = {
   orange: 'bg-orange-50 text-orange-700 ring-orange-600/20 dark:bg-orange-400/10 dark:text-orange-400 dark:ring-orange-400/20',
   red: 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-400/10 dark:text-red-400 dark:ring-red-400/20',
   yellow: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20 dark:bg-yellow-400/10 dark:text-yellow-400 dark:ring-yellow-400/20',
-  stone: 'bg-stone-100 text-stone-700 ring-stone-600/20 dark:bg-stone-400/10 dark:text-stone-400 dark:ring-stone-400/20',
   sky: 'bg-sky-50 text-sky-700 ring-sky-600/20 dark:bg-sky-400/10 dark:text-sky-400 dark:ring-sky-400/20',
   fuchsia: 'bg-fuchsia-50 text-fuchsia-700 ring-fuchsia-600/20 dark:bg-fuchsia-400/10 dark:text-fuchsia-400 dark:ring-fuchsia-400/20',
   blue: 'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-400/10 dark:text-blue-400 dark:ring-blue-400/20',
@@ -51,6 +57,7 @@ const HUE_CLASSES: Record<string, string> = {
   pink: 'bg-pink-50 text-pink-700 ring-pink-600/20 dark:bg-pink-400/10 dark:text-pink-400 dark:ring-pink-400/20',
   slate: 'bg-slate-100 text-slate-700 ring-slate-600/20 dark:bg-slate-400/10 dark:text-slate-400 dark:ring-slate-400/20',
   green: 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-400/10 dark:text-green-400 dark:ring-green-400/20',
+  lime: 'bg-lime-50 text-lime-700 ring-lime-600/20 dark:bg-lime-400/10 dark:text-lime-400 dark:ring-lime-400/20',
   teal: 'bg-teal-50 text-teal-700 ring-teal-600/20 dark:bg-teal-400/10 dark:text-teal-400 dark:ring-teal-400/20',
   cyan: 'bg-cyan-50 text-cyan-700 ring-cyan-600/20 dark:bg-cyan-400/10 dark:text-cyan-400 dark:ring-cyan-400/20'
 }

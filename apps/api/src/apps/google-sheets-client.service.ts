@@ -237,6 +237,18 @@ export class GoogleSheetsClientService {
   // Appends one row, returns the 1-indexed row number Sheets actually put it
   // at — needed so a later status update can target the exact cell instead
   // of re-scanning the sheet.
+  //
+  // insertDataOption is deliberately OVERWRITE, not INSERT_ROWS: INSERT_ROWS
+  // makes Sheets behave like a manual "insert row above/below" — which
+  // copies the PRECEDING row's cell formatting onto the new one, including
+  // its background color. Since every status cell we ever write gets its
+  // own explicit state color (see updateStatusCell), that inheritance means
+  // each new order silently starts out painted with whatever color the
+  // previous order's row happened to have, compounding across every append.
+  // OVERWRITE just writes into the next blank rows past the existing table
+  // with no formatting inheritance, so untouched cells (everything except
+  // the one status cell we explicitly color) stay the sheet's true default
+  // white — the "don't add a background to the row" requirement.
   async appendRow(spreadsheetId: string, sheetName: string, values: string[]): Promise<number> {
     const sheets = this.getClient()
     try {
@@ -244,7 +256,7 @@ export class GoogleSheetsClientService {
         spreadsheetId,
         range: `${sheetName}!A1`,
         valueInputOption: 'USER_ENTERED',
-        insertDataOption: 'INSERT_ROWS',
+        insertDataOption: 'OVERWRITE',
         requestBody: { values: [values] }
       })
       const updatedRange = res.data.updates?.updatedRange
