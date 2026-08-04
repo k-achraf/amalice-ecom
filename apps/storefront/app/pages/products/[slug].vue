@@ -183,6 +183,18 @@ watchEffect(() => {
 const leadPlacing = ref(false)
 const leadError = ref<string | null>(null)
 
+// Anti-double-submit / bot-pace signals — same reasoning as checkout.vue's
+// placeOrder (see its comment): one idempotency key per genuinely new lead
+// submission, reused across retries of that same attempt; formLoadedAt lets
+// the server flag an implausibly fast submit. Client-only, since PDP is
+// SSR-rendered but a lead submission only ever happens from a client click.
+let leadIdempotencyKey = ''
+let leadFormLoadedAt = 0
+if (import.meta.client) {
+  leadIdempotencyKey = crypto.randomUUID()
+  leadFormLoadedAt = Date.now()
+}
+
 // ---- Abandoned-cart tracking (Impulse template only) ----
 // If the customer types a phone number on the lead form and goes idle past
 // the store's configured delay without submitting, auto-create the order as
@@ -240,6 +252,10 @@ onBeforeUnmount(stopAbandonedTimer)
 const leadShippingPriceCents = computed(() => Number(leadFormData.shippingPriceCents) || 0)
 
 async function onSubmitLead() {
+  // Synchronous double-submit guard — see checkout.vue's placeOrder comment
+  // for why this check must come before any await, not just rely on the
+  // button's disabled/loading binding.
+  if (leadPlacing.value) return
   if (!product.value) return
   // Validate required fields
   for (const f of leadFields.value) {
@@ -272,7 +288,9 @@ async function onSubmitLead() {
           // If this same funnel visit already created an abandoned order
           // (see fireAbandonedOrder above), update that row instead of
           // creating a second one.
-          convertsAbandonedOrderId: abandonedOrderId.value ?? undefined
+          convertsAbandonedOrderId: abandonedOrderId.value ?? undefined,
+          idempotencyKey: leadIdempotencyKey || undefined,
+          formLoadedAt: leadFormLoadedAt || undefined
         }
       }
     )

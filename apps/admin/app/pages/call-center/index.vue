@@ -114,6 +114,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
               <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-2">
                   <NuxtLink :to="`/orders/${o.id}`" class="tabular font-medium text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink>
+                  <UBadge v-if="o.isDuplicate" color="error" variant="subtle" size="sm" title="Same customer + product within the last 2 days">Possible Duplicate</UBadge>
                   <span class="text-sm text-muted">{{ fmtDate(o.createdAt) }}</span>
                 </div>
                 <div class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -146,6 +147,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
               <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-2">
                   <NuxtLink :to="`/orders/${o.id}`" class="tabular font-medium text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink>
+                  <UBadge v-if="o.isDuplicate" color="error" variant="subtle" size="sm" title="Same customer + product within the last 2 days">Possible Duplicate</UBadge>
                   <StatusBadge :state="o.state" />
                 </div>
                 <div class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -174,6 +176,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
               <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-2">
                   <NuxtLink :to="`/orders/${o.id}`" class="tabular font-medium text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink>
+                  <UBadge v-if="o.isDuplicate" color="error" variant="subtle" size="sm" title="Same customer + product within the last 2 days">Possible Duplicate</UBadge>
                   <StatusBadge :state="o.state" />
                 </div>
                 <div class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -202,6 +205,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
               <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-2">
                   <NuxtLink :to="`/orders/${o.id}`" class="tabular font-medium text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink>
+                  <UBadge v-if="o.isDuplicate" color="error" variant="subtle" size="sm" title="Same customer + product within the last 2 days">Possible Duplicate</UBadge>
                   <StatusBadge :state="o.state" />
                 </div>
                 <div class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">

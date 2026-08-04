@@ -8,6 +8,7 @@ import { MetaConversionsApiService } from '../apps/meta-conversions-api.service'
 import { TikTokEventsApiService } from '../apps/tiktok-events-api.service'
 import { GoogleSheetsService } from '../apps/google-sheets.service'
 import { OrderItemsService, canAddOrderItems } from '../order-items/order-items.service'
+import { RedisService } from '../redis/redis.service'
 
 // Request-derived context for the pixel apps' server-side purchase events —
 // never required, never validated beyond "is it a string": a missing or
@@ -17,6 +18,20 @@ export interface OrderRequestContext {
   ip?: string
   userAgent?: string
 }
+
+// Same customer submitting the same product twice within this window gets
+// the second order flagged (not blocked) — see findRecentDuplicate.
+const DUPLICATE_WINDOW_MS = 2 * 24 * 60 * 60 * 1000
+// A real customer takes at least a few seconds to fill in an address after
+// a checkout/PDP form renders — see assertHumanPace.
+const MIN_FORM_FILL_MS = 3000
+// How long an idempotency key locks out a concurrent duplicate request
+// while the original is still being processed (the true double-click
+// race), vs. how long a COMPLETED key's result is remembered so a delayed
+// retry (page reload after a flaky connection) replays the same order
+// instead of creating a second one.
+const IDEMPOTENCY_LOCK_TTL_SECONDS = 30
+const IDEMPOTENCY_RESULT_TTL_SECONDS = 24 * 60 * 60
 
 @Injectable()
 export class OrdersService {
@@ -29,8 +44,92 @@ export class OrdersService {
     private readonly metaConversions: MetaConversionsApiService,
     private readonly tiktokEvents: TikTokEventsApiService,
     private readonly orderItems: OrderItemsService,
-    private readonly googleSheets: GoogleSheetsService
+    private readonly googleSheets: GoogleSheetsService,
+    private readonly redis: RedisService
   ) {}
+
+  // Don't let the client submit the same order twice — double-click,
+  // browser back-then-resubmit, or a retry after a connection error/timeout
+  // where the first request actually succeeded server-side. `key` is a
+  // client-generated UUID reused verbatim across retries of the SAME
+  // attempt (see OrderSubmitGuardFields's comment) — never required
+  // (older/cached clients simply skip this protection, same as any other
+  // optional field), and Redis being unreachable fails OPEN (checkout must
+  // never break because of an infra hiccup) rather than blocking the order.
+  // Returns the already-created order id if this exact key already
+  // resolved, or null if the caller should proceed with a fresh attempt.
+  private async reserveIdempotencyKey(key: string | undefined): Promise<string | null> {
+    if (!key) return null
+    const redisKey = `checkout:idem:${key}`
+    try {
+      const reserved = await this.redis.set(redisKey, 'processing', 'EX', IDEMPOTENCY_LOCK_TTL_SECONDS, 'NX')
+      if (reserved === 'OK') return null
+      const existing = await this.redis.get(redisKey)
+      if (existing && existing !== 'processing') return existing
+      // Another request for this exact key is actively in flight right
+      // now — the client's own disabled-button guard makes this rare, but
+      // the server can't rely on that alone.
+      throw new ConflictException('This order is already being submitted — please wait a moment.')
+    } catch (error) {
+      if (error instanceof ConflictException) throw error
+      this.logger.warn(`Idempotency check failed, proceeding without it: ${(error as Error).message}`)
+      return null
+    }
+  }
+
+  private async resolveIdempotencyKey(key: string | undefined, orderId: string): Promise<void> {
+    if (!key) return
+    try {
+      await this.redis.set(`checkout:idem:${key}`, orderId, 'EX', IDEMPOTENCY_RESULT_TTL_SECONDS)
+    } catch (error) {
+      this.logger.warn(`Failed to record idempotency result for order ${orderId}: ${(error as Error).message}`)
+    }
+  }
+
+  private async releaseIdempotencyKey(key: string | undefined): Promise<void> {
+    if (!key) return
+    try {
+      await this.redis.del(`checkout:idem:${key}`)
+    } catch {
+      // Best-effort — worst case the lock just expires naturally via its TTL.
+    }
+  }
+
+  // A crude but cheap bot signal for a JSON API with no HTML <form> a bot
+  // ever has to render (this storefront calls the API directly via fetch,
+  // so a classic honeypot input field would only catch bots that literally
+  // drive the rendered page — a narrower case than a script replaying this
+  // endpoint directly). `formLoadedAt` is optional and only ever checked
+  // once present and clearly too fast — never blocks a request that omits
+  // it, so an older cached page or a slow/unusual client is never punished.
+  private assertHumanPace(formLoadedAt: number | undefined): void {
+    if (formLoadedAt == null) return
+    const elapsed = Date.now() - formLoadedAt
+    if (elapsed >= 0 && elapsed < MIN_FORM_FILL_MS) {
+      throw new BadRequestException('Please take a moment to review your order before submitting.')
+    }
+  }
+
+  // Same customer, at least one shared product, within the last 2 days —
+  // flags (never blocks) the new order so call-center can spot an
+  // accidental double-submit or bot-driven repeat at a glance instead of
+  // treating it as a normal second order. Abandoned rows are excluded —
+  // those aren't a real second submission, and createLeadOrder already
+  // converts a matching one in place instead of creating a new row.
+  private async findRecentDuplicate(customerId: string, productIds: string[]): Promise<string | null> {
+    const since = new Date(Date.now() - DUPLICATE_WINDOW_MS)
+    const prior = await this.prisma.order.findFirst({
+      where: {
+        customerId,
+        isAbandoned: false,
+        createdAt: { gte: since },
+        items: { some: { productId: { in: productIds } } }
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true }
+    })
+    return prior?.id ?? null
+  }
 
   // Server-side purchase events for both pixel apps' server-side APIs
   // (Meta's Conversions API, TikTok's Events API) — fire-and-forget by
@@ -240,6 +339,12 @@ export class OrdersService {
   // is decremented atomically in the same transaction as the order create,
   // same pattern as createLeadOrder below.
   async createOrder(checkout: Checkout, context: OrderRequestContext = {}) {
+    this.assertHumanPace(checkout.formLoadedAt)
+    const replayOrderId = await this.reserveIdempotencyKey(checkout.idempotencyKey)
+    if (replayOrderId) {
+      return this.prisma.order.findUniqueOrThrow({ where: { id: replayOrderId }, include: { items: true } })
+    }
+
     const productIds = checkout.items.map((item) => item.productId)
     const products = await this.prisma.product.findMany({ where: { id: { in: productIds } } })
     const productById = new Map(products.map((p) => [p.id, p]))
@@ -265,41 +370,54 @@ export class OrdersService {
       data: { ...checkout.address, customerId: customer.id }
     })
 
-    const order = await this.prisma.$transaction(async (tx) => {
-      // Atomic conditional decrement — the WHERE clause makes the update
-      // itself the concurrency check. Two customers checking out the last
-      // unit at once: exactly one UPDATE matches a row, the other's
-      // `count` comes back 0, which is what actually prevents overselling
-      // (not the earlier stock check above, which is just an early UX
-      // rejection).
-      for (const item of checkout.items) {
-        await this.decrementStock(tx, item, variantById)
-      }
+    let resolvedIdempotencyKey = false
+    try {
+      const duplicateOfOrderId = await this.findRecentDuplicate(customer.id, productIds)
 
-      return tx.order.create({
-        data: {
-          customerId: customer.id,
-          addressId: address.id,
-          totalCents,
-          shippingType: checkout.shippingType,
-          shippingPriceCents,
-          items: { create: pricedItems }
-        },
-        include: { items: true }
+      const order = await this.prisma.$transaction(async (tx) => {
+        // Atomic conditional decrement — the WHERE clause makes the update
+        // itself the concurrency check. Two customers checking out the last
+        // unit at once: exactly one UPDATE matches a row, the other's
+        // `count` comes back 0, which is what actually prevents overselling
+        // (not the earlier stock check above, which is just an early UX
+        // rejection).
+        for (const item of checkout.items) {
+          await this.decrementStock(tx, item, variantById)
+        }
+
+        return tx.order.create({
+          data: {
+            customerId: customer.id,
+            addressId: address.id,
+            totalCents,
+            shippingType: checkout.shippingType,
+            shippingPriceCents,
+            isDuplicate: !!duplicateOfOrderId,
+            duplicateOfOrderId,
+            items: { create: pricedItems }
+          },
+          include: { items: true }
+        })
       })
-    })
 
-    await this.notifications.enqueue({
-      channel: 'SMS',
-      recipient: checkout.phone,
-      message: `We've received your order! Our team will call you shortly to confirm the details. Total due on delivery: ${(totalCents / 100).toFixed(2)} DZD. Order ID: ${order.id}`,
-      orderId: order.id
-    })
+      await this.resolveIdempotencyKey(checkout.idempotencyKey, order.id)
+      resolvedIdempotencyKey = true
 
-    this.sendPurchaseEvents(order.id, totalCents, checkout.phone, context, order.items, checkout.tracking)
-    this.pushToGoogleSheets(order.id)
+      await this.notifications.enqueue({
+        channel: 'SMS',
+        recipient: checkout.phone,
+        message: `We've received your order! Our team will call you shortly to confirm the details. Total due on delivery: ${(totalCents / 100).toFixed(2)} DZD. Order ID: ${order.id}`,
+        orderId: order.id
+      })
 
-    return order
+      this.sendPurchaseEvents(order.id, totalCents, checkout.phone, context, order.items, checkout.tracking)
+      this.pushToGoogleSheets(order.id)
+
+      return order
+    } catch (error) {
+      if (!resolvedIdempotencyKey) await this.releaseIdempotencyKey(checkout.idempotencyKey)
+      throw error
+    }
   }
 
   // Lead-form order — still goes through call-center confirmation
@@ -307,6 +425,12 @@ export class OrdersService {
   // Maps wilaya/commune to the existing Address model (region=wilaya, city=commune).
   // Stock is decremented atomically in the same transaction as the order create.
   async createLeadOrder(lead: LeadOrder, context: OrderRequestContext = {}) {
+    this.assertHumanPace(lead.formLoadedAt)
+    const replayOrderId = await this.reserveIdempotencyKey(lead.idempotencyKey)
+    if (replayOrderId) {
+      return this.prisma.order.findUniqueOrThrow({ where: { id: replayOrderId }, include: { items: true } })
+    }
+
     const productIds = lead.items.map((item) => item.productId)
     const products = await this.prisma.product.findMany({ where: { id: { in: productIds } } })
     const productById = new Map(products.map((p) => [p.id, p]))
@@ -392,41 +516,57 @@ export class OrdersService {
       : null
     const convertingAbandoned = !!abandonedOrder && abandonedOrder.isAbandoned && abandonedOrder.customer.phone === phone
 
-    const order = await this.prisma.$transaction(async (tx) => {
-      // Atomic stock decrement for each item
-      for (const item of lead.items) {
-        await this.decrementStock(tx, item, variantById)
-      }
+    let resolvedIdempotencyKey = false
+    let order: Prisma.OrderGetPayload<{ include: { items: true } }>
+    try {
+      // Only relevant for a genuinely new row — converting this visit's own
+      // abandoned capture into a real order isn't a second submission.
+      const duplicateOfOrderId = convertingAbandoned ? null : await this.findRecentDuplicate(customer.id, productIds)
 
-      if (convertingAbandoned) {
-        await tx.orderItem.deleteMany({ where: { orderId: abandonedOrder!.id } })
-        return tx.order.update({
-          where: { id: abandonedOrder!.id },
+      order = await this.prisma.$transaction(async (tx) => {
+        // Atomic stock decrement for each item
+        for (const item of lead.items) {
+          await this.decrementStock(tx, item, variantById)
+        }
+
+        if (convertingAbandoned) {
+          await tx.orderItem.deleteMany({ where: { orderId: abandonedOrder!.id } })
+          return tx.order.update({
+            where: { id: abandonedOrder!.id },
+            data: {
+              addressId: address.id,
+              totalCents,
+              shippingType: lead.shippingType,
+              shippingPriceCents,
+              isAbandoned: false,
+              items: { create: pricedItems }
+            },
+            include: { items: true }
+          })
+        }
+
+        return tx.order.create({
           data: {
+            customerId: customer.id,
             addressId: address.id,
+            state: 'PendingCallCenter',
             totalCents,
             shippingType: lead.shippingType,
             shippingPriceCents,
-            isAbandoned: false,
+            isDuplicate: !!duplicateOfOrderId,
+            duplicateOfOrderId,
             items: { create: pricedItems }
           },
           include: { items: true }
         })
-      }
-
-      return tx.order.create({
-        data: {
-          customerId: customer.id,
-          addressId: address.id,
-          state: 'PendingCallCenter',
-          totalCents,
-          shippingType: lead.shippingType,
-          shippingPriceCents,
-          items: { create: pricedItems }
-        },
-        include: { items: true }
       })
-    })
+
+      await this.resolveIdempotencyKey(lead.idempotencyKey, order.id)
+      resolvedIdempotencyKey = true
+    } catch (error) {
+      if (!resolvedIdempotencyKey) await this.releaseIdempotencyKey(lead.idempotencyKey)
+      throw error
+    }
 
     // Enqueue notification
     await this.notifications.enqueue({

@@ -414,6 +414,17 @@ model Order {
   // Free-text call-center notes — see UpdateOrderNotesSchema. Also mirrored
   // into the Google Sheets integration's Notes column (GoogleSheetsService).
   notes              String?
+  // Set when OrdersService.findRecentDuplicate finds a prior (non-abandoned)
+  // order for the same customer sharing at least one product within the
+  // last 2 days — never blocks the order, just flags it so call-center can
+  // spot an accidental double-submit or bot-driven repeat at a glance.
+  // duplicateOfOrderId points at the earlier order it matched, kept even if
+  // that order is later cancelled/deleted-in-spirit (SetNull, not cascade —
+  // this flag itself should survive independent of the other row's fate).
+  isDuplicate        Boolean               @default(false) @map("is_duplicate")
+  duplicateOfOrderId String?               @map("duplicate_of_order_id")
+  duplicateOfOrder   Order?                @relation("OrderDuplicate", fields: [duplicateOfOrderId], references: [id], onDelete: SetNull)
+  duplicateOrders    Order[]               @relation("OrderDuplicate")
   items              OrderItem[]
   shipment           Shipment?
   cashReconciliation CashReconciliation?
@@ -425,6 +436,7 @@ model Order {
 
   @@index([customerId])
   @@index([state])
+  @@index([duplicateOfOrderId])
   @@index([shippingCompanyId])
   @@map("orders")
 }

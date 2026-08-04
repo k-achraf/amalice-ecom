@@ -48,6 +48,8 @@ export type OrderMinAggregateOutputType = {
   fulfillmentMethod: $Enums.FulfillmentMethod | null
   shippingCompanyId: string | null
   notes: string | null
+  isDuplicate: boolean | null
+  duplicateOfOrderId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -64,6 +66,8 @@ export type OrderMaxAggregateOutputType = {
   fulfillmentMethod: $Enums.FulfillmentMethod | null
   shippingCompanyId: string | null
   notes: string | null
+  isDuplicate: boolean | null
+  duplicateOfOrderId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -80,6 +84,8 @@ export type OrderCountAggregateOutputType = {
   fulfillmentMethod: number
   shippingCompanyId: number
   notes: number
+  isDuplicate: number
+  duplicateOfOrderId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -108,6 +114,8 @@ export type OrderMinAggregateInputType = {
   fulfillmentMethod?: true
   shippingCompanyId?: true
   notes?: true
+  isDuplicate?: true
+  duplicateOfOrderId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -124,6 +132,8 @@ export type OrderMaxAggregateInputType = {
   fulfillmentMethod?: true
   shippingCompanyId?: true
   notes?: true
+  isDuplicate?: true
+  duplicateOfOrderId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -140,6 +150,8 @@ export type OrderCountAggregateInputType = {
   fulfillmentMethod?: true
   shippingCompanyId?: true
   notes?: true
+  isDuplicate?: true
+  duplicateOfOrderId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -243,6 +255,8 @@ export type OrderGroupByOutputType = {
   fulfillmentMethod: $Enums.FulfillmentMethod
   shippingCompanyId: string | null
   notes: string | null
+  isDuplicate: boolean
+  duplicateOfOrderId: string | null
   createdAt: Date
   updatedAt: Date
   _count: OrderCountAggregateOutputType | null
@@ -282,11 +296,15 @@ export type OrderWhereInput = {
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFilter<"Order"> | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.StringNullableFilter<"Order"> | string | null
   notes?: Prisma.StringNullableFilter<"Order"> | string | null
+  isDuplicate?: Prisma.BoolFilter<"Order"> | boolean
+  duplicateOfOrderId?: Prisma.StringNullableFilter<"Order"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
   address?: Prisma.XOR<Prisma.AddressScalarRelationFilter, Prisma.AddressWhereInput>
   shippingCompany?: Prisma.XOR<Prisma.ShippingCompanyNullableScalarRelationFilter, Prisma.ShippingCompanyWhereInput> | null
+  duplicateOfOrder?: Prisma.XOR<Prisma.OrderNullableScalarRelationFilter, Prisma.OrderWhereInput> | null
+  duplicateOrders?: Prisma.OrderListRelationFilter
   items?: Prisma.OrderItemListRelationFilter
   shipment?: Prisma.XOR<Prisma.ShipmentNullableScalarRelationFilter, Prisma.ShipmentWhereInput> | null
   cashReconciliation?: Prisma.XOR<Prisma.CashReconciliationNullableScalarRelationFilter, Prisma.CashReconciliationWhereInput> | null
@@ -307,11 +325,15 @@ export type OrderOrderByWithRelationInput = {
   fulfillmentMethod?: Prisma.SortOrder
   shippingCompanyId?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  isDuplicate?: Prisma.SortOrder
+  duplicateOfOrderId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   customer?: Prisma.CustomerOrderByWithRelationInput
   address?: Prisma.AddressOrderByWithRelationInput
   shippingCompany?: Prisma.ShippingCompanyOrderByWithRelationInput
+  duplicateOfOrder?: Prisma.OrderOrderByWithRelationInput
+  duplicateOrders?: Prisma.OrderOrderByRelationAggregateInput
   items?: Prisma.OrderItemOrderByRelationAggregateInput
   shipment?: Prisma.ShipmentOrderByWithRelationInput
   cashReconciliation?: Prisma.CashReconciliationOrderByWithRelationInput
@@ -335,11 +357,15 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFilter<"Order"> | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.StringNullableFilter<"Order"> | string | null
   notes?: Prisma.StringNullableFilter<"Order"> | string | null
+  isDuplicate?: Prisma.BoolFilter<"Order"> | boolean
+  duplicateOfOrderId?: Prisma.StringNullableFilter<"Order"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
   address?: Prisma.XOR<Prisma.AddressScalarRelationFilter, Prisma.AddressWhereInput>
   shippingCompany?: Prisma.XOR<Prisma.ShippingCompanyNullableScalarRelationFilter, Prisma.ShippingCompanyWhereInput> | null
+  duplicateOfOrder?: Prisma.XOR<Prisma.OrderNullableScalarRelationFilter, Prisma.OrderWhereInput> | null
+  duplicateOrders?: Prisma.OrderListRelationFilter
   items?: Prisma.OrderItemListRelationFilter
   shipment?: Prisma.XOR<Prisma.ShipmentNullableScalarRelationFilter, Prisma.ShipmentWhereInput> | null
   cashReconciliation?: Prisma.XOR<Prisma.CashReconciliationNullableScalarRelationFilter, Prisma.CashReconciliationWhereInput> | null
@@ -360,6 +386,8 @@ export type OrderOrderByWithAggregationInput = {
   fulfillmentMethod?: Prisma.SortOrder
   shippingCompanyId?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  isDuplicate?: Prisma.SortOrder
+  duplicateOfOrderId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.OrderCountOrderByAggregateInput
@@ -384,6 +412,8 @@ export type OrderScalarWhereWithAggregatesInput = {
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodWithAggregatesFilter<"Order"> | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  isDuplicate?: Prisma.BoolWithAggregatesFilter<"Order"> | boolean
+  duplicateOfOrderId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
 }
@@ -397,11 +427,14 @@ export type OrderCreateInput = {
   isAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
+  isDuplicate?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
   shippingCompany?: Prisma.ShippingCompanyCreateNestedOneWithoutOrdersInput
+  duplicateOfOrder?: Prisma.OrderCreateNestedOneWithoutDuplicateOrdersInput
+  duplicateOrders?: Prisma.OrderCreateNestedManyWithoutDuplicateOfOrderInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
@@ -422,8 +455,11 @@ export type OrderUncheckedCreateInput = {
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
+  isDuplicate?: boolean
+  duplicateOfOrderId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentUncheckedCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
@@ -441,11 +477,14 @@ export type OrderUpdateInput = {
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
   shippingCompany?: Prisma.ShippingCompanyUpdateOneWithoutOrdersNestedInput
+  duplicateOfOrder?: Prisma.OrderUpdateOneWithoutDuplicateOrdersNestedInput
+  duplicateOrders?: Prisma.OrderUpdateManyWithoutDuplicateOfOrderNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
@@ -466,8 +505,11 @@ export type OrderUncheckedUpdateInput = {
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUncheckedUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
@@ -488,6 +530,8 @@ export type OrderCreateManyInput = {
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
+  isDuplicate?: boolean
+  duplicateOfOrderId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -501,6 +545,7 @@ export type OrderUpdateManyMutationInput = {
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -517,6 +562,8 @@ export type OrderUncheckedUpdateManyInput = {
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -531,6 +578,11 @@ export type OrderOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type OrderNullableScalarRelationFilter = {
+  is?: Prisma.OrderWhereInput | null
+  isNot?: Prisma.OrderWhereInput | null
+}
+
 export type OrderCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   customerId?: Prisma.SortOrder
@@ -543,6 +595,8 @@ export type OrderCountOrderByAggregateInput = {
   fulfillmentMethod?: Prisma.SortOrder
   shippingCompanyId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  isDuplicate?: Prisma.SortOrder
+  duplicateOfOrderId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -564,6 +618,8 @@ export type OrderMaxOrderByAggregateInput = {
   fulfillmentMethod?: Prisma.SortOrder
   shippingCompanyId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  isDuplicate?: Prisma.SortOrder
+  duplicateOfOrderId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -580,6 +636,8 @@ export type OrderMinOrderByAggregateInput = {
   fulfillmentMethod?: Prisma.SortOrder
   shippingCompanyId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  isDuplicate?: Prisma.SortOrder
+  duplicateOfOrderId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -592,11 +650,6 @@ export type OrderSumOrderByAggregateInput = {
 export type OrderScalarRelationFilter = {
   is?: Prisma.OrderWhereInput
   isNot?: Prisma.OrderWhereInput
-}
-
-export type OrderNullableScalarRelationFilter = {
-  is?: Prisma.OrderWhereInput | null
-  isNot?: Prisma.OrderWhereInput | null
 }
 
 export type OrderCreateNestedManyWithoutCustomerInput = {
@@ -683,6 +736,26 @@ export type OrderUncheckedUpdateManyWithoutAddressNestedInput = {
   deleteMany?: Prisma.OrderScalarWhereInput | Prisma.OrderScalarWhereInput[]
 }
 
+export type OrderCreateNestedOneWithoutDuplicateOrdersInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutDuplicateOrdersInput, Prisma.OrderUncheckedCreateWithoutDuplicateOrdersInput>
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutDuplicateOrdersInput
+  connect?: Prisma.OrderWhereUniqueInput
+}
+
+export type OrderCreateNestedManyWithoutDuplicateOfOrderInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutDuplicateOfOrderInput, Prisma.OrderUncheckedCreateWithoutDuplicateOfOrderInput> | Prisma.OrderCreateWithoutDuplicateOfOrderInput[] | Prisma.OrderUncheckedCreateWithoutDuplicateOfOrderInput[]
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutDuplicateOfOrderInput | Prisma.OrderCreateOrConnectWithoutDuplicateOfOrderInput[]
+  createMany?: Prisma.OrderCreateManyDuplicateOfOrderInputEnvelope
+  connect?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+}
+
+export type OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutDuplicateOfOrderInput, Prisma.OrderUncheckedCreateWithoutDuplicateOfOrderInput> | Prisma.OrderCreateWithoutDuplicateOfOrderInput[] | Prisma.OrderUncheckedCreateWithoutDuplicateOfOrderInput[]
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutDuplicateOfOrderInput | Prisma.OrderCreateOrConnectWithoutDuplicateOfOrderInput[]
+  createMany?: Prisma.OrderCreateManyDuplicateOfOrderInputEnvelope
+  connect?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+}
+
 export type EnumOrderStateFieldUpdateOperationsInput = {
   set?: $Enums.OrderState
 }
@@ -693,6 +766,44 @@ export type NullableEnumShippingTypeFieldUpdateOperationsInput = {
 
 export type EnumFulfillmentMethodFieldUpdateOperationsInput = {
   set?: $Enums.FulfillmentMethod
+}
+
+export type OrderUpdateOneWithoutDuplicateOrdersNestedInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutDuplicateOrdersInput, Prisma.OrderUncheckedCreateWithoutDuplicateOrdersInput>
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutDuplicateOrdersInput
+  upsert?: Prisma.OrderUpsertWithoutDuplicateOrdersInput
+  disconnect?: Prisma.OrderWhereInput | boolean
+  delete?: Prisma.OrderWhereInput | boolean
+  connect?: Prisma.OrderWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrderUpdateToOneWithWhereWithoutDuplicateOrdersInput, Prisma.OrderUpdateWithoutDuplicateOrdersInput>, Prisma.OrderUncheckedUpdateWithoutDuplicateOrdersInput>
+}
+
+export type OrderUpdateManyWithoutDuplicateOfOrderNestedInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutDuplicateOfOrderInput, Prisma.OrderUncheckedCreateWithoutDuplicateOfOrderInput> | Prisma.OrderCreateWithoutDuplicateOfOrderInput[] | Prisma.OrderUncheckedCreateWithoutDuplicateOfOrderInput[]
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutDuplicateOfOrderInput | Prisma.OrderCreateOrConnectWithoutDuplicateOfOrderInput[]
+  upsert?: Prisma.OrderUpsertWithWhereUniqueWithoutDuplicateOfOrderInput | Prisma.OrderUpsertWithWhereUniqueWithoutDuplicateOfOrderInput[]
+  createMany?: Prisma.OrderCreateManyDuplicateOfOrderInputEnvelope
+  set?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+  disconnect?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+  delete?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+  connect?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+  update?: Prisma.OrderUpdateWithWhereUniqueWithoutDuplicateOfOrderInput | Prisma.OrderUpdateWithWhereUniqueWithoutDuplicateOfOrderInput[]
+  updateMany?: Prisma.OrderUpdateManyWithWhereWithoutDuplicateOfOrderInput | Prisma.OrderUpdateManyWithWhereWithoutDuplicateOfOrderInput[]
+  deleteMany?: Prisma.OrderScalarWhereInput | Prisma.OrderScalarWhereInput[]
+}
+
+export type OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutDuplicateOfOrderInput, Prisma.OrderUncheckedCreateWithoutDuplicateOfOrderInput> | Prisma.OrderCreateWithoutDuplicateOfOrderInput[] | Prisma.OrderUncheckedCreateWithoutDuplicateOfOrderInput[]
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutDuplicateOfOrderInput | Prisma.OrderCreateOrConnectWithoutDuplicateOfOrderInput[]
+  upsert?: Prisma.OrderUpsertWithWhereUniqueWithoutDuplicateOfOrderInput | Prisma.OrderUpsertWithWhereUniqueWithoutDuplicateOfOrderInput[]
+  createMany?: Prisma.OrderCreateManyDuplicateOfOrderInputEnvelope
+  set?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+  disconnect?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+  delete?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+  connect?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+  update?: Prisma.OrderUpdateWithWhereUniqueWithoutDuplicateOfOrderInput | Prisma.OrderUpdateWithWhereUniqueWithoutDuplicateOfOrderInput[]
+  updateMany?: Prisma.OrderUpdateManyWithWhereWithoutDuplicateOfOrderInput | Prisma.OrderUpdateManyWithWhereWithoutDuplicateOfOrderInput[]
+  deleteMany?: Prisma.OrderScalarWhereInput | Prisma.OrderScalarWhereInput[]
 }
 
 export type OrderCreateNestedOneWithoutItemsInput = {
@@ -834,10 +945,13 @@ export type OrderCreateWithoutCustomerInput = {
   isAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
+  isDuplicate?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
   shippingCompany?: Prisma.ShippingCompanyCreateNestedOneWithoutOrdersInput
+  duplicateOfOrder?: Prisma.OrderCreateNestedOneWithoutDuplicateOrdersInput
+  duplicateOrders?: Prisma.OrderCreateNestedManyWithoutDuplicateOfOrderInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
@@ -857,8 +971,11 @@ export type OrderUncheckedCreateWithoutCustomerInput = {
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
+  isDuplicate?: boolean
+  duplicateOfOrderId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentUncheckedCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
@@ -908,6 +1025,8 @@ export type OrderScalarWhereInput = {
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFilter<"Order"> | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.StringNullableFilter<"Order"> | string | null
   notes?: Prisma.StringNullableFilter<"Order"> | string | null
+  isDuplicate?: Prisma.BoolFilter<"Order"> | boolean
+  duplicateOfOrderId?: Prisma.StringNullableFilter<"Order"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
 }
@@ -921,10 +1040,13 @@ export type OrderCreateWithoutAddressInput = {
   isAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
+  isDuplicate?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
   shippingCompany?: Prisma.ShippingCompanyCreateNestedOneWithoutOrdersInput
+  duplicateOfOrder?: Prisma.OrderCreateNestedOneWithoutDuplicateOrdersInput
+  duplicateOrders?: Prisma.OrderCreateNestedManyWithoutDuplicateOfOrderInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
@@ -944,8 +1066,11 @@ export type OrderUncheckedCreateWithoutAddressInput = {
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
+  isDuplicate?: boolean
+  duplicateOfOrderId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentUncheckedCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
@@ -980,6 +1105,192 @@ export type OrderUpdateManyWithWhereWithoutAddressInput = {
   data: Prisma.XOR<Prisma.OrderUpdateManyMutationInput, Prisma.OrderUncheckedUpdateManyWithoutAddressInput>
 }
 
+export type OrderCreateWithoutDuplicateOrdersInput = {
+  id?: string
+  state?: $Enums.OrderState
+  totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
+  isAbandoned?: boolean
+  fulfillmentMethod?: $Enums.FulfillmentMethod
+  notes?: string | null
+  isDuplicate?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
+  address: Prisma.AddressCreateNestedOneWithoutOrdersInput
+  shippingCompany?: Prisma.ShippingCompanyCreateNestedOneWithoutOrdersInput
+  duplicateOfOrder?: Prisma.OrderCreateNestedOneWithoutDuplicateOrdersInput
+  items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
+  shipment?: Prisma.ShipmentCreateNestedOneWithoutOrderInput
+  cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
+  ledgerEntries?: Prisma.LedgerEntryCreateNestedManyWithoutOrderInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
+}
+
+export type OrderUncheckedCreateWithoutDuplicateOrdersInput = {
+  id?: string
+  customerId: string
+  addressId: string
+  state?: $Enums.OrderState
+  totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
+  isAbandoned?: boolean
+  fulfillmentMethod?: $Enums.FulfillmentMethod
+  shippingCompanyId?: string | null
+  notes?: string | null
+  isDuplicate?: boolean
+  duplicateOfOrderId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
+  shipment?: Prisma.ShipmentUncheckedCreateNestedOneWithoutOrderInput
+  cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
+  ledgerEntries?: Prisma.LedgerEntryUncheckedCreateNestedManyWithoutOrderInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
+}
+
+export type OrderCreateOrConnectWithoutDuplicateOrdersInput = {
+  where: Prisma.OrderWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrderCreateWithoutDuplicateOrdersInput, Prisma.OrderUncheckedCreateWithoutDuplicateOrdersInput>
+}
+
+export type OrderCreateWithoutDuplicateOfOrderInput = {
+  id?: string
+  state?: $Enums.OrderState
+  totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
+  isAbandoned?: boolean
+  fulfillmentMethod?: $Enums.FulfillmentMethod
+  notes?: string | null
+  isDuplicate?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
+  address: Prisma.AddressCreateNestedOneWithoutOrdersInput
+  shippingCompany?: Prisma.ShippingCompanyCreateNestedOneWithoutOrdersInput
+  duplicateOrders?: Prisma.OrderCreateNestedManyWithoutDuplicateOfOrderInput
+  items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
+  shipment?: Prisma.ShipmentCreateNestedOneWithoutOrderInput
+  cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
+  ledgerEntries?: Prisma.LedgerEntryCreateNestedManyWithoutOrderInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
+}
+
+export type OrderUncheckedCreateWithoutDuplicateOfOrderInput = {
+  id?: string
+  customerId: string
+  addressId: string
+  state?: $Enums.OrderState
+  totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
+  isAbandoned?: boolean
+  fulfillmentMethod?: $Enums.FulfillmentMethod
+  shippingCompanyId?: string | null
+  notes?: string | null
+  isDuplicate?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
+  items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
+  shipment?: Prisma.ShipmentUncheckedCreateNestedOneWithoutOrderInput
+  cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
+  ledgerEntries?: Prisma.LedgerEntryUncheckedCreateNestedManyWithoutOrderInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
+}
+
+export type OrderCreateOrConnectWithoutDuplicateOfOrderInput = {
+  where: Prisma.OrderWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrderCreateWithoutDuplicateOfOrderInput, Prisma.OrderUncheckedCreateWithoutDuplicateOfOrderInput>
+}
+
+export type OrderCreateManyDuplicateOfOrderInputEnvelope = {
+  data: Prisma.OrderCreateManyDuplicateOfOrderInput | Prisma.OrderCreateManyDuplicateOfOrderInput[]
+  skipDuplicates?: boolean
+}
+
+export type OrderUpsertWithoutDuplicateOrdersInput = {
+  update: Prisma.XOR<Prisma.OrderUpdateWithoutDuplicateOrdersInput, Prisma.OrderUncheckedUpdateWithoutDuplicateOrdersInput>
+  create: Prisma.XOR<Prisma.OrderCreateWithoutDuplicateOrdersInput, Prisma.OrderUncheckedCreateWithoutDuplicateOrdersInput>
+  where?: Prisma.OrderWhereInput
+}
+
+export type OrderUpdateToOneWithWhereWithoutDuplicateOrdersInput = {
+  where?: Prisma.OrderWhereInput
+  data: Prisma.XOR<Prisma.OrderUpdateWithoutDuplicateOrdersInput, Prisma.OrderUncheckedUpdateWithoutDuplicateOrdersInput>
+}
+
+export type OrderUpdateWithoutDuplicateOrdersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
+  totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
+  address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
+  shippingCompany?: Prisma.ShippingCompanyUpdateOneWithoutOrdersNestedInput
+  duplicateOfOrder?: Prisma.OrderUpdateOneWithoutDuplicateOrdersNestedInput
+  items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
+  shipment?: Prisma.ShipmentUpdateOneWithoutOrderNestedInput
+  cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
+  ledgerEntries?: Prisma.LedgerEntryUpdateManyWithoutOrderNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
+}
+
+export type OrderUncheckedUpdateWithoutDuplicateOrdersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
+  totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
+  shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
+  shipment?: Prisma.ShipmentUncheckedUpdateOneWithoutOrderNestedInput
+  cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
+  ledgerEntries?: Prisma.LedgerEntryUncheckedUpdateManyWithoutOrderNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
+}
+
+export type OrderUpsertWithWhereUniqueWithoutDuplicateOfOrderInput = {
+  where: Prisma.OrderWhereUniqueInput
+  update: Prisma.XOR<Prisma.OrderUpdateWithoutDuplicateOfOrderInput, Prisma.OrderUncheckedUpdateWithoutDuplicateOfOrderInput>
+  create: Prisma.XOR<Prisma.OrderCreateWithoutDuplicateOfOrderInput, Prisma.OrderUncheckedCreateWithoutDuplicateOfOrderInput>
+}
+
+export type OrderUpdateWithWhereUniqueWithoutDuplicateOfOrderInput = {
+  where: Prisma.OrderWhereUniqueInput
+  data: Prisma.XOR<Prisma.OrderUpdateWithoutDuplicateOfOrderInput, Prisma.OrderUncheckedUpdateWithoutDuplicateOfOrderInput>
+}
+
+export type OrderUpdateManyWithWhereWithoutDuplicateOfOrderInput = {
+  where: Prisma.OrderScalarWhereInput
+  data: Prisma.XOR<Prisma.OrderUpdateManyMutationInput, Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderInput>
+}
+
 export type OrderCreateWithoutItemsInput = {
   id?: string
   state?: $Enums.OrderState
@@ -989,11 +1300,14 @@ export type OrderCreateWithoutItemsInput = {
   isAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
+  isDuplicate?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
   shippingCompany?: Prisma.ShippingCompanyCreateNestedOneWithoutOrdersInput
+  duplicateOfOrder?: Prisma.OrderCreateNestedOneWithoutDuplicateOrdersInput
+  duplicateOrders?: Prisma.OrderCreateNestedManyWithoutDuplicateOfOrderInput
   shipment?: Prisma.ShipmentCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryCreateNestedManyWithoutOrderInput
@@ -1013,8 +1327,11 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
+  isDuplicate?: boolean
+  duplicateOfOrderId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
   shipment?: Prisma.ShipmentUncheckedCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedCreateNestedManyWithoutOrderInput
@@ -1047,11 +1364,14 @@ export type OrderUpdateWithoutItemsInput = {
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
   shippingCompany?: Prisma.ShippingCompanyUpdateOneWithoutOrdersNestedInput
+  duplicateOfOrder?: Prisma.OrderUpdateOneWithoutDuplicateOrdersNestedInput
+  duplicateOrders?: Prisma.OrderUpdateManyWithoutDuplicateOfOrderNestedInput
   shipment?: Prisma.ShipmentUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
   ledgerEntries?: Prisma.LedgerEntryUpdateManyWithoutOrderNestedInput
@@ -1071,8 +1391,11 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
   shipment?: Prisma.ShipmentUncheckedUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedUpdateManyWithoutOrderNestedInput
@@ -1089,11 +1412,14 @@ export type OrderCreateWithoutShipmentInput = {
   isAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
+  isDuplicate?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
   shippingCompany?: Prisma.ShippingCompanyCreateNestedOneWithoutOrdersInput
+  duplicateOfOrder?: Prisma.OrderCreateNestedOneWithoutDuplicateOrdersInput
+  duplicateOrders?: Prisma.OrderCreateNestedManyWithoutDuplicateOfOrderInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryCreateNestedManyWithoutOrderInput
@@ -1113,8 +1439,11 @@ export type OrderUncheckedCreateWithoutShipmentInput = {
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
+  isDuplicate?: boolean
+  duplicateOfOrderId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedCreateNestedManyWithoutOrderInput
@@ -1147,11 +1476,14 @@ export type OrderUpdateWithoutShipmentInput = {
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
   shippingCompany?: Prisma.ShippingCompanyUpdateOneWithoutOrdersNestedInput
+  duplicateOfOrder?: Prisma.OrderUpdateOneWithoutDuplicateOrdersNestedInput
+  duplicateOrders?: Prisma.OrderUpdateManyWithoutDuplicateOfOrderNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
   ledgerEntries?: Prisma.LedgerEntryUpdateManyWithoutOrderNestedInput
@@ -1171,8 +1503,11 @@ export type OrderUncheckedUpdateWithoutShipmentInput = {
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedUpdateManyWithoutOrderNestedInput
@@ -1189,11 +1524,14 @@ export type OrderCreateWithoutCashReconciliationInput = {
   isAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
+  isDuplicate?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
   shippingCompany?: Prisma.ShippingCompanyCreateNestedOneWithoutOrdersInput
+  duplicateOfOrder?: Prisma.OrderCreateNestedOneWithoutDuplicateOrdersInput
+  duplicateOrders?: Prisma.OrderCreateNestedManyWithoutDuplicateOfOrderInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryCreateNestedManyWithoutOrderInput
@@ -1213,8 +1551,11 @@ export type OrderUncheckedCreateWithoutCashReconciliationInput = {
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
+  isDuplicate?: boolean
+  duplicateOfOrderId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentUncheckedCreateNestedOneWithoutOrderInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedCreateNestedManyWithoutOrderInput
@@ -1247,11 +1588,14 @@ export type OrderUpdateWithoutCashReconciliationInput = {
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
   shippingCompany?: Prisma.ShippingCompanyUpdateOneWithoutOrdersNestedInput
+  duplicateOfOrder?: Prisma.OrderUpdateOneWithoutDuplicateOrdersNestedInput
+  duplicateOrders?: Prisma.OrderUpdateManyWithoutDuplicateOfOrderNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUpdateOneWithoutOrderNestedInput
   ledgerEntries?: Prisma.LedgerEntryUpdateManyWithoutOrderNestedInput
@@ -1271,8 +1615,11 @@ export type OrderUncheckedUpdateWithoutCashReconciliationInput = {
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUncheckedUpdateOneWithoutOrderNestedInput
   ledgerEntries?: Prisma.LedgerEntryUncheckedUpdateManyWithoutOrderNestedInput
@@ -1289,11 +1636,14 @@ export type OrderCreateWithoutLedgerEntriesInput = {
   isAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
+  isDuplicate?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
   shippingCompany?: Prisma.ShippingCompanyCreateNestedOneWithoutOrdersInput
+  duplicateOfOrder?: Prisma.OrderCreateNestedOneWithoutDuplicateOrdersInput
+  duplicateOrders?: Prisma.OrderCreateNestedManyWithoutDuplicateOfOrderInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
@@ -1313,8 +1663,11 @@ export type OrderUncheckedCreateWithoutLedgerEntriesInput = {
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
+  isDuplicate?: boolean
+  duplicateOfOrderId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentUncheckedCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
@@ -1347,11 +1700,14 @@ export type OrderUpdateWithoutLedgerEntriesInput = {
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
   shippingCompany?: Prisma.ShippingCompanyUpdateOneWithoutOrdersNestedInput
+  duplicateOfOrder?: Prisma.OrderUpdateOneWithoutDuplicateOrdersNestedInput
+  duplicateOrders?: Prisma.OrderUpdateManyWithoutDuplicateOfOrderNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
@@ -1371,8 +1727,11 @@ export type OrderUncheckedUpdateWithoutLedgerEntriesInput = {
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUncheckedUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
@@ -1389,11 +1748,14 @@ export type OrderCreateWithoutNotificationsInput = {
   isAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
+  isDuplicate?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
   shippingCompany?: Prisma.ShippingCompanyCreateNestedOneWithoutOrdersInput
+  duplicateOfOrder?: Prisma.OrderCreateNestedOneWithoutDuplicateOrdersInput
+  duplicateOrders?: Prisma.OrderCreateNestedManyWithoutDuplicateOfOrderInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
@@ -1413,8 +1775,11 @@ export type OrderUncheckedCreateWithoutNotificationsInput = {
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
+  isDuplicate?: boolean
+  duplicateOfOrderId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentUncheckedCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
@@ -1447,11 +1812,14 @@ export type OrderUpdateWithoutNotificationsInput = {
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
   shippingCompany?: Prisma.ShippingCompanyUpdateOneWithoutOrdersNestedInput
+  duplicateOfOrder?: Prisma.OrderUpdateOneWithoutDuplicateOrdersNestedInput
+  duplicateOrders?: Prisma.OrderUpdateManyWithoutDuplicateOfOrderNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
@@ -1471,8 +1839,11 @@ export type OrderUncheckedUpdateWithoutNotificationsInput = {
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUncheckedUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
@@ -1489,11 +1860,14 @@ export type OrderCreateWithoutGoogleSheetRowsInput = {
   isAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
+  isDuplicate?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
   shippingCompany?: Prisma.ShippingCompanyCreateNestedOneWithoutOrdersInput
+  duplicateOfOrder?: Prisma.OrderCreateNestedOneWithoutDuplicateOrdersInput
+  duplicateOrders?: Prisma.OrderCreateNestedManyWithoutDuplicateOfOrderInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
@@ -1513,8 +1887,11 @@ export type OrderUncheckedCreateWithoutGoogleSheetRowsInput = {
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
+  isDuplicate?: boolean
+  duplicateOfOrderId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentUncheckedCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
@@ -1547,11 +1924,14 @@ export type OrderUpdateWithoutGoogleSheetRowsInput = {
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
   shippingCompany?: Prisma.ShippingCompanyUpdateOneWithoutOrdersNestedInput
+  duplicateOfOrder?: Prisma.OrderUpdateOneWithoutDuplicateOrdersNestedInput
+  duplicateOrders?: Prisma.OrderUpdateManyWithoutDuplicateOfOrderNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
@@ -1571,8 +1951,11 @@ export type OrderUncheckedUpdateWithoutGoogleSheetRowsInput = {
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUncheckedUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
@@ -1589,10 +1972,13 @@ export type OrderCreateWithoutShippingCompanyInput = {
   isAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
+  isDuplicate?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
+  duplicateOfOrder?: Prisma.OrderCreateNestedOneWithoutDuplicateOrdersInput
+  duplicateOrders?: Prisma.OrderCreateNestedManyWithoutDuplicateOfOrderInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
@@ -1612,8 +1998,11 @@ export type OrderUncheckedCreateWithoutShippingCompanyInput = {
   isAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
+  isDuplicate?: boolean
+  duplicateOfOrderId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   shipment?: Prisma.ShipmentUncheckedCreateNestedOneWithoutOrderInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
@@ -1659,6 +2048,8 @@ export type OrderCreateManyCustomerInput = {
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
+  isDuplicate?: boolean
+  duplicateOfOrderId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1672,10 +2063,13 @@ export type OrderUpdateWithoutCustomerInput = {
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
   shippingCompany?: Prisma.ShippingCompanyUpdateOneWithoutOrdersNestedInput
+  duplicateOfOrder?: Prisma.OrderUpdateOneWithoutDuplicateOrdersNestedInput
+  duplicateOrders?: Prisma.OrderUpdateManyWithoutDuplicateOfOrderNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
@@ -1695,8 +2089,11 @@ export type OrderUncheckedUpdateWithoutCustomerInput = {
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUncheckedUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
@@ -1716,6 +2113,8 @@ export type OrderUncheckedUpdateManyWithoutCustomerInput = {
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1731,6 +2130,8 @@ export type OrderCreateManyAddressInput = {
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
+  isDuplicate?: boolean
+  duplicateOfOrderId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1744,10 +2145,13 @@ export type OrderUpdateWithoutAddressInput = {
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
   shippingCompany?: Prisma.ShippingCompanyUpdateOneWithoutOrdersNestedInput
+  duplicateOfOrder?: Prisma.OrderUpdateOneWithoutDuplicateOrdersNestedInput
+  duplicateOrders?: Prisma.OrderUpdateManyWithoutDuplicateOfOrderNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
@@ -1767,8 +2171,11 @@ export type OrderUncheckedUpdateWithoutAddressInput = {
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUncheckedUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
@@ -1788,6 +2195,90 @@ export type OrderUncheckedUpdateManyWithoutAddressInput = {
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type OrderCreateManyDuplicateOfOrderInput = {
+  id?: string
+  customerId: string
+  addressId: string
+  state?: $Enums.OrderState
+  totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
+  isAbandoned?: boolean
+  fulfillmentMethod?: $Enums.FulfillmentMethod
+  shippingCompanyId?: string | null
+  notes?: string | null
+  isDuplicate?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type OrderUpdateWithoutDuplicateOfOrderInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
+  totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
+  address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
+  shippingCompany?: Prisma.ShippingCompanyUpdateOneWithoutOrdersNestedInput
+  duplicateOrders?: Prisma.OrderUpdateManyWithoutDuplicateOfOrderNestedInput
+  items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
+  shipment?: Prisma.ShipmentUpdateOneWithoutOrderNestedInput
+  cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
+  ledgerEntries?: Prisma.LedgerEntryUpdateManyWithoutOrderNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
+}
+
+export type OrderUncheckedUpdateWithoutDuplicateOfOrderInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
+  totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
+  shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
+  items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
+  shipment?: Prisma.ShipmentUncheckedUpdateOneWithoutOrderNestedInput
+  cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
+  ledgerEntries?: Prisma.LedgerEntryUncheckedUpdateManyWithoutOrderNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
+}
+
+export type OrderUncheckedUpdateManyWithoutDuplicateOfOrderInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
+  totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
+  shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1803,6 +2294,8 @@ export type OrderCreateManyShippingCompanyInput = {
   isAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
+  isDuplicate?: boolean
+  duplicateOfOrderId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1816,10 +2309,13 @@ export type OrderUpdateWithoutShippingCompanyInput = {
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
+  duplicateOfOrder?: Prisma.OrderUpdateOneWithoutDuplicateOrdersNestedInput
+  duplicateOrders?: Prisma.OrderUpdateManyWithoutDuplicateOfOrderNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
@@ -1839,8 +2335,11 @@ export type OrderUncheckedUpdateWithoutShippingCompanyInput = {
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   shipment?: Prisma.ShipmentUncheckedUpdateOneWithoutOrderNestedInput
   cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
@@ -1860,6 +2359,8 @@ export type OrderUncheckedUpdateManyWithoutShippingCompanyInput = {
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1870,6 +2371,7 @@ export type OrderUncheckedUpdateManyWithoutShippingCompanyInput = {
  */
 
 export type OrderCountOutputType = {
+  duplicateOrders: number
   items: number
   ledgerEntries: number
   notifications: number
@@ -1877,6 +2379,7 @@ export type OrderCountOutputType = {
 }
 
 export type OrderCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  duplicateOrders?: boolean | OrderCountOutputTypeCountDuplicateOrdersArgs
   items?: boolean | OrderCountOutputTypeCountItemsArgs
   ledgerEntries?: boolean | OrderCountOutputTypeCountLedgerEntriesArgs
   notifications?: boolean | OrderCountOutputTypeCountNotificationsArgs
@@ -1891,6 +2394,13 @@ export type OrderCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extens
    * Select specific fields to fetch from the OrderCountOutputType
    */
   select?: Prisma.OrderCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * OrderCountOutputType without action
+ */
+export type OrderCountOutputTypeCountDuplicateOrdersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrderWhereInput
 }
 
 /**
@@ -1934,11 +2444,15 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   fulfillmentMethod?: boolean
   shippingCompanyId?: boolean
   notes?: boolean
+  isDuplicate?: boolean
+  duplicateOfOrderId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
   address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
   shippingCompany?: boolean | Prisma.Order$shippingCompanyArgs<ExtArgs>
+  duplicateOfOrder?: boolean | Prisma.Order$duplicateOfOrderArgs<ExtArgs>
+  duplicateOrders?: boolean | Prisma.Order$duplicateOrdersArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
   shipment?: boolean | Prisma.Order$shipmentArgs<ExtArgs>
   cashReconciliation?: boolean | Prisma.Order$cashReconciliationArgs<ExtArgs>
@@ -1960,11 +2474,14 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   fulfillmentMethod?: boolean
   shippingCompanyId?: boolean
   notes?: boolean
+  isDuplicate?: boolean
+  duplicateOfOrderId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
   address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
   shippingCompany?: boolean | Prisma.Order$shippingCompanyArgs<ExtArgs>
+  duplicateOfOrder?: boolean | Prisma.Order$duplicateOfOrderArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
 
 export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1979,11 +2496,14 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   fulfillmentMethod?: boolean
   shippingCompanyId?: boolean
   notes?: boolean
+  isDuplicate?: boolean
+  duplicateOfOrderId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
   address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
   shippingCompany?: boolean | Prisma.Order$shippingCompanyArgs<ExtArgs>
+  duplicateOfOrder?: boolean | Prisma.Order$duplicateOfOrderArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
 
 export type OrderSelectScalar = {
@@ -1998,15 +2518,19 @@ export type OrderSelectScalar = {
   fulfillmentMethod?: boolean
   shippingCompanyId?: boolean
   notes?: boolean
+  isDuplicate?: boolean
+  duplicateOfOrderId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "addressId" | "state" | "totalCents" | "shippingType" | "shippingPriceCents" | "isAbandoned" | "fulfillmentMethod" | "shippingCompanyId" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "addressId" | "state" | "totalCents" | "shippingType" | "shippingPriceCents" | "isAbandoned" | "fulfillmentMethod" | "shippingCompanyId" | "notes" | "isDuplicate" | "duplicateOfOrderId" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
   address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
   shippingCompany?: boolean | Prisma.Order$shippingCompanyArgs<ExtArgs>
+  duplicateOfOrder?: boolean | Prisma.Order$duplicateOfOrderArgs<ExtArgs>
+  duplicateOrders?: boolean | Prisma.Order$duplicateOrdersArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
   shipment?: boolean | Prisma.Order$shipmentArgs<ExtArgs>
   cashReconciliation?: boolean | Prisma.Order$cashReconciliationArgs<ExtArgs>
@@ -2019,11 +2543,13 @@ export type OrderIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
   address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
   shippingCompany?: boolean | Prisma.Order$shippingCompanyArgs<ExtArgs>
+  duplicateOfOrder?: boolean | Prisma.Order$duplicateOfOrderArgs<ExtArgs>
 }
 export type OrderIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
   address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
   shippingCompany?: boolean | Prisma.Order$shippingCompanyArgs<ExtArgs>
+  duplicateOfOrder?: boolean | Prisma.Order$duplicateOfOrderArgs<ExtArgs>
 }
 
 export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2032,6 +2558,8 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     customer: Prisma.$CustomerPayload<ExtArgs>
     address: Prisma.$AddressPayload<ExtArgs>
     shippingCompany: Prisma.$ShippingCompanyPayload<ExtArgs> | null
+    duplicateOfOrder: Prisma.$OrderPayload<ExtArgs> | null
+    duplicateOrders: Prisma.$OrderPayload<ExtArgs>[]
     items: Prisma.$OrderItemPayload<ExtArgs>[]
     shipment: Prisma.$ShipmentPayload<ExtArgs> | null
     cashReconciliation: Prisma.$CashReconciliationPayload<ExtArgs> | null
@@ -2051,6 +2579,8 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     fulfillmentMethod: $Enums.FulfillmentMethod
     shippingCompanyId: string | null
     notes: string | null
+    isDuplicate: boolean
+    duplicateOfOrderId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["order"]>
@@ -2450,6 +2980,8 @@ export interface Prisma__OrderClient<T, Null = never, ExtArgs extends runtime.Ty
   customer<T extends Prisma.CustomerDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CustomerDefaultArgs<ExtArgs>>): Prisma.Prisma__CustomerClient<runtime.Types.Result.GetResult<Prisma.$CustomerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   address<T extends Prisma.AddressDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AddressDefaultArgs<ExtArgs>>): Prisma.Prisma__AddressClient<runtime.Types.Result.GetResult<Prisma.$AddressPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   shippingCompany<T extends Prisma.Order$shippingCompanyArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$shippingCompanyArgs<ExtArgs>>): Prisma.Prisma__ShippingCompanyClient<runtime.Types.Result.GetResult<Prisma.$ShippingCompanyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  duplicateOfOrder<T extends Prisma.Order$duplicateOfOrderArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$duplicateOfOrderArgs<ExtArgs>>): Prisma.Prisma__OrderClient<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  duplicateOrders<T extends Prisma.Order$duplicateOrdersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$duplicateOrdersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   items<T extends Prisma.Order$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   shipment<T extends Prisma.Order$shipmentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$shipmentArgs<ExtArgs>>): Prisma.Prisma__ShipmentClient<runtime.Types.Result.GetResult<Prisma.$ShipmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   cashReconciliation<T extends Prisma.Order$cashReconciliationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$cashReconciliationArgs<ExtArgs>>): Prisma.Prisma__CashReconciliationClient<runtime.Types.Result.GetResult<Prisma.$CashReconciliationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -2496,6 +3028,8 @@ export interface OrderFieldRefs {
   readonly fulfillmentMethod: Prisma.FieldRef<"Order", 'FulfillmentMethod'>
   readonly shippingCompanyId: Prisma.FieldRef<"Order", 'String'>
   readonly notes: Prisma.FieldRef<"Order", 'String'>
+  readonly isDuplicate: Prisma.FieldRef<"Order", 'Boolean'>
+  readonly duplicateOfOrderId: Prisma.FieldRef<"Order", 'String'>
   readonly createdAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Order", 'DateTime'>
 }
@@ -2915,6 +3449,49 @@ export type Order$shippingCompanyArgs<ExtArgs extends runtime.Types.Extensions.I
    */
   include?: Prisma.ShippingCompanyInclude<ExtArgs> | null
   where?: Prisma.ShippingCompanyWhereInput
+}
+
+/**
+ * Order.duplicateOfOrder
+ */
+export type Order$duplicateOfOrderArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Order
+   */
+  select?: Prisma.OrderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Order
+   */
+  omit?: Prisma.OrderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrderInclude<ExtArgs> | null
+  where?: Prisma.OrderWhereInput
+}
+
+/**
+ * Order.duplicateOrders
+ */
+export type Order$duplicateOrdersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Order
+   */
+  select?: Prisma.OrderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Order
+   */
+  omit?: Prisma.OrderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrderInclude<ExtArgs> | null
+  where?: Prisma.OrderWhereInput
+  orderBy?: Prisma.OrderOrderByWithRelationInput | Prisma.OrderOrderByWithRelationInput[]
+  cursor?: Prisma.OrderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrderScalarFieldEnum | Prisma.OrderScalarFieldEnum[]
 }
 
 /**

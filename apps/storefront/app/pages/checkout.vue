@@ -69,6 +69,23 @@ function onAddressSubmit() {
 const placing = ref(false)
 const placeError = ref<string | null>(null)
 
+// Anti-double-submit: one key per genuinely new checkout attempt, reused
+// verbatim across retries of THAT SAME attempt (a network error/timeout
+// where the first request may have actually succeeded server-side) so the
+// server can recognize a retry and return the original order instead of
+// creating a second one — see OrdersService.reserveIdempotencyKey.
+// formLoadedAt is a bot-pace signal (a real customer takes at least a few
+// seconds to fill in an address) — see OrdersService.assertHumanPace.
+// Client-only (same guard pattern as the pixel tracking above) — checkout
+// submission only ever runs client-side, and this avoids depending on
+// `crypto.randomUUID()` existing in whatever Node/Nitro runtime does SSR.
+let idempotencyKey = ''
+let formLoadedAt = 0
+if (import.meta.client) {
+  idempotencyKey = crypto.randomUUID()
+  formLoadedAt = Date.now()
+}
+
 interface ConfirmedOrderItem {
   productId: string
   quantity: number
@@ -84,6 +101,12 @@ interface PlacedOrder {
 }
 
 async function placeOrder() {
+  // Synchronous guard against a double-click/double-fire landing before the
+  // button's :disabled/:loading binding actually re-renders — `placing` is
+  // set to true below on the very first line, so a second call within the
+  // same tick sees it immediately and bails (JS is single-threaded; no
+  // `await` has run yet at this point in either call).
+  if (placing.value) return
   placing.value = true
   placeError.value = null
   try {
@@ -101,7 +124,9 @@ async function placeOrder() {
         // purchase event id to the order id, and the confirmation page's
         // browser pixel calls use that same order id, so they dedupe
         // without the client needing to invent and thread an id through.
-        tracking: { ...metaPixel.getFbCookies(), ...tiktokPixel.getTtCookie() }
+        tracking: { ...metaPixel.getFbCookies(), ...tiktokPixel.getTtCookie() },
+        idempotencyKey: idempotencyKey || undefined,
+        formLoadedAt: formLoadedAt || undefined
       }
     })
     const nameByProductId = new Map(cart.items.map((i) => [i.productId, i.name]))

@@ -227,6 +227,27 @@ export const CheckoutItemSchema = z.object({
 })
 export type CheckoutItem = z.infer<typeof CheckoutItemSchema>
 
+// Anti-abuse fields threaded through both real checkout submits (not the
+// abandoned-cart capture — that's a background auto-fire, not a customer
+// clicking "place order"). See OrdersService's idempotency-key/duplicate-
+// detection/bot-pace handling for how each is actually used server-side.
+export const OrderSubmitGuardFields = {
+  // Generated once client-side (crypto.randomUUID()) per checkout attempt
+  // and reused verbatim across retries of that SAME attempt (a network
+  // error/timeout, or a double-click before the button visually disables) —
+  // lets the server recognize "this is the same submit coming back" and
+  // return the original order instead of creating a second one. A fresh key
+  // is only ever generated when the customer starts a genuinely new attempt.
+  idempotencyKey: z.uuid().optional(),
+  // Epoch ms captured when the checkout/lead form was first rendered —
+  // compared against request time server-side as one bot-defense signal
+  // (not proof on its own): a real customer takes at least a few seconds to
+  // fill in an address, a scripted request replaying this endpoint directly
+  // usually doesn't bother sending a plausible value, or sends one that's
+  // implausibly recent.
+  formLoadedAt: z.number().int().nonnegative().optional()
+}
+
 export const CheckoutSchema = z.object({
   phone: PhoneSchema,
   name: z.string().min(1).max(200).optional(),
@@ -240,7 +261,8 @@ export const CheckoutSchema = z.object({
   shippingType: ShippingTypeSchema,
   items: z.array(CheckoutItemSchema).min(1),
   // Optional Meta Pixel dedup/match-quality context — see CheckoutTrackingSchema.
-  tracking: CheckoutTrackingSchema.optional()
+  tracking: CheckoutTrackingSchema.optional(),
+  ...OrderSubmitGuardFields
 })
 export type Checkout = z.infer<typeof CheckoutSchema>
 
@@ -260,7 +282,8 @@ export const LeadOrderSchema = z.object({
   // auto-created as abandoned (see AbandonedLeadOrderSchema below) — the
   // server updates that same row in place (clearing isAbandoned) instead of
   // creating a second order for one funnel visit.
-  convertsAbandonedOrderId: z.uuid().optional()
+  convertsAbandonedOrderId: z.uuid().optional(),
+  ...OrderSubmitGuardFields
 })
 export type LeadOrder = z.infer<typeof LeadOrderSchema>
 
@@ -350,6 +373,11 @@ export interface AdminOrderListItem {
   // pushed to the Google Sheets integration's Notes column (see
   // GoogleSheetsService.updateNotes); null until an agent adds one.
   notes: string | null
+  // Same customer + at least one shared product within the last 2 days —
+  // see OrdersService.findRecentDuplicate. Never blocks the order, just
+  // flags it so call-center can spot an accidental/bot-driven repeat.
+  isDuplicate: boolean
+  duplicateOfOrderId: string | null
 }
 
 export interface OrderListResponse {
@@ -383,6 +411,8 @@ export interface AdminOrderDetail {
   shippingCompanyId: string | null
   shippingCompanyName: string | null
   notes: string | null
+  isDuplicate: boolean
+  duplicateOfOrderId: string | null
 }
 
 // Call-center notes — free text, not part of the order-state machine.

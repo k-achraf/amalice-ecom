@@ -142,7 +142,12 @@ function fmtDate(iso: string) {
                     <div class="tabular text-xs text-muted">{{ order.customer.phone }}</div>
                   </td>
                   <td class="px-4 py-3 text-muted">{{ order.address.region }}</td>
-                  <td class="px-4 py-3"><StatusBadge :state="order.state" /></td>
+                  <td class="px-4 py-3">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                      <StatusBadge :state="order.state" />
+                      <UBadge v-if="order.isDuplicate" color="error" variant="subtle" size="sm" title="Same customer + product within the last 2 days">Possible Duplicate</UBadge>
+                    </div>
+                  </td>
                   <td class="tabular px-4 py-3 text-right font-medium"><PriceDisplay :amount-cents="order.totalCents" /></td>
                   <td class="px-4 py-3 text-muted">{{ fmtDate(order.createdAt) }}</td>
                   <td class="px-4 py-3 text-right" @click.stop>

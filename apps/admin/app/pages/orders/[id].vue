@@ -237,6 +237,16 @@ async function submitAddItem() {
       <div v-else-if="order" class="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <!-- Main column: items + status actions -->
         <div class="space-y-6 lg:col-span-2">
+          <div v-if="order.isDuplicate" class="admin-kpi-card flex items-center gap-3 border-l-4 border-l-red-500 p-4">
+            <UIcon name="i-lucide-copy-x" class="size-5 shrink-0 text-red-500" />
+            <p class="text-sm">
+              This looks like a possible duplicate — same customer and at least one shared product within the last 2 days.
+              <NuxtLink v-if="order.duplicateOfOrderId" :to="`/orders/${order.duplicateOfOrderId}`" class="font-medium text-primary hover:underline">
+                View the earlier order
+              </NuxtLink>
+            </p>
+          </div>
+
           <div class="admin-kpi-card p-5">
             <div class="mb-4 flex items-center justify-between">
               <div>

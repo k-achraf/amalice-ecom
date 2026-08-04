@@ -304,6 +304,8 @@ export const OrderScalarFieldEnum = {
   fulfillmentMethod: 'fulfillmentMethod',
   shippingCompanyId: 'shippingCompanyId',
   notes: 'notes',
+  isDuplicate: 'isDuplicate',
+  duplicateOfOrderId: 'duplicateOfOrderId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

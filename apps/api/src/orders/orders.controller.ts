@@ -25,7 +25,14 @@ export class OrdersController {
     return { module: 'orders', status: 'ok' }
   }
 
+  // Tighter than the sibling endpoints below (20/5min) — a real customer
+  // only ever submits ONE checkout per visit, so this budget is generous
+  // for shared-NAT households/offices while still capping a scripted burst.
+  // The main anti-abuse work happens in OrdersService itself (idempotency
+  // key, form-pace check, duplicate-order flagging) — this is just the
+  // blunt per-IP backstop.
   @Post()
+  @Throttle({ default: { limit: 5, ttl: 60 * 1000 } })
   create(@Body() body: CheckoutDto, @Req() req: Request) {
     return this.orders.createOrder(body, requestContext(req))
   }
@@ -33,6 +40,7 @@ export class OrdersController {
   // Lead-form order — creates it in PendingCallCenter directly. Used when
   // displayCart=false: the customer fills name/phone/wilaya/commune on the PDP.
   @Post('lead')
+  @Throttle({ default: { limit: 5, ttl: 60 * 1000 } })
   createLead(@Body() body: LeadOrderDto, @Req() req: Request) {
     return this.orders.createLeadOrder(body, requestContext(req))
   }
