@@ -450,3 +450,26 @@ export const AddOrderItemSchema = z.object({
   isUpsell: z.boolean().optional()
 })
 export type AddOrderItem = z.infer<typeof AddOrderItemSchema>
+
+// Public, unauthenticated social-proof feed — real recent orders (never
+// fabricated/static copy), for storefront "recent activity" tickers (e.g.
+// Impulse's yellow marquee). customerName is deliberately pre-masked
+// SERVER-SIDE to a single leading letter (the real name never leaves the
+// API) — the storefront only ever sees "ك", never "كريم". Abandoned orders
+// (OrdersService.createAbandonedOrder) are excluded — those were never
+// actually placed by the customer, so showing them as "recent orders" would
+// itself be a fabricated claim, exactly what this feed exists to avoid.
+export const RecentOrderActivityItemSchema = z.object({
+  id: z.uuid(),
+  productName: z.string(),
+  quantity: z.number().int().positive(),
+  customerInitial: z.string(),
+  wilayaName: z.string().nullable(),
+  createdAt: z.string()
+})
+export type RecentOrderActivityItem = z.infer<typeof RecentOrderActivityItemSchema>
+
+export const RecentOrderActivityResponseSchema = z.object({
+  items: z.array(RecentOrderActivityItemSchema)
+})
+export type RecentOrderActivityResponse = z.infer<typeof RecentOrderActivityResponseSchema>

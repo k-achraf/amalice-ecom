@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { normalizeAlgerianPhone, type AbandonedLeadOrder, type AcceptOrderUpsell, type Checkout, type CheckoutItem, type LeadOrder, type ShippingType } from '@amalice/shared'
+import { normalizeAlgerianPhone, type AbandonedLeadOrder, type AcceptOrderUpsell, type Checkout, type CheckoutItem, type LeadOrder, type RecentOrderActivityItem, type ShippingType } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import type { Product, ProductVariant, Prisma } from '../generated/prisma/client'
 import { NotificationsService } from '../notifications/notifications.service'
@@ -709,6 +709,40 @@ export class OrdersService {
       orderBy: { createdAt: 'desc' },
       include: { items: true }
     })
+  }
+
+  // Public, unauthenticated social-proof feed — real recent orders (never
+  // fabricated static copy), for a storefront "recent activity" ticker (e.g.
+  // Impulse's yellow marquee). Excludes abandoned orders (never actually
+  // placed by the customer — showing one as "recent activity" would itself
+  // be a fabricated claim). customerName is reduced to its first character
+  // right here — the real name never leaves this method, let alone the API
+  // response.
+  async getRecentActivity(limit = 15): Promise<RecentOrderActivityItem[]> {
+    const orders = await this.prisma.order.findMany({
+      where: { isAbandoned: false },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      include: {
+        customer: true,
+        address: true,
+        items: { include: { product: true }, take: 1 }
+      }
+    })
+
+    return orders
+      .filter((o) => o.items.length > 0)
+      .map((o) => {
+        const name = o.customer.name?.trim()
+        return {
+          id: o.id,
+          productName: o.items[0].product.name,
+          quantity: o.items[0].quantity,
+          customerInitial: name ? name[0] : '؟',
+          wilayaName: o.address?.region ?? null,
+          createdAt: o.createdAt.toISOString()
+        }
+      })
   }
 
   // Upsells system — storefront post-checkout page. Same phone-as-shared-

@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
-import { Throttle } from '@nestjs/throttler'
+import { SkipThrottle, Throttle } from '@nestjs/throttler'
 import { CheckoutSchema, LeadOrderSchema, AbandonedLeadOrderSchema, TrackOrderQuerySchema, AcceptOrderUpsellSchema } from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
@@ -23,6 +23,18 @@ export class OrdersController {
   @Get('health')
   health() {
     return { module: 'orders', status: 'ok' }
+  }
+
+  // Public social-proof feed (real orders, never fabricated copy) — see
+  // OrdersService.getRecentActivity. Cheap, read-only, no PII in the
+  // response (customerName is reduced to one letter server-side) — same
+  // @SkipThrottle rationale as /settings: a storefront "recent orders"
+  // ticker fetches this once per page load.
+  @Get('recent-activity')
+  @SkipThrottle()
+  async recentActivity(@Query('limit') limit?: string) {
+    const items = await this.orders.getRecentActivity(limit ? Number(limit) : undefined)
+    return { items }
   }
 
   // Tighter than the sibling endpoints below (20/5min) — a real customer
