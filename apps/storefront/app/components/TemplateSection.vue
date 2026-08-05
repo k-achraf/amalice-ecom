@@ -29,6 +29,7 @@ import HomeProductGrid from './home/HomeProductGrid.vue'
 import HomeUsps from './home/HomeUsps.vue'
 import ProductCard from './ProductCard.vue'
 import LeadFormFields from './LeadFormFields.vue'
+import BaseButton from './ui/Button.vue'
 
 // (section, template) → component. Missing entry = fallback to the minimal
 // (bare) component in the FALLBACK map. This is the one place the template-
@@ -86,9 +87,7 @@ const OVERRIDES: Record<string, Record<string, Component>> = {
   // landing-page funnel (app/pages/lp/[productSlug]/[number].vue) — the
   // latter deliberately reuses this instead of the plain base
   // LeadFormFields.vue so a visitor sees the exact same form UI as the
-  // active template's normal product page, not a generic one. `impulse` has
-  // no entry: it has no per-template lead-form component of its own (see
-  // FALLBACK below).
+  // active template's normal product page, not a generic one.
   LeadFormFields: {
     editorial: lazy(() => import('./editorial/EditorialLeadFormFields.vue')),
     boutique: lazy(() => import('./boutique/BoutiqueLeadFormFields.vue')),
@@ -104,6 +103,31 @@ const OVERRIDES: Record<string, Record<string, Component>> = {
     trove: lazy(() => import('./trove/TroveLeadFormFields.vue')),
     forge: lazy(() => import('./forge/ForgeLeadFormFields.vue')),
     impulse: lazy(() => import('./impulse/ImpulseLeadFormFields.vue'))
+  },
+  // Every template's own submit/CTA button — used by the AI landing-page
+  // funnel's "Order now" action so it's not just the form fields that match
+  // the active template, but the button next to them too (each template's
+  // real PDP pairs its LeadFormFields with its own Button, never the base
+  // one — e.g. Impulse's lead form always submits via ImpulseButton).
+  // Common prop surface across all of them: to/type/variant/size('sm'|'md'|
+  // 'lg')/block/disabled/loading/icon/trailingIcon — callers should stick to
+  // that intersection rather than a template-specific prop (e.g. 'xl' size
+  // or a 'dark' variant aren't universal).
+  Button: {
+    editorial: lazy(() => import('./editorial/ui/EditorialButton.vue')),
+    boutique: lazy(() => import('./boutique/ui/BoutiqueButton.vue')),
+    promify: lazy(() => import('./promify/ui/PromifyButton.vue')),
+    nova: lazy(() => import('./nova/ui/NovaButton.vue')),
+    atelier: lazy(() => import('./atelier/ui/AtelierButton.vue')),
+    drop: lazy(() => import('./drop/ui/DropButton.vue')),
+    bloom: lazy(() => import('./bloom/ui/BloomButton.vue')),
+    hearth: lazy(() => import('./hearth/ui/HearthButton.vue')),
+    volt: lazy(() => import('./volt/ui/VoltButton.vue')),
+    pulse: lazy(() => import('./pulse/ui/PulseButton.vue')),
+    lumiere: lazy(() => import('./lumiere/ui/LumiereButton.vue')),
+    trove: lazy(() => import('./trove/ui/TroveButton.vue')),
+    forge: lazy(() => import('./forge/ui/ForgeButton.vue')),
+    impulse: lazy(() => import('./impulse/ui/ImpulseButton.vue'))
   }
 }
 
@@ -114,7 +138,8 @@ const FALLBACK: Record<string, Component> = {
   HomeProductGrid,
   HomeUsps,
   ProductCard,
-  LeadFormFields
+  LeadFormFields,
+  Button: BaseButton
 }
 
 const props = defineProps<{

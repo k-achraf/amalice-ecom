@@ -137,9 +137,12 @@ async function onSubmitLead() {
 
       <p v-if="placeError" class="text-sm text-error">{{ placeError }}</p>
 
-      <Button :loading="placing" class="w-full" size="lg" @click="onSubmitLead">
+      <TemplateSection
+        name="Button"
+        :section-props="{ loading: placing, block: true, size: 'lg', type: 'button', onClick: onSubmitLead }"
+      >
         اطلب الآن — الدفع عند الاستلام
-      </Button>
+      </TemplateSection>
     </div>
   </div>
 </template>
