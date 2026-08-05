@@ -30,6 +30,7 @@ import HomeUsps from './home/HomeUsps.vue'
 import ProductCard from './ProductCard.vue'
 import LeadFormFields from './LeadFormFields.vue'
 import BaseButton from './ui/Button.vue'
+import BaseLandingPageLeadCard from './LandingPageLeadCard.vue'
 
 // (section, template) → component. Missing entry = fallback to the minimal
 // (bare) component in the FALLBACK map. This is the one place the template-
@@ -128,6 +129,19 @@ const OVERRIDES: Record<string, Record<string, Component>> = {
     trove: lazy(() => import('./trove/ui/TroveButton.vue')),
     forge: lazy(() => import('./forge/ui/ForgeButton.vue')),
     impulse: lazy(() => import('./impulse/ui/ImpulseButton.vue'))
+  },
+  // The AI landing-page funnel's entire lead-capture block (price + form +
+  // CTA), for templates that need more than "swap the form fields and
+  // button" to actually look like their own PDP — e.g. Impulse's PDP wraps
+  // its lead form in `funnel-card` panels with an urgency countdown, a
+  // free-delivery badge, a pulsing CTA, and a trust row; none of that comes
+  // for free just by swapping LeadFormFields/Button. Templates without an
+  // entry here fall back to LandingPageLeadCard.vue (FALLBACK below), which
+  // is still template-correct for its LeadFormFields/Button, just in a
+  // plain generic shell rather than a bespoke recreation of that template's
+  // PDP layout.
+  LandingPageLeadCard: {
+    impulse: lazy(() => import('./impulse/ImpulseLandingPageLeadCard.vue'))
   }
 }
 
@@ -139,7 +153,8 @@ const FALLBACK: Record<string, Component> = {
   HomeUsps,
   ProductCard,
   LeadFormFields,
-  Button: BaseButton
+  Button: BaseButton,
+  LandingPageLeadCard: BaseLandingPageLeadCard
 }
 
 const props = defineProps<{

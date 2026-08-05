@@ -127,22 +127,16 @@ async function onSubmitLead() {
       fetchpriority="high"
     >
 
-    <div class="mx-auto max-w-md space-y-4 px-4 py-8">
-      <div class="text-center">
-        <h1 class="text-lg font-semibold text-highlighted">{{ page.product.name }}</h1>
-        <PriceDisplay :amount-cents="page.product.priceCents" class="text-xl font-bold text-primary" />
-      </div>
-
-      <TemplateSection name="LeadFormFields" :section-props="{ fields: leadFields, data: leadFormData }" />
-
-      <p v-if="placeError" class="text-sm text-error">{{ placeError }}</p>
-
-      <TemplateSection
-        name="Button"
-        :section-props="{ loading: placing, block: true, size: 'lg', type: 'button', onClick: onSubmitLead }"
-      >
-        اطلب الآن — الدفع عند الاستلام
-      </TemplateSection>
-    </div>
+    <TemplateSection
+      name="LandingPageLeadCard"
+      :section-props="{
+        product: page.product,
+        fields: leadFields,
+        data: leadFormData,
+        submitting: placing,
+        error: placeError,
+        onSubmit: onSubmitLead
+      }"
+    />
   </div>
 </template>
