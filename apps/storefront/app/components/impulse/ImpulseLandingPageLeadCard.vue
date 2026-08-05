@@ -5,9 +5,10 @@ import type { LeadFormField } from '@amalice/shared'
 // `displayCart === false` branch in ImpulseProductDetailPage.vue) for the
 // AI landing-page funnel — same urgency countdown band, funnel-card price
 // treatment, COD reassurance line, ImpulseLeadFormFields, pulsing
-// ImpulseButton CTA, and trust row. Deliberately identical classes/
-// components to the PDP, not a re-styled approximation, per the explicit
-// "same UI, same colors, same animations and effects" request.
+// ImpulseButton CTA, trust row, AND the same sticky bottom order bar that
+// keeps the CTA on screen through the whole scroll. Deliberately identical
+// classes/components to the PDP, not a re-styled approximation, per the
+// explicit "same UI, same colors, same animations and effects" request.
 //
 // Omitted vs. the PDP: variant picker, quantity stepper, per-offer bundle
 // cards, and the real-time-stock scarcity bar — all of those need live
@@ -23,10 +24,17 @@ defineProps<{
   error: string | null
   onSubmit: () => void
 }>()
+
+// Same behavior as the PDP's onStickyCta when displayCart===false — this
+// route is always "lead mode" (no cart), so the sticky bar's job is only
+// ever to bring the order form into view, never to add-to-cart.
+function scrollToForm() {
+  document.getElementById('impulse-order-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
 </script>
 
 <template>
-  <div class="pb-16">
+  <div class="pb-24">
     <!-- 1. Urgency band — the same first-thing-under-the-header treatment
          Impulse's own PDP uses (there, right under ImpulseHeader; here,
          right under the funnel image since this route has no header). -->
@@ -69,6 +77,20 @@ defineProps<{
       <!-- 4. Trust row — the same 4 risk-reversal signals repeated near the
            ask on the PDP. -->
       <ImpulseTrustRow />
+    </div>
+
+    <!-- 5. Sticky bottom order bar — identical to the PDP's, keeps the CTA
+         on screen through the whole scroll. -->
+    <div class="fixed inset-x-0 bottom-0 z-40 border-t-2 border-neutral-200 bg-white/95 py-3 shadow-[0_-8px_24px_-8px_rgba(28,23,18,0.18)] backdrop-blur-sm">
+      <div class="mx-auto flex max-w-2xl items-center justify-between gap-4 px-4 sm:px-6">
+        <div>
+          <p class="line-clamp-1 text-xs font-bold text-neutral-900">{{ product.name }}</p>
+          <PriceDisplay :amount-cents="product.priceCents" class="font-display text-lg font-black text-primary-600" />
+        </div>
+        <ImpulseButton size="md" pulse trailing-icon="i-lucide-arrow-left" @click="scrollToForm">
+          اطلب الآن
+        </ImpulseButton>
+      </div>
     </div>
   </div>
 </template>
