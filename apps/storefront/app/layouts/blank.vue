@@ -1,10 +1,13 @@
 <script setup lang="ts">
-// Chromeless layout — no SiteHeader/nav, used only by the AI landing-page
-// funnel route (app/pages/lp/[slug].vue): a full-width generated image with
-// a lead form beneath it, and nothing else competing for the visitor's
-// attention. SiteFooter is still included (trust/legal links, same
-// branding as the normal store) since the request was "no navbar", not "no
-// footer" — see that page's own comment.
+// Chromeless layout — no SiteHeader/nav, used by the AI landing-page funnel
+// route (app/pages/lp/[productSlug]/[number].vue) when the store's active
+// template is `minimal` (which has no dedicated palette CSS of its own — see
+// app/layouts/minimal.vue). Every other template has its own
+// blank-<template>.vue variant (same palette + footer as that template's
+// normal layout, just without the header) so the funnel page always matches
+// whichever template is actually active — see the page's setPageLayout()
+// call. SiteFooter is still included (trust/legal links, same branding as
+// the normal store) since the request was "no navbar", not "no footer".
 </script>
 
 <template>

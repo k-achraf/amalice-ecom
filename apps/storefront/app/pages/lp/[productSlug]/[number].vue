@@ -1,21 +1,34 @@
 <script setup lang="ts">
 import { DEFAULT_LEAD_FORM_FIELDS, type LeadFormField, type PublicLandingPage } from '@amalice/shared'
 
-// AI landing-page funnel route — chromeless (see layouts/blank.vue), a
-// single full-width generated image with a lead form at the bottom. This is
-// a SEPARATE, standalone URL from the normal /products/:slug page (never
+// AI landing-page funnel route — chromeless (no header/nav), a single
+// full-width generated image with a lead form at the bottom. This is a
+// SEPARATE, standalone URL from the normal /products/:slug page (never
 // swaps into it — see that page's own comment) — a product reached this way
 // is reached via a different creative angle/ad campaign, not the catalog.
 // URL is /lp/:productSlug/:number — never a raw id/uuid — :number just
 // distinguishes multiple landing pages for the same product (1, 2, 3, ...).
-definePageMeta({ layout: 'blank' })
-
+//
+// Layout is picked dynamically to ALWAYS match the store's currently active
+// template (app/layouts/blank-<template>.vue — same palette/footer as that
+// template's normal layout, just without its header), not a fixed generic
+// one — see setPageLayout() below. `blank.vue` (no suffix) is the fallback
+// for the `minimal` template, which has no dedicated palette CSS of its own.
 const route = useRoute()
 const productSlug = route.params.productSlug as string
 const number = route.params.number as string
 const settings = useStoreSettings()
 const metaPixel = useMetaPixel()
 const tiktokPixel = useTikTokPixel()
+
+const layoutName = computed(() => {
+  const t = settings.value.activeTemplate
+  return t === 'minimal' ? 'blank' : `blank-${t}`
+})
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- setPageLayout's generic type only accepts the
+// closed union of generated layout-file names as a literal; this is chosen dynamically from the active store
+// template (always a valid layout name, just not expressible as that literal union here).
+setPageLayout(layoutName.value as any)
 
 const { data: landingPage, error } = await useApiFetch<PublicLandingPage>(`/landing-pages/${productSlug}/${number}`, {
   key: `lp-${productSlug}-${number}`
