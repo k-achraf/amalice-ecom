@@ -3,12 +3,14 @@ import type { LeadFormField } from '@amalice/shared'
 
 // Faithful recreation of Impulse's own PDP lead-capture block (see the
 // `displayCart === false` branch in ImpulseProductDetailPage.vue) for the
-// AI landing-page funnel — same urgency countdown band, funnel-card price
-// treatment, COD reassurance line, ImpulseLeadFormFields, pulsing
-// ImpulseButton CTA, trust row, AND the same sticky bottom order bar that
-// keeps the CTA on screen through the whole scroll. Deliberately identical
-// classes/components to the PDP, not a re-styled approximation, per the
-// explicit "same UI, same colors, same animations and effects" request.
+// AI landing-page funnel — same funnel-card price treatment, COD
+// reassurance line, ImpulseLeadFormFields, pulsing ImpulseButton CTA, trust
+// row, AND the same sticky bottom order bar that keeps the CTA on screen
+// through the whole scroll. Deliberately identical classes/components to
+// the PDP, not a re-styled approximation, per the explicit "same UI, same
+// colors, same animations and effects" request. No urgency countdown / free-
+// shipping badge — removed from both here and the PDP itself (account
+// owner's call: no fabricated urgency deadline, no free-delivery claim).
 //
 // Omitted vs. the PDP: variant picker, quantity stepper, per-offer bundle
 // cards, and the real-time-stock scarcity bar — all of those need live
@@ -35,23 +37,12 @@ function scrollToForm() {
 
 <template>
   <div class="pb-24">
-    <!-- 1. Urgency band — the same first-thing-under-the-header treatment
-         Impulse's own PDP uses (there, right under ImpulseHeader; here,
-         right under the funnel image since this route has no header). -->
-    <div class="border-b border-neutral-200 bg-white py-3">
-      <ImpulseCountdown />
-    </div>
-
     <div class="mx-auto max-w-2xl space-y-6 px-4 pt-6 sm:px-6">
-      <!-- 2. Price + COD reassurance card. -->
+      <!-- 1. Price + COD reassurance card. -->
       <div class="funnel-card space-y-3 p-6 text-center">
         <h1 class="line-clamp-2 font-display text-lg font-black text-neutral-900">{{ product.name }}</h1>
         <div class="flex items-center justify-center gap-3">
           <PriceDisplay :amount-cents="product.priceCents" class="font-display text-4xl font-black text-neutral-900" />
-          <ImpulseBadge color="green" variant="subtle">
-            <Icon name="i-lucide-truck" class="size-3.5" />
-            توصيل مجاني
-          </ImpulseBadge>
         </div>
         <p class="text-xs font-semibold text-neutral-500">
           <Icon name="i-lucide-banknote" class="me-1 inline size-3.5 align-[-2px] text-[var(--color-impulse-green)]" />
@@ -59,7 +50,7 @@ function scrollToForm() {
         </p>
       </div>
 
-      <!-- 3. Lead form + CTA — same fields component and same pulsing button
+      <!-- 2. Lead form + CTA — same fields component and same pulsing button
            as the PDP's lead-form mode. -->
       <div id="impulse-order-form" class="funnel-card space-y-4 p-6">
         <ImpulseLeadFormFields :fields="fields" :data="data" />
@@ -74,12 +65,12 @@ function scrollToForm() {
         بدون دفع مسبق. نتصل بك للتأكيد قبل شحن أي شيء.
       </p>
 
-      <!-- 4. Trust row — the same 4 risk-reversal signals repeated near the
+      <!-- 3. Trust row — the same 4 risk-reversal signals repeated near the
            ask on the PDP. -->
       <ImpulseTrustRow />
     </div>
 
-    <!-- 5. Sticky bottom order bar — identical to the PDP's, keeps the CTA
+    <!-- 4. Sticky bottom order bar — identical to the PDP's, keeps the CTA
          on screen through the whole scroll. -->
     <div class="fixed inset-x-0 bottom-0 z-40 border-t-2 border-neutral-200 bg-white/95 py-3 shadow-[0_-8px_24px_-8px_rgba(28,23,18,0.18)] backdrop-blur-sm">
       <div class="mx-auto flex max-w-2xl items-center justify-between gap-4 px-4 sm:px-6">

@@ -106,3 +106,31 @@ export const CourierWebhookLogResponseSchema = z.object({
   pageSize: z.number().int().positive()
 })
 export type CourierWebhookLogResponse = z.infer<typeof CourierWebhookLogResponseSchema>
+
+// One row per inbound webhook REQUEST, unconditionally — unlike
+// CourierWebhookLogItemSchema above (which can only ever represent a
+// delivery that made it all the way through signature verification and
+// payload parsing), this captures every attempt including ones rejected
+// with 401/400/404, with the raw headers/body that were actually received.
+// Exists specifically so "why is the log always empty during a run of
+// failures" has an answer — see CourierWebhookLog's Prisma model comment.
+export const CourierWebhookRawLogItemSchema = z.object({
+  id: z.uuid(),
+  provider: z.string(),
+  statusCode: z.number().int(),
+  signatureHeader: z.string().nullable(),
+  signatureValid: z.boolean().nullable(),
+  errorMessage: z.string().nullable(),
+  headers: z.record(z.string(), z.unknown()),
+  rawBody: z.string().nullable(),
+  receivedAt: z.string()
+})
+export type CourierWebhookRawLogItem = z.infer<typeof CourierWebhookRawLogItemSchema>
+
+export const CourierWebhookRawLogResponseSchema = z.object({
+  items: z.array(CourierWebhookRawLogItemSchema),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive()
+})
+export type CourierWebhookRawLogResponse = z.infer<typeof CourierWebhookRawLogResponseSchema>

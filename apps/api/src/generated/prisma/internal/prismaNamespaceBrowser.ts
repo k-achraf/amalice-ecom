@@ -88,6 +88,7 @@ export const ModelName = {
   Commune: 'Commune',
   ShippingCompany: 'ShippingCompany',
   CourierWebhookEvent: 'CourierWebhookEvent',
+  CourierWebhookLog: 'CourierWebhookLog',
   ShippingCompanyTariff: 'ShippingCompanyTariff',
   SourcedProduct: 'SourcedProduct',
   SourcedProductMedia: 'SourcedProductMedia',
@@ -602,6 +603,24 @@ export const CourierWebhookEventScalarFieldEnum = {
 } as const
 
 export type CourierWebhookEventScalarFieldEnum = (typeof CourierWebhookEventScalarFieldEnum)[keyof typeof CourierWebhookEventScalarFieldEnum]
+
+
+export const CourierWebhookLogScalarFieldEnum = {
+  id: 'id',
+  shippingCompanyId: 'shippingCompanyId',
+  provider: 'provider',
+  method: 'method',
+  path: 'path',
+  headers: 'headers',
+  rawBody: 'rawBody',
+  signatureHeader: 'signatureHeader',
+  signatureValid: 'signatureValid',
+  statusCode: 'statusCode',
+  errorMessage: 'errorMessage',
+  receivedAt: 'receivedAt'
+} as const
+
+export type CourierWebhookLogScalarFieldEnum = (typeof CourierWebhookLogScalarFieldEnum)[keyof typeof CourierWebhookLogScalarFieldEnum]
 
 
 export const ShippingCompanyTariffScalarFieldEnum = {

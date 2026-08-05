@@ -1033,6 +1033,52 @@ model CourierWebhookEvent {
   @@map("courier_webhook_events")
 }
 
+// The RAW inbound delivery log — every single request that ever hits
+// /webhooks/dhd/:shippingCompanyId, unconditionally, before any validation
+// happens. This is deliberately separate from CourierWebhookEvent above:
+// that table can only ever hold a row for a request that made it all the
+// way through signature verification AND payload parsing, so a run of 401s
+// or 400s (wrong/missing signature, malformed body, unknown company id)
+// left the admin's webhook log looking completely empty — there was
+// nowhere for a *failed* delivery to be recorded. This table exists
+// specifically to make failed attempts visible: raw headers, raw body,
+// what the signature check decided, and the HTTP status we actually sent
+// back, captured in DhdWebhookService.handle()'s try/finally so it's
+// written no matter which check (if any) rejected the request.
+model CourierWebhookLog {
+  id                String   @id @default(uuid())
+  // Not a foreign key to ShippingCompany — the whole point is to still log
+  // a request whose :shippingCompanyId doesn't match any real row (a wrong
+  // URL configured on the provider's side is itself something worth seeing
+  // here, not silently dropped for failing that lookup).
+  shippingCompanyId String?  @map("shipping_company_id")
+  provider          String
+  method            String
+  path              String
+  // Full request headers as received (object of string -> string | string[],
+  // same shape Node's http module exposes) — Signature, Content-Type,
+  // User-Agent, everything, so a "DHD isn't sending what their docs say"
+  // question can be answered by looking at one row instead of asking DHD.
+  headers           Json
+  // Raw body as received, decoded as UTF-8 text (DHD's payloads are JSON,
+  // small) — capped defensively so one adversarial/broken delivery can't
+  // bloat a row unboundedly.
+  rawBody           String?  @map("raw_body")
+  signatureHeader   String?  @map("signature_header")
+  // null = no signature header was present at all (request proceeded
+  // unverified, see DhdWebhookService.handle()'s comment on that trade-off)
+  // — distinct from false, which means a signature WAS present and did NOT
+  // match the saved secret.
+  signatureValid    Boolean? @map("signature_valid")
+  statusCode        Int      @map("status_code")
+  errorMessage      String?  @map("error_message")
+  receivedAt        DateTime @default(now()) @map("received_at")
+
+  @@index([shippingCompanyId])
+  @@index([receivedAt])
+  @@map("courier_webhook_logs")
+}
+
 // A synced snapshot of one provider's per-wilaya pricing (GET /api/v1/get/fees
 // for DHD) — reference data only. Deliberately NOT written into
 // WilayaShippingRate automatically: syncing just refreshes this table, and

@@ -203,6 +203,11 @@ export type ShippingCompany = Prisma.ShippingCompanyModel
  */
 export type CourierWebhookEvent = Prisma.CourierWebhookEventModel
 /**
+ * Model CourierWebhookLog
+ * 
+ */
+export type CourierWebhookLog = Prisma.CourierWebhookLogModel
+/**
  * Model ShippingCompanyTariff
  * 
  */

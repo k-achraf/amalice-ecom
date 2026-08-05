@@ -24,12 +24,6 @@ const props = defineProps<{ product: Product }>()
         loading="lazy"
         format="webp"
       />
-      <span class="absolute start-2 top-2">
-        <ImpulseBadge color="green" variant="solid">
-          <Icon name="i-lucide-truck" class="size-3" />
-          توصيل مجاني
-        </ImpulseBadge>
-      </span>
       <span v-if="props.product.stockQuantity <= props.product.lowStockThreshold && props.product.stockQuantity > 0" class="absolute end-2 top-2">
         <ImpulseBadge color="red" variant="solid">تبقى {{ props.product.stockQuantity }}</ImpulseBadge>
       </span>

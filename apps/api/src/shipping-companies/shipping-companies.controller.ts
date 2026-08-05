@@ -95,4 +95,12 @@ export class ShippingCompaniesController {
   ) {
     return this.shippingCompanies.listWebhookLogs(parseProvider(provider), { page: Number(page), pageSize: Number(pageSize), trackingReference })
   }
+
+  // The RAW delivery log — see ShippingCompaniesService.listWebhookRawLogs.
+  // Every inbound request unconditionally, including ones rejected before
+  // webhook-logs above would ever have a row for them.
+  @Get(':provider/webhook-raw-logs')
+  webhookRawLogs(@Param('provider') provider: string, @Query('page') page: string = '1', @Query('pageSize') pageSize: string = '20') {
+    return this.shippingCompanies.listWebhookRawLogs(parseProvider(provider), { page: Number(page), pageSize: Number(pageSize) })
+  }
 }

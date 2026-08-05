@@ -29,7 +29,6 @@ const settings = useStoreSettings()
       </ImpulseButton>
 
       <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-xs font-semibold text-neutral-500">
-        <span class="flex items-center gap-1"><Icon name="i-lucide-check" class="size-3.5 text-[var(--color-impulse-green)]" /> توصيل مجاني</span>
         <span class="flex items-center gap-1"><Icon name="i-lucide-check" class="size-3.5 text-[var(--color-impulse-green)]" /> الدفع عند الاستلام</span>
         <span class="flex items-center gap-1"><Icon name="i-lucide-check" class="size-3.5 text-[var(--color-impulse-green)]" /> إرجاع سهل</span>
       </div>

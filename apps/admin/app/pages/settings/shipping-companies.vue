@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CourierWebhookLogResponse, ShippingCompanyProvider, ShippingCompanyTariff, ShippingCompanyView } from '@amalice/shared'
+import type { CourierWebhookLogResponse, CourierWebhookRawLogResponse, ShippingCompanyProvider, ShippingCompanyTariff, ShippingCompanyView } from '@amalice/shared'
 
 // Third-party courier integrations — link an account with its API token,
 // sync its per-wilaya tariffs for reference, and optionally apply them into
@@ -35,6 +35,13 @@ const webhookLogsByProvider = reactive<Record<string, CourierWebhookLogResponse 
 const loadingWebhookLogs = reactive<Record<string, boolean>>({})
 const webhookLogPageSize = reactive<Record<string, number>>({})
 const webhookLogSearch = reactive<Record<string, string>>({})
+// The RAW delivery log (every request, including 401/400/404 rejections —
+// see CourierWebhookLog's Prisma comment) — separate state from the
+// business log above since it's a distinct table/endpoint with no search.
+const webhookRawLogsByProvider = reactive<Record<string, CourierWebhookRawLogResponse | undefined>>({})
+const loadingWebhookRawLogs = reactive<Record<string, boolean>>({})
+const webhookRawLogPageSize = reactive<Record<string, number>>({})
+const expandedRawLogId = ref<string | null>(null)
 
 async function link(provider: ShippingCompanyProvider) {
   const token = apiTokenInput[provider]?.trim()
@@ -158,6 +165,31 @@ function searchWebhookLogs(provider: ShippingCompanyProvider) {
   loadWebhookLogs(provider, 1)
 }
 
+// The RAW delivery log — every request unconditionally, including ones
+// rejected before the business log above could ever have a row (unknown
+// company id, missing/invalid signature, malformed payload). This is what
+// actually answers "why is the webhook log always empty" during a run of
+// failures.
+async function loadWebhookRawLogs(provider: ShippingCompanyProvider, page = 1) {
+  loadingWebhookRawLogs[provider] = true
+  try {
+    webhookRawLogsByProvider[provider] = await api<CourierWebhookRawLogResponse>(`/admin/shipping-companies/${provider}/webhook-raw-logs`, {
+      query: { page, pageSize: webhookRawLogPageSize[provider] ?? 20 }
+    })
+  } finally {
+    loadingWebhookRawLogs[provider] = false
+  }
+}
+
+function toggleWebhookRawLogs(provider: ShippingCompanyProvider) {
+  if (webhookRawLogsByProvider[provider]) {
+    webhookRawLogsByProvider[provider] = undefined
+    expandedRawLogId.value = null
+  } else {
+    loadWebhookRawLogs(provider)
+  }
+}
+
 async function applyToRates(provider: ShippingCompanyProvider) {
   applying[provider] = true
   try {
@@ -271,6 +303,9 @@ async function applyToRates(provider: ShippingCompanyProvider) {
             <UButton v-if="company.webhookUrl" variant="outline" color="neutral" icon="i-lucide-history" @click="toggleWebhookLogs(company.provider)">
               {{ webhookLogsByProvider[company.provider] ? 'Hide webhook logs' : 'View webhook logs' }}
             </UButton>
+            <UButton v-if="company.webhookUrl" variant="outline" color="neutral" icon="i-lucide-scroll-text" @click="toggleWebhookRawLogs(company.provider)">
+              {{ webhookRawLogsByProvider[company.provider] ? 'Hide raw delivery log' : 'View raw delivery log' }}
+            </UButton>
             <UButton variant="ghost" color="error" icon="i-lucide-unlink" @click="unlink(company.provider)">Unlink</UButton>
           </div>
 
@@ -368,6 +403,84 @@ async function applyToRates(provider: ShippingCompanyProvider) {
                 item-label="webhook deliveries"
                 @update:page="(p) => loadWebhookLogs(company.provider, p)"
                 @update:page-size="(size) => { webhookLogPageSize[company.provider] = size; loadWebhookLogs(company.provider, 1) }"
+              />
+            </template>
+          </div>
+
+          <div v-if="loadingWebhookRawLogs[company.provider] && !webhookRawLogsByProvider[company.provider]" class="text-sm text-muted">Loading raw delivery log…</div>
+          <div v-else-if="webhookRawLogsByProvider[company.provider]" class="space-y-3">
+            <p class="text-sm text-muted">
+              Every request that hit this webhook endpoint, unconditionally — including ones rejected before {{ company.name }}'s delivery could ever
+              show up in the log above (unknown company id, missing/invalid signature, malformed payload). Use this to see exactly what was received
+              when something 401s or 400s.
+            </p>
+
+            <EmptyState
+              v-if="!webhookRawLogsByProvider[company.provider]!.items.length"
+              icon="i-lucide-scroll-text"
+              title="No requests recorded yet"
+              description="Every request to this webhook URL — successful or not — will show up here."
+            />
+            <template v-else>
+              <div class="max-h-96 overflow-y-auto rounded-md border border-[var(--color-admin-border)]">
+                <table class="w-full text-sm">
+                  <thead class="sticky top-0 border-b border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] text-left text-xs uppercase tracking-wide text-muted">
+                    <tr>
+                      <th class="px-3 py-2 font-medium">Received</th>
+                      <th class="px-3 py-2 font-medium">Status</th>
+                      <th class="px-3 py-2 font-medium">Signature</th>
+                      <th class="px-3 py-2 font-medium">Error</th>
+                      <th class="px-3 py-2 font-medium"></th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-[var(--color-admin-border)]">
+                    <template v-for="log in webhookRawLogsByProvider[company.provider]!.items" :key="log.id">
+                      <tr>
+                        <td class="px-3 py-2 whitespace-nowrap text-muted">{{ new Date(log.receivedAt).toLocaleString() }}</td>
+                        <td class="px-3 py-2">
+                          <UBadge :color="log.statusCode < 300 ? 'success' : 'error'" variant="subtle" size="sm">{{ log.statusCode }}</UBadge>
+                        </td>
+                        <td class="px-3 py-2">
+                          <UBadge v-if="log.signatureValid === null" color="warning" variant="subtle" size="sm">No header</UBadge>
+                          <UBadge v-else-if="log.signatureValid" color="success" variant="subtle" size="sm">Valid</UBadge>
+                          <UBadge v-else color="error" variant="subtle" size="sm">Invalid</UBadge>
+                        </td>
+                        <td class="max-w-64 truncate px-3 py-2 text-error" :title="log.errorMessage ?? ''">{{ log.errorMessage ?? '—' }}</td>
+                        <td class="px-3 py-2 text-right">
+                          <UButton
+                            size="xs"
+                            variant="ghost"
+                            color="neutral"
+                            :icon="expandedRawLogId === log.id ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+                            @click="expandedRawLogId = expandedRawLogId === log.id ? null : log.id"
+                          >
+                            {{ expandedRawLogId === log.id ? 'Hide' : 'View' }}
+                          </UButton>
+                        </td>
+                      </tr>
+                      <tr v-if="expandedRawLogId === log.id">
+                        <td colspan="5" class="space-y-3 bg-[var(--color-admin-surface-tint)] px-3 py-3">
+                          <div>
+                            <p class="mb-1 text-xs font-medium uppercase tracking-wide text-muted">Headers</p>
+                            <pre class="max-h-48 overflow-auto rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] p-2 text-xs">{{ JSON.stringify(log.headers, null, 2) }}</pre>
+                          </div>
+                          <div>
+                            <p class="mb-1 text-xs font-medium uppercase tracking-wide text-muted">Body</p>
+                            <pre class="max-h-48 overflow-auto rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] p-2 text-xs">{{ log.rawBody ?? '(empty)' }}</pre>
+                          </div>
+                        </td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+              <AdminPagination
+                :page="webhookRawLogsByProvider[company.provider]!.page"
+                :total="webhookRawLogsByProvider[company.provider]!.total"
+                :page-size="webhookRawLogsByProvider[company.provider]!.pageSize"
+                item-label="requests"
+                @update:page="(p) => loadWebhookRawLogs(company.provider, p)"
+                @update:page-size="(size) => { webhookRawLogPageSize[company.provider] = size; loadWebhookRawLogs(company.provider, 1) }"
               />
             </template>
           </div>

@@ -21,10 +21,11 @@ export class WebhooksController {
   // verifies it, matching what an admin configures in DHD's own dashboard.
   @Post('dhd/:shippingCompanyId')
   async receiveDhdWebhook(@Param('shippingCompanyId') shippingCompanyId: string, @Body() body: unknown, @Headers('signature') signature: string | undefined, @Req() req: RawBodyRequest<Request>) {
-    // Pass every header name along purely for diagnostics — if DHD's actual
-    // delivery sends the signature under a different header name than
-    // their docs say (or a proxy strips/renames it), this is what proves
-    // it rather than leaving "signature" silently undefined with no trace.
-    return this.dhdWebhook.handle(shippingCompanyId, req.rawBody, signature, body, Object.keys(req.headers))
+    // Pass the full headers object (not just names) — DhdWebhookService
+    // persists every request's raw headers/body to CourierWebhookLog
+    // unconditionally, specifically so a rejected delivery (401/400/404) is
+    // still fully visible in the admin's webhook log, not just successful
+    // ones.
+    return this.dhdWebhook.handle(shippingCompanyId, req.rawBody, signature, body, req.headers)
   }
 }

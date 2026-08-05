@@ -421,6 +421,7 @@ export const ModelName = {
   Commune: 'Commune',
   ShippingCompany: 'ShippingCompany',
   CourierWebhookEvent: 'CourierWebhookEvent',
+  CourierWebhookLog: 'CourierWebhookLog',
   ShippingCompanyTariff: 'ShippingCompanyTariff',
   SourcedProduct: 'SourcedProduct',
   SourcedProductMedia: 'SourcedProductMedia',
@@ -443,7 +444,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "courierWebhookEvent" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "productAdTest" | "wholesaler" | "productSourcingRequest"
+    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "productAdTest" | "wholesaler" | "productSourcingRequest"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3185,6 +3186,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CourierWebhookLog: {
+      payload: Prisma.$CourierWebhookLogPayload<ExtArgs>
+      fields: Prisma.CourierWebhookLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CourierWebhookLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CourierWebhookLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CourierWebhookLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CourierWebhookLogPayload>
+        }
+        findFirst: {
+          args: Prisma.CourierWebhookLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CourierWebhookLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CourierWebhookLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CourierWebhookLogPayload>
+        }
+        findMany: {
+          args: Prisma.CourierWebhookLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CourierWebhookLogPayload>[]
+        }
+        create: {
+          args: Prisma.CourierWebhookLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CourierWebhookLogPayload>
+        }
+        createMany: {
+          args: Prisma.CourierWebhookLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CourierWebhookLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CourierWebhookLogPayload>[]
+        }
+        delete: {
+          args: Prisma.CourierWebhookLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CourierWebhookLogPayload>
+        }
+        update: {
+          args: Prisma.CourierWebhookLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CourierWebhookLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.CourierWebhookLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CourierWebhookLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CourierWebhookLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CourierWebhookLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.CourierWebhookLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CourierWebhookLogPayload>
+        }
+        aggregate: {
+          args: Prisma.CourierWebhookLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCourierWebhookLog>
+        }
+        groupBy: {
+          args: Prisma.CourierWebhookLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CourierWebhookLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CourierWebhookLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CourierWebhookLogCountAggregateOutputType> | number
+        }
+      }
+    }
     ShippingCompanyTariff: {
       payload: Prisma.$ShippingCompanyTariffPayload<ExtArgs>
       fields: Prisma.ShippingCompanyTariffFieldRefs
@@ -4233,6 +4308,24 @@ export const CourierWebhookEventScalarFieldEnum = {
 export type CourierWebhookEventScalarFieldEnum = (typeof CourierWebhookEventScalarFieldEnum)[keyof typeof CourierWebhookEventScalarFieldEnum]
 
 
+export const CourierWebhookLogScalarFieldEnum = {
+  id: 'id',
+  shippingCompanyId: 'shippingCompanyId',
+  provider: 'provider',
+  method: 'method',
+  path: 'path',
+  headers: 'headers',
+  rawBody: 'rawBody',
+  signatureHeader: 'signatureHeader',
+  signatureValid: 'signatureValid',
+  statusCode: 'statusCode',
+  errorMessage: 'errorMessage',
+  receivedAt: 'receivedAt'
+} as const
+
+export type CourierWebhookLogScalarFieldEnum = (typeof CourierWebhookLogScalarFieldEnum)[keyof typeof CourierWebhookLogScalarFieldEnum]
+
+
 export const ShippingCompanyTariffScalarFieldEnum = {
   id: 'id',
   shippingCompanyId: 'shippingCompanyId',
@@ -4934,6 +5027,7 @@ export type GlobalOmitConfig = {
   commune?: Prisma.CommuneOmit
   shippingCompany?: Prisma.ShippingCompanyOmit
   courierWebhookEvent?: Prisma.CourierWebhookEventOmit
+  courierWebhookLog?: Prisma.CourierWebhookLogOmit
   shippingCompanyTariff?: Prisma.ShippingCompanyTariffOmit
   sourcedProduct?: Prisma.SourcedProductOmit
   sourcedProductMedia?: Prisma.SourcedProductMediaOmit

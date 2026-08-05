@@ -4,6 +4,7 @@ import type {
   ApplyShippingCompanyTariffs,
   ApplyShippingCompanyTariffsResult,
   CourierWebhookLogResponse,
+  CourierWebhookRawLogResponse,
   LinkShippingCompany,
   SetWebhookSecret,
   ShippingCompanyProvider,
@@ -180,6 +181,44 @@ export class ShippingCompaniesService {
         receivedAt: row.receivedAt.toISOString()
       }
     })
+
+    return { items, total, page: args.page, pageSize: args.pageSize }
+  }
+
+  // The RAW delivery log (see CourierWebhookLog's Prisma comment) — every
+  // inbound request unconditionally, including ones rejected before
+  // signature verification even ran (unknown company id) or that failed it
+  // (401) or failed payload parsing (400). This is what actually answers
+  // "why does the webhook log look empty" during a run of failures, since
+  // listWebhookLogs above can only ever show a request that succeeded all
+  // the way through.
+  async listWebhookRawLogs(provider: ShippingCompanyProvider, args: { page: number; pageSize: number }): Promise<CourierWebhookRawLogResponse> {
+    // Filtered by provider name, not company id — unlike listWebhookLogs,
+    // this doesn't early-return empty for an unlinked provider. A delivery
+    // attempt landing at a now-orphaned/never-linked :shippingCompanyId is
+    // exactly the kind of thing this log needs to surface, not hide.
+    const where = { provider }
+    const [rows, total] = await Promise.all([
+      this.prisma.courierWebhookLog.findMany({
+        where,
+        orderBy: { receivedAt: 'desc' },
+        skip: (args.page - 1) * args.pageSize,
+        take: args.pageSize
+      }),
+      this.prisma.courierWebhookLog.count({ where })
+    ])
+
+    const items = rows.map((row) => ({
+      id: row.id,
+      provider: row.provider,
+      statusCode: row.statusCode,
+      signatureHeader: row.signatureHeader,
+      signatureValid: row.signatureValid,
+      errorMessage: row.errorMessage,
+      headers: row.headers as Record<string, unknown>,
+      rawBody: row.rawBody,
+      receivedAt: row.receivedAt.toISOString()
+    }))
 
     return { items, total, page: args.page, pageSize: args.pageSize }
   }

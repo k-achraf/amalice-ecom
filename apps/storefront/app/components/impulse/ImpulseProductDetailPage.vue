@@ -80,11 +80,6 @@ function onStickyCta() {
 
 <template>
   <div v-if="props.product" class="bg-neutral-50 pb-24">
-    <!-- 1. Urgency band — the first thing under the header. -->
-    <div class="border-b border-neutral-200 bg-white py-3">
-      <ImpulseCountdown />
-    </div>
-
     <div class="mx-auto max-w-2xl space-y-6 px-4 pt-8 sm:px-6">
       <!-- 2. Social-proof header — name framed by rating before price. -->
       <div class="space-y-2 text-center">
@@ -140,10 +135,6 @@ function onStickyCta() {
         <div class="flex items-center justify-center gap-3">
           <PriceDisplay :amount-cents="props.effectivePriceCents" class="font-display text-4xl font-black text-neutral-900" />
           <ImpulseBadge v-if="!props.inStock" color="red" variant="solid">نفدت الكمية</ImpulseBadge>
-          <ImpulseBadge v-else color="green" variant="subtle">
-            <Icon name="i-lucide-truck" class="size-3.5" />
-            توصيل مجاني
-          </ImpulseBadge>
         </div>
         <p class="text-xs font-semibold text-neutral-500">
           <Icon name="i-lucide-banknote" class="me-1 inline size-3.5 align-[-2px] text-[var(--color-impulse-green)]" />
