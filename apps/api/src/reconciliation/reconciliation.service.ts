@@ -237,6 +237,16 @@ export class ReconciliationService {
     })
   }
 
+  // Powers the import modal's courier picker — couriers are auto-upserted
+  // by FulfillmentService whenever a shipment is first created for a given
+  // slug (manual, dhd, ...), so this is just exposing what already exists
+  // rather than a separate management surface. The import form used to make
+  // an admin hand-type a raw courier UUID with no way to look one up; this
+  // is what that dropdown resolves against.
+  async listCouriers(): Promise<{ id: string; name: string }[]> {
+    return this.prisma.courier.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } })
+  }
+
   // FIN-04 — the discrepancy queue, sorted by delta size (biggest problems
   // first, per the acceptance criteria).
   async discrepancyQueue() {

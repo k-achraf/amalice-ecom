@@ -55,6 +55,16 @@ export class ReconciliationController {
     return this.recon.batchEntries(id)
   }
 
+  // Powers the import modal's courier dropdown — see
+  // ReconciliationService.listCouriers.
+  @Get('admin/reconciliation/couriers')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'Finance')
+  couriers() {
+    return this.recon.listCouriers()
+  }
+
   // FIN-02 — import a courier remittance batch.
   @Post('admin/reconciliation/batches')
   @ApiBearerAuth()
