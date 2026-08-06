@@ -144,7 +144,13 @@ async function onPreviewToggle(p: Product, open: boolean) {
       <UDashboardNavbar title="Products">
         <template #leading><UDashboardSidebarCollapse /></template>
         <template #right>
-          <UButton icon="i-lucide-plus" size="sm" label="New product" @click="openCreate" />
+          <!-- Label hides below `sm` — the navbar's right slot never shrinks
+               (Nuxt UI's own DashboardNavbar theme), so a full-label button
+               here is what pushed off-screen on a phone; icon-only still has
+               an accessible name via aria-label. -->
+          <UButton icon="i-lucide-plus" size="sm" aria-label="New product" @click="openCreate">
+            <span class="hidden sm:inline">New product</span>
+          </UButton>
         </template>
       </UDashboardNavbar>
     </template>

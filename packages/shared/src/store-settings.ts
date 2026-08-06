@@ -120,7 +120,17 @@ export const StoreSettingsSchema = z.object({
     enabled: z.boolean().default(true),
     options: z.array(z.string()).optional(),
     isCore: z.boolean().optional(),
-    halfWidth: z.boolean().optional()
+    halfWidth: z.boolean().optional(),
+    // Visibility scope: undefined/empty = every product's lead form (the
+    // original, only behavior before this field existed) — a non-empty list
+    // restricts the field to just those products' PDP/landing-page lead
+    // forms, for a custom field that only makes sense on some products (e.g.
+    // "Preferred size" on a clothing item, meaningless on a mug). Checked
+    // client-side against the current product's id — see products/[slug].vue
+    // and lp/[productSlug]/[number].vue's leadFields computed. Never applies
+    // to cart checkout.vue (multi-product, no single product to scope
+    // against) — that page only ever shows globally-scoped fields.
+    productIds: z.array(z.uuid()).optional()
   })).nullable().optional(),
   // How long (seconds) a customer can go idle after typing a phone number on
   // a lead form, without submitting, before the storefront auto-creates an

@@ -116,7 +116,9 @@ const showCreateBool = computed({
       <UDashboardNavbar title="Attributes">
         <template #leading><UDashboardSidebarCollapse /></template>
         <template #right>
-          <UButton icon="i-lucide-plus" size="sm" label="New attribute" @click="showCreate = true" />
+          <UButton icon="i-lucide-plus" size="sm" aria-label="New attribute" @click="showCreate = true">
+            <span class="hidden sm:inline">New attribute</span>
+          </UButton>
         </template>
       </UDashboardNavbar>
     </template>

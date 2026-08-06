@@ -225,8 +225,12 @@ const tierLabel: Record<string, string> = {
           <UBadge color="neutral" variant="subtle">{{ queue.length }} left</UBadge>
         </template>
         <template #right>
-          <UButton to="/call-center" icon="i-lucide-list" size="sm" color="neutral" variant="outline" label="Back to queues" />
-          <UButton icon="i-lucide-refresh-cw" size="sm" color="neutral" variant="outline" :loading="loadingQueue" label="Refresh queue" @click="refreshQueue" />
+          <UButton to="/call-center" icon="i-lucide-list" size="sm" color="neutral" variant="outline" aria-label="Back to queues">
+            <span class="hidden sm:inline">Back to queues</span>
+          </UButton>
+          <UButton icon="i-lucide-refresh-cw" size="sm" color="neutral" variant="outline" :loading="loadingQueue" aria-label="Refresh queue" @click="refreshQueue">
+            <span class="hidden sm:inline">Refresh queue</span>
+          </UButton>
         </template>
       </UDashboardNavbar>
     </template>
@@ -277,14 +281,14 @@ const tierLabel: Record<string, string> = {
           title="Queue cleared"
           description="Every order in the drop queue has been handled. Nice work."
         />
-        <div v-else class="admin-kpi-card space-y-4 p-6">
+        <div v-else class="admin-kpi-card space-y-4 p-4 sm:p-6">
           <div v-if="current.isDuplicate" class="flex items-center gap-2 rounded-md bg-error/10 px-3 py-2 text-sm text-error">
             <UIcon name="i-lucide-alert-triangle" class="size-4 shrink-0" />
             Possible duplicate — same customer + product within the last 2 days.
           </div>
 
-          <div class="flex items-start justify-between gap-3">
-            <div>
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div class="min-w-0">
               <div class="flex flex-wrap items-center gap-2">
                 <NuxtLink :to="`/orders/${current.id}`" class="tabular font-medium text-primary hover:underline">{{ current.id.slice(0, 8) }}</NuxtLink>
                 <UBadge color="neutral" variant="subtle" size="sm">{{ tierLabel[current.state] }}</UBadge>
@@ -292,11 +296,11 @@ const tierLabel: Record<string, string> = {
               </div>
               <p class="mt-1 text-lg font-semibold text-highlighted">{{ current.customer.name ?? 'No name given' }}</p>
               <a :href="`tel:${current.customer.phone}`" class="tabular mt-0.5 flex items-center gap-1.5 text-lg text-primary hover:underline">
-                <UIcon name="i-lucide-phone-call" class="size-4" />{{ current.customer.phone }}
+                <UIcon name="i-lucide-phone-call" class="size-4 shrink-0" />{{ current.customer.phone }}
               </a>
               <p class="mt-1 text-sm text-muted">{{ addressLine(current) }}</p>
             </div>
-            <div class="shrink-0 text-right">
+            <div class="flex shrink-0 items-center justify-between gap-3 sm:flex-col sm:items-end sm:justify-start sm:text-right">
               <PriceDisplay :amount-cents="current.totalCents" class="tabular text-xl font-semibold text-highlighted" />
               <UButton icon="i-lucide-pencil" size="xs" variant="link" color="neutral" label="Edit price" @click="openPriceEditor" />
             </div>
@@ -308,19 +312,30 @@ const tierLabel: Record<string, string> = {
             <UIcon name="i-lucide-sticky-note" class="mt-0.5 size-3.5 shrink-0" />{{ current.notes }}
           </div>
 
-          <!-- Actions -->
-          <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            <UButton icon="i-lucide-check" color="primary" :loading="acting" label="Confirm (1)" @click="act('Confirmed')" />
-            <UButton icon="i-lucide-phone-missed" color="warning" variant="outline" :loading="acting" label="No answer (2)" @click="act('CallCenterNoAnswer')" />
-            <UButton icon="i-lucide-phone-off" color="error" variant="outline" :loading="acting" label="Wrong number (3)" @click="act('WrongNumber')" />
-            <UButton icon="i-lucide-calendar-clock" color="warning" variant="outline" :loading="acting" label="Postpone (4)" @click="act('Postponed')" />
-            <UButton icon="i-lucide-x" color="error" variant="outline" :loading="acting" label="Cancel (5)" @click="act('Cancelled')" />
-            <UButton icon="i-lucide-sticky-note" color="neutral" variant="ghost" :label="current.notes ? 'Edit note (N)' : 'Add note (N)'" @click="openNotes" />
+          <!-- Actions — primary (Confirm) gets its own full-width row so the
+               hierarchy reads clearly on a phone instead of 6 equal-weight
+               buttons in a cramped grid; secondary outcomes and utility
+               actions (note/skip) are their own smaller groups below. Numeric
+               "(1)"/"(2)" keyboard hints live only in the legend text below,
+               not baked into each label — those hints are meaningless on a
+               phone with no physical keyboard and were what made the 2-col
+               mobile grid overflow ("Wrong number (3)" etc. never fit). -->
+          <UButton icon="i-lucide-check" color="primary" size="lg" block :loading="acting" label="Confirm order" @click="act('Confirmed')" />
+          <div class="grid grid-cols-2 gap-2">
+            <UButton icon="i-lucide-phone-missed" color="warning" variant="outline" :loading="acting" label="No answer" @click="act('CallCenterNoAnswer')" />
+            <UButton icon="i-lucide-phone-off" color="error" variant="outline" :loading="acting" label="Wrong number" @click="act('WrongNumber')" />
+            <UButton icon="i-lucide-calendar-clock" color="warning" variant="outline" :loading="acting" label="Postpone" @click="act('Postponed')" />
+            <UButton icon="i-lucide-x" color="error" variant="outline" :loading="acting" label="Cancel" @click="act('Cancelled')" />
           </div>
-          <UButton icon="i-lucide-skip-forward" color="neutral" variant="soft" block label="Skip — come back to this later (S)" @click="skip" />
+          <div class="grid grid-cols-2 gap-2">
+            <UButton icon="i-lucide-sticky-note" color="neutral" variant="ghost" :label="current.notes ? 'Edit note' : 'Add note'" @click="openNotes" />
+            <UButton icon="i-lucide-skip-forward" color="neutral" variant="soft" label="Skip for now" @click="skip" />
+          </div>
         </div>
 
-        <p class="text-center text-xs text-muted">Keyboard: 1 confirm · 2 no answer · 3 wrong number · 4 postpone · 5 cancel · S skip · N note</p>
+        <!-- Keyboard shortcuts only mean anything with a physical keyboard —
+             hidden on mobile instead of a legend nobody on a phone can use. -->
+        <p class="hidden text-center text-xs text-muted sm:block">Keyboard: 1 confirm · 2 no answer · 3 wrong number · 4 postpone · 5 cancel · S skip · N note</p>
       </div>
     </template>
   </UDashboardPanel>

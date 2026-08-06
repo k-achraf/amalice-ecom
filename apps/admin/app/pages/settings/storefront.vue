@@ -78,6 +78,32 @@ async function apply() {
 const showFieldModal = ref(false)
 const editingField = ref<LeadFormField | null>(null)
 
+// Product picker for per-field visibility scoping (productIds) — lazy-loaded
+// on first field-editor open, same pattern as orders/[id].vue's add-item
+// product picker. Capped at 100 (ProductListQuerySchema's max pageSize);
+// fine for a picker at this store's current catalog size, would need a
+// searchable async list if that ever stops holding.
+interface ProductOption { id: string; name: string }
+const productOptions = ref<ProductOption[]>([])
+const productOptionsLoaded = ref(false)
+async function ensureProductOptions() {
+  if (productOptionsLoaded.value) return
+  productOptionsLoaded.value = true
+  const res = await api<{ items: ProductOption[] }>('/admin/products?pageSize=100')
+  productOptions.value = res.items
+}
+// Local UI-only toggle — the schema itself just has `productIds` (empty =
+// all products); this derives/drives that from a friendlier two-option
+// radio in the modal rather than exposing the array directly.
+const fieldVisibilityScope = computed<'all' | 'selected'>({
+  get: () => (editingField.value?.productIds?.length ? 'selected' : 'all'),
+  set: (v) => {
+    if (!editingField.value) return
+    if (v === 'all') editingField.value.productIds = undefined
+    else editingField.value.productIds = editingField.value.productIds?.length ? editingField.value.productIds : []
+  }
+})
+
 const FIELD_TYPES = [
   { label: 'Text', value: 'text' },
   { label: 'Phone', value: 'tel' },
@@ -99,11 +125,13 @@ function openAddField() {
     halfWidth: false
   }
   showFieldModal.value = true
+  ensureProductOptions()
 }
 
 function openEditField(field: LeadFormField) {
   editingField.value = { ...field }
   showFieldModal.value = true
+  ensureProductOptions()
 }
 
 function saveField() {
@@ -498,6 +526,15 @@ const showFieldModalBool = computed({
                   <UBadge size="sm" color="neutral" variant="subtle">{{ field.type }}</UBadge>
                   <UBadge v-if="field.required" size="sm" color="warning" variant="subtle">Required</UBadge>
                   <UBadge v-if="field.isCore" size="sm" color="info" variant="subtle">Core</UBadge>
+                  <UBadge
+                    v-if="field.productIds?.length"
+                    size="sm"
+                    color="primary"
+                    variant="subtle"
+                    :title="field.productIds.map(id => productOptions.find(p => p.id === id)?.name ?? id).join(', ')"
+                  >
+                    {{ field.productIds.length }} product{{ field.productIds.length === 1 ? '' : 's' }} only
+                  </UBadge>
                 </div>
                 <p class="text-xs text-muted">Key: <code>{{ field.key }}</code>{{ field.placeholder ? ` · Placeholder: "${field.placeholder}"` : '' }}</p>
               </div>
@@ -553,6 +590,32 @@ const showFieldModalBool = computed({
           <UCheckbox v-model="editingField.required" label="Required" />
           <UCheckbox v-model="editingField.halfWidth" label="Half width" />
         </div>
+
+        <!-- Visibility scope — core fields (name/phone/wilaya/commune) are
+             structural to every checkout, so scoping is only offered for
+             custom fields. A field a customer needs to fill on THIS product
+             but not others (e.g. "Preferred size" on clothing, meaningless
+             on a mug) shouldn't have to be a global field just to exist. -->
+        <UFormField v-if="!editingField.isCore" label="Visible on">
+          <URadioGroup
+            v-model="fieldVisibilityScope"
+            orientation="horizontal"
+            :items="[{ label: 'All products', value: 'all' }, { label: 'Selected products', value: 'selected' }]"
+          />
+          <USelectMenu
+            v-if="fieldVisibilityScope === 'selected'"
+            v-model="editingField.productIds"
+            :items="productOptions.map(p => ({ label: p.name, value: p.id }))"
+            value-key="value"
+            multiple
+            placeholder="Choose products…"
+            class="mt-2 w-full"
+          />
+          <p v-if="fieldVisibilityScope === 'selected' && !editingField.productIds?.length" class="mt-1 text-xs text-warning">
+            No products selected yet — this field won't appear anywhere until you pick at least one.
+          </p>
+        </UFormField>
+
         <div class="flex justify-end gap-2">
           <UButton color="neutral" variant="ghost" label="Cancel" @click="showFieldModalBool = false" />
           <UButton :disabled="!editingField.key || !editingField.label" label="Save field" color="primary" @click="saveField" />

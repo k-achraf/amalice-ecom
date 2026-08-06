@@ -130,7 +130,9 @@ function addressLine(o: { address: { line1: string; city: string; region: string
       <UDashboardNavbar title="Call Center">
         <template #leading><UDashboardSidebarCollapse /></template>
         <template #right>
-          <UButton to="/call-center/drop" icon="i-lucide-zap" color="primary" label="Drop Queue" />
+          <UButton to="/call-center/drop" icon="i-lucide-zap" color="primary" aria-label="Drop Queue">
+            <span class="hidden sm:inline">Drop Queue</span>
+          </UButton>
         </template>
       </UDashboardNavbar>
     </template>

@@ -167,8 +167,12 @@ void wholesalersPending
       <UDashboardNavbar title="Product Sourcing">
         <template #leading><UDashboardSidebarCollapse /></template>
         <template #right>
-          <UButton v-if="activeTab === 'products'" icon="i-lucide-plus" size="sm" label="New sourced product" @click="openCreateProduct" />
-          <UButton v-else icon="i-lucide-plus" size="sm" label="New wholesaler" @click="openCreateWholesaler" />
+          <UButton v-if="activeTab === 'products'" icon="i-lucide-plus" size="sm" aria-label="New sourced product" @click="openCreateProduct">
+            <span class="hidden sm:inline">New sourced product</span>
+          </UButton>
+          <UButton v-else icon="i-lucide-plus" size="sm" aria-label="New wholesaler" @click="openCreateWholesaler">
+            <span class="hidden sm:inline">New wholesaler</span>
+          </UButton>
         </template>
       </UDashboardNavbar>
     </template>

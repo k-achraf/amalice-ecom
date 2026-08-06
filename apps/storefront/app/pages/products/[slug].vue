@@ -177,7 +177,11 @@ import { DEFAULT_LEAD_FORM_FIELDS, type LeadFormField } from '@amalice/shared'
 
 const leadFields = computed<LeadFormField[]>(() => {
   const config = settings.value.leadFormConfig
-  return (config && config.length > 0 ? config : DEFAULT_LEAD_FORM_FIELDS).filter(f => f.enabled !== false)
+  const fields = config && config.length > 0 ? config : DEFAULT_LEAD_FORM_FIELDS
+  // productIds scoping: empty/undefined = every product (the original,
+  // only behavior); non-empty = only shows on this product's lead form —
+  // see StoreSettingsSchema's leadFormConfig comment.
+  return fields.filter((f) => f.enabled !== false && (!f.productIds?.length || (product.value && f.productIds.includes(product.value.id))))
 })
 
 const leadFormData = reactive<Record<string, string>>({})
