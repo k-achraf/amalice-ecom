@@ -99,8 +99,12 @@ export type UpdateLandingPage = z.infer<typeof UpdateLandingPageSchema>
 // the stitched image plus just enough product info to render + submit the
 // lead form beneath it (see apps/storefront/app/pages/lp/[productSlug]/
 // [number].vue). Never exposes admin/generation internals (sections,
-// provider, errors).
+// provider, errors). `id` IS exposed (unlike the rest) purely so the
+// storefront has a stable entityId to record a view-tracking event against
+// (see packages/shared/src/analytics.ts) — it's an opaque uuid, not
+// sensitive.
 export const PublicLandingPageSchema = z.object({
+  id: z.uuid(),
   number: z.number().int().positive(),
   finalImageUrl: z.string(),
   product: z.object({

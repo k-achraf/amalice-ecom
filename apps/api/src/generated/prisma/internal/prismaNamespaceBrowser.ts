@@ -95,7 +95,8 @@ export const ModelName = {
   SourcedProductLink: 'SourcedProductLink',
   ProductAdTest: 'ProductAdTest',
   Wholesaler: 'Wholesaler',
-  ProductSourcingRequest: 'ProductSourcingRequest'
+  ProductSourcingRequest: 'ProductSourcingRequest',
+  PageViewEvent: 'PageViewEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -738,6 +739,18 @@ export const ProductSourcingRequestScalarFieldEnum = {
 } as const
 
 export type ProductSourcingRequestScalarFieldEnum = (typeof ProductSourcingRequestScalarFieldEnum)[keyof typeof ProductSourcingRequestScalarFieldEnum]
+
+
+export const PageViewEventScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  entityId: 'entityId',
+  visitorId: 'visitorId',
+  path: 'path',
+  createdAt: 'createdAt'
+} as const
+
+export type PageViewEventScalarFieldEnum = (typeof PageViewEventScalarFieldEnum)[keyof typeof PageViewEventScalarFieldEnum]
 
 
 export const SortOrder = {

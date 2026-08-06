@@ -108,6 +108,11 @@ watchEffect(() => {
       value: effectivePriceCents.value / 100,
       currency: 'DZD'
     })
+    // First-party view-tracking (admin dashboard's traffic stats) — same
+    // per-product-id re-fire guard as the pixel events above, for the same
+    // reason (component instance reuse across client-side product-to-product
+    // navigation).
+    useViewTracking().recordView('Product', product.value.id)
   }
 })
 

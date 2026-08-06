@@ -1323,3 +1323,33 @@ model ProductSourcingRequest {
   @@index([wholesalerId])
   @@map("product_sourcing_requests")
 }
+
+// Storefront view-tracking — first-party, our own DB (never third-party
+// pixel data, which we can't query for an admin dashboard). One row per
+// page view: Home, a specific Product, or a specific ProductLandingPage
+// (identified by entityId — the product's or landing page's own id,
+// loosely typed as a plain string rather than an FK so a later-deleted
+// product/landing page doesn't retroactively break its own view history).
+// visitorId is a client-generated UUID persisted in localStorage
+// (useVisitorId() in the storefront) — it's what "unique views" counts
+// distinct values of; there's no login/account system to key off instead.
+enum PageViewType {
+  Home
+  Product
+  LandingPage
+  Other
+}
+
+model PageViewEvent {
+  id        String       @id @default(uuid())
+  type      PageViewType
+  entityId  String?      @map("entity_id")
+  visitorId String       @map("visitor_id")
+  path      String
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  @@index([type, createdAt])
+  @@index([entityId])
+  @@index([visitorId])
+  @@map("page_view_events")
+}

@@ -21,6 +21,16 @@ const { data: bestSellers } = await useApiFetch<ProductListResponse>('/products?
   query: { q: 'mug' },
   key: 'store-bestsellers'
 })
+
+// First-party view-tracking (admin dashboard's traffic stats) — client-only,
+// fires once per mount. Nuxt reuses this page's component instance for
+// repeat "/" navigations in the same SPA session (rare for the home route
+// specifically, unlike PDP), so a plain one-shot call here is enough —
+// there's no per-entity id to key a re-fire guard against, unlike ViewContent
+// on the product/landing pages.
+if (import.meta.client) {
+  useViewTracking().recordView('Home')
+}
 </script>
 
 <template>

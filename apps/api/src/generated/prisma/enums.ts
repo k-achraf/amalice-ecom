@@ -233,3 +233,13 @@ export const SourcingRequestStatus = {
 } as const
 
 export type SourcingRequestStatus = (typeof SourcingRequestStatus)[keyof typeof SourcingRequestStatus]
+
+
+export const PageViewType = {
+  Home: 'Home',
+  Product: 'Product',
+  LandingPage: 'LandingPage',
+  Other: 'Other'
+} as const
+
+export type PageViewType = (typeof PageViewType)[keyof typeof PageViewType]

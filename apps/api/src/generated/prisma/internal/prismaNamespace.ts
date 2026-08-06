@@ -428,7 +428,8 @@ export const ModelName = {
   SourcedProductLink: 'SourcedProductLink',
   ProductAdTest: 'ProductAdTest',
   Wholesaler: 'Wholesaler',
-  ProductSourcingRequest: 'ProductSourcingRequest'
+  ProductSourcingRequest: 'ProductSourcingRequest',
+  PageViewEvent: 'PageViewEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -444,7 +445,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "productAdTest" | "wholesaler" | "productSourcingRequest"
+    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "productAdTest" | "wholesaler" | "productSourcingRequest" | "pageViewEvent"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3778,6 +3779,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    PageViewEvent: {
+      payload: Prisma.$PageViewEventPayload<ExtArgs>
+      fields: Prisma.PageViewEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PageViewEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PageViewEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PageViewEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PageViewEventPayload>
+        }
+        findFirst: {
+          args: Prisma.PageViewEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PageViewEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PageViewEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PageViewEventPayload>
+        }
+        findMany: {
+          args: Prisma.PageViewEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PageViewEventPayload>[]
+        }
+        create: {
+          args: Prisma.PageViewEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PageViewEventPayload>
+        }
+        createMany: {
+          args: Prisma.PageViewEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PageViewEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PageViewEventPayload>[]
+        }
+        delete: {
+          args: Prisma.PageViewEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PageViewEventPayload>
+        }
+        update: {
+          args: Prisma.PageViewEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PageViewEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.PageViewEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PageViewEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PageViewEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PageViewEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.PageViewEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PageViewEventPayload>
+        }
+        aggregate: {
+          args: Prisma.PageViewEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePageViewEvent>
+        }
+        groupBy: {
+          args: Prisma.PageViewEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PageViewEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PageViewEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PageViewEventCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -4443,6 +4518,18 @@ export const ProductSourcingRequestScalarFieldEnum = {
 export type ProductSourcingRequestScalarFieldEnum = (typeof ProductSourcingRequestScalarFieldEnum)[keyof typeof ProductSourcingRequestScalarFieldEnum]
 
 
+export const PageViewEventScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  entityId: 'entityId',
+  visitorId: 'visitorId',
+  path: 'path',
+  createdAt: 'createdAt'
+} as const
+
+export type PageViewEventScalarFieldEnum = (typeof PageViewEventScalarFieldEnum)[keyof typeof PageViewEventScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -4869,6 +4956,20 @@ export type ListEnumSourcingRequestStatusFieldRefInput<$PrismaModel> = FieldRefI
 
 
 /**
+ * Reference to a field of type 'PageViewType'
+ */
+export type EnumPageViewTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PageViewType'>
+    
+
+
+/**
+ * Reference to a field of type 'PageViewType[]'
+ */
+export type ListEnumPageViewTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PageViewType[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -5036,6 +5137,7 @@ export type GlobalOmitConfig = {
   productAdTest?: Prisma.ProductAdTestOmit
   wholesaler?: Prisma.WholesalerOmit
   productSourcingRequest?: Prisma.ProductSourcingRequestOmit
+  pageViewEvent?: Prisma.PageViewEventOmit
 }
 
 /* Types for Logging */

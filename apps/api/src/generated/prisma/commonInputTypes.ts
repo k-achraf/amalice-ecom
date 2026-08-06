@@ -691,6 +691,23 @@ export type EnumSourcingRequestStatusWithAggregatesFilter<$PrismaModel = never> 
   _max?: Prisma.NestedEnumSourcingRequestStatusFilter<$PrismaModel>
 }
 
+export type EnumPageViewTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.PageViewType | Prisma.EnumPageViewTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PageViewType[] | Prisma.ListEnumPageViewTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PageViewType[] | Prisma.ListEnumPageViewTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPageViewTypeFilter<$PrismaModel> | $Enums.PageViewType
+}
+
+export type EnumPageViewTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PageViewType | Prisma.EnumPageViewTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PageViewType[] | Prisma.ListEnumPageViewTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PageViewType[] | Prisma.ListEnumPageViewTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPageViewTypeWithAggregatesFilter<$PrismaModel> | $Enums.PageViewType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPageViewTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPageViewTypeFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -1325,6 +1342,23 @@ export type NestedEnumSourcingRequestStatusWithAggregatesFilter<$PrismaModel = n
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumSourcingRequestStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumSourcingRequestStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumPageViewTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.PageViewType | Prisma.EnumPageViewTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PageViewType[] | Prisma.ListEnumPageViewTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PageViewType[] | Prisma.ListEnumPageViewTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPageViewTypeFilter<$PrismaModel> | $Enums.PageViewType
+}
+
+export type NestedEnumPageViewTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PageViewType | Prisma.EnumPageViewTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PageViewType[] | Prisma.ListEnumPageViewTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PageViewType[] | Prisma.ListEnumPageViewTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPageViewTypeWithAggregatesFilter<$PrismaModel> | $Enums.PageViewType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPageViewTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPageViewTypeFilter<$PrismaModel>
 }
 
 

@@ -1,10 +1,32 @@
 <script setup lang="ts">
-import type { DashboardStats } from '@amalice/shared'
+import type { AnalyticsOverview, DashboardStats } from '@amalice/shared'
 
 useHead({ title: 'Dashboard' })
 
 const auth = useAuthStore()
 const { data: stats } = await useAdminFetch<DashboardStats>('/admin/stats', { key: 'admin-stats' })
+
+// Storefront traffic — first-party view-tracking (packages/shared/src/
+// analytics.ts), not third-party pixel data. Own section since it's a
+// different data source/refresh cadence than the ops KPIs above, and
+// irrelevant to Warehouse's inventory-only view.
+const analyticsApi = useAdminApi()
+const analyticsDays = ref(7)
+const { data: analytics, pending: analyticsPending } = await useAdminFetch<AnalyticsOverview>('/admin/analytics/overview', {
+  key: 'admin-analytics-overview',
+  query: { days: 7 }
+})
+const loadingAnalytics = ref(false)
+async function setAnalyticsDays(days: number) {
+  if (days === analyticsDays.value) return
+  analyticsDays.value = days
+  loadingAnalytics.value = true
+  try {
+    analytics.value = await analyticsApi<AnalyticsOverview>('/admin/analytics/overview', { query: { days } })
+  } finally {
+    loadingAnalytics.value = false
+  }
+}
 
 const rtoRate = computed(() => {
   if (!stats.value || stats.value.totalOrders30d === 0) return '0%'
@@ -127,6 +149,52 @@ function greeting() {
           <KpiCard label="RTO rate (30d)" :value="rtoRate" icon="i-lucide-rotate-ccw" color="warning" />
           <KpiCard label="Packed (awaiting dispatch)" :value="stats.packedCount" icon="i-lucide-box" color="info" />
           <KpiCard label="Orders (30d)" :value="stats.totalOrders30d" icon="i-lucide-calendar" color="neutral" />
+        </section>
+
+        <!-- Storefront traffic — first-party view-tracking, not third-party
+             pixel data (see packages/shared/src/analytics.ts). -->
+        <section>
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-sm font-medium text-muted">Storefront traffic</h2>
+            <div class="flex gap-1">
+              <UButton
+                v-for="opt in [{ label: '24h', days: 1 }, { label: '7d', days: 7 }, { label: '30d', days: 30 }]"
+                :key="opt.days"
+                size="xs"
+                :variant="analyticsDays === opt.days ? 'solid' : 'ghost'"
+                :color="analyticsDays === opt.days ? 'primary' : 'neutral'"
+                :loading="loadingAnalytics && analyticsDays === opt.days"
+                :label="opt.label"
+                @click="setAnalyticsDays(opt.days)"
+              />
+            </div>
+          </div>
+          <div v-if="analyticsPending && !analytics" class="py-12 text-center text-muted">Loading traffic…</div>
+          <template v-else-if="analytics">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <KpiCard label="Total views" :value="analytics.totalViews" icon="i-lucide-eye" color="primary" />
+              <KpiCard label="Unique visitors" :value="analytics.uniqueVisitors" icon="i-lucide-users" color="info" />
+              <KpiCard label="Product views" :value="analytics.productViews" icon="i-lucide-package" color="success" />
+              <KpiCard label="Landing page views" :value="analytics.landingPageViews" icon="i-lucide-rocket" color="warning" />
+            </div>
+
+            <div v-if="analytics.topProducts.length || analytics.topLandingPages.length" class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div v-if="analytics.topProducts.length" class="admin-kpi-card divide-y divide-[var(--color-admin-border)]">
+                <p class="p-4 pb-2 text-xs font-medium uppercase tracking-wide text-muted">Top viewed products</p>
+                <div v-for="p in analytics.topProducts" :key="p.id" class="flex items-center justify-between px-4 py-2.5">
+                  <span class="truncate text-sm text-highlighted">{{ p.name ?? 'Deleted product' }}</span>
+                  <UBadge color="neutral" variant="subtle">{{ p.views }}</UBadge>
+                </div>
+              </div>
+              <div v-if="analytics.topLandingPages.length" class="admin-kpi-card divide-y divide-[var(--color-admin-border)]">
+                <p class="p-4 pb-2 text-xs font-medium uppercase tracking-wide text-muted">Top viewed landing pages</p>
+                <div v-for="lp in analytics.topLandingPages" :key="lp.id" class="flex items-center justify-between px-4 py-2.5">
+                  <span class="truncate text-sm text-highlighted">{{ lp.name ?? 'Deleted landing page' }}<span v-if="lp.subtitle" class="text-muted"> — {{ lp.subtitle }}</span></span>
+                  <UBadge color="neutral" variant="subtle">{{ lp.views }}</UBadge>
+                </div>
+              </div>
+            </div>
+          </template>
         </section>
       </div>
       <div v-else class="py-24 text-center text-muted">Loading dashboard…</div>

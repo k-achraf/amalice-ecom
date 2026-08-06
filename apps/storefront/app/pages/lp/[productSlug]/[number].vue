@@ -59,6 +59,12 @@ if (import.meta.client) {
     value: page.product.priceCents / 100,
     currency: 'DZD'
   })
+  // First-party view-tracking (admin dashboard's traffic stats) — entityId
+  // is the landing page's own id (PublicLandingPageSchema exposes it for
+  // exactly this), not the product's, so "landing page views" and "product
+  // views" stay two distinct counters even though both fire from a page
+  // reached via a product.
+  useViewTracking().recordView('LandingPage', page.id)
 }
 
 const leadFields = computed<LeadFormField[]>(() => {
@@ -76,6 +82,71 @@ watchEffect(() => {
 const placing = ref(false)
 const placeError = ref<string | null>(null)
 
+// Anti-abuse pair, same convention as checkout.vue/products/[slug].vue: a
+// client-generated idempotency key (one per genuinely-new submit attempt,
+// reused across retries of THIS attempt) + a load timestamp the server uses
+// to flag an implausibly-fast bot-like submit. Generated once, client-only.
+let leadIdempotencyKey = ''
+let leadFormLoadedAt = 0
+if (import.meta.client) {
+  leadIdempotencyKey = crypto.randomUUID()
+  leadFormLoadedAt = Date.now()
+}
+
+// ---- Abandoned-cart tracking (Impulse template only) ----
+// Same mechanism as the normal PDP (products/[slug].vue) — if the customer
+// types a phone number and goes idle past the store's configured delay
+// without submitting, auto-create the order as abandoned so call-center can
+// follow up (see AbandonedLeadOrderSchema / OrdersService.createAbandonedOrder).
+// Scoped to Impulse only, mirroring the PDP's own gate, even though every
+// /lp page is itself an ad-funnel entry point — kept consistent with "same
+// method as product page form" rather than silently widening the scope.
+// Landing pages have no variant/offer concept (always a fixed single unit
+// of one product), so the payload is simpler than the PDP's.
+const abandonedOrderId = ref<string | null>(null)
+let abandonedTimer: ReturnType<typeof setTimeout> | undefined
+
+function stopAbandonedTimer() {
+  if (abandonedTimer) clearTimeout(abandonedTimer)
+  abandonedTimer = undefined
+}
+
+async function fireAbandonedOrder() {
+  if (abandonedOrderId.value || placing.value) return
+  try {
+    const apiClient = useApiClient()
+    const created = await apiClient<{ id: string }>('/orders/abandoned', {
+      method: 'POST',
+      body: {
+        fields: leadFormData,
+        wilayaId: leadFormData.wilayaId || undefined,
+        shippingType: leadFormData.shippingType || undefined,
+        items: [{ productId: page.product.id, quantity: 1 }]
+      }
+    })
+    abandonedOrderId.value = created.id
+  } catch {
+    // Best-effort — a failed abandoned-cart capture must never surface to
+    // the customer or block them from still completing checkout normally.
+  }
+}
+
+watch(
+  () => ({ ...leadFormData }),
+  () => {
+    if (settings.value.activeTemplate !== 'impulse') return
+    if (abandonedOrderId.value || placing.value) return
+    const phone = leadFormData.phone || leadFormData.phoneNumber
+    stopAbandonedTimer()
+    if (!phone?.trim()) return
+    const delayMs = (settings.value.abandonedCartDelaySeconds || 60) * 1000
+    abandonedTimer = setTimeout(fireAbandonedOrder, delayMs)
+  },
+  { deep: true }
+)
+
+onBeforeUnmount(stopAbandonedTimer)
+
 async function onSubmitLead() {
   for (const f of leadFields.value) {
     if (f.required !== false && !leadFormData[f.key]?.trim()) {
@@ -87,6 +158,7 @@ async function onSubmitLead() {
     placeError.value = 'الرجاء اختيار طريقة التوصيل.'
     return
   }
+  stopAbandonedTimer()
   placing.value = true
   placeError.value = null
   try {
@@ -100,7 +172,10 @@ async function onSubmitLead() {
           wilayaId: leadFormData.wilayaId,
           shippingType: leadFormData.shippingType,
           items: [{ productId: page.product.id, quantity: 1 }],
-          tracking: { ...metaPixel.getFbCookies(), ...tiktokPixel.getTtCookie() }
+          tracking: { ...metaPixel.getFbCookies(), ...tiktokPixel.getTtCookie() },
+          convertsAbandonedOrderId: abandonedOrderId.value ?? undefined,
+          idempotencyKey: leadIdempotencyKey || undefined,
+          formLoadedAt: leadFormLoadedAt || undefined
         }
       }
     )

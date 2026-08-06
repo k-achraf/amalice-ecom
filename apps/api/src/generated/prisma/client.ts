@@ -264,3 +264,8 @@ export type Wholesaler = Prisma.WholesalerModel
  * 
  */
 export type ProductSourcingRequest = Prisma.ProductSourcingRequestModel
+/**
+ * Model PageViewEvent
+ * 
+ */
+export type PageViewEvent = Prisma.PageViewEventModel

@@ -221,6 +221,7 @@ export class LandingPagesService {
     })
     if (!row || !row.enabled || row.status !== 'Completed' || !row.finalImageUrl) return null
     return {
+      id: row.id,
       number: row.number,
       finalImageUrl: row.finalImageUrl,
       product
