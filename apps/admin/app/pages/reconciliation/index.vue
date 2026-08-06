@@ -357,7 +357,7 @@ async function resolve(entryId: string) {
             <UFormField label="Reference" required>
               <UInput v-model="reference" placeholder="e.g. MAY-2026-001" class="w-full" />
             </UFormField>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <UFormField label="Period start"><UInput v-model="periodStart" type="datetime-local" class="w-full" /></UFormField>
               <UFormField label="Period end"><UInput v-model="periodEnd" type="datetime-local" class="w-full" /></UFormField>
             </div>

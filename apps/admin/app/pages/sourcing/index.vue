@@ -283,7 +283,7 @@ void wholesalersPending
             <h3 class="text-lg font-semibold">New wholesaler</h3>
             <UFormField label="Name"><UInput v-model="newWholesaler.name" class="w-full" /></UFormField>
             <UFormField label="Country"><UInput v-model="newWholesaler.country" class="w-full" /></UFormField>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <UFormField label="Contact name"><UInput v-model="newWholesaler.contactName" class="w-full" /></UFormField>
               <UFormField label="Contact phone"><UInput v-model="newWholesaler.contactPhone" class="w-full" /></UFormField>
             </div>
@@ -305,7 +305,7 @@ void wholesalersPending
             <h3 class="text-lg font-semibold">Edit wholesaler</h3>
             <UFormField label="Name"><UInput v-model="editForm.name" class="w-full" /></UFormField>
             <UFormField label="Country"><UInput v-model="editForm.country" class="w-full" /></UFormField>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <UFormField label="Contact name"><UInput v-model="editForm.contactName" class="w-full" /></UFormField>
               <UFormField label="Contact phone"><UInput v-model="editForm.contactPhone" class="w-full" /></UFormField>
             </div>

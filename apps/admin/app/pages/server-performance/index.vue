@@ -135,7 +135,7 @@ async function manualRefresh() {
             <div class="h-2 overflow-hidden rounded-full bg-[var(--color-admin-surface-tint)]">
               <div class="h-full rounded-full transition-all" :style="{ width: `${snapshot.cpu.usagePercent}%`, backgroundColor: barColor(snapshot.cpu.usagePercent) }" />
             </div>
-            <dl class="grid grid-cols-2 gap-2 text-xs text-muted">
+            <dl class="grid grid-cols-1 gap-2 text-xs text-muted sm:grid-cols-2">
               <div><dt class="inline">Model:</dt> <dd class="inline text-highlighted">{{ snapshot.cpu.model }}</dd></div>
               <div><dt class="inline">Cores:</dt> <dd class="inline text-highlighted">{{ snapshot.cpu.cores }}</dd></div>
               <div><dt class="inline">Load (1m):</dt> <dd class="tabular inline text-highlighted">{{ snapshot.cpu.loadAvg1.toFixed(2) }}</dd></div>
@@ -149,7 +149,7 @@ async function manualRefresh() {
             <div class="h-2 overflow-hidden rounded-full bg-[var(--color-admin-surface-tint)]">
               <div class="h-full rounded-full transition-all" :style="{ width: `${snapshot.memory.usedPercent}%`, backgroundColor: barColor(snapshot.memory.usedPercent) }" />
             </div>
-            <dl class="grid grid-cols-2 gap-2 text-xs text-muted">
+            <dl class="grid grid-cols-1 gap-2 text-xs text-muted sm:grid-cols-2">
               <div><dt class="inline">Total:</dt> <dd class="tabular inline text-highlighted">{{ bytesToGb(snapshot.memory.totalBytes) }} GB</dd></div>
               <div><dt class="inline">Used:</dt> <dd class="tabular inline text-highlighted">{{ bytesToGb(snapshot.memory.usedBytes) }} GB</dd></div>
               <div><dt class="inline">Free:</dt> <dd class="tabular inline text-highlighted">{{ bytesToGb(snapshot.memory.freeBytes) }} GB</dd></div>

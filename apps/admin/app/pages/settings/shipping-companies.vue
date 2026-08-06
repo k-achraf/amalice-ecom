@@ -234,7 +234,7 @@ async function applyToRates(provider: ShippingCompanyProvider) {
                 <UIcon :name="iconByProvider[company.provider]" class="size-6" />
               </div>
               <div>
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
                   <h3 class="font-semibold text-highlighted">{{ company.name }}</h3>
                   <UBadge v-if="company.isLinked" color="success" variant="subtle" size="sm">Linked</UBadge>
                   <UBadge v-else color="neutral" variant="subtle" size="sm">Not linked</UBadge>
@@ -247,7 +247,7 @@ async function applyToRates(provider: ShippingCompanyProvider) {
           </div>
 
           <UFormField label="API token" :help="company.hasApiToken ? 'A token is already saved — leave blank to keep it.' : 'From your ' + company.name + ' account settings.'">
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
               <UInput
                 v-model="apiTokenInput[company.provider]"
                 type="password"
@@ -263,7 +263,7 @@ async function applyToRates(provider: ShippingCompanyProvider) {
 
           <template v-if="company.webhookUrl">
             <UFormField label="Webhook URL" help="Paste this into DHD's own webhook configuration (state-webhooks settings) as the endpoint URL.">
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2">
                 <UInput :model-value="company.webhookUrl" readonly class="w-full max-w-lg font-mono text-xs" @focus="($event.target as HTMLInputElement)?.select()" />
                 <UButton variant="outline" color="neutral" icon="i-lucide-copy" @click="copyWebhookUrl(company.webhookUrl!)">Copy</UButton>
               </div>
@@ -273,7 +273,7 @@ async function applyToRates(provider: ShippingCompanyProvider) {
               label="Webhook secret (HMAC-SHA256)"
               :help="company.hasWebhookSecret ? 'A secret is already saved — leave blank to keep it.' : 'The secret DHD generated (or you set) when configuring the webhook on their side — needed to verify incoming requests.'"
             >
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2">
                 <UInput
                   v-model="webhookSecretInput[company.provider]"
                   type="password"
@@ -344,7 +344,7 @@ async function applyToRates(provider: ShippingCompanyProvider) {
           <div v-else-if="webhookLogsByProvider[company.provider]" class="space-y-3">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <p class="text-sm text-muted">Every inbound webhook delivery from {{ company.name }} — matches their own "Logs de livraison" page.</p>
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2">
                 <UInput
                   v-model="webhookLogSearch[company.provider]"
                   icon="i-lucide-search"

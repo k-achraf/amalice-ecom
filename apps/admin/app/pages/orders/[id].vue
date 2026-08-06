@@ -454,7 +454,7 @@ async function submitAddItem() {
           <!-- Shipment / fulfillment -->
           <div v-if="order.shipment" class="admin-kpi-card p-5">
             <h3 class="mb-3 text-sm font-medium text-muted">Shipment</h3>
-            <dl class="grid grid-cols-2 gap-3 text-sm">
+            <dl class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
               <div><dt class="text-muted">Courier</dt><dd>{{ order.shipment.courier.name }}</dd></div>
               <div><dt class="text-muted">Tracking ref</dt><dd class="tabular">{{ order.shipment.trackingReference ?? '— (manual delivery)' }}</dd></div>
               <div><dt class="text-muted">Courier status</dt><dd>{{ order.shipment.courierStatus ?? '—' }}</dd></div>
@@ -573,7 +573,7 @@ async function submitAddItem() {
           />
         </UFormField>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <UFormField label="Quantity">
             <UInputNumber v-model="addQuantity" :min="1" class="w-full" />
           </UFormField>

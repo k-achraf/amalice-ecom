@@ -221,7 +221,7 @@ const showCreateBool = computed({
               <UInput v-model="newName" placeholder="Color" class="w-full" />
             </UFormField>
             <UFormField label="Type" :hint="typeHint(newType)">
-              <div class="grid grid-cols-2 gap-2">
+              <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <button
                   v-for="t in TYPE_OPTIONS"
                   :key="t.value"

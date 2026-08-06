@@ -480,7 +480,7 @@ async function deleteLink(linkId: string) {
         <!-- Overview Tab -->
         <div v-show="activeTab === 'overview'" class="admin-kpi-card space-y-5 p-6">
           <UFormField label="Name"><UInput v-model="form.name" class="w-full" /></UFormField>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <UFormField label="Status">
               <USelect v-model="form.status" :items="statusOptions" value-key="value" label-key="label" class="w-full" />
             </UFormField>
@@ -672,24 +672,24 @@ async function deleteLink(linkId: string) {
         <template #content>
           <div class="space-y-4 p-6">
             <h3 class="text-lg font-semibold">{{ editingAdTestId ? 'Edit' : 'New' }} ad test</h3>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <UFormField label="Platform">
                 <USelect v-model="adTestForm.platform" :items="platformOptions" class="w-full" />
               </UFormField>
               <UFormField label="Price (DZD)"><UInputNumber v-model="adTestPriceDzd" :min="0" class="w-full" /></UFormField>
             </div>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <UFormField label="Creative type">
                 <USelect v-model="adTestForm.creativeType" :items="[{ label: 'None', value: null }, ...creativeTypeOptions.map((c) => ({ label: c, value: c }))]" value-key="value" label-key="label" class="w-full" />
               </UFormField>
               <UFormField label="Creative URL"><UInput v-model="adTestForm.creativeUrl" class="w-full" placeholder="https://…" /></UFormField>
             </div>
-            <div class="grid grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <UFormField label="Ad spend (DZD)"><UInputNumber v-model="adTestSpendDzd" :min="0" class="w-full" /></UFormField>
               <UFormField label="Orders"><UInputNumber v-model="adTestForm.ordersCount" :min="0" class="w-full" /></UFormField>
               <UFormField label="Revenue (DZD)"><UInputNumber v-model="adTestRevenueDzd" :min="0" class="w-full" /></UFormField>
             </div>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <UFormField label="Status">
                 <USelect v-model="adTestForm.status" :items="adTestStatusOptions" class="w-full" />
               </UFormField>
@@ -714,11 +714,11 @@ async function deleteLink(linkId: string) {
             <UFormField label="Wholesaler">
               <USelect v-model="requestForm.wholesalerId" :items="(wholesalers ?? []).map((w) => ({ label: w.name, value: w.id }))" value-key="value" label-key="label" class="w-full" />
             </UFormField>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <UFormField label="Requested quantity"><UInputNumber v-model="requestForm.requestedQuantity" :min="1" class="w-full" /></UFormField>
               <UFormField label="Requested country"><UInput v-model="requestForm.requestedCountry" class="w-full" /></UFormField>
             </div>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <UFormField label="Unit cost (DZD)"><UInputNumber v-model="requestUnitCostDzd" :min="0" class="w-full" /></UFormField>
               <UFormField label="Status">
                 <USelect v-model="requestForm.status" :items="requestStatusOptions" class="w-full" />

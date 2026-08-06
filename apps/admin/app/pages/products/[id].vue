@@ -803,7 +803,7 @@ async function deleteUpsell(upsellId: string) {
           <UFormField label="Description">
             <RichTextEditor v-model="product.description" />
           </UFormField>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <UFormField label="Category">
               <USelect
                 v-model="product.categoryId"
@@ -813,7 +813,7 @@ async function deleteUpsell(upsellId: string) {
             </UFormField>
             <UFormField label="Price (DZD)"><UInputNumber v-model="productPriceDzd" :min="0" class="w-full" /></UFormField>
           </div>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <UFormField label="Low-stock threshold"><UInputNumber v-model="product.lowStockThreshold" class="w-full" /></UFormField>
             <div class="flex items-end gap-4 pb-1">
               <UCheckbox v-model="product.featured" label="Featured" />
@@ -1338,7 +1338,7 @@ async function deleteUpsell(upsellId: string) {
         <div v-show="activeTab === 'inventory'" class="space-y-5">
           <div class="admin-kpi-card p-6">
             <h3 class="mb-4 text-sm font-medium text-muted">Current stock: <span class="tabular text-lg font-bold text-highlighted">{{ product.stockQuantity }}</span></h3>
-            <div class="grid grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <UFormField label="Change (+/-)">
                 <UInputNumber v-model="adjustDelta" class="w-full" />
               </UFormField>
@@ -1363,7 +1363,7 @@ async function deleteUpsell(upsellId: string) {
           <div v-if="editingVariant" class="space-y-4 p-6">
             <h3 class="text-lg font-semibold">{{ editingVariant.id ? 'Edit' : 'New' }} variant</h3>
             <UFormField label="SKU"><UInput v-model="editingVariant.sku" class="w-full" /></UFormField>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <UFormField label="Price (DZD)"><UInputNumber v-model="editingVariantPriceDzd" :min="0" class="w-full" /></UFormField>
               <UFormField label="Stock"><UInputNumber v-model="editingVariant.stockQuantity" class="w-full" /></UFormField>
             </div>

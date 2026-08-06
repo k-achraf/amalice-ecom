@@ -492,8 +492,8 @@ const showFieldModalBool = computed({
                 <UButton icon="i-lucide-chevron-up" size="xs" variant="ghost" color="neutral" :disabled="idx === 0" @click="moveField(idx, 'up')" />
                 <UButton icon="i-lucide-chevron-down" size="xs" variant="ghost" color="neutral" :disabled="idx === leadFormFields.length - 1" @click="moveField(idx, 'down')" />
               </div>
-              <div class="flex-1">
-                <div class="flex items-center gap-2">
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2">
                   <span class="font-medium text-highlighted">{{ field.label }}</span>
                   <UBadge size="sm" color="neutral" variant="subtle">{{ field.type }}</UBadge>
                   <UBadge v-if="field.required" size="sm" color="warning" variant="subtle">Required</UBadge>

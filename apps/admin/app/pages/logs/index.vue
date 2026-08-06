@@ -133,7 +133,7 @@ function toggleExpanded(id: string) {
                     <UBadge :color="entry.level === 'Error' ? 'error' : 'warning'" variant="subtle">{{ entry.level }}</UBadge>
                   </td>
                   <td class="px-4 py-3 text-highlighted">{{ entry.context ?? '—' }}</td>
-                  <td class="px-4 py-3 text-muted">
+                  <td class="max-w-md whitespace-normal px-4 py-3 text-muted">
                     <div class="flex items-start gap-1.5">
                       <UIcon v-if="entry.trace" :name="expandedId === entry.id ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'" class="mt-0.5 size-3.5 shrink-0" />
                       <span>{{ entry.message }}</span>
