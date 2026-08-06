@@ -125,6 +125,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
                 </div>
                 <p class="mt-1 text-sm text-muted">{{ addressLine(o) }}</p>
                 <p class="mt-1 text-sm text-muted">{{ o.items.length }} item{{ o.items.length === 1 ? '' : 's' }} · <PriceDisplay :amount-cents="o.totalCents" class="tabular font-medium text-highlighted" /> COD</p>
+                <OrderLineItemsInline :items="o.items" class="mt-2" />
                 <p v-if="o.notes" class="mt-1 flex items-start gap-1 text-sm text-muted"><UIcon name="i-lucide-sticky-note" class="mt-0.5 size-3.5 shrink-0" />{{ o.notes }}</p>
               </div>
               <div class="flex shrink-0 flex-wrap gap-2">
@@ -157,6 +158,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
                   </a>
                 </div>
                 <p class="mt-1 text-sm text-muted">{{ addressLine(o) }}</p>
+                <OrderLineItemsInline :items="o.items" class="mt-2" />
                 <p v-if="o.notes" class="mt-1 flex items-start gap-1 text-sm text-muted"><UIcon name="i-lucide-sticky-note" class="mt-0.5 size-3.5 shrink-0" />{{ o.notes }}</p>
               </div>
               <div class="flex shrink-0 flex-wrap gap-2">
@@ -186,6 +188,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
                   </a>
                 </div>
                 <p class="mt-1 text-sm text-muted">{{ addressLine(o) }}</p>
+                <OrderLineItemsInline :items="o.items" class="mt-2" />
                 <p v-if="o.notes" class="mt-1 flex items-start gap-1 text-sm text-muted"><UIcon name="i-lucide-sticky-note" class="mt-0.5 size-3.5 shrink-0" />{{ o.notes }}</p>
               </div>
               <div class="flex shrink-0 flex-wrap gap-2">
@@ -215,6 +218,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
                   </a>
                 </div>
                 <p class="mt-1 text-sm text-muted">{{ addressLine(o) }}</p>
+                <OrderLineItemsInline :items="o.items" class="mt-2" />
                 <p v-if="o.notes" class="mt-1 flex items-start gap-1 text-sm text-muted"><UIcon name="i-lucide-sticky-note" class="mt-0.5 size-3.5 shrink-0" />{{ o.notes }}</p>
               </div>
               <div class="flex shrink-0 flex-wrap gap-2">

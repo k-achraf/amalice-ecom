@@ -80,12 +80,13 @@ async function sendMockStatus() {
           <div class="admin-table-wrap">
             <table class="admin-table w-full text-sm">
               <thead>
-                <tr><th class="px-4 py-2.5 text-left">Order</th><th class="px-4 py-2.5 text-left">Customer</th><th class="px-4 py-2.5 text-left">Status</th><th class="px-4 py-2.5 text-right">Advance</th></tr>
+                <tr><th class="px-4 py-2.5 text-left">Order</th><th class="px-4 py-2.5 text-left">Products</th><th class="px-4 py-2.5 text-left">Customer</th><th class="px-4 py-2.5 text-left">Status</th><th class="px-4 py-2.5 text-right">Advance</th></tr>
               </thead>
               <tbody>
-                <tr v-if="!withCourier?.items.length"><td colspan="4" class="px-4 py-12 text-center text-muted">Nothing with a courier yet.</td></tr>
+                <tr v-if="!withCourier?.items.length"><td colspan="5" class="px-4 py-12 text-center text-muted">Nothing with a courier yet.</td></tr>
                 <tr v-for="o in withCourier?.items" :key="o.id">
                   <td class="px-4 py-3"><NuxtLink :to="`/orders/${o.id}`" class="tabular text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink></td>
+                  <td class="px-4 py-3"><OrderLineItemsInline :items="o.items" compact class="max-w-64" /></td>
                   <td class="px-4 py-3">{{ o.customer.name ?? '—' }}</td>
                   <td class="px-4 py-3"><StatusBadge :state="o.state" /></td>
                   <td class="px-4 py-3 text-right">
@@ -102,12 +103,13 @@ async function sendMockStatus() {
           <div class="admin-table-wrap">
             <table class="admin-table w-full text-sm">
               <thead>
-                <tr><th class="px-4 py-2.5 text-left">Order</th><th class="px-4 py-2.5 text-left">Customer</th><th class="px-4 py-2.5 text-left">Status</th><th class="px-4 py-2.5 text-right">Advance</th></tr>
+                <tr><th class="px-4 py-2.5 text-left">Order</th><th class="px-4 py-2.5 text-left">Products</th><th class="px-4 py-2.5 text-left">Customer</th><th class="px-4 py-2.5 text-left">Status</th><th class="px-4 py-2.5 text-right">Advance</th></tr>
               </thead>
               <tbody>
-                <tr v-if="!outForDelivery?.items.length"><td colspan="4" class="px-4 py-12 text-center text-muted">Nothing out for delivery.</td></tr>
+                <tr v-if="!outForDelivery?.items.length"><td colspan="5" class="px-4 py-12 text-center text-muted">Nothing out for delivery.</td></tr>
                 <tr v-for="o in outForDelivery?.items" :key="o.id">
                   <td class="px-4 py-3"><NuxtLink :to="`/orders/${o.id}`" class="tabular text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink></td>
+                  <td class="px-4 py-3"><OrderLineItemsInline :items="o.items" compact class="max-w-64" /></td>
                   <td class="px-4 py-3">{{ o.customer.name ?? '—' }}</td>
                   <td class="px-4 py-3"><StatusBadge :state="o.state" /></td>
                   <td class="px-4 py-3 text-right">
@@ -134,11 +136,12 @@ async function sendMockStatus() {
           <div class="admin-table-wrap">
             <table class="admin-table w-full text-sm">
               <thead>
-                <tr><th class="px-4 py-2.5 text-left">Order</th><th class="px-4 py-2.5 text-left">Customer</th><th class="px-4 py-2.5 text-left">Status</th><th class="px-4 py-2.5 text-right">Advance</th></tr>
+                <tr><th class="px-4 py-2.5 text-left">Order</th><th class="px-4 py-2.5 text-left">Products</th><th class="px-4 py-2.5 text-left">Customer</th><th class="px-4 py-2.5 text-left">Status</th><th class="px-4 py-2.5 text-right">Advance</th></tr>
               </thead>
               <tbody>
                 <tr v-for="o in [...(failed?.items ?? []), ...(returned?.items ?? [])]" :key="o.id">
                   <td class="px-4 py-3"><NuxtLink :to="`/orders/${o.id}`" class="tabular text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink></td>
+                  <td class="px-4 py-3"><OrderLineItemsInline :items="o.items" compact class="max-w-64" /></td>
                   <td class="px-4 py-3">{{ o.customer.name ?? '—' }}</td>
                   <td class="px-4 py-3"><StatusBadge :state="o.state" /></td>
                   <td class="px-4 py-3 text-right">

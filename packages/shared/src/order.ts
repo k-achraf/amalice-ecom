@@ -348,7 +348,12 @@ export interface AdminOrderLineItem {
   lineTotalCents: number
   offerId: string | null
   isUpsell: boolean
-  product: { name: string; slug: string; imageUrl?: string | null }
+  // `images` is the product's full gallery (ProductImage rows, sortOrder
+  // ascending) — used by the Call Center/Orders/Shipping admin queues to
+  // show every shot of the product inline, not just the denormalized hero
+  // (`imageUrl`). Empty array, never undefined, so callers don't need an
+  // extra null-check on top of the emptiness check.
+  product: { name: string; slug: string; imageUrl?: string | null; images: string[] }
   // Null when no variant was selected (or the ordered variant was since
   // deleted) — variantLabel is the human-readable "Red / Large" built
   // server-side from the variant's options, so no client has to reconstruct

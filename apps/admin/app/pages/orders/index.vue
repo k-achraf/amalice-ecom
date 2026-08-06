@@ -115,6 +115,7 @@ function fmtDate(iso: string) {
             <thead>
               <tr>
                 <th class="px-4 py-2.5 text-left">Order</th>
+                <th class="px-4 py-2.5 text-left">Products</th>
                 <th class="px-4 py-2.5 text-left">Customer</th>
                 <th class="px-4 py-2.5 text-left">Wilaya</th>
                 <th class="px-4 py-2.5 text-left">Status</th>
@@ -125,10 +126,10 @@ function fmtDate(iso: string) {
             </thead>
             <tbody>
               <tr v-if="pending">
-                <td colspan="7" class="px-4 py-12 text-center text-muted">Loading…</td>
+                <td colspan="8" class="px-4 py-12 text-center text-muted">Loading…</td>
               </tr>
               <tr v-else-if="!data?.items.length">
-                <td colspan="7" class="px-4 py-12 text-center text-muted">No orders match these filters.</td>
+                <td colspan="8" class="px-4 py-12 text-center text-muted">No orders match these filters.</td>
               </tr>
               <template v-else>
                 <tr v-for="order in data.items" :key="order.id" class="cursor-pointer" @click="navigateTo(`/orders/${order.id}`)">
@@ -136,6 +137,9 @@ function fmtDate(iso: string) {
                     <NuxtLink :to="`/orders/${order.id}`" class="tabular font-medium text-primary hover:underline" @click.stop>
                       {{ order.id.slice(0, 8) }}
                     </NuxtLink>
+                  </td>
+                  <td class="px-4 py-3" @click.stop>
+                    <OrderLineItemsInline :items="order.items" compact class="max-w-64" />
                   </td>
                   <td class="px-4 py-3">
                     <div class="text-highlighted">{{ order.customer.name ?? '—' }}</div>

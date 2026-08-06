@@ -11,7 +11,18 @@ import { GoogleSheetsService } from '../apps/google-sheets.service'
 // view can show what was actually bought (variant/offer/upsell provenance),
 // not just the base product.
 const itemInclude = {
-  product: { select: { id: true, name: true, slug: true, imageUrl: true } },
+  product: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      imageUrl: true,
+      // Full gallery, not just the denormalized hero — Call Center/Orders/
+      // Shipping queues show every shot of the product inline (see
+      // AdminOrderLineItem.product's comment in packages/shared).
+      images: { orderBy: { sortOrder: 'asc' }, select: { url: true } }
+    }
+  },
   variant: { include: { options: { include: { option: true } } } },
   offer: true
 } satisfies Prisma.OrderItemInclude
@@ -39,7 +50,7 @@ function toLineItem(item: ItemWithRelations) {
     lineTotalCents: item.lineTotalCents,
     offerId: item.offerId,
     isUpsell: item.isUpsell,
-    product: item.product,
+    product: { ...item.product, images: item.product.images.map((img) => img.url) },
     variantId: item.variantId,
     variantLabel: variantLabel(item)
   }
