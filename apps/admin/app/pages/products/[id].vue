@@ -57,8 +57,7 @@ async function saveDetails() {
         priceCents: product.value.priceCents,
         lowStockThreshold: product.value.lowStockThreshold,
         featured: product.value.featured,
-        bestSeller: product.value.bestSeller,
-        visible: product.value.visible
+        bestSeller: product.value.bestSeller
       }
     })
     toast.add({ title: 'Product details saved', color: 'success' })
@@ -67,6 +66,28 @@ async function saveDetails() {
     toast.add({ title: 'Failed to save', color: 'error' })
   } finally {
     savingDetails.value = false
+  }
+}
+
+// The "Visible on storefront" switch saves itself immediately on toggle
+// (like the landing pages tab's "Live" switch) instead of silently sitting
+// there until someone remembers to hit the separate "Save details" button
+// below — a hide/unhide decision needs to take effect right away, not
+// after an unrelated click.
+const savingVisible = ref(false)
+async function toggleVisible(value: boolean) {
+  if (!product.value) return
+  const previous = product.value.visible
+  product.value.visible = value
+  savingVisible.value = true
+  try {
+    await api(`/admin/products/${id}`, { method: 'PATCH', body: { visible: value } })
+    toast.add({ title: value ? 'Now visible on storefront' : 'Hidden from storefront', color: 'success' })
+  } catch {
+    product.value.visible = previous
+    toast.add({ title: 'Failed to update visibility', color: 'error' })
+  } finally {
+    savingVisible.value = false
   }
 }
 
@@ -677,7 +698,7 @@ async function loadUpsellsTab() {
   upsellsLoaded.value = true
   const [upsellRes, productsRes] = await Promise.all([
     api<ProductUpsellRow[]>(`/admin/products/${id}/upsells`),
-    api<{ items: { id: string; name: string; priceCents: number }[] }>('/products?pageSize=100')
+    api<{ items: { id: string; name: string; priceCents: number }[] }>('/admin/products?pageSize=100')
   ])
   upsells.value = upsellRes
   otherProducts.value = productsRes.items.filter((p) => p.id !== id)
@@ -807,7 +828,7 @@ async function deleteUpsell(upsellId: string) {
                 and any AI landing pages keep working for anyone with the direct link. Use this for ad-only funnel products.
               </p>
             </div>
-            <USwitch v-model="product.visible" />
+            <USwitch :model-value="product.visible" :loading="savingVisible" @update:model-value="toggleVisible($event as boolean)" />
           </div>
           <div class="flex justify-end">
             <UButton :loading="savingDetails" icon="i-lucide-save" color="primary" @click="saveDetails">Save details</UButton>

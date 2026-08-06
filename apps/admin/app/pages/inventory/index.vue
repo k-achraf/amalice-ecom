@@ -10,7 +10,7 @@ const router = useRouter()
 const currentPage = computed(() => Number(route.query.page ?? 1))
 const currentPageSize = computed(() => Number(route.query.pageSize ?? 50))
 
-const { data: products, pending } = await useAdminFetch<ProductListResponse>('/products', {
+const { data: products, pending } = await useAdminFetch<ProductListResponse>('/admin/products', {
   key: 'admin-inventory',
   query: { page: route.query.page ?? '1', pageSize: route.query.pageSize ?? '50' }
 })
@@ -20,7 +20,7 @@ const api = useAdminApi()
 const toast = useToast()
 
 async function loadProducts() {
-  products.value = await api<ProductListResponse>('/products', {
+  products.value = await api<ProductListResponse>('/admin/products', {
     query: { page: String(currentPage.value), pageSize: String(currentPageSize.value) }
   })
 }

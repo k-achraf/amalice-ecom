@@ -175,7 +175,7 @@ async function openAddItem() {
   addAsUpsell.value = false
   if (productOptionsLoaded.value) return
   productOptionsLoaded.value = true
-  const res = await api<{ items: ProductOption[] }>('/products?pageSize=100')
+  const res = await api<{ items: ProductOption[] }>('/admin/products?pageSize=100')
   productOptions.value = res.items
 }
 

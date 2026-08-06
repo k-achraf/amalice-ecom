@@ -24,6 +24,7 @@ import {
   UpdateProductUpsellSchema,
   UpdateOrderNotesSchema,
   OrderState,
+  ProductListQuerySchema,
   type AdjustStock,
   type CreateProduct
 } from '@amalice/shared'
@@ -56,6 +57,7 @@ class AddOrderItemDto extends createZodDto(AddOrderItemSchema) {}
 class CreateProductUpsellDto extends createZodDto(CreateProductUpsellSchema) {}
 class UpdateProductUpsellDto extends createZodDto(UpdateProductUpsellSchema) {}
 class UpdateOrderNotesDto extends createZodDto(UpdateOrderNotesSchema) {}
+class ProductListQueryDto extends createZodDto(ProductListQuerySchema) {}
 
 interface AuthedRequest extends Request {
   user: AdminJwtPayload
@@ -158,6 +160,16 @@ export class AdminController {
   }
 
   // ---- ADM-07 catalog -----------------------------------------------------
+  // Admin's own product listing — sees every product regardless of
+  // Product.visible (unlike the storefront's public GET /products, which
+  // filters hidden ones out). The inventory table must always show hidden
+  // products, just badged, so they stay fully manageable.
+  @Get('products')
+  @Roles('SuperAdmin', 'OpsManager', 'Warehouse')
+  listProducts(@Query() query: ProductListQueryDto) {
+    return this.catalog.listProducts(query)
+  }
+
   @Get('products/low-stock')
   @Roles('SuperAdmin', 'OpsManager', 'Warehouse')
   productsLowStock() {

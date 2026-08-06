@@ -17,7 +17,7 @@ interface ProductOption { id: string; name: string }
 // larger value 400s the request, and useAdminFetch swallows that silently
 // (data stays null, no toast), which is exactly what made this select look
 // like it always had "No data" instead of surfacing an error.
-const { data: productsRes } = await useAdminFetch<{ items: ProductOption[] }>('/products?pageSize=100', { key: 'admin-products-for-sheets' })
+const { data: productsRes } = await useAdminFetch<{ items: ProductOption[] }>('/admin/products?pageSize=100', { key: 'admin-products-for-sheets' })
 const productOptions = computed(() => productsRes.value?.items ?? [])
 
 // ---- Master on/off toggle — same generic AppInstallation switch every

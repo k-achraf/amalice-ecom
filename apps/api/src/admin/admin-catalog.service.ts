@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
-import type { AdjustStock, CreateProduct } from '@amalice/shared'
+import type { AdjustStock, CreateProduct, ProductListQuery, ProductListResponse } from '@amalice/shared'
 import { Prisma } from '../generated/prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
@@ -14,6 +14,43 @@ export class AdminCatalogService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService
   ) {}
+
+  // Admin's own product listing — deliberately separate from
+  // ProductsController's public GET /products (catalog.service used to be
+  // shared between the two, which meant filtering /products to
+  // visible:true for the storefront also silently hid unlisted products
+  // from the admin inventory table, exactly the opposite of what a hidden
+  // product's "still fully manageable in admin" guarantee requires). Admin
+  // always sees every product, hidden or not.
+  async listProducts(query: ProductListQuery): Promise<ProductListResponse> {
+    const where: Prisma.ProductWhereInput = {
+      ...(query.category && { OR: [{ category: query.category }, { categoryRef: { slug: query.category } }] }),
+      ...((query.minPriceCents !== undefined || query.maxPriceCents !== undefined) && {
+        priceCents: {
+          ...(query.minPriceCents !== undefined && { gte: query.minPriceCents }),
+          ...(query.maxPriceCents !== undefined && { lte: query.maxPriceCents })
+        }
+      }),
+      ...(query.q && {
+        OR: [
+          { name: { contains: query.q, mode: 'insensitive' } },
+          { description: { contains: query.q, mode: 'insensitive' } }
+        ]
+      })
+    }
+
+    const [items, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        skip: (query.page - 1) * query.pageSize,
+        take: query.pageSize,
+        orderBy: { createdAt: 'desc' }
+      }),
+      this.prisma.product.count({ where })
+    ])
+
+    return { items, total, page: query.page, pageSize: query.pageSize }
+  }
 
   async createProduct(input: CreateProduct, actor: AuditActor) {
     const product = await this.prisma.product.create({ data: input })
