@@ -116,6 +116,15 @@ model Product {
   // separate marketing table.
   featured          Boolean              @default(false)
   bestSeller        Boolean              @default(false) @map("best_seller")
+  // Unlisted-product toggle — false hides the product from every discovery
+  // surface (catalog, collections, search, home featured/best-seller
+  // sections, related products) but does NOT block direct access: the
+  // product page (/products/:slug) and any AI landing pages
+  // (/lp/:productSlug/:number) still work when linked to directly. Built for
+  // ad-only funnel products that should never be publicly browsable. Not the
+  // same as stockQuantity=0 ("archived"/out-of-stock, still listed) — this
+  // is purely a discoverability switch, independent of stock.
+  visible           Boolean              @default(true)
   priceCents        Int                  @map("price_cents")
   stockQuantity     Int                  @default(0) @map("stock_quantity")
   lowStockThreshold Int                  @default(5) @map("low_stock_threshold")

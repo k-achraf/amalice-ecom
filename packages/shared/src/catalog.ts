@@ -199,6 +199,7 @@ export interface AdminProductDetail {
   imageUrl: string | null
   featured: boolean
   bestSeller: boolean
+  visible: boolean
   priceCents: number
   stockQuantity: number
   lowStockThreshold: number

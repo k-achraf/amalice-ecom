@@ -48,6 +48,7 @@ export type ProductMinAggregateOutputType = {
   imageUrl: string | null
   featured: boolean | null
   bestSeller: boolean | null
+  visible: boolean | null
   priceCents: number | null
   stockQuantity: number | null
   lowStockThreshold: number | null
@@ -65,6 +66,7 @@ export type ProductMaxAggregateOutputType = {
   imageUrl: string | null
   featured: boolean | null
   bestSeller: boolean | null
+  visible: boolean | null
   priceCents: number | null
   stockQuantity: number | null
   lowStockThreshold: number | null
@@ -82,6 +84,7 @@ export type ProductCountAggregateOutputType = {
   imageUrl: number
   featured: number
   bestSeller: number
+  visible: number
   priceCents: number
   stockQuantity: number
   lowStockThreshold: number
@@ -113,6 +116,7 @@ export type ProductMinAggregateInputType = {
   imageUrl?: true
   featured?: true
   bestSeller?: true
+  visible?: true
   priceCents?: true
   stockQuantity?: true
   lowStockThreshold?: true
@@ -130,6 +134,7 @@ export type ProductMaxAggregateInputType = {
   imageUrl?: true
   featured?: true
   bestSeller?: true
+  visible?: true
   priceCents?: true
   stockQuantity?: true
   lowStockThreshold?: true
@@ -147,6 +152,7 @@ export type ProductCountAggregateInputType = {
   imageUrl?: true
   featured?: true
   bestSeller?: true
+  visible?: true
   priceCents?: true
   stockQuantity?: true
   lowStockThreshold?: true
@@ -251,6 +257,7 @@ export type ProductGroupByOutputType = {
   imageUrl: string | null
   featured: boolean
   bestSeller: boolean
+  visible: boolean
   priceCents: number
   stockQuantity: number
   lowStockThreshold: number
@@ -291,6 +298,7 @@ export type ProductWhereInput = {
   imageUrl?: Prisma.StringNullableFilter<"Product"> | string | null
   featured?: Prisma.BoolFilter<"Product"> | boolean
   bestSeller?: Prisma.BoolFilter<"Product"> | boolean
+  visible?: Prisma.BoolFilter<"Product"> | boolean
   priceCents?: Prisma.IntFilter<"Product"> | number
   stockQuantity?: Prisma.IntFilter<"Product"> | number
   lowStockThreshold?: Prisma.IntFilter<"Product"> | number
@@ -321,6 +329,7 @@ export type ProductOrderByWithRelationInput = {
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   featured?: Prisma.SortOrder
   bestSeller?: Prisma.SortOrder
+  visible?: Prisma.SortOrder
   priceCents?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   lowStockThreshold?: Prisma.SortOrder
@@ -354,6 +363,7 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   imageUrl?: Prisma.StringNullableFilter<"Product"> | string | null
   featured?: Prisma.BoolFilter<"Product"> | boolean
   bestSeller?: Prisma.BoolFilter<"Product"> | boolean
+  visible?: Prisma.BoolFilter<"Product"> | boolean
   priceCents?: Prisma.IntFilter<"Product"> | number
   stockQuantity?: Prisma.IntFilter<"Product"> | number
   lowStockThreshold?: Prisma.IntFilter<"Product"> | number
@@ -384,6 +394,7 @@ export type ProductOrderByWithAggregationInput = {
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   featured?: Prisma.SortOrder
   bestSeller?: Prisma.SortOrder
+  visible?: Prisma.SortOrder
   priceCents?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   lowStockThreshold?: Prisma.SortOrder
@@ -409,6 +420,7 @@ export type ProductScalarWhereWithAggregatesInput = {
   imageUrl?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   featured?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
   bestSeller?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
+  visible?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
   priceCents?: Prisma.IntWithAggregatesFilter<"Product"> | number
   stockQuantity?: Prisma.IntWithAggregatesFilter<"Product"> | number
   lowStockThreshold?: Prisma.IntWithAggregatesFilter<"Product"> | number
@@ -425,6 +437,7 @@ export type ProductCreateInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -455,6 +468,7 @@ export type ProductUncheckedCreateInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -483,6 +497,7 @@ export type ProductUpdateInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -513,6 +528,7 @@ export type ProductUncheckedUpdateInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -542,6 +558,7 @@ export type ProductCreateManyInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -558,6 +575,7 @@ export type ProductUpdateManyMutationInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -575,6 +593,7 @@ export type ProductUncheckedUpdateManyInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -602,6 +621,7 @@ export type ProductCountOrderByAggregateInput = {
   imageUrl?: Prisma.SortOrder
   featured?: Prisma.SortOrder
   bestSeller?: Prisma.SortOrder
+  visible?: Prisma.SortOrder
   priceCents?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   lowStockThreshold?: Prisma.SortOrder
@@ -625,6 +645,7 @@ export type ProductMaxOrderByAggregateInput = {
   imageUrl?: Prisma.SortOrder
   featured?: Prisma.SortOrder
   bestSeller?: Prisma.SortOrder
+  visible?: Prisma.SortOrder
   priceCents?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   lowStockThreshold?: Prisma.SortOrder
@@ -642,6 +663,7 @@ export type ProductMinOrderByAggregateInput = {
   imageUrl?: Prisma.SortOrder
   featured?: Prisma.SortOrder
   bestSeller?: Prisma.SortOrder
+  visible?: Prisma.SortOrder
   priceCents?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   lowStockThreshold?: Prisma.SortOrder
@@ -886,6 +908,7 @@ export type ProductCreateWithoutCategoryRefInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -914,6 +937,7 @@ export type ProductUncheckedCreateWithoutCategoryRefInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -972,6 +996,7 @@ export type ProductScalarWhereInput = {
   imageUrl?: Prisma.StringNullableFilter<"Product"> | string | null
   featured?: Prisma.BoolFilter<"Product"> | boolean
   bestSeller?: Prisma.BoolFilter<"Product"> | boolean
+  visible?: Prisma.BoolFilter<"Product"> | boolean
   priceCents?: Prisma.IntFilter<"Product"> | number
   stockQuantity?: Prisma.IntFilter<"Product"> | number
   lowStockThreshold?: Prisma.IntFilter<"Product"> | number
@@ -988,6 +1013,7 @@ export type ProductCreateWithoutLandingPagesInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -1017,6 +1043,7 @@ export type ProductUncheckedCreateWithoutLandingPagesInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -1060,6 +1087,7 @@ export type ProductUpdateWithoutLandingPagesInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1089,6 +1117,7 @@ export type ProductUncheckedUpdateWithoutLandingPagesInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1116,6 +1145,7 @@ export type ProductCreateWithoutImagesInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -1145,6 +1175,7 @@ export type ProductUncheckedCreateWithoutImagesInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -1188,6 +1219,7 @@ export type ProductUpdateWithoutImagesInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1217,6 +1249,7 @@ export type ProductUncheckedUpdateWithoutImagesInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1244,6 +1277,7 @@ export type ProductCreateWithoutVariantsInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -1273,6 +1307,7 @@ export type ProductUncheckedCreateWithoutVariantsInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -1316,6 +1351,7 @@ export type ProductUpdateWithoutVariantsInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1345,6 +1381,7 @@ export type ProductUncheckedUpdateWithoutVariantsInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1372,6 +1409,7 @@ export type ProductCreateWithoutStockAdjustmentsInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -1401,6 +1439,7 @@ export type ProductUncheckedCreateWithoutStockAdjustmentsInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -1444,6 +1483,7 @@ export type ProductUpdateWithoutStockAdjustmentsInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1473,6 +1513,7 @@ export type ProductUncheckedUpdateWithoutStockAdjustmentsInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1500,6 +1541,7 @@ export type ProductCreateWithoutProductAttributesInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -1529,6 +1571,7 @@ export type ProductUncheckedCreateWithoutProductAttributesInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -1572,6 +1615,7 @@ export type ProductUpdateWithoutProductAttributesInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1601,6 +1645,7 @@ export type ProductUncheckedUpdateWithoutProductAttributesInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1628,6 +1673,7 @@ export type ProductCreateWithoutReviewsInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -1657,6 +1703,7 @@ export type ProductUncheckedCreateWithoutReviewsInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -1700,6 +1747,7 @@ export type ProductUpdateWithoutReviewsInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1729,6 +1777,7 @@ export type ProductUncheckedUpdateWithoutReviewsInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1756,6 +1805,7 @@ export type ProductCreateWithoutOrderItemsInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -1785,6 +1835,7 @@ export type ProductUncheckedCreateWithoutOrderItemsInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -1828,6 +1879,7 @@ export type ProductUpdateWithoutOrderItemsInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1857,6 +1909,7 @@ export type ProductUncheckedUpdateWithoutOrderItemsInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1884,6 +1937,7 @@ export type ProductCreateWithoutOffersInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -1913,6 +1967,7 @@ export type ProductUncheckedCreateWithoutOffersInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -1956,6 +2011,7 @@ export type ProductUpdateWithoutOffersInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1985,6 +2041,7 @@ export type ProductUncheckedUpdateWithoutOffersInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2012,6 +2069,7 @@ export type ProductCreateWithoutUpsellsOfferedInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -2041,6 +2099,7 @@ export type ProductUncheckedCreateWithoutUpsellsOfferedInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -2073,6 +2132,7 @@ export type ProductCreateWithoutUpsellsAsTargetInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -2102,6 +2162,7 @@ export type ProductUncheckedCreateWithoutUpsellsAsTargetInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -2145,6 +2206,7 @@ export type ProductUpdateWithoutUpsellsOfferedInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2174,6 +2236,7 @@ export type ProductUncheckedUpdateWithoutUpsellsOfferedInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2212,6 +2275,7 @@ export type ProductUpdateWithoutUpsellsAsTargetInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2241,6 +2305,7 @@ export type ProductUncheckedUpdateWithoutUpsellsAsTargetInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2268,6 +2333,7 @@ export type ProductCreateWithoutGoogleSheetsInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -2297,6 +2363,7 @@ export type ProductUncheckedCreateWithoutGoogleSheetsInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -2340,6 +2407,7 @@ export type ProductUpdateWithoutGoogleSheetsInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2369,6 +2437,7 @@ export type ProductUncheckedUpdateWithoutGoogleSheetsInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2396,6 +2465,7 @@ export type ProductCreateWithoutSourcedFromInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -2425,6 +2495,7 @@ export type ProductUncheckedCreateWithoutSourcedFromInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -2468,6 +2539,7 @@ export type ProductUpdateWithoutSourcedFromInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2497,6 +2569,7 @@ export type ProductUncheckedUpdateWithoutSourcedFromInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2524,6 +2597,7 @@ export type ProductCreateManyCategoryRefInput = {
   imageUrl?: string | null
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
@@ -2540,6 +2614,7 @@ export type ProductUpdateWithoutCategoryRefInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2568,6 +2643,7 @@ export type ProductUncheckedUpdateWithoutCategoryRefInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2596,6 +2672,7 @@ export type ProductUncheckedUpdateManyWithoutCategoryRefInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bestSeller?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2734,6 +2811,7 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   imageUrl?: boolean
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents?: boolean
   stockQuantity?: boolean
   lowStockThreshold?: boolean
@@ -2765,6 +2843,7 @@ export type ProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   imageUrl?: boolean
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents?: boolean
   stockQuantity?: boolean
   lowStockThreshold?: boolean
@@ -2783,6 +2862,7 @@ export type ProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   imageUrl?: boolean
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents?: boolean
   stockQuantity?: boolean
   lowStockThreshold?: boolean
@@ -2801,6 +2881,7 @@ export type ProductSelectScalar = {
   imageUrl?: boolean
   featured?: boolean
   bestSeller?: boolean
+  visible?: boolean
   priceCents?: boolean
   stockQuantity?: boolean
   lowStockThreshold?: boolean
@@ -2808,7 +2889,7 @@ export type ProductSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "category" | "categoryId" | "imageUrl" | "featured" | "bestSeller" | "priceCents" | "stockQuantity" | "lowStockThreshold" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
+export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "category" | "categoryId" | "imageUrl" | "featured" | "bestSeller" | "visible" | "priceCents" | "stockQuantity" | "lowStockThreshold" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
 export type ProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   categoryRef?: boolean | Prisma.Product$categoryRefArgs<ExtArgs>
   images?: boolean | Prisma.Product$imagesArgs<ExtArgs>
@@ -2859,6 +2940,7 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     imageUrl: string | null
     featured: boolean
     bestSeller: boolean
+    visible: boolean
     priceCents: number
     stockQuantity: number
     lowStockThreshold: number
@@ -3309,6 +3391,7 @@ export interface ProductFieldRefs {
   readonly imageUrl: Prisma.FieldRef<"Product", 'String'>
   readonly featured: Prisma.FieldRef<"Product", 'Boolean'>
   readonly bestSeller: Prisma.FieldRef<"Product", 'Boolean'>
+  readonly visible: Prisma.FieldRef<"Product", 'Boolean'>
   readonly priceCents: Prisma.FieldRef<"Product", 'Int'>
   readonly stockQuantity: Prisma.FieldRef<"Product", 'Int'>
   readonly lowStockThreshold: Prisma.FieldRef<"Product", 'Int'>

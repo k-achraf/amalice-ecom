@@ -24,6 +24,11 @@ export const CreateProductSchema = z.object({
   // SF-18 — curated marketing-home placement flags, not a separate table.
   featured: z.boolean().default(false),
   bestSeller: z.boolean().default(false),
+  // Unlisted-product toggle — false hides it from every discovery surface
+  // (catalog, collections, search, home sections, related products) but
+  // never blocks direct access via its own product-page or landing-page
+  // URL. See Product's Prisma model comment.
+  visible: z.boolean().default(true),
   priceCents: z.number().int().nonnegative(),
   stockQuantity: z.number().int().nonnegative(),
   lowStockThreshold: z.number().int().nonnegative().default(5)

@@ -66,6 +66,7 @@ export class AdminProductManagementService {
       imageUrl: product.imageUrl,
       featured: product.featured,
       bestSeller: product.bestSeller,
+      visible: product.visible,
       priceCents: product.priceCents,
       stockQuantity: product.stockQuantity,
       lowStockThreshold: product.lowStockThreshold,

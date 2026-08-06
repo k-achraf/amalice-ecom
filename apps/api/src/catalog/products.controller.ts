@@ -21,6 +21,13 @@ export class ProductsController {
     const searchFilter = await this.search.buildSearchFilter(query.q)
 
     const where: Prisma.ProductWhereInput = {
+      // Unlisted products (Product.visible=false) never appear in catalog
+      // browsing/search/home sections — this endpoint backs all of them
+      // (the storefront home page just calls this with pageSize=4). Direct
+      // access still works: GET /products/:slug below deliberately does NOT
+      // filter by visible, since a hidden product must still be reachable
+      // via its own product-page or landing-page URL.
+      visible: true,
       ...(query.category && {
         // Match either the flat `category` tag (back-compat) or the
         // normalized Category.slug via the relation. The `?category=bags`
@@ -94,9 +101,12 @@ export class ProductsController {
 
     // Related: same category (tag or FK), excluding self, capped at 4. Falls
     // back to "nothing" cleanly if the product is the only one in its category.
+    // Unlisted products (visible=false) never show up as someone else's
+    // "related" suggestion either — it's a discovery surface, same rule as
+    // catalog/search/home above.
     const related = await this.prisma.product.findMany({
       where: {
-        AND: [{ id: { not: product.id } }, { OR: [{ category: product.category }, ...(product.categoryId ? [{ categoryId: product.categoryId }] : [])] }]
+        AND: [{ id: { not: product.id } }, { visible: true }, { OR: [{ category: product.category }, ...(product.categoryId ? [{ categoryId: product.categoryId }] : [])] }]
       },
       take: 4,
       orderBy: { createdAt: 'desc' }

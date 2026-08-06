@@ -57,7 +57,8 @@ async function saveDetails() {
         priceCents: product.value.priceCents,
         lowStockThreshold: product.value.lowStockThreshold,
         featured: product.value.featured,
-        bestSeller: product.value.bestSeller
+        bestSeller: product.value.bestSeller,
+        visible: product.value.visible
       }
     })
     toast.add({ title: 'Product details saved', color: 'success' })
@@ -797,6 +798,16 @@ async function deleteUpsell(upsellId: string) {
               <UCheckbox v-model="product.featured" label="Featured" />
               <UCheckbox v-model="product.bestSeller" label="Best seller" />
             </div>
+          </div>
+          <div class="admin-kpi-card flex items-center justify-between gap-3 p-4">
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-highlighted">Visible on storefront</p>
+              <p class="text-xs text-muted">
+                Off hides this product from catalog, search, home sections, and other products' "related" — but its own product page
+                and any AI landing pages keep working for anyone with the direct link. Use this for ad-only funnel products.
+              </p>
+            </div>
+            <USwitch v-model="product.visible" />
           </div>
           <div class="flex justify-end">
             <UButton :loading="savingDetails" icon="i-lucide-save" color="primary" @click="saveDetails">Save details</UButton>

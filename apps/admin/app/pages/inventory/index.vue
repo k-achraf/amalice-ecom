@@ -167,7 +167,10 @@ async function onPreviewToggle(p: Product, open: boolean) {
             <template v-else>
               <tr v-for="p in rows" :key="p.id" class="cursor-pointer hover:bg-[var(--color-admin-row-hover)]" @click="router.push(`/products/${p.id}`)">
                 <td class="px-4 py-3 font-medium text-highlighted">
-                  <NuxtLink :to="`/products/${p.id}`" class="hover:underline" @click.stop>{{ p.name }}</NuxtLink>
+                  <div class="flex items-center gap-1.5">
+                    <NuxtLink :to="`/products/${p.id}`" class="hover:underline" @click.stop>{{ p.name }}</NuxtLink>
+                    <UBadge v-if="!p.visible" size="xs" color="neutral" variant="subtle" title="Hidden from catalog/search/home — still reachable via direct link">Hidden</UBadge>
+                  </div>
                 </td>
                 <td class="px-4 py-3 text-muted">{{ p.category ?? '—' }}</td>
                 <td class="tabular px-4 py-3 text-right"><PriceDisplay :amount-cents="p.priceCents" /></td>

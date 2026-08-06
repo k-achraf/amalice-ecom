@@ -3868,6 +3868,7 @@ export const ProductScalarFieldEnum = {
   imageUrl: 'imageUrl',
   featured: 'featured',
   bestSeller: 'bestSeller',
+  visible: 'visible',
   priceCents: 'priceCents',
   stockQuantity: 'stockQuantity',
   lowStockThreshold: 'lowStockThreshold',
