@@ -81,6 +81,40 @@ async function saveNotes() {
   }
 }
 
+// ---- Call-center price override (ADM-12) — shipping fee and/or total,
+// only legal while the order is still in one of these 4 pre-confirmation
+// queues; the button is safe to show unconditionally here since every order
+// on this page already qualifies. Server re-enforces regardless.
+const priceModalOpen = ref(false)
+const priceOrderId = ref<string | null>(null)
+const editShippingDzd = ref<number | null>(null)
+const editTotalDzd = ref<number | null>(null)
+const savingPrice = ref(false)
+
+function openPriceEditor(order: { id: string; shippingPriceCents: number; totalCents: number }) {
+  priceOrderId.value = order.id
+  editShippingDzd.value = order.shippingPriceCents / 100
+  editTotalDzd.value = order.totalCents / 100
+  priceModalOpen.value = true
+}
+
+async function savePrice() {
+  if (!priceOrderId.value || editShippingDzd.value == null || editTotalDzd.value == null) return
+  savingPrice.value = true
+  const result = await run(
+    () => api(`/admin/orders/${priceOrderId.value}/price`, {
+      method: 'PATCH',
+      body: { shippingPriceCents: Math.round(editShippingDzd.value! * 100), totalCents: Math.round(editTotalDzd.value! * 100) }
+    }),
+    { success: 'Price updated', errorFallback: 'Could not update the price' }
+  )
+  savingPrice.value = false
+  if (result !== undefined) {
+    priceModalOpen.value = false
+    await Promise.all([refreshPending(), refreshNoAnswer(), refreshWrongNumber(), refreshPostponed()])
+  }
+}
+
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleString()
 }
@@ -95,6 +129,9 @@ function addressLine(o: { address: { line1: string; city: string; region: string
     <template #header>
       <UDashboardNavbar title="Call Center">
         <template #leading><UDashboardSidebarCollapse /></template>
+        <template #right>
+          <UButton to="/call-center/drop" icon="i-lucide-zap" color="primary" label="Drop Queue" />
+        </template>
       </UDashboardNavbar>
     </template>
     <template #body>
@@ -135,6 +172,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
                 <UButton icon="i-lucide-calendar-clock" size="sm" color="warning" variant="outline" :loading="acting === `${o.id}:Postponed`" label="Postpone" @click="act(o.id, 'Postponed')" />
                 <UButton icon="i-lucide-x" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:Cancelled`" label="Cancel" @click="act(o.id, 'Cancelled')" />
                 <UButton icon="i-lucide-sticky-note" size="sm" color="neutral" variant="ghost" :label="o.notes ? 'Edit note' : 'Add note'" @click="openNotes(o)" />
+                <UButton icon="i-lucide-pencil" size="sm" color="neutral" variant="ghost" label="Edit price" @click="openPriceEditor(o)" />
               </div>
             </div>
           </div>
@@ -165,6 +203,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
                 <UButton icon="i-lucide-phone-call" size="sm" color="primary" variant="outline" :loading="acting === `${o.id}:PendingCallCenter`" label="Retry call" @click="act(o.id, 'PendingCallCenter')" />
                 <UButton icon="i-lucide-x" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:Cancelled`" label="Cancel" @click="act(o.id, 'Cancelled')" />
                 <UButton icon="i-lucide-sticky-note" size="sm" color="neutral" variant="ghost" :label="o.notes ? 'Edit note' : 'Add note'" @click="openNotes(o)" />
+                <UButton icon="i-lucide-pencil" size="sm" color="neutral" variant="ghost" label="Edit price" @click="openPriceEditor(o)" />
               </div>
             </div>
           </div>
@@ -195,6 +234,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
                 <UButton icon="i-lucide-phone-call" size="sm" color="primary" variant="outline" :loading="acting === `${o.id}:PendingCallCenter`" label="Retry call" @click="act(o.id, 'PendingCallCenter')" />
                 <UButton icon="i-lucide-x" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:Cancelled`" label="Cancel" @click="act(o.id, 'Cancelled')" />
                 <UButton icon="i-lucide-sticky-note" size="sm" color="neutral" variant="ghost" :label="o.notes ? 'Edit note' : 'Add note'" @click="openNotes(o)" />
+                <UButton icon="i-lucide-pencil" size="sm" color="neutral" variant="ghost" label="Edit price" @click="openPriceEditor(o)" />
               </div>
             </div>
           </div>
@@ -225,6 +265,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
                 <UButton icon="i-lucide-phone-call" size="sm" color="primary" variant="outline" :loading="acting === `${o.id}:PendingCallCenter`" label="Contact now" @click="act(o.id, 'PendingCallCenter')" />
                 <UButton icon="i-lucide-x" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:Cancelled`" label="Cancel" @click="act(o.id, 'Cancelled')" />
                 <UButton icon="i-lucide-sticky-note" size="sm" color="neutral" variant="ghost" :label="o.notes ? 'Edit note' : 'Add note'" @click="openNotes(o)" />
+                <UButton icon="i-lucide-pencil" size="sm" color="neutral" variant="ghost" label="Edit price" @click="openPriceEditor(o)" />
               </div>
             </div>
           </div>
@@ -241,6 +282,24 @@ function addressLine(o: { address: { line1: string; city: string; region: string
         <div class="flex justify-end gap-2">
           <UButton color="neutral" variant="ghost" @click="notesModalOpen = false">Cancel</UButton>
           <UButton :loading="savingNotes" color="primary" icon="i-lucide-check" @click="saveNotes">Save</UButton>
+        </div>
+      </div>
+    </template>
+  </UModal>
+
+  <UModal v-model:open="priceModalOpen">
+    <template #content>
+      <div class="space-y-4 p-6">
+        <h3 class="text-lg font-semibold">Edit price / shipping fee</h3>
+        <UFormField label="Shipping fee (DZD)">
+          <UInputNumber v-model="editShippingDzd" :min="0" class="w-full" />
+        </UFormField>
+        <UFormField label="Total due — COD (DZD)" help="Overrides the total directly; the items subtotal itself isn't editable here.">
+          <UInputNumber v-model="editTotalDzd" :min="0" class="w-full" />
+        </UFormField>
+        <div class="flex justify-end gap-2">
+          <UButton color="neutral" variant="ghost" @click="priceModalOpen = false">Cancel</UButton>
+          <UButton :loading="savingPrice" color="primary" icon="i-lucide-check" @click="savePrice">Save</UButton>
         </div>
       </div>
     </template>

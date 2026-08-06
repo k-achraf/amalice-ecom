@@ -439,6 +439,33 @@ export const UpdateOrderNotesSchema = z.object({
 })
 export type UpdateOrderNotes = z.infer<typeof UpdateOrderNotesSchema>
 
+// States in which an agent can still edit an order's price — the call-
+// center confirmation step, before Confirmed hands the order to fulfillment
+// (see the OrderState comment for why these 4 make up "call center"). Once
+// Confirmed, packing/shipping/reconciliation all key off totalCents as a
+// fixed number (courier COD amount, ledger reconciliation), so an edit past
+// this point would desync what's already been quoted/dispatched — consulted
+// by both AdminOrdersService.updatePrice (the real guard) and the admin UI
+// (so the edit control doesn't even render once it'd be rejected).
+export const PRICE_EDITABLE_STATES: readonly OrderState[] = ['PendingCallCenter', 'CallCenterNoAnswer', 'WrongNumber', 'Postponed']
+
+// Call-center price override — an agent negotiating on the confirmation
+// call needs to adjust either the shipping fee (e.g. a wilaya-rate
+// exception) or the overall total (e.g. a manual discount), independently.
+// totalCents, when provided, is an absolute override that wins regardless
+// of any shippingPriceCents change in the same request; when only
+// shippingPriceCents is provided, the server shifts totalCents by the same
+// delta so the items portion stays untouched (see AdminOrdersService.updatePrice).
+export const UpdateOrderPriceSchema = z
+  .object({
+    shippingPriceCents: z.number().int().nonnegative().optional(),
+    totalCents: z.number().int().nonnegative().optional()
+  })
+  .refine((v) => v.shippingPriceCents !== undefined || v.totalCents !== undefined, {
+    message: 'Provide shippingPriceCents and/or totalCents'
+  })
+export type UpdateOrderPrice = z.infer<typeof UpdateOrderPriceSchema>
+
 // Admin/call-center "add item to order" — covers the upsells system's
 // manual-add path (Task: upsells). variantId lets an agent pick a specific
 // variant, not just the base product. priceCentsOverride lets an agent

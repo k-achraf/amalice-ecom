@@ -23,6 +23,7 @@ import {
   CreateProductUpsellSchema,
   UpdateProductUpsellSchema,
   UpdateOrderNotesSchema,
+  UpdateOrderPriceSchema,
   OrderState,
   ProductListQuerySchema,
   type AdjustStock,
@@ -57,6 +58,7 @@ class AddOrderItemDto extends createZodDto(AddOrderItemSchema) {}
 class CreateProductUpsellDto extends createZodDto(CreateProductUpsellSchema) {}
 class UpdateProductUpsellDto extends createZodDto(UpdateProductUpsellSchema) {}
 class UpdateOrderNotesDto extends createZodDto(UpdateOrderNotesSchema) {}
+class UpdateOrderPriceDto extends createZodDto(UpdateOrderPriceSchema) {}
 class ProductListQueryDto extends createZodDto(ProductListQuerySchema) {}
 
 interface AuthedRequest extends Request {
@@ -121,6 +123,14 @@ export class AdminController {
     })
   }
 
+  // Call Center's Drop Queue (ADM-11) — registered before orders/:id so
+  // "drop-queue" isn't swallowed as an :id param.
+  @Get('orders/drop-queue')
+  @Roles('SuperAdmin', 'OpsManager', 'Support')
+  dropQueue(@Query('pageSize') pageSize: string = '100') {
+    return this.orders.dropQueue(Number(pageSize))
+  }
+
   @Get('orders/:id')
   @Roles('SuperAdmin', 'OpsManager', 'Finance', 'Support')
   orderDetail(@Param('id') id: string) {
@@ -143,6 +153,16 @@ export class AdminController {
   @Roles('SuperAdmin', 'OpsManager', 'Support')
   updateNotes(@Param('id') id: string, @Body() body: UpdateOrderNotesDto, @Req() req: AuthedRequest) {
     return this.orders.updateNotes(id, body.notes, actorFrom(req))
+  }
+
+  // Call-center price override (ADM-12) — same role set as transition()/
+  // updateNotes() since it's the same call-center queue action; the actual
+  // "only before Confirmed" enforcement lives server-side in
+  // AdminOrdersService.updatePrice, not here.
+  @Patch('orders/:id/price')
+  @Roles('SuperAdmin', 'OpsManager', 'Support')
+  updatePrice(@Param('id') id: string, @Body() body: UpdateOrderPriceDto, @Req() req: AuthedRequest) {
+    return this.orders.updatePrice(id, body, actorFrom(req))
   }
 
   // Upsells system — call-center/admin manual add. Support included: a

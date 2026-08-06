@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { isValidTransition, type OrderState } from '@amalice/shared'
+import { isValidTransition, PRICE_EDITABLE_STATES, type OrderState, type UpdateOrderPrice } from '@amalice/shared'
 import type { Prisma } from '../generated/prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
@@ -124,6 +124,61 @@ export class AdminOrdersService {
     return { items, total, page: args.page, pageSize: args.pageSize }
   }
 
+  // Call Center's "Drop Queue" (ADM-11) — a single-order-at-a-time power-
+  // dialer view. Combines all 4 call-center states into one priority-ranked
+  // list so an agent never has to think about which of the 4 index.vue
+  // queues to work next; the page just pulls item [0], the agent acts on
+  // it, and the next findMany (after the state changes) naturally drops it
+  // out of this list and promotes whatever's now first.
+  //
+  // Priority: brand-new leads first (tier 1) — conversion drops fast with
+  // response time, so a lead that's never been called outranks a retry.
+  // No-answer retries (tier 2) and postponed follow-ups (tier 3) come next.
+  // Wrong-number (tier 4) sinks to the bottom — these usually need the
+  // customer's number corrected via another channel (SMS/WhatsApp) before a
+  // call is even possible, so surfacing them first would waste dial time.
+  // Within a tier: higher COD value first (bigger RTO loss if never
+  // confirmed), then oldest-first as the final tiebreak so nothing starves.
+  //
+  // Capped at 500 rows before sorting rather than loading the entire
+  // backlog — call-center backlogs are bounded in practice (an unconfirmed
+  // queue that size is its own emergency); revisit if that stops holding.
+  private static readonly DROP_QUEUE_STATES: OrderState[] = ['PendingCallCenter', 'CallCenterNoAnswer', 'Postponed', 'WrongNumber']
+  private static readonly DROP_QUEUE_TIER: Record<string, number> = {
+    PendingCallCenter: 1,
+    CallCenterNoAnswer: 2,
+    Postponed: 3,
+    WrongNumber: 4
+  }
+
+  async dropQueue(pageSize: number) {
+    const rows = await this.prisma.order.findMany({
+      where: { isAbandoned: false, state: { in: AdminOrdersService.DROP_QUEUE_STATES } },
+      include: {
+        customer: { select: { id: true, name: true, phone: true } },
+        address: { select: { line1: true, line2: true, city: true, region: true, postalCode: true, country: true } },
+        items: { include: itemInclude },
+        shipment: { include: { courier: { select: { name: true } } } },
+        shippingCompany: { select: { name: true } }
+      },
+      orderBy: { createdAt: 'asc' },
+      take: 500
+    })
+    const items = rows
+      .map((order) => ({
+        ...order,
+        items: order.items.map(toLineItem),
+        shippingCompanyName: order.shippingCompany?.name ?? null
+      }))
+      .sort((a, b) => {
+        const tierDiff = AdminOrdersService.DROP_QUEUE_TIER[a.state] - AdminOrdersService.DROP_QUEUE_TIER[b.state]
+        if (tierDiff !== 0) return tierDiff
+        if (a.totalCents !== b.totalCents) return b.totalCents - a.totalCents
+        return a.createdAt.getTime() - b.createdAt.getTime()
+      })
+    return { items: items.slice(0, pageSize), total: items.length }
+  }
+
   async findOne(id: string) {
     const order = await this.prisma.order.findUnique({
       where: { id },
@@ -170,6 +225,51 @@ export class AdminOrdersService {
     // never pushed to any sheet.
     this.googleSheets.updateOrderStatus(id, from, to).catch((error: Error) => {
       this.logger.warn(`Google Sheets status update failed for order ${id}: ${error.message}`)
+    })
+
+    return this.findOne(id)
+  }
+
+  // Call-center price override (ADM-12) — lets an agent adjust the shipping
+  // fee and/or the overall total while negotiating on the confirmation
+  // call. Only legal while the order is still in one of the 4 call-center
+  // states (see PRICE_EDITABLE_STATES's comment for why it's locked once
+  // Confirmed) — re-checked here server-side regardless of what the admin
+  // UI already gates, same rule as transition()'s own state-machine check.
+  async updatePrice(id: string, input: UpdateOrderPrice, actor: AuditActor) {
+    const order = await this.prisma.order.findUnique({ where: { id } })
+    if (!order) throw new NotFoundException('Order not found')
+    if (!PRICE_EDITABLE_STATES.includes(order.state)) {
+      throw new BadRequestException(`Can't edit price for an order in state ${order.state} — it's already past the call-center confirmation step.`)
+    }
+
+    let shippingPriceCents = order.shippingPriceCents
+    let totalCents = order.totalCents
+
+    // A shipping change alone shifts the total by the same delta (the items
+    // portion is untouched); an explicit totalCents in the same request is
+    // an absolute override that wins over that computed shift — lets an
+    // agent apply a shipping fix and a separate discount in one call.
+    if (input.shippingPriceCents !== undefined) {
+      totalCents += input.shippingPriceCents - shippingPriceCents
+      shippingPriceCents = input.shippingPriceCents
+    }
+    if (input.totalCents !== undefined) {
+      totalCents = input.totalCents
+    }
+    if (totalCents < 0) throw new BadRequestException('Total cannot be negative')
+
+    await this.prisma.order.update({ where: { id }, data: { shippingPriceCents, totalCents } })
+    await this.audit.log({
+      actor,
+      action: 'Update',
+      entity: 'Order',
+      entityId: id,
+      metadata: {
+        field: 'price',
+        from: { shippingPriceCents: order.shippingPriceCents, totalCents: order.totalCents },
+        to: { shippingPriceCents, totalCents }
+      }
     })
 
     return this.findOne(id)

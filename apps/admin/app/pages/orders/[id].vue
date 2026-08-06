@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AdminOrderDetail, OrderState, ShippingCompanyView } from '@amalice/shared'
+import { PRICE_EDITABLE_STATES, type AdminOrderDetail, type OrderState, type ShippingCompanyView } from '@amalice/shared'
 import { VALID_TRANSITIONS } from '~/composables/order-transitions'
 
 // Orders states that can still take an added item — mirrors
@@ -27,6 +27,47 @@ async function transition(to: OrderState) {
   })
   await refresh()
   transitioning.value = null
+}
+
+// ---- Call-center price override (ADM-12) — shipping fee and/or total,
+// only while the order is still pre-confirmation (see PRICE_EDITABLE_STATES).
+// Server re-enforces the state check regardless of this client-side gate.
+const priceModalOpen = ref(false)
+const editShippingDzd = ref<number | null>(null)
+const editTotalDzd = ref<number | null>(null)
+const savingPrice = ref(false)
+
+function openPriceEditor() {
+  if (!order.value) return
+  editShippingDzd.value = order.value.shippingPriceCents / 100
+  editTotalDzd.value = order.value.totalCents / 100
+  priceModalOpen.value = true
+}
+
+async function savePrice() {
+  if (!order.value || editShippingDzd.value == null || editTotalDzd.value == null) return
+  const shippingCents = Math.round(editShippingDzd.value * 100)
+  const totalCents = Math.round(editTotalDzd.value * 100)
+  if (!Number.isFinite(shippingCents) || !Number.isFinite(totalCents) || shippingCents < 0 || totalCents < 0) {
+    toast.add({ title: 'Enter valid amounts', color: 'warning' })
+    return
+  }
+  savingPrice.value = true
+  const body: { shippingPriceCents?: number; totalCents?: number } = {}
+  if (shippingCents !== order.value.shippingPriceCents) body.shippingPriceCents = shippingCents
+  if (totalCents !== order.value.totalCents) body.totalCents = totalCents
+  if (Object.keys(body).length === 0) {
+    savingPrice.value = false
+    priceModalOpen.value = false
+    return
+  }
+  const result = await run(() => api(`/admin/orders/${id}/price`, { method: 'PATCH', body }), {
+    success: 'Price updated',
+    errorFallback: 'Could not update the price'
+  })
+  savingPrice.value = false
+  if (result !== undefined) priceModalOpen.value = false
+  await refresh()
 }
 
 // ---- Shipping assignment — required before dispatch is possible; dispatch
@@ -301,6 +342,20 @@ async function submitAddItem() {
                 <PriceDisplay :amount-cents="order.totalCents" class="tabular" />
               </div>
             </div>
+
+            <!-- Call-center price override — only while the order hasn't been
+                 confirmed yet; once Confirmed, packing/shipping/reconciliation
+                 all key off these numbers as fixed (see PRICE_EDITABLE_STATES). -->
+            <UButton
+              v-if="PRICE_EDITABLE_STATES.includes(order.state)"
+              icon="i-lucide-pencil"
+              size="xs"
+              variant="outline"
+              color="neutral"
+              class="mt-3"
+              label="Edit price / shipping fee"
+              @click="openPriceEditor"
+            />
           </div>
 
           <!-- Manual transition: the UI only offers valid next states, making an
@@ -538,6 +593,28 @@ async function submitAddItem() {
         <div class="flex justify-end gap-2">
           <UButton color="neutral" variant="ghost" @click="showAddItem = false">Cancel</UButton>
           <UButton :loading="addingItem" color="primary" icon="i-lucide-plus" @click="submitAddItem">Add item</UButton>
+        </div>
+      </div>
+    </template>
+  </UModal>
+
+  <!-- Call-center price override modal (ADM-12) -->
+  <UModal v-model:open="priceModalOpen">
+    <template #content>
+      <div class="space-y-4 p-6">
+        <h3 class="text-lg font-semibold">Edit price / shipping fee</h3>
+        <p class="text-sm text-muted">Only available before the order is confirmed — call-center's negotiation window.</p>
+
+        <UFormField label="Shipping fee (DZD)">
+          <UInputNumber v-model="editShippingDzd" :min="0" class="w-full" />
+        </UFormField>
+        <UFormField label="Total due — COD (DZD)" help="Overrides the total directly; the items subtotal itself isn't editable here.">
+          <UInputNumber v-model="editTotalDzd" :min="0" class="w-full" />
+        </UFormField>
+
+        <div class="flex justify-end gap-2">
+          <UButton color="neutral" variant="ghost" @click="priceModalOpen = false">Cancel</UButton>
+          <UButton :loading="savingPrice" color="primary" icon="i-lucide-check" @click="savePrice">Save</UButton>
         </div>
       </div>
     </template>
