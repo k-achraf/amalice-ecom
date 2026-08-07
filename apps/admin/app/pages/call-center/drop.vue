@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AdminOrderListItem } from '@amalice/shared'
+import { formatPhoneLocal, type AdminOrderListItem } from '@amalice/shared'
 
 // ADM-11 — Call Center "Drop Queue": a single-order-at-a-time power-dialer
 // view. Instead of an agent scanning 4 separate lists (call-center/index.vue)
@@ -14,7 +14,7 @@ import type { AdminOrderListItem } from '@amalice/shared'
 // (ties/tiers can reorder as other orders' states change) and undo a Skip.
 // New leads that arrive mid-session show up via the manual "Refresh queue"
 // action, which merges them in without losing current position.
-definePageMeta({ requiredRole: ['SuperAdmin', 'OpsManager', 'Support'] })
+definePageMeta({ requiredRole: ['SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent'] })
 useHead({ title: 'Drop Queue — Call Center' })
 
 const api = useAdminApi()
@@ -292,11 +292,16 @@ const tierLabel: Record<string, string> = {
               <div class="flex flex-wrap items-center gap-2">
                 <NuxtLink :to="`/orders/${current.id}`" class="tabular font-medium text-primary hover:underline">{{ current.id.slice(0, 8) }}</NuxtLink>
                 <UBadge color="neutral" variant="subtle" size="sm">{{ tierLabel[current.state] }}</UBadge>
+                <UBadge v-if="current.isAbandoned" color="neutral" variant="outline" size="sm" title="Customer never finished submitting — lowest priority in this queue, but confirming it converts it to a normal order.">Abandoned cart</UBadge>
                 <UBadge :color="ageColor(current.createdAt)" variant="subtle" size="sm">waiting {{ ageLabel(current.createdAt) }}</UBadge>
               </div>
               <p class="mt-1 text-lg font-semibold text-highlighted">{{ current.customer.name ?? 'No name given' }}</p>
+              <!-- href keeps the full E.164 number (dialable regardless of
+                   device locale); the visible text is the local 0xxxxxxxxx
+                   form every agent expects, whatever format it was captured
+                   in (+213/213/0/bare 9-digit) — see formatPhoneLocal. -->
               <a :href="`tel:${current.customer.phone}`" class="tabular mt-0.5 flex items-center gap-1.5 text-lg text-primary hover:underline">
-                <UIcon name="i-lucide-phone-call" class="size-4 shrink-0" />{{ current.customer.phone }}
+                <UIcon name="i-lucide-phone-call" class="size-4 shrink-0" />{{ formatPhoneLocal(current.customer.phone) }}
               </a>
               <p class="mt-1 text-sm text-muted">{{ addressLine(current) }}</p>
             </div>

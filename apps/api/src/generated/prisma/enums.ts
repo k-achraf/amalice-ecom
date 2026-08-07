@@ -37,7 +37,8 @@ export const AdminRoleName = {
   OpsManager: 'OpsManager',
   Finance: 'Finance',
   Support: 'Support',
-  Warehouse: 'Warehouse'
+  Warehouse: 'Warehouse',
+  CallCenterAgent: 'CallCenterAgent'
 } as const
 
 export type AdminRoleName = (typeof AdminRoleName)[keyof typeof AdminRoleName]

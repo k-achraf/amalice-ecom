@@ -134,11 +134,21 @@ export class AdminOrdersService {
   // Priority: brand-new leads first (tier 1) — conversion drops fast with
   // response time, so a lead that's never been called outranks a retry.
   // No-answer retries (tier 2) and postponed follow-ups (tier 3) come next.
-  // Wrong-number (tier 4) sinks to the bottom — these usually need the
+  // Wrong-number (tier 4) sinks toward the bottom — these usually need the
   // customer's number corrected via another channel (SMS/WhatsApp) before a
   // call is even possible, so surfacing them first would waste dial time.
-  // Within a tier: higher COD value first (bigger RTO loss if never
-  // confirmed), then oldest-first as the final tiebreak so nothing starves.
+  // Abandoned-cart orders (tier 5, lowest) sink below even that — the
+  // customer never actually finished submitting the form, so these are the
+  // lowest-intent leads in the queue; still worth a follow-up call, just
+  // never ahead of someone who actually completed checkout. Within a tier:
+  // higher COD value first (bigger RTO loss if never confirmed), then
+  // oldest-first as the final tiebreak so nothing starves.
+  //
+  // Includes abandoned orders now (previously excluded) — they only ever
+  // sit in PendingCallCenter (see OrdersService.createAbandonedOrder), so
+  // they're already covered by DROP_QUEUE_STATES; confirming one here goes
+  // through transition(), which clears isAbandoned so it becomes a normal
+  // order the rest of the pipeline (fulfillment/shipping) can see.
   //
   // Capped at 500 rows before sorting rather than loading the entire
   // backlog — call-center backlogs are bounded in practice (an unconfirmed
@@ -150,10 +160,11 @@ export class AdminOrdersService {
     Postponed: 3,
     WrongNumber: 4
   }
+  private static readonly DROP_QUEUE_ABANDONED_TIER = 5
 
   async dropQueue(pageSize: number) {
     const rows = await this.prisma.order.findMany({
-      where: { isAbandoned: false, state: { in: AdminOrdersService.DROP_QUEUE_STATES } },
+      where: { state: { in: AdminOrdersService.DROP_QUEUE_STATES } },
       include: {
         customer: { select: { id: true, name: true, phone: true } },
         address: { select: { line1: true, line2: true, city: true, region: true, postalCode: true, country: true } },
@@ -171,7 +182,8 @@ export class AdminOrdersService {
         shippingCompanyName: order.shippingCompany?.name ?? null
       }))
       .sort((a, b) => {
-        const tierDiff = AdminOrdersService.DROP_QUEUE_TIER[a.state] - AdminOrdersService.DROP_QUEUE_TIER[b.state]
+        const tierOf = (o: typeof a) => (o.isAbandoned ? AdminOrdersService.DROP_QUEUE_ABANDONED_TIER : AdminOrdersService.DROP_QUEUE_TIER[o.state])
+        const tierDiff = tierOf(a) - tierOf(b)
         if (tierDiff !== 0) return tierDiff
         if (a.totalCents !== b.totalCents) return b.totalCents - a.totalCents
         return a.createdAt.getTime() - b.createdAt.getTime()
@@ -209,13 +221,22 @@ export class AdminOrdersService {
       throw new BadRequestException(`Illegal transition: ${from} → ${to}`)
     }
 
-    await this.prisma.order.update({ where: { id }, data: { state: to } })
+    // Confirming an abandoned-cart order (see Order.isAbandoned's Prisma
+    // comment) is the admin-side equivalent of createLeadOrder's own
+    // convertsAbandonedOrderId conversion — the agent has now made real
+    // contact, so it stops being a "did the customer even finish?" row and
+    // becomes a normal order the rest of the pipeline (fulfillment/shipping,
+    // the main Orders list, drop-queue's own next fetch) can see. Every
+    // other query in this service filters on isAbandoned, so leaving it
+    // true here would silently strand a confirmed order forever.
+    const clearsAbandoned = order.isAbandoned && to === 'Confirmed'
+    await this.prisma.order.update({ where: { id }, data: { state: to, ...(clearsAbandoned && { isAbandoned: false }) } })
     await this.audit.log({
       actor,
       action: 'StateTransition',
       entity: 'Order',
       entityId: id,
-      metadata: { from, to }
+      metadata: { from, to, ...(clearsAbandoned && { convertedFromAbandoned: true }) }
     })
 
     // Fire-and-forget, same rule as OrdersService's pixel/Sheets calls at

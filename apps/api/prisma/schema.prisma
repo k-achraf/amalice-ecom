@@ -38,6 +38,11 @@ enum AdminRoleName {
   Finance
   Support
   Warehouse
+  // Narrower than Support — scoped to just the call-center confirmation
+  // workflow (Call Center queue + Drop Queue, and an individual order's
+  // detail reached through those). See AdminRoleNameSchema's comment
+  // (packages/shared) for the Support-vs-CallCenterAgent distinction.
+  CallCenterAgent
 }
 
 model Customer {

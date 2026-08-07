@@ -23,11 +23,28 @@ function galleryFor(item: AdminOrderLineItem): string[] {
   if (item.product.images.length) return item.product.images
   return item.product.imageUrl ? [item.product.imageUrl] : []
 }
+
+// Clicking a line item opens its full detail (every gallery image, variant,
+// pricing) in a modal instead of forcing a click-through to the order or
+// product page — requested specifically for the Drop Queue's fast-paced
+// confirmation flow, but it's on the shared component so Orders/Shipping/
+// the regular Call Center queue get the same behavior for free.
+const detailItem = ref<AdminOrderLineItem | null>(null)
+const detailOpen = computed({
+  get: () => detailItem.value !== null,
+  set: (v) => { if (!v) detailItem.value = null }
+})
 </script>
 
 <template>
   <div :class="['flex flex-col', compact ? 'gap-1.5' : 'gap-2']">
-    <div v-for="item in items" :key="item.id" class="flex items-center gap-2">
+    <button
+      v-for="item in items"
+      :key="item.id"
+      type="button"
+      class="flex items-center gap-2 rounded-md text-start transition-colors hover:bg-[var(--color-admin-row-hover)]"
+      @click="detailItem = item"
+    >
       <!-- Overlapping thumbnail stack of every shot of this product -->
       <div v-if="galleryFor(item).length" class="flex shrink-0 -space-x-2 rtl:space-x-reverse">
         <img
@@ -59,6 +76,55 @@ function galleryFor(item: AdminOrderLineItem): string[] {
         </p>
         <p class="text-xs text-muted">×{{ item.quantity }}<span v-if="item.isUpsell"> · upsell</span></p>
       </div>
-    </div>
+    </button>
   </div>
+
+  <!-- Product detail modal -->
+  <UModal v-model:open="detailOpen">
+    <template #content>
+      <div v-if="detailItem" class="space-y-4 p-6">
+        <div>
+          <h3 class="text-lg font-semibold text-highlighted">{{ detailItem.product.name }}</h3>
+          <p v-if="detailItem.variantLabel" class="text-sm text-muted">{{ detailItem.variantLabel }}</p>
+        </div>
+
+        <div v-if="galleryFor(detailItem).length" class="grid grid-cols-3 gap-2">
+          <img
+            v-for="(url, i) in galleryFor(detailItem)"
+            :key="i"
+            :src="resolveImageUrl(url)"
+            :alt="detailItem.product.name"
+            class="aspect-square w-full rounded-md object-cover"
+            loading="lazy"
+          >
+        </div>
+        <div v-else class="flex aspect-video items-center justify-center rounded-md bg-elevated text-muted">
+          <UIcon name="i-lucide-image-off" class="size-6" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div>
+            <p class="text-muted">Quantity</p>
+            <p class="tabular font-medium text-highlighted">{{ detailItem.quantity }}</p>
+          </div>
+          <div>
+            <p class="text-muted">Unit price</p>
+            <PriceDisplay :amount-cents="detailItem.unitPriceCents" class="tabular font-medium text-highlighted" />
+          </div>
+          <div>
+            <p class="text-muted">Line total</p>
+            <PriceDisplay :amount-cents="detailItem.lineTotalCents" class="tabular font-medium text-highlighted" />
+          </div>
+          <div class="flex items-center gap-1.5">
+            <UBadge v-if="detailItem.isUpsell" size="sm" color="primary" variant="subtle">Upsell</UBadge>
+            <UBadge v-if="detailItem.offerId" size="sm" color="success" variant="subtle">Offer</UBadge>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <UButton color="neutral" variant="ghost" label="Close" @click="detailOpen = false" />
+        </div>
+      </div>
+    </template>
+  </UModal>
 </template>

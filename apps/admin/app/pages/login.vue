@@ -18,7 +18,12 @@ async function onSubmit() {
   loading.value = true
   try {
     await auth.login(email.value, password.value)
-    const redirect = (route.query.redirect as string) || '/'
+    // CallCenterAgent has no access to the dashboard's KPI/analytics
+    // endpoints (a deliberately narrower role than Support — see
+    // AdminRoleNameSchema's comment) — land them on their own queue instead
+    // of a dashboard that would just show empty/failed widgets.
+    const defaultLanding = auth.role === 'CallCenterAgent' ? '/call-center' : '/'
+    const redirect = (route.query.redirect as string) || defaultLanding
     await navigateTo(redirect)
   } catch (err: unknown) {
     const status = (err as { response?: { status?: number; _data?: { message?: string } } }).response?.status

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { OrderListResponse } from '@amalice/shared'
+import { formatPhoneLocal, type OrderListResponse } from '@amalice/shared'
 
 // Stage 1 of the order pipeline: a human agent calls the customer to confirm
 // a real order before anything gets picked. Two queues, same as
 // fulfillment/index.vue's "packed vs in transit" split — the main queue
 // (never called yet / awaiting a call) and the retry queue (called, no
 // answer, needs a follow-up attempt).
-definePageMeta({ requiredRole: ['SuperAdmin', 'OpsManager', 'Support'] })
+definePageMeta({ requiredRole: ['SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent'] })
 useHead({ title: 'Call Center' })
 
 const api = useAdminApi()
@@ -159,7 +159,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
                 <div class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                   <span class="font-medium text-highlighted">{{ o.customer.name ?? 'No name given' }}</span>
                   <a :href="`tel:${o.customer.phone}`" class="tabular flex items-center gap-1 text-sm text-primary hover:underline">
-                    <UIcon name="i-lucide-phone" class="size-3.5" />{{ o.customer.phone }}
+                    <UIcon name="i-lucide-phone" class="size-3.5" />{{ formatPhoneLocal(o.customer.phone) }}
                   </a>
                 </div>
                 <p class="mt-1 text-sm text-muted">{{ addressLine(o) }}</p>
@@ -194,7 +194,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
                 <div class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                   <span class="font-medium text-highlighted">{{ o.customer.name ?? 'No name given' }}</span>
                   <a :href="`tel:${o.customer.phone}`" class="tabular flex items-center gap-1 text-sm text-primary hover:underline">
-                    <UIcon name="i-lucide-phone" class="size-3.5" />{{ o.customer.phone }}
+                    <UIcon name="i-lucide-phone" class="size-3.5" />{{ formatPhoneLocal(o.customer.phone) }}
                   </a>
                 </div>
                 <p class="mt-1 text-sm text-muted">{{ addressLine(o) }}</p>
@@ -225,7 +225,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
                 <div class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                   <span class="font-medium text-highlighted">{{ o.customer.name ?? 'No name given' }}</span>
                   <a :href="`tel:${o.customer.phone}`" class="tabular flex items-center gap-1 text-sm text-primary hover:underline">
-                    <UIcon name="i-lucide-phone" class="size-3.5" />{{ o.customer.phone }}
+                    <UIcon name="i-lucide-phone" class="size-3.5" />{{ formatPhoneLocal(o.customer.phone) }}
                   </a>
                 </div>
                 <p class="mt-1 text-sm text-muted">{{ addressLine(o) }}</p>
@@ -256,7 +256,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
                 <div class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                   <span class="font-medium text-highlighted">{{ o.customer.name ?? 'No name given' }}</span>
                   <a :href="`tel:${o.customer.phone}`" class="tabular flex items-center gap-1 text-sm text-primary hover:underline">
-                    <UIcon name="i-lucide-phone" class="size-3.5" />{{ o.customer.phone }}
+                    <UIcon name="i-lucide-phone" class="size-3.5" />{{ formatPhoneLocal(o.customer.phone) }}
                   </a>
                 </div>
                 <p class="mt-1 text-sm text-muted">{{ addressLine(o) }}</p>

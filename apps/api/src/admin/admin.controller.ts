@@ -99,8 +99,15 @@ export class AdminController {
   }
 
   // ---- ADM-04/05 orders ---------------------------------------------------
+  // CallCenterAgent included: call-center/index.vue's 4 queues (Pending/
+  // NoAnswer/WrongNumber/Postponed) are just filtered calls to this same
+  // endpoint — there's no separate "call-center-only" list endpoint to
+  // scope them to instead. The actual "don't let them browse the full,
+  // unfiltered order pipeline" boundary is the Orders nav link/page being
+  // hidden from them client-side (see layouts/default.vue), same
+  // client-gate-only pattern as everywhere else in this app.
   @Get('orders')
-  @Roles('SuperAdmin', 'OpsManager', 'Finance', 'Support')
+  @Roles('SuperAdmin', 'OpsManager', 'Finance', 'Support', 'CallCenterAgent')
   async listOrders(
     @Query('state') state: OrderState | undefined,
     @Query('search') search: string | undefined,
@@ -126,23 +133,25 @@ export class AdminController {
   // Call Center's Drop Queue (ADM-11) — registered before orders/:id so
   // "drop-queue" isn't swallowed as an :id param.
   @Get('orders/drop-queue')
-  @Roles('SuperAdmin', 'OpsManager', 'Support')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
   dropQueue(@Query('pageSize') pageSize: string = '100') {
     return this.orders.dropQueue(Number(pageSize))
   }
 
+  // CallCenterAgent included: an order reached via their own Call Center/
+  // Drop Queue pages links here for the full detail view.
   @Get('orders/:id')
-  @Roles('SuperAdmin', 'OpsManager', 'Finance', 'Support')
+  @Roles('SuperAdmin', 'OpsManager', 'Finance', 'Support', 'CallCenterAgent')
   orderDetail(@Param('id') id: string) {
     return this.orders.findOne(id)
   }
 
-  // Support included alongside SuperAdmin/OpsManager: call-center staff (the
-  // Support role) need to perform the PendingCallCenter → Confirmed/
+  // Support/CallCenterAgent included alongside SuperAdmin/OpsManager:
+  // call-center staff need to perform the PendingCallCenter → Confirmed/
   // CallCenterNoAnswer/Cancelled transitions from their own queue page —
   // the same generic transition endpoint every other stage already uses.
   @Post('orders/:id/transition')
-  @Roles('SuperAdmin', 'OpsManager', 'Support')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
   transition(@Param('id') id: string, @Body() body: { to: OrderState }, @Req() req: AuthedRequest) {
     return this.orders.transition(id, body.to, actorFrom(req))
   }
@@ -150,7 +159,7 @@ export class AdminController {
   // Call-center notes — free text, same role set as transition() since it's
   // the same call-center queue action.
   @Patch('orders/:id/notes')
-  @Roles('SuperAdmin', 'OpsManager', 'Support')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
   updateNotes(@Param('id') id: string, @Body() body: UpdateOrderNotesDto, @Req() req: AuthedRequest) {
     return this.orders.updateNotes(id, body.notes, actorFrom(req))
   }
@@ -160,16 +169,17 @@ export class AdminController {
   // "only before Confirmed" enforcement lives server-side in
   // AdminOrdersService.updatePrice, not here.
   @Patch('orders/:id/price')
-  @Roles('SuperAdmin', 'OpsManager', 'Support')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
   updatePrice(@Param('id') id: string, @Body() body: UpdateOrderPriceDto, @Req() req: AuthedRequest) {
     return this.orders.updatePrice(id, body, actorFrom(req))
   }
 
-  // Upsells system — call-center/admin manual add. Support included: a
-  // call-center agent pitching an add-on during the confirmation call is
-  // the primary use case, same reasoning as their access to transition().
+  // Upsells system — call-center/admin manual add. Support/CallCenterAgent
+  // included: a call-center agent pitching an add-on during the
+  // confirmation call is the primary use case, same reasoning as their
+  // access to transition().
   @Post('orders/:id/items')
-  @Roles('SuperAdmin', 'OpsManager', 'Support')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
   async addOrderItem(@Param('id') id: string, @Body() body: AddOrderItemDto, @Req() req: AuthedRequest) {
     await this.orderItems.addItem(id, body, actorFrom(req))
     // Re-fetch through AdminOrdersService so the response has the same

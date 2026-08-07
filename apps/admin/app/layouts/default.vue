@@ -12,7 +12,7 @@ const colorMode = useColorMode()
 const allLinks: (NavigationMenuItem & { roles: AdminRoleName[] })[] = [
   { label: 'Dashboard', icon: 'i-lucide-layout-dashboard', to: '/', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Warehouse'] },
   { label: 'Orders', icon: 'i-lucide-package', to: '/orders', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Support'] },
-  { label: 'Call Center', icon: 'i-lucide-phone-call', to: '/call-center', roles: ['SuperAdmin', 'OpsManager', 'Support'] },
+  { label: 'Call Center', icon: 'i-lucide-phone-call', to: '/call-center', roles: ['SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent'] },
   { label: 'Abandoned Carts', icon: 'i-lucide-shopping-cart', to: '/abandoned-carts', roles: ['SuperAdmin', 'OpsManager', 'Support'] },
   { label: 'Inventory', icon: 'i-lucide-boxes', to: '/inventory', roles: ['SuperAdmin', 'OpsManager', 'Warehouse'] },
   { label: 'Customers', icon: 'i-lucide-users', to: '/customers', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Support'] },
