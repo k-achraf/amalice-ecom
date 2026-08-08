@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { ProductVariantSchema } from './catalog'
+import { ProductOfferSchema } from './offer'
 
 // AI landing page builder — see the ProductLandingPage Prisma model comment
 // for the full picture. This file is the single source of truth for the
@@ -112,7 +114,15 @@ export const PublicLandingPageSchema = z.object({
     name: z.string(),
     slug: z.string(),
     priceCents: z.number().int().nonnegative(),
-    imageUrl: z.string().nullable()
+    imageUrl: z.string().nullable(),
+    // Sold only in fixed lots — the LP form must enforce an offer is chosen
+    // before submission, mirroring the PDP's Product.requireOfferSelection gate.
+    requireOfferSelection: z.boolean(),
+    // Variants and offers from the product — same data the PDP uses for its
+    // own form. Allows the LP funnel to render the variant picker and offer
+    // bundle cards that were previously omitted (see ImpulseLandingPageLeadCard).
+    variants: z.array(ProductVariantSchema),
+    offers: z.array(ProductOfferSchema)
   })
 })
 export type PublicLandingPage = z.infer<typeof PublicLandingPageSchema>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DEFAULT_LEAD_FORM_FIELDS, type LeadFormField, type PublicLandingPage } from '@amalice/shared'
+import { DEFAULT_LEAD_FORM_FIELDS, type LeadFormField, type PublicLandingPage, type ProductOffer, offerTotalQuantity, offerPriceCents } from '@amalice/shared'
 
 // AI landing-page funnel route — chromeless (no header/nav), a single
 // full-width generated image with a lead form at the bottom. This is a
@@ -67,6 +67,67 @@ if (import.meta.client) {
   useViewTracking().recordView('LandingPage', page.id)
 }
 
+// ---- Variant & offer selection ----
+// Full parity with the normal PDP (products/[slug].vue) — variants are
+// pickable pill buttons, offer cards set the quantity and lock in bundle
+// pricing. requireOfferSelection auto-selects the first offer so the form
+// always starts in a buyable state for fixed-lot products.
+const selectedVariantId = ref<string | null>(null)
+const selectedOfferId = ref<string | null>(null)
+const quantity = ref(1)
+
+const selectedVariant = computed(() => page.product.variants.find((v) => v.id === selectedVariantId.value) ?? null)
+const effectivePriceCents = computed(() => selectedVariant.value?.priceCents ?? page.product.priceCents)
+
+// Build the same {key => Set<value>} map the PDP uses to render variant pills.
+const variantOptions = computed(() => {
+  if (!page.product.variants.length) return {} as Record<string, Set<string>>
+  const opts: Record<string, Set<string>> = {}
+  for (const v of page.product.variants) {
+    const attrs = v.attributes as Record<string, string>
+    for (const [key, val] of Object.entries(attrs)) {
+      if (!opts[key]) opts[key] = new Set()
+      opts[key].add(val)
+    }
+  }
+  return opts
+})
+
+const selectedOffer = computed(() => page.product.offers.find((o) => o.id === selectedOfferId.value) ?? null)
+const offerTotalCents = computed(() =>
+  selectedOffer.value ? offerPriceCents(selectedOffer.value, effectivePriceCents.value) : effectivePriceCents.value * quantity.value
+)
+
+function onSelectVariantByKey(key: string, val: string) {
+  selectedVariantId.value = page.product.variants.find((v) => (v.attributes as Record<string, string>)[key] === val)?.id ?? null
+}
+
+function onUpdateQuantity(v: number) {
+  quantity.value = v
+  // A manual quantity change no longer matches whatever offer set it.
+  if (selectedOffer.value && offerTotalQuantity(selectedOffer.value) !== v) selectedOfferId.value = null
+}
+
+function onSelectOffer(offer: ProductOffer) {
+  // Clicking the already-selected offer card unselects it (toggle back to
+  // single-unit pricing) — mirrors the PDP's behaviour.
+  if (selectedOfferId.value === offer.id) {
+    selectedOfferId.value = null
+    quantity.value = 1
+    return
+  }
+  selectedOfferId.value = offer.id
+  quantity.value = offerTotalQuantity(offer)
+}
+
+// Product.requireOfferSelection — pre-select the first enabled offer so the
+// customer always lands on a valid, buyable state, matching the PDP gate.
+if (page.product.requireOfferSelection) {
+  const first = page.product.offers[0]
+  if (first) onSelectOffer(first)
+}
+
+// ---- Lead form ----
 const leadFields = computed<LeadFormField[]>(() => {
   const config = settings.value.leadFormConfig
   const fields = config && config.length > 0 ? config : DEFAULT_LEAD_FORM_FIELDS
@@ -104,8 +165,6 @@ if (import.meta.client) {
 // Scoped to Impulse only, mirroring the PDP's own gate, even though every
 // /lp page is itself an ad-funnel entry point — kept consistent with "same
 // method as product page form" rather than silently widening the scope.
-// Landing pages have no variant/offer concept (always a fixed single unit
-// of one product), so the payload is simpler than the PDP's.
 const abandonedOrderId = ref<string | null>(null)
 let abandonedTimer: ReturnType<typeof setTimeout> | undefined
 
@@ -124,7 +183,12 @@ async function fireAbandonedOrder() {
         fields: leadFormData,
         wilayaId: leadFormData.wilayaId || undefined,
         shippingType: leadFormData.shippingType || undefined,
-        items: [{ productId: page.product.id, quantity: 1 }]
+        items: [{
+          productId: page.product.id,
+          variantId: selectedVariantId.value ?? undefined,
+          quantity: quantity.value,
+          offerId: selectedOfferId.value ?? undefined
+        }]
       }
     })
     abandonedOrderId.value = created.id
@@ -161,6 +225,12 @@ async function onSubmitLead() {
     placeError.value = 'الرجاء اختيار طريقة التوصيل.'
     return
   }
+  // Product.requireOfferSelection — enforce an offer is chosen before
+  // allowing submission, mirroring the PDP's guard.
+  if (page.product.requireOfferSelection && !selectedOfferId.value) {
+    placeError.value = 'الرجاء اختيار عرض الكمية.'
+    return
+  }
   stopAbandonedTimer()
   placing.value = true
   placeError.value = null
@@ -174,7 +244,12 @@ async function onSubmitLead() {
           fields: leadFormData,
           wilayaId: leadFormData.wilayaId,
           shippingType: leadFormData.shippingType,
-          items: [{ productId: page.product.id, quantity: 1 }],
+          items: [{
+            productId: page.product.id,
+            variantId: selectedVariantId.value ?? undefined,
+            quantity: quantity.value,
+            offerId: selectedOfferId.value ?? undefined
+          }],
           tracking: { ...metaPixel.getFbCookies(), ...tiktokPixel.getTtCookie() },
           convertsAbandonedOrderId: abandonedOrderId.value ?? undefined,
           idempotencyKey: leadIdempotencyKey || undefined,
@@ -213,7 +288,16 @@ async function onSubmitLead() {
         data: leadFormData,
         submitting: placing,
         error: placeError,
-        onSubmit: onSubmitLead
+        offers: page.product.offers,
+        selectedOfferId,
+        offerTotalCents,
+        quantity,
+        variantOptions,
+        selectedVariant,
+        onSubmit: onSubmitLead,
+        onSelectOffer,
+        onSelectVariantByKey,
+        onUpdateQuantity
       }"
     />
   </div>

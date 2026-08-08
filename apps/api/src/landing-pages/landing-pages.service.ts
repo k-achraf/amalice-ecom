@@ -212,7 +212,38 @@ export class LandingPagesService {
   async getPublicByProductSlugAndNumber(productSlug: string, number: number): Promise<PublicLandingPage | null> {
     const product = await this.prisma.product.findUnique({
       where: { slug: productSlug },
-      select: { id: true, name: true, slug: true, priceCents: true, imageUrl: true }
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        priceCents: true,
+        imageUrl: true,
+        requireOfferSelection: true,
+        variants: {
+          select: {
+            id: true,
+            productId: true,
+            sku: true,
+            attributes: true,
+            priceCents: true,
+            stockQuantity: true
+          }
+        },
+        offers: {
+          where: { enabled: true },
+          select: {
+            id: true,
+            productId: true,
+            type: true,
+            enabled: true,
+            requiredQuantity: true,
+            freeQuantity: true,
+            bundlePriceCents: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        }
+      }
     })
     if (!product) return null
 
@@ -224,7 +255,20 @@ export class LandingPagesService {
       id: row.id,
       number: row.number,
       finalImageUrl: row.finalImageUrl,
-      product
+      product: {
+        ...product,
+        variants: product.variants.map((v) => ({
+          ...v,
+          attributes: v.attributes as Record<string, string>
+        })),
+        offers: product.offers.map((o) => ({
+          ...o,
+          type: o.type as 'FixedBundlePrice' | 'BuyXGetYFree' | 'FreeShipping',
+          bundlePriceCents: o.bundlePriceCents ?? null,
+          createdAt: o.createdAt?.toISOString() ?? null,
+          updatedAt: o.updatedAt?.toISOString() ?? null
+        }))
+      }
     }
   }
 }
