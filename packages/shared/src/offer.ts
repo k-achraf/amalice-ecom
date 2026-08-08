@@ -40,8 +40,11 @@ export function offerPriceCents(offer: Pick<ProductOffer, 'type' | 'requiredQuan
 
 const ProductOfferInputBaseSchema = z.object({
   type: ProductOfferTypeSchema,
-  requiredQuantity: z.number().int().min(1).max(50),
-  freeQuantity: z.number().int().nonnegative().max(50).default(0),
+  // No upper bound — products sold only in fixed lots (see
+  // Product.requireOfferSelection) can genuinely need offers well past 50
+  // units (e.g. wholesale packs of 100+).
+  requiredQuantity: z.number().int().min(1),
+  freeQuantity: z.number().int().nonnegative().default(0),
   bundlePriceCents: z.number().int().nonnegative().nullable().optional()
 })
 

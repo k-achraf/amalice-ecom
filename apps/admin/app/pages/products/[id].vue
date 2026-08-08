@@ -1290,11 +1290,11 @@ async function deleteUpsell(upsellId: string) {
             </UFormField>
 
             <UFormField :label="newOffer.type === 'BuyXGetYFree' ? 'Paid quantity' : 'Required quantity'">
-              <UInputNumber v-model="newOffer.requiredQuantity" :min="1" :max="50" class="w-32" />
+              <UInputNumber v-model="newOffer.requiredQuantity" :min="1" class="w-32" />
             </UFormField>
 
             <UFormField v-if="newOffer.type === 'BuyXGetYFree'" label="Free quantity">
-              <UInputNumber v-model="newOffer.freeQuantity" :min="1" :max="50" class="w-32" />
+              <UInputNumber v-model="newOffer.freeQuantity" :min="1" class="w-32" />
             </UFormField>
 
             <UFormField v-if="newOffer.type === 'FixedBundlePrice'" label="Bundle price (DZD)" help="Total price for the required quantity.">
