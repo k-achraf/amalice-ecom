@@ -70,6 +70,7 @@ export class AdminProductManagementService {
       priceCents: product.priceCents,
       stockQuantity: product.stockQuantity,
       lowStockThreshold: product.lowStockThreshold,
+      requireOfferSelection: product.requireOfferSelection,
       createdAt: product.createdAt.toISOString(),
       updatedAt: product.updatedAt.toISOString(),
       images: product.images.map((i) => ({ id: i.id, url: i.url, altText: i.altText, sortOrder: i.sortOrder })),

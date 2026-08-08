@@ -203,6 +203,7 @@ export interface AdminProductDetail {
   priceCents: number
   stockQuantity: number
   lowStockThreshold: number
+  requireOfferSelection: boolean
   createdAt: string
   updatedAt: string
   images: { id: string; url: string; altText: string | null; sortOrder: number }[]

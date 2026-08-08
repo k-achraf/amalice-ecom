@@ -52,6 +52,7 @@ export type ProductMinAggregateOutputType = {
   priceCents: number | null
   stockQuantity: number | null
   lowStockThreshold: number | null
+  requireOfferSelection: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -70,6 +71,7 @@ export type ProductMaxAggregateOutputType = {
   priceCents: number | null
   stockQuantity: number | null
   lowStockThreshold: number | null
+  requireOfferSelection: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -88,6 +90,7 @@ export type ProductCountAggregateOutputType = {
   priceCents: number
   stockQuantity: number
   lowStockThreshold: number
+  requireOfferSelection: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -120,6 +123,7 @@ export type ProductMinAggregateInputType = {
   priceCents?: true
   stockQuantity?: true
   lowStockThreshold?: true
+  requireOfferSelection?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -138,6 +142,7 @@ export type ProductMaxAggregateInputType = {
   priceCents?: true
   stockQuantity?: true
   lowStockThreshold?: true
+  requireOfferSelection?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -156,6 +161,7 @@ export type ProductCountAggregateInputType = {
   priceCents?: true
   stockQuantity?: true
   lowStockThreshold?: true
+  requireOfferSelection?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -261,6 +267,7 @@ export type ProductGroupByOutputType = {
   priceCents: number
   stockQuantity: number
   lowStockThreshold: number
+  requireOfferSelection: boolean
   createdAt: Date
   updatedAt: Date
   _count: ProductCountAggregateOutputType | null
@@ -302,6 +309,7 @@ export type ProductWhereInput = {
   priceCents?: Prisma.IntFilter<"Product"> | number
   stockQuantity?: Prisma.IntFilter<"Product"> | number
   lowStockThreshold?: Prisma.IntFilter<"Product"> | number
+  requireOfferSelection?: Prisma.BoolFilter<"Product"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   categoryRef?: Prisma.XOR<Prisma.CategoryNullableScalarRelationFilter, Prisma.CategoryWhereInput> | null
@@ -333,6 +341,7 @@ export type ProductOrderByWithRelationInput = {
   priceCents?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   lowStockThreshold?: Prisma.SortOrder
+  requireOfferSelection?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   categoryRef?: Prisma.CategoryOrderByWithRelationInput
@@ -367,6 +376,7 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   priceCents?: Prisma.IntFilter<"Product"> | number
   stockQuantity?: Prisma.IntFilter<"Product"> | number
   lowStockThreshold?: Prisma.IntFilter<"Product"> | number
+  requireOfferSelection?: Prisma.BoolFilter<"Product"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   categoryRef?: Prisma.XOR<Prisma.CategoryNullableScalarRelationFilter, Prisma.CategoryWhereInput> | null
@@ -398,6 +408,7 @@ export type ProductOrderByWithAggregationInput = {
   priceCents?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   lowStockThreshold?: Prisma.SortOrder
+  requireOfferSelection?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ProductCountOrderByAggregateInput
@@ -424,6 +435,7 @@ export type ProductScalarWhereWithAggregatesInput = {
   priceCents?: Prisma.IntWithAggregatesFilter<"Product"> | number
   stockQuantity?: Prisma.IntWithAggregatesFilter<"Product"> | number
   lowStockThreshold?: Prisma.IntWithAggregatesFilter<"Product"> | number
+  requireOfferSelection?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Product"> | Date | string
 }
@@ -441,6 +453,7 @@ export type ProductCreateInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -472,6 +485,7 @@ export type ProductUncheckedCreateInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -501,6 +515,7 @@ export type ProductUpdateInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -532,6 +547,7 @@ export type ProductUncheckedUpdateInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -562,6 +578,7 @@ export type ProductCreateManyInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -579,6 +596,7 @@ export type ProductUpdateManyMutationInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -597,6 +615,7 @@ export type ProductUncheckedUpdateManyInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -625,6 +644,7 @@ export type ProductCountOrderByAggregateInput = {
   priceCents?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   lowStockThreshold?: Prisma.SortOrder
+  requireOfferSelection?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -649,6 +669,7 @@ export type ProductMaxOrderByAggregateInput = {
   priceCents?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   lowStockThreshold?: Prisma.SortOrder
+  requireOfferSelection?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -667,6 +688,7 @@ export type ProductMinOrderByAggregateInput = {
   priceCents?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   lowStockThreshold?: Prisma.SortOrder
+  requireOfferSelection?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -912,6 +934,7 @@ export type ProductCreateWithoutCategoryRefInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageCreateNestedManyWithoutProductInput
@@ -941,6 +964,7 @@ export type ProductUncheckedCreateWithoutCategoryRefInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -1000,6 +1024,7 @@ export type ProductScalarWhereInput = {
   priceCents?: Prisma.IntFilter<"Product"> | number
   stockQuantity?: Prisma.IntFilter<"Product"> | number
   lowStockThreshold?: Prisma.IntFilter<"Product"> | number
+  requireOfferSelection?: Prisma.BoolFilter<"Product"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
 }
@@ -1017,6 +1042,7 @@ export type ProductCreateWithoutLandingPagesInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -1047,6 +1073,7 @@ export type ProductUncheckedCreateWithoutLandingPagesInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -1091,6 +1118,7 @@ export type ProductUpdateWithoutLandingPagesInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -1121,6 +1149,7 @@ export type ProductUncheckedUpdateWithoutLandingPagesInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -1149,6 +1178,7 @@ export type ProductCreateWithoutImagesInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -1179,6 +1209,7 @@ export type ProductUncheckedCreateWithoutImagesInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   variants?: Prisma.ProductVariantUncheckedCreateNestedManyWithoutProductInput
@@ -1223,6 +1254,7 @@ export type ProductUpdateWithoutImagesInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -1253,6 +1285,7 @@ export type ProductUncheckedUpdateWithoutImagesInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   variants?: Prisma.ProductVariantUncheckedUpdateManyWithoutProductNestedInput
@@ -1281,6 +1314,7 @@ export type ProductCreateWithoutVariantsInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -1311,6 +1345,7 @@ export type ProductUncheckedCreateWithoutVariantsInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -1355,6 +1390,7 @@ export type ProductUpdateWithoutVariantsInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -1385,6 +1421,7 @@ export type ProductUncheckedUpdateWithoutVariantsInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -1413,6 +1450,7 @@ export type ProductCreateWithoutStockAdjustmentsInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -1443,6 +1481,7 @@ export type ProductUncheckedCreateWithoutStockAdjustmentsInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -1487,6 +1526,7 @@ export type ProductUpdateWithoutStockAdjustmentsInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -1517,6 +1557,7 @@ export type ProductUncheckedUpdateWithoutStockAdjustmentsInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -1545,6 +1586,7 @@ export type ProductCreateWithoutProductAttributesInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -1575,6 +1617,7 @@ export type ProductUncheckedCreateWithoutProductAttributesInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -1619,6 +1662,7 @@ export type ProductUpdateWithoutProductAttributesInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -1649,6 +1693,7 @@ export type ProductUncheckedUpdateWithoutProductAttributesInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -1677,6 +1722,7 @@ export type ProductCreateWithoutReviewsInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -1707,6 +1753,7 @@ export type ProductUncheckedCreateWithoutReviewsInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -1751,6 +1798,7 @@ export type ProductUpdateWithoutReviewsInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -1781,6 +1829,7 @@ export type ProductUncheckedUpdateWithoutReviewsInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -1809,6 +1858,7 @@ export type ProductCreateWithoutOrderItemsInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -1839,6 +1889,7 @@ export type ProductUncheckedCreateWithoutOrderItemsInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -1883,6 +1934,7 @@ export type ProductUpdateWithoutOrderItemsInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -1913,6 +1965,7 @@ export type ProductUncheckedUpdateWithoutOrderItemsInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -1941,6 +1994,7 @@ export type ProductCreateWithoutOffersInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -1971,6 +2025,7 @@ export type ProductUncheckedCreateWithoutOffersInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -2015,6 +2070,7 @@ export type ProductUpdateWithoutOffersInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -2045,6 +2101,7 @@ export type ProductUncheckedUpdateWithoutOffersInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -2073,6 +2130,7 @@ export type ProductCreateWithoutUpsellsOfferedInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -2103,6 +2161,7 @@ export type ProductUncheckedCreateWithoutUpsellsOfferedInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -2136,6 +2195,7 @@ export type ProductCreateWithoutUpsellsAsTargetInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -2166,6 +2226,7 @@ export type ProductUncheckedCreateWithoutUpsellsAsTargetInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -2210,6 +2271,7 @@ export type ProductUpdateWithoutUpsellsOfferedInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -2240,6 +2302,7 @@ export type ProductUncheckedUpdateWithoutUpsellsOfferedInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -2279,6 +2342,7 @@ export type ProductUpdateWithoutUpsellsAsTargetInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -2309,6 +2373,7 @@ export type ProductUncheckedUpdateWithoutUpsellsAsTargetInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -2337,6 +2402,7 @@ export type ProductCreateWithoutGoogleSheetsInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -2367,6 +2433,7 @@ export type ProductUncheckedCreateWithoutGoogleSheetsInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -2411,6 +2478,7 @@ export type ProductUpdateWithoutGoogleSheetsInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -2441,6 +2509,7 @@ export type ProductUncheckedUpdateWithoutGoogleSheetsInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -2469,6 +2538,7 @@ export type ProductCreateWithoutSourcedFromInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -2499,6 +2569,7 @@ export type ProductUncheckedCreateWithoutSourcedFromInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -2543,6 +2614,7 @@ export type ProductUpdateWithoutSourcedFromInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -2573,6 +2645,7 @@ export type ProductUncheckedUpdateWithoutSourcedFromInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -2601,6 +2674,7 @@ export type ProductCreateManyCategoryRefInput = {
   priceCents: number
   stockQuantity?: number
   lowStockThreshold?: number
+  requireOfferSelection?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -2618,6 +2692,7 @@ export type ProductUpdateWithoutCategoryRefInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUpdateManyWithoutProductNestedInput
@@ -2647,6 +2722,7 @@ export type ProductUncheckedUpdateWithoutCategoryRefInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -2676,6 +2752,7 @@ export type ProductUncheckedUpdateManyWithoutCategoryRefInput = {
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -2815,6 +2892,7 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   priceCents?: boolean
   stockQuantity?: boolean
   lowStockThreshold?: boolean
+  requireOfferSelection?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   categoryRef?: boolean | Prisma.Product$categoryRefArgs<ExtArgs>
@@ -2847,6 +2925,7 @@ export type ProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   priceCents?: boolean
   stockQuantity?: boolean
   lowStockThreshold?: boolean
+  requireOfferSelection?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   categoryRef?: boolean | Prisma.Product$categoryRefArgs<ExtArgs>
@@ -2866,6 +2945,7 @@ export type ProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   priceCents?: boolean
   stockQuantity?: boolean
   lowStockThreshold?: boolean
+  requireOfferSelection?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   categoryRef?: boolean | Prisma.Product$categoryRefArgs<ExtArgs>
@@ -2885,11 +2965,12 @@ export type ProductSelectScalar = {
   priceCents?: boolean
   stockQuantity?: boolean
   lowStockThreshold?: boolean
+  requireOfferSelection?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "category" | "categoryId" | "imageUrl" | "featured" | "bestSeller" | "visible" | "priceCents" | "stockQuantity" | "lowStockThreshold" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
+export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "category" | "categoryId" | "imageUrl" | "featured" | "bestSeller" | "visible" | "priceCents" | "stockQuantity" | "lowStockThreshold" | "requireOfferSelection" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
 export type ProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   categoryRef?: boolean | Prisma.Product$categoryRefArgs<ExtArgs>
   images?: boolean | Prisma.Product$imagesArgs<ExtArgs>
@@ -2944,6 +3025,7 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     priceCents: number
     stockQuantity: number
     lowStockThreshold: number
+    requireOfferSelection: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["product"]>
@@ -3395,6 +3477,7 @@ export interface ProductFieldRefs {
   readonly priceCents: Prisma.FieldRef<"Product", 'Int'>
   readonly stockQuantity: Prisma.FieldRef<"Product", 'Int'>
   readonly lowStockThreshold: Prisma.FieldRef<"Product", 'Int'>
+  readonly requireOfferSelection: Prisma.FieldRef<"Product", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Product", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Product", 'DateTime'>
 }

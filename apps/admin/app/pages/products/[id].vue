@@ -91,6 +91,26 @@ async function toggleVisible(value: boolean) {
   }
 }
 
+// Same immediate-save pattern as toggleVisible — "require an offer" is a
+// storefront-behavior switch (hides the free-quantity stepper on the PDP),
+// not a form field to batch into "Save details".
+const savingRequireOffer = ref(false)
+async function toggleRequireOfferSelection(value: boolean) {
+  if (!product.value) return
+  const previous = product.value.requireOfferSelection
+  product.value.requireOfferSelection = value
+  savingRequireOffer.value = true
+  try {
+    await api(`/admin/products/${id}`, { method: 'PATCH', body: { requireOfferSelection: value } })
+    toast.add({ title: value ? 'Customers must now pick a quantity option' : 'Free-quantity stepper restored', color: 'success' })
+  } catch {
+    product.value.requireOfferSelection = previous
+    toast.add({ title: 'Failed to update', color: 'error' })
+  } finally {
+    savingRequireOffer.value = false
+  }
+}
+
 // ---- Variants tab ----
 const showVariantModal = ref(false)
 const editingVariant = ref<{ sku: string; priceCents: number; stockQuantity: number; optionIds: string[]; id?: string } | null>(null)
@@ -1234,6 +1254,32 @@ async function deleteUpsell(upsellId: string) {
               </div>
             </div>
             <p v-else class="text-sm text-muted">No offers yet.</p>
+          </div>
+
+          <!-- ADM-13 — for products only ever sold in fixed lots (wholesale
+               packs of e.g. 40 or 80 units, never a single unit): require the
+               customer to pick one of the offers above instead of using the
+               normal free-quantity stepper. Reuses the offers system as the
+               sole way to set quantity rather than an optional promo. -->
+          <div class="admin-kpi-card space-y-3 p-6">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <h4 class="text-sm font-medium text-highlighted">Sell only in fixed quantities</h4>
+                <p class="text-sm text-muted">
+                  Hides the free-quantity stepper on the product page — the customer must pick one of the offers
+                  above (e.g. "40 units", "80 units") to buy at all. The first enabled offer is pre-selected by default.
+                </p>
+              </div>
+              <USwitch
+                :model-value="product.requireOfferSelection"
+                :loading="savingRequireOffer"
+                @update:model-value="toggleRequireOfferSelection($event as boolean)"
+              />
+            </div>
+            <div v-if="product.requireOfferSelection && !product.offers.some(o => o.enabled)" class="flex items-center gap-2 rounded-md bg-warning/10 px-3 py-2 text-sm text-warning">
+              <UIcon name="i-lucide-alert-triangle" class="size-4 shrink-0" />
+              No enabled offers yet — this product currently can't be bought at all. Add at least one offer above.
+            </div>
           </div>
 
           <div class="admin-kpi-card space-y-4 p-6">

@@ -157,10 +157,14 @@ const props = defineProps<{
           </div>
         </div>
 
-        <!-- Cart mode: quantity + add-to-cart -->
+        <!-- Cart mode: quantity + add-to-cart. Product.requireOfferSelection
+             (sold only in fixed lots, e.g. wholesale packs of 40/80 units)
+             hides the free-quantity stepper entirely — the offer cards above
+             are the only way to set quantity; see onSelectOffer/the
+             auto-select watchEffect in products/[slug].vue. -->
         <div v-if="props.displayCart !== false" class="flex items-center gap-3 pt-2">
-          <QuantityStepper :model-value="props.quantity" :min="1" :max="props.effectiveStock" :disabled="!props.inStock" @update:model-value="props.onUpdateQuantity" />
-          <Button :disabled="!props.inStock" icon="i-lucide-shopping-cart" size="lg" @click="props.onAddToCart">
+          <QuantityStepper v-if="!props.product?.requireOfferSelection" :model-value="props.quantity" :min="1" :max="props.effectiveStock" :disabled="!props.inStock" @update:model-value="props.onUpdateQuantity" />
+          <Button :disabled="!props.inStock || (props.product?.requireOfferSelection && !props.selectedOfferId)" icon="i-lucide-shopping-cart" size="lg" @click="props.onAddToCart">
             {{ props.inStock ? 'Add to cart' : 'Out of stock' }}
           </Button>
         </div>
@@ -174,7 +178,7 @@ const props = defineProps<{
           </div>
           <LeadFormFields :fields="props.leadFields ?? []" :data="props.leadFormData ?? {}" />
           <div class="flex items-center gap-3">
-            <QuantityStepper :model-value="props.quantity" :min="1" :max="props.effectiveStock" @update:model-value="props.onUpdateQuantity" />
+            <QuantityStepper v-if="!props.product?.requireOfferSelection" :model-value="props.quantity" :min="1" :max="props.effectiveStock" @update:model-value="props.onUpdateQuantity" />
             <Button block size="lg" :loading="props.leadPlacing" color="primary" @click="props.onSubmitLead">Place order</Button>
           </div>
           <p v-if="props.leadError" class="text-sm text-error">{{ props.leadError }}</p>

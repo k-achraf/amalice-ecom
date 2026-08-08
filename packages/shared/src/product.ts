@@ -31,7 +31,13 @@ export const CreateProductSchema = z.object({
   visible: z.boolean().default(true),
   priceCents: z.number().int().nonnegative(),
   stockQuantity: z.number().int().nonnegative(),
-  lowStockThreshold: z.number().int().nonnegative().default(5)
+  lowStockThreshold: z.number().int().nonnegative().default(5),
+  // For products only ever sold in fixed lots (wholesale packs of e.g. 40 or
+  // 80 units, never a single unit) — when true, the storefront PDP hides its
+  // free-quantity stepper and the customer must pick one of this product's
+  // enabled ProductOffers (see offer.ts) to set quantity at all, the first
+  // enabled one pre-selected by default. See Product's Prisma model comment.
+  requireOfferSelection: z.boolean().default(false)
 })
 export type CreateProduct = z.infer<typeof CreateProductSchema>
 

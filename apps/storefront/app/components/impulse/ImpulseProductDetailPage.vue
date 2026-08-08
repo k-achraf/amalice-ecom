@@ -215,13 +215,13 @@ function onStickyCta() {
         <!-- Cart mode -->
         <template v-if="props.displayCart !== false">
           <div class="flex items-center justify-center gap-3">
-            <ImpulseQuantityStepper :model-value="props.quantity" :min="1" :max="props.effectiveStock" :disabled="!props.inStock" @update:model-value="props.onUpdateQuantity" />
+            <ImpulseQuantityStepper v-if="!props.product?.requireOfferSelection" :model-value="props.quantity" :min="1" :max="props.effectiveStock" :disabled="!props.inStock" @update:model-value="props.onUpdateQuantity" />
             <div class="text-end">
               <p class="text-[11px] font-bold uppercase tracking-wide text-neutral-500">المجموع</p>
               <PriceDisplay :amount-cents="props.offerTotalCents ?? props.effectivePriceCents * props.quantity" class="font-display text-xl font-black text-neutral-900" />
             </div>
           </div>
-          <ImpulseButton :disabled="!props.inStock" size="xl" block pulse icon="i-lucide-shopping-cart" @click="props.onAddToCart">
+          <ImpulseButton :disabled="!props.inStock || (props.product?.requireOfferSelection && !props.selectedOfferId)" size="xl" block pulse icon="i-lucide-shopping-cart" @click="props.onAddToCart">
             {{ props.inStock ? 'أضف إلى السلة' : 'غير متوفر' }}
           </ImpulseButton>
           <p v-if="props.added" class="text-center text-sm font-bold text-[var(--color-impulse-green)]">
@@ -234,7 +234,7 @@ function onStickyCta() {
         <template v-if="props.displayCart === false && props.inStock">
           <ImpulseLeadFormFields :fields="props.leadFields ?? []" :data="props.leadFormData ?? {}" />
           <div class="flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-3">
-            <ImpulseQuantityStepper :model-value="props.quantity" :min="1" :max="props.effectiveStock" @update:model-value="props.onUpdateQuantity" />
+            <ImpulseQuantityStepper v-if="!props.product?.requireOfferSelection" :model-value="props.quantity" :min="1" :max="props.effectiveStock" @update:model-value="props.onUpdateQuantity" />
             <div class="text-end">
               <p class="text-[11px] font-bold uppercase tracking-wide text-neutral-500">المجموع — الدفع عند الاستلام</p>
               <PriceDisplay :amount-cents="(props.offerTotalCents ?? props.effectivePriceCents * props.quantity) + (props.leadShippingPriceCents ?? 0)" class="font-display text-xl font-black text-neutral-900" />

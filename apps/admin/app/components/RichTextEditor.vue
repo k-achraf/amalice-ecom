@@ -3,7 +3,9 @@ import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
+import TextAlign from '@tiptap/extension-text-align'
 import { VideoExtension } from '../tiptap/video-extension'
+import { TextDirection } from '../tiptap/text-direction-extension'
 
 // Product-description rich text editor — built directly on Tiptap's Vue
 // bindings rather than Nuxt UI's <UEditor>. UEditor reactively rebuilds its
@@ -95,10 +97,14 @@ function onVideoSelected(event: Event) {
 const editor = useEditor({
   content: props.modelValue ?? '',
   extensions: [
-    StarterKit.configure({ horizontalRule: false }),
+    // horizontalRule re-enabled (was off with no comment explaining why) —
+    // it's a standard toolbar control and StarterKit already bundles it.
+    StarterKit,
     Link.configure({ openOnClick: false }),
     Image,
-    VideoExtension
+    VideoExtension,
+    TextAlign.configure({ types: ['heading', 'paragraph'] }),
+    TextDirection
   ],
   editorProps: {
     attributes: { class: 'rte-content min-h-40 rounded-md border border-default px-3 py-2 text-sm' },
@@ -167,12 +173,41 @@ const toolbarGroups = computed<ToolbarButton[][]>(() => {
     [
       { title: 'Bold', icon: 'i-lucide-bold', active: () => e.isActive('bold'), run: () => e.chain().focus().toggleBold().run() },
       { title: 'Italic', icon: 'i-lucide-italic', active: () => e.isActive('italic'), run: () => e.chain().focus().toggleItalic().run() },
-      { title: 'Strikethrough', icon: 'i-lucide-strikethrough', active: () => e.isActive('strike'), run: () => e.chain().focus().toggleStrike().run() }
+      { title: 'Underline', icon: 'i-lucide-underline', active: () => e.isActive('underline'), run: () => e.chain().focus().toggleUnderline().run() },
+      { title: 'Strikethrough', icon: 'i-lucide-strikethrough', active: () => e.isActive('strike'), run: () => e.chain().focus().toggleStrike().run() },
+      { title: 'Inline code', icon: 'i-lucide-code', active: () => e.isActive('code'), run: () => e.chain().focus().toggleCode().run() },
+      { title: 'Clear formatting', icon: 'i-lucide-remove-formatting', run: () => e.chain().focus().unsetAllMarks().clearNodes().run() }
+    ],
+    [
+      { title: 'Align left', icon: 'i-lucide-align-left', active: () => e.isActive({ textAlign: 'left' }), run: () => e.chain().focus().setTextAlign('left').run() },
+      { title: 'Align center', icon: 'i-lucide-align-center', active: () => e.isActive({ textAlign: 'center' }), run: () => e.chain().focus().setTextAlign('center').run() },
+      { title: 'Align right', icon: 'i-lucide-align-right', active: () => e.isActive({ textAlign: 'right' }), run: () => e.chain().focus().setTextAlign('right').run() },
+      { title: 'Justify', icon: 'i-lucide-align-justify', active: () => e.isActive({ textAlign: 'justify' }), run: () => e.chain().focus().setTextAlign('justify').run() }
+    ],
+    [
+      // No official command for a hand-rolled global-attribute extension
+      // (see text-direction-extension.ts's comment) — apply the `dir`
+      // attribute to every block type it covers directly via
+      // updateAttributes, one call per node type in the same chain.
+      {
+        title: 'Left to right',
+        icon: 'i-lucide-pilcrow-left',
+        active: () => ['paragraph', 'heading', 'blockquote', 'listItem'].some((t) => e.isActive(t, { dir: 'ltr' })),
+        run: () => e.chain().focus().updateAttributes('paragraph', { dir: 'ltr' }).updateAttributes('heading', { dir: 'ltr' }).updateAttributes('blockquote', { dir: 'ltr' }).run()
+      },
+      {
+        title: 'Right to left',
+        icon: 'i-lucide-pilcrow-right',
+        active: () => ['paragraph', 'heading', 'blockquote', 'listItem'].some((t) => e.isActive(t, { dir: 'rtl' })),
+        run: () => e.chain().focus().updateAttributes('paragraph', { dir: 'rtl' }).updateAttributes('heading', { dir: 'rtl' }).updateAttributes('blockquote', { dir: 'rtl' }).run()
+      }
     ],
     [
       { title: 'Bullet list', icon: 'i-lucide-list', active: () => e.isActive('bulletList'), run: () => e.chain().focus().toggleBulletList().run() },
       { title: 'Numbered list', icon: 'i-lucide-list-ordered', active: () => e.isActive('orderedList'), run: () => e.chain().focus().toggleOrderedList().run() },
-      { title: 'Quote', icon: 'i-lucide-quote', active: () => e.isActive('blockquote'), run: () => e.chain().focus().toggleBlockquote().run() }
+      { title: 'Quote', icon: 'i-lucide-quote', active: () => e.isActive('blockquote'), run: () => e.chain().focus().toggleBlockquote().run() },
+      { title: 'Code block', icon: 'i-lucide-square-code', active: () => e.isActive('codeBlock'), run: () => e.chain().focus().toggleCodeBlock().run() },
+      { title: 'Horizontal rule', icon: 'i-lucide-minus', run: () => e.chain().focus().setHorizontalRule().run() }
     ],
     [
       {
@@ -251,5 +286,88 @@ const toolbarGroups = computed<ToolbarButton[][]>(() => {
 .rte :deep(.rte-content:focus) {
   outline: none;
   border-color: var(--ui-primary);
+}
+
+/* ---- Typography for the editor's actual content ----
+   Tiptap outputs real semantic HTML (h2/h3, strong, ul/ol, blockquote,
+   code, hr) — but Tailwind's Preflight base layer deliberately strips the
+   browser's default styling for exactly those elements (headings inherit
+   font-size, lists lose their bullets/numbers, blockquotes lose their
+   indent) for a clean slate elsewhere in the app. Inside THIS editor that
+   meant every element rendered as visually identical plain text regardless
+   of which button was active — the formatting was really being applied
+   (the tags were correct in the saved HTML) but nothing made it LOOK
+   applied. These rules re-establish normal rich-text appearance, scoped to
+   .rte-content only so the rest of the admin's Preflight reset is untouched. */
+.rte :deep(.rte-content) {
+  line-height: 1.6;
+}
+.rte :deep(.rte-content > * + *) {
+  margin-top: 0.75em;
+}
+.rte :deep(.rte-content h2) {
+  font-size: 1.5em;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.rte :deep(.rte-content h3) {
+  font-size: 1.25em;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.rte :deep(.rte-content strong) {
+  font-weight: 700;
+}
+.rte :deep(.rte-content em) {
+  font-style: italic;
+}
+.rte :deep(.rte-content u) {
+  text-decoration: underline;
+}
+.rte :deep(.rte-content s) {
+  text-decoration: line-through;
+}
+.rte :deep(.rte-content ul) {
+  list-style: disc;
+  padding-inline-start: 1.5em;
+}
+.rte :deep(.rte-content ol) {
+  list-style: decimal;
+  padding-inline-start: 1.5em;
+}
+.rte :deep(.rte-content li + li) {
+  margin-top: 0.25em;
+}
+.rte :deep(.rte-content blockquote) {
+  border-inline-start: 3px solid var(--color-admin-border-strong, #d8deea);
+  padding-inline-start: 0.75em;
+  color: var(--color-admin-text-secondary, inherit);
+  font-style: italic;
+}
+.rte :deep(.rte-content code) {
+  background-color: var(--color-admin-surface-tint, #f4f4f5);
+  border-radius: 0.25rem;
+  padding: 0.125em 0.375em;
+  font-family: ui-monospace, monospace;
+  font-size: 0.875em;
+}
+.rte :deep(.rte-content pre) {
+  background-color: var(--color-admin-surface-tint, #f4f4f5);
+  border-radius: 0.5rem;
+  padding: 0.75em 1em;
+  overflow-x: auto;
+}
+.rte :deep(.rte-content pre code) {
+  background-color: transparent;
+  padding: 0;
+}
+.rte :deep(.rte-content hr) {
+  border: none;
+  border-top: 1px solid var(--color-admin-border, #e3e8ee);
+  margin-block: 1em;
+}
+.rte :deep(.rte-content a) {
+  color: var(--ui-primary);
+  text-decoration: underline;
 }
 </style>

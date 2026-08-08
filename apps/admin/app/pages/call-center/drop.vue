@@ -56,10 +56,18 @@ const callsHandled = computed(() => stats.Confirmed + stats.CallCenterNoAnswer +
 
 // Queue composition — how many of each tier are left, so the agent can see
 // the shape of the remaining work (e.g. "mostly retries left" vs "fresh
-// leads waiting").
+// leads waiting"). Abandoned orders are counted separately from their raw
+// state (always PendingCallCenter — see OrdersService.createAbandonedOrder)
+// rather than folded into "new": they're the lowest-priority tier in the
+// actual queue ranking (see AdminOrdersService.dropQueue), so lumping them
+// into "new" would overstate how many fresh, never-abandoned leads are
+// actually waiting.
 const composition = computed(() => {
-  const c: Record<string, number> = { PendingCallCenter: 0, CallCenterNoAnswer: 0, Postponed: 0, WrongNumber: 0 }
-  for (const o of queue.value) if (o.state in c) c[o.state] = (c[o.state] ?? 0) + 1
+  const c: Record<string, number> = { PendingCallCenter: 0, CallCenterNoAnswer: 0, Postponed: 0, WrongNumber: 0, Abandoned: 0 }
+  for (const o of queue.value) {
+    if (o.isAbandoned) c.Abandoned = (c.Abandoned ?? 0) + 1
+    else if (o.state in c) c[o.state] = (c[o.state] ?? 0) + 1
+  }
   return c
 })
 
@@ -236,7 +244,19 @@ const tierLabel: Record<string, string> = {
     </template>
 
     <template #body>
-      <div class="mx-auto max-w-2xl space-y-5">
+      <!-- w-full + min-w-0 are both load-bearing here, not decorative:
+           this div is a flex item of DashboardPanel's body slot (flex
+           flex-col). `mx-auto` sets auto margins on the cross axis, which
+           per the flexbox spec DISABLES align-items:stretch for this item —
+           so instead of being sized to the container's width, it falls back
+           to shrink-to-fit sizing off its own content, and a long customer
+           name/address/product name pushes it past the viewport. It was
+           rendering ~500px wide inside a 375px viewport, silently clipped
+           (no scrollbar — content just invisible) rather than wrapping.
+           `w-full` gives it an explicit width so stretch no longer needs to
+           apply; `min-w-0` is the belt-and-suspenders fix for the same
+           default-min-width:auto issue on any nested flex/grid descendant. -->
+      <div class="mx-auto w-full min-w-0 max-w-2xl space-y-5">
         <!-- Session stats -->
         <div class="grid grid-cols-3 gap-3 sm:grid-cols-6">
           <div class="admin-kpi-card p-3 text-center">
@@ -272,6 +292,7 @@ const tierLabel: Record<string, string> = {
           <UBadge color="warning" variant="subtle">{{ composition.CallCenterNoAnswer }} retry</UBadge>
           <UBadge color="neutral" variant="subtle">{{ composition.Postponed }} postponed</UBadge>
           <UBadge color="error" variant="subtle">{{ composition.WrongNumber }} wrong #</UBadge>
+          <UBadge color="neutral" variant="outline" title="Customer never finished submitting — lowest priority, but confirming one converts it to a normal order.">{{ composition.Abandoned }} abandoned</UBadge>
         </div>
 
         <!-- Focus card -->

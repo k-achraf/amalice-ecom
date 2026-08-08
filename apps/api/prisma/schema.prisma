@@ -96,31 +96,31 @@ model Category {
 }
 
 model Product {
-  id                String               @id @default(uuid())
-  name              String
-  slug              String               @unique
-  description       String?
+  id                    String               @id @default(uuid())
+  name                  String
+  slug                  String               @unique
+  description           String?
   // Flat tag kept for back-compat with seeded data and the existing
   // ?category= filter; categoryId is the normalized FK (SF-17). Both can
   // coexist — categoryId is authoritative when set.
-  category          String?
-  categoryId        String?              @map("category_id")
-  categoryRef       Category?            @relation(fields: [categoryId], references: [id])
+  category              String?
+  categoryId            String?              @map("category_id")
+  categoryRef           Category?            @relation(fields: [categoryId], references: [id])
   // SF-15: primary image (gallery's first/hero). The ProductImage rows are
   // the full gallery; this denormalized field is the fast path for cards.
-  imageUrl          String?              @map("image_url")
-  images            ProductImage[]
+  imageUrl              String?              @map("image_url")
+  images                ProductImage[]
   // SF-15: variants (size/color/etc.). A product with no variants is
   // single-SKU and behaves exactly as before — variant rows are optional.
-  variants          ProductVariant[]
+  variants              ProductVariant[]
   // Which attributes apply to this product (the product "uses" Color + Size).
   // Drives the variant-manager UI: before creating variants, you apply the
   // attributes the variants will vary on.
-  productAttributes ProductAttribute[]
+  productAttributes     ProductAttribute[]
   // Curated "featured/best-seller" flags for SF-18 marketing home, not a
   // separate marketing table.
-  featured          Boolean              @default(false)
-  bestSeller        Boolean              @default(false) @map("best_seller")
+  featured              Boolean              @default(false)
+  bestSeller            Boolean              @default(false) @map("best_seller")
   // Unlisted-product toggle — false hides the product from every discovery
   // surface (catalog, collections, search, home featured/best-seller
   // sections, related products) but does NOT block direct access: the
@@ -129,32 +129,43 @@ model Product {
   // ad-only funnel products that should never be publicly browsable. Not the
   // same as stockQuantity=0 ("archived"/out-of-stock, still listed) — this
   // is purely a discoverability switch, independent of stock.
-  visible           Boolean              @default(true)
-  priceCents        Int                  @map("price_cents")
-  stockQuantity     Int                  @default(0) @map("stock_quantity")
-  lowStockThreshold Int                  @default(5) @map("low_stock_threshold")
-  orderItems        OrderItem[]
-  reviews           Review[]
-  stockAdjustments  StockAdjustment[]
+  visible               Boolean              @default(true)
+  priceCents            Int                  @map("price_cents")
+  stockQuantity         Int                  @default(0) @map("stock_quantity")
+  lowStockThreshold     Int                  @default(5) @map("low_stock_threshold")
+  orderItems            OrderItem[]
+  reviews               Review[]
+  stockAdjustments      StockAdjustment[]
   // AI-generated long-scroll landing pages — a product can have several
   // (different creative angles, each its own storefront URL), see
   // ProductLandingPage below.
-  landingPages      ProductLandingPage[]
+  landingPages          ProductLandingPage[]
   // Quantity-based promos (buy 2 for a bundle price, buy 2 get 1 free, buy 2
   // free shipping) — see ProductOffer below.
-  offers            ProductOffer[]
+  offers                ProductOffer[]
+  // For products only ever sold in fixed lots (e.g. wholesale packs of 40 or
+  // 80 units, never a single unit) — when true, the storefront PDP hides its
+  // free-quantity stepper entirely and the customer must pick one of this
+  // product's enabled ProductOffers (the first enabled one pre-selected by
+  // default) to set quantity at all. Reuses the existing offers system
+  // (FixedBundlePrice is exactly "N units for a set price") rather than a
+  // parallel mechanism — this flag only changes whether picking one is
+  // optional (false, the normal promo-upsell behavior) or the sole way to
+  // buy (true). Meaningless with zero enabled offers; the admin UI warns
+  // rather than silently making the product unbuyable.
+  requireOfferSelection Boolean              @default(false) @map("require_offer_selection")
   // Upsells system — products suggested when THIS product is bought
   // (upsellsOffered) vs configs where THIS product IS the suggested upsell
   // for some other product (upsellsAsTarget). See ProductUpsell below.
-  upsellsOffered    ProductUpsell[]      @relation("UpsellTrigger")
-  upsellsAsTarget   ProductUpsell[]      @relation("UpsellTarget")
-  googleSheets      ProductGoogleSheet[]
+  upsellsOffered        ProductUpsell[]      @relation("UpsellTrigger")
+  upsellsAsTarget       ProductUpsell[]      @relation("UpsellTarget")
+  googleSheets          ProductGoogleSheet[]
   // Reverse of SourcedProduct.linkedProductId — the research/ad-testing
   // candidate this product came from, when it went through that pipeline
   // rather than being created directly.
-  sourcedFrom       SourcedProduct?
-  createdAt         DateTime             @default(now()) @map("created_at")
-  updatedAt         DateTime             @updatedAt @map("updated_at")
+  sourcedFrom           SourcedProduct?
+  createdAt             DateTime             @default(now()) @map("created_at")
+  updatedAt             DateTime             @updatedAt @map("updated_at")
 
   @@index([category])
   @@index([categoryId])

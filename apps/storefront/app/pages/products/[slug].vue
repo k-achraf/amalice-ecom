@@ -144,6 +144,11 @@ function onUpdateQuantity(v: number) {
 }
 function onAddToCart() {
   if (!product.value || !inStock.value) return
+  // Product.requireOfferSelection — sold only in fixed lots (e.g. wholesale
+  // packs of 40/80 units), never a single unit. The template is expected to
+  // hide/disable its free-quantity stepper for these, but this is the real
+  // enforcement: no offer selected means no valid quantity to sell at all.
+  if (product.value.requireOfferSelection && !selectedOfferId.value) return
   cart.addItem(product.value, quantity.value, selectedOffer.value, selectedVariant.value)
   added.value = true
   setTimeout(() => (added.value = false), 2000)
@@ -169,6 +174,22 @@ function onSelectOffer(offer: ProductOffer) {
   selectedOfferId.value = offer.id
   quantity.value = offerTotalQuantity(offer)
 }
+
+// Product.requireOfferSelection — sold only in fixed lots, no single-unit
+// purchase. Pre-select the first enabled offer so the customer always lands
+// on a valid, buyable quantity rather than an empty/zero state. Keyed by
+// product id, same re-fire-guard pattern as the pixel/view-tracking effects
+// above (Nuxt reuses this page's component instance across client-side
+// product-to-product navigation, so a plain one-shot wouldn't re-run for a
+// second product visited in the same session).
+const offersAutoSelectedForProductId = ref<string | null>(null)
+watchEffect(() => {
+  if (product.value?.requireOfferSelection && offersAutoSelectedForProductId.value !== product.value.id) {
+    offersAutoSelectedForProductId.value = product.value.id
+    const first = product.value.offers[0]
+    if (first) onSelectOffer(first)
+  }
+})
 
 // ---- Lead form (displayCart=false) ----
 // Dynamic: fields come from admin-configured leadFormConfig (StoreSettings).
@@ -280,6 +301,15 @@ async function onSubmitLead() {
   }
   if (!leadFormData.wilayaId || !leadFormData.shippingType) {
     leadError.value = 'Please select a shipping method.'
+    return
+  }
+  // Product.requireOfferSelection — sold only in fixed lots (e.g. wholesale
+  // packs of 40/80 units); the offer picked is what determines quantity, so
+  // there's no valid order without one. Should already be pre-selected (see
+  // the auto-select watchEffect above) — this is the real enforcement in
+  // case a template's UI ever lets it get cleared.
+  if (product.value.requireOfferSelection && !selectedOfferId.value) {
+    leadError.value = 'Please select a quantity option.'
     return
   }
   stopAbandonedTimer()
