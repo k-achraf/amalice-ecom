@@ -138,6 +138,16 @@ export class AdminController {
     return this.orders.dropQueue(Number(pageSize))
   }
 
+  // Drop Queue's stats cards — today's real Confirmed/No-answer/Wrong-number/
+  // Postponed/Cancelled counts across the whole call-center team, from
+  // AuditLog (see AdminOrdersService.todayCallCenterStats). Also registered
+  // before orders/:id for the same reason as drop-queue above.
+  @Get('orders/call-center-stats')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  callCenterStats() {
+    return this.orders.todayCallCenterStats()
+  }
+
   // CallCenterAgent included: an order reached via their own Call Center/
   // Drop Queue pages links here for the full detail view.
   @Get('orders/:id')

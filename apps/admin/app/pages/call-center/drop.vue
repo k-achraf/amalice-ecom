@@ -31,9 +31,18 @@ async function loadQueue() {
 }
 await loadQueue()
 
+type CallCenterStats = { Confirmed: number; CallCenterNoAnswer: number; WrongNumber: number; Postponed: number; Cancelled: number }
+async function loadStats() {
+  return api<CallCenterStats>('/admin/orders/call-center-stats')
+}
+const todayStats = await loadStats()
+
 async function refreshQueue() {
   loadingQueue.value = true
-  const res = await api<{ items: AdminOrderListItem[]; total: number }>('/admin/orders/drop-queue', { query: { pageSize: 100 } })
+  const [res, freshStats] = await Promise.all([
+    api<{ items: AdminOrderListItem[]; total: number }>('/admin/orders/drop-queue', { query: { pageSize: 100 } }),
+    loadStats()
+  ])
   loadingQueue.value = false
   const existingIds = new Set(queue.value.map((o) => o.id))
   // Drop anything no longer in the fresh set (handled elsewhere, e.g. by
@@ -44,14 +53,35 @@ async function refreshQueue() {
   const kept = queue.value.filter((o) => freshIds.has(o.id))
   const added = res.items.filter((o) => !existingIds.has(o.id))
   queue.value = [...kept, ...added]
+  // Safe to just overwrite — the backend total already includes every
+  // action this session took (they went through the same transition API),
+  // so this only ever adds what a teammate did meanwhile, never loses
+  // this session's own optimistic increments.
+  Object.assign(stats, freshStats)
 }
 
 const current = computed(() => queue.value[0] ?? null)
 
-// ---- Session stats — purely local, resets on page reload. Gives the agent
-// a sense of momentum during a shift without needing a separate reporting
-// page for it.
-const stats = reactive({ Confirmed: 0, CallCenterNoAnswer: 0, WrongNumber: 0, Postponed: 0, Cancelled: 0, skipped: 0 })
+// ---- Stats cards — seeded from today's REAL counts across the whole team
+// (GET /admin/orders/call-center-stats, sourced from AuditLog — see
+// AdminOrdersService.todayCallCenterStats). Previously this was a purely
+// local counter that always started at 0 on page load, which read as
+// "broken" to any agent opening the page after real activity had already
+// happened earlier today (their own last session, or a teammate's).
+// Actions taken in THIS session still increment on top of that seed
+// immediately (optimistic — no refetch needed to see your own action
+// reflected), so the numbers stay both real and responsive. `skipped` has
+// no backend equivalent by design: Skip never calls the API (see skip()
+// below), it's a local reordering, not a real state transition — nothing to
+// seed it from.
+const stats = reactive({
+  Confirmed: todayStats.Confirmed,
+  CallCenterNoAnswer: todayStats.CallCenterNoAnswer,
+  WrongNumber: todayStats.WrongNumber,
+  Postponed: todayStats.Postponed,
+  Cancelled: todayStats.Cancelled,
+  skipped: 0
+})
 const callsHandled = computed(() => stats.Confirmed + stats.CallCenterNoAnswer + stats.WrongNumber + stats.Postponed + stats.Cancelled)
 
 // Queue composition — how many of each tier are left, so the agent can see
@@ -257,7 +287,10 @@ const tierLabel: Record<string, string> = {
            apply; `min-w-0` is the belt-and-suspenders fix for the same
            default-min-width:auto issue on any nested flex/grid descendant. -->
       <div class="mx-auto w-full min-w-0 max-w-2xl space-y-5">
-        <!-- Session stats -->
+        <!-- Today's real stats (whole team, from AuditLog) + this session's
+             own actions layered on top optimistically — see the `stats`
+             comment in the script. -->
+        <p class="text-xs text-muted">Today</p>
         <div class="grid grid-cols-3 gap-3 sm:grid-cols-6">
           <div class="admin-kpi-card p-3 text-center">
             <p class="tabular text-xl font-semibold text-highlighted">{{ callsHandled }}</p>

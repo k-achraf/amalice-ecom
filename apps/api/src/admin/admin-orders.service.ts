@@ -191,6 +191,40 @@ export class AdminOrdersService {
     return { items: items.slice(0, pageSize), total: items.length }
   }
 
+  // Drop Queue's session-stats cards (ADM-11) were showing a purely local,
+  // per-page-load counter that starts at 0 and only ever grows from actions
+  // taken in the CURRENT browser tab — indistinguishable from "broken" to an
+  // agent opening the page fresh, since real call-center activity from
+  // earlier today (their own last session, or a teammate's) never showed up.
+  // This is the real source: every state transition is already recorded in
+  // AuditLog (StateTransition, metadata {from, to}), which is the actual
+  // history of what happened — not "count orders currently in state X"
+  // (which undercounts anything that moved on again, e.g. Confirmed →
+  // Packed later the same day). Scoped to today (server-local midnight) and
+  // just the 5 outcomes this queue's action buttons produce.
+  private static readonly CALL_CENTER_OUTCOME_STATES: OrderState[] = ['Confirmed', 'CallCenterNoAnswer', 'WrongNumber', 'Postponed', 'Cancelled']
+
+  async todayCallCenterStats() {
+    const startOfDay = new Date()
+    startOfDay.setHours(0, 0, 0, 0)
+
+    const rows = await this.prisma.auditLog.findMany({
+      where: {
+        entity: 'Order',
+        action: 'StateTransition',
+        createdAt: { gte: startOfDay }
+      },
+      select: { metadata: true }
+    })
+
+    const counts: Record<string, number> = { Confirmed: 0, CallCenterNoAnswer: 0, WrongNumber: 0, Postponed: 0, Cancelled: 0 }
+    for (const row of rows) {
+      const to = (row.metadata as { to?: string } | null)?.to
+      if (to && to in counts) counts[to]++
+    }
+    return counts as Record<(typeof AdminOrdersService.CALL_CENTER_OUTCOME_STATES)[number], number>
+  }
+
   async findOne(id: string) {
     const order = await this.prisma.order.findUnique({
       where: { id },
