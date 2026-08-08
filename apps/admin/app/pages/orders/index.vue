@@ -142,7 +142,10 @@ function fmtDate(iso: string) {
                     <OrderLineItemsInline :items="order.items" compact class="max-w-64" />
                   </td>
                   <td class="px-4 py-3">
-                    <div class="text-highlighted">{{ order.customer.name ?? '—' }}</div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-highlighted">{{ order.customer.name ?? '—' }}</span>
+                      <UIcon v-if="order.notes" name="i-lucide-sticky-note" class="size-3.5 shrink-0 text-muted" :title="order.notes" />
+                    </div>
                     <div class="tabular text-xs text-muted">{{ order.customer.phone }}</div>
                   </td>
                   <td class="px-4 py-3 text-muted">{{ order.address.region }}</td>

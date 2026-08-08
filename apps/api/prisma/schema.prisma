@@ -458,6 +458,16 @@ model Order {
   // Free-text call-center notes — see UpdateOrderNotesSchema. Also mirrored
   // into the Google Sheets integration's Notes column (GoogleSheetsService).
   notes                String?
+  // When a call-center agent postpones an order (transition to Postponed),
+  // they must now pick a follow-up date/time — this is it. The Drop Queue
+  // hides a Postponed order until this is reached (see
+  // AdminOrdersService.dropQueue's where clause), instead of showing it
+  // again immediately. Cleared back to null on any other transition (a
+  // stale date from an old postponement shouldn't linger once the order
+  // moves on). Null for Postponed orders that predate this field —
+  // dropQueue treats a null postponedUntil as "no date on record, show it"
+  // rather than hiding it forever.
+  postponedUntil       DateTime?             @map("postponed_until")
   // Set when OrdersService.findRecentDuplicate finds a prior (non-abandoned)
   // order for the same customer sharing at least one product within the
   // last 2 days — never blocks the order, just flags it so call-center can

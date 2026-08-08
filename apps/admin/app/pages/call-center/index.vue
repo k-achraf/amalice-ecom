@@ -43,14 +43,35 @@ const actionLabel: Record<string, string> = {
   PendingCallCenter: 'Moved back to the call queue',
   Cancelled: 'Order cancelled'
 }
-async function act(orderId: string, to: 'Confirmed' | 'CallCenterNoAnswer' | 'WrongNumber' | 'Postponed' | 'PendingCallCenter' | 'Cancelled') {
+async function act(orderId: string, to: 'Confirmed' | 'CallCenterNoAnswer' | 'WrongNumber' | 'Postponed' | 'PendingCallCenter' | 'Cancelled', postponedUntil?: string) {
   acting.value = `${orderId}:${to}`
-  await run(() => api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to } }), {
+  await run(() => api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to, postponedUntil } }), {
     success: actionLabel[to],
     errorFallback: 'Could not update the order'
   })
   await Promise.all([refreshPending(), refreshNoAnswer(), refreshWrongNumber(), refreshPostponed()])
   acting.value = null
+}
+
+// ---- Postpone requires a follow-up date/time (server now rejects a bare
+// `{to: 'Postponed'}` — see TransitionOrderSchema's refine in packages/shared).
+const postponeModalOpen = ref(false)
+const postponeOrderId = ref<string | null>(null)
+const postponeDate = ref('')
+
+function openPostpone(orderId: string) {
+  postponeOrderId.value = orderId
+  const d = new Date(Date.now() + 4 * 60 * 60 * 1000)
+  d.setSeconds(0, 0)
+  postponeDate.value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+  postponeModalOpen.value = true
+}
+
+async function confirmPostpone() {
+  if (!postponeOrderId.value || !postponeDate.value) return
+  const iso = new Date(postponeDate.value).toISOString()
+  postponeModalOpen.value = false
+  await act(postponeOrderId.value, 'Postponed', iso)
 }
 
 // ---- Call-center notes — free text per order, mirrored into the Google
@@ -171,7 +192,7 @@ function addressLine(o: { address: { line1: string; city: string; region: string
                 <UButton icon="i-lucide-check" size="sm" color="primary" :loading="acting === `${o.id}:Confirmed`" label="Confirm" @click="act(o.id, 'Confirmed')" />
                 <UButton icon="i-lucide-phone-missed" size="sm" color="warning" variant="outline" :loading="acting === `${o.id}:CallCenterNoAnswer`" label="No answer" @click="act(o.id, 'CallCenterNoAnswer')" />
                 <UButton icon="i-lucide-phone-off" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:WrongNumber`" label="Wrong number" @click="act(o.id, 'WrongNumber')" />
-                <UButton icon="i-lucide-calendar-clock" size="sm" color="warning" variant="outline" :loading="acting === `${o.id}:Postponed`" label="Postpone" @click="act(o.id, 'Postponed')" />
+                <UButton icon="i-lucide-calendar-clock" size="sm" color="warning" variant="outline" :loading="acting === `${o.id}:Postponed`" label="Postpone" @click="openPostpone(o.id)" />
                 <UButton icon="i-lucide-x" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:Cancelled`" label="Cancel" @click="act(o.id, 'Cancelled')" />
                 <UButton icon="i-lucide-sticky-note" size="sm" color="neutral" variant="ghost" :label="o.notes ? 'Edit note' : 'Add note'" @click="openNotes(o)" />
                 <UButton icon="i-lucide-pencil" size="sm" color="neutral" variant="ghost" label="Edit price" @click="openPriceEditor(o)" />
@@ -302,6 +323,22 @@ function addressLine(o: { address: { line1: string; city: string; region: string
         <div class="flex justify-end gap-2">
           <UButton color="neutral" variant="ghost" @click="priceModalOpen = false">Cancel</UButton>
           <UButton :loading="savingPrice" color="primary" icon="i-lucide-check" @click="savePrice">Save</UButton>
+        </div>
+      </div>
+    </template>
+  </UModal>
+
+  <UModal v-model:open="postponeModalOpen">
+    <template #content>
+      <div class="space-y-4 p-6">
+        <h3 class="text-lg font-semibold">Postpone — pick a follow-up date</h3>
+        <p class="text-sm text-muted">The order stays out of the queues until this date/time is reached.</p>
+        <UFormField label="Follow up at">
+          <UInput v-model="postponeDate" type="datetime-local" class="w-full" />
+        </UFormField>
+        <div class="flex justify-end gap-2">
+          <UButton color="neutral" variant="ghost" @click="postponeModalOpen = false">Cancel</UButton>
+          <UButton :disabled="!postponeDate" color="primary" icon="i-lucide-check" @click="confirmPostpone">Postpone</UButton>
         </div>
       </div>
     </template>

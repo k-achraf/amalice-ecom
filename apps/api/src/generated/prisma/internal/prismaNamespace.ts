@@ -4089,6 +4089,7 @@ export const OrderScalarFieldEnum = {
   fulfillmentMethod: 'fulfillmentMethod',
   shippingCompanyId: 'shippingCompanyId',
   notes: 'notes',
+  postponedUntil: 'postponedUntil',
   isDuplicate: 'isDuplicate',
   duplicateOfOrderId: 'duplicateOfOrderId',
   createdAt: 'createdAt',

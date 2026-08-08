@@ -110,19 +110,44 @@ const actionLabel: Record<string, string> = {
   Cancelled: 'Order cancelled'
 }
 
-async function act(to: 'Confirmed' | 'CallCenterNoAnswer' | 'WrongNumber' | 'Postponed' | 'Cancelled') {
+async function act(to: 'Confirmed' | 'CallCenterNoAnswer' | 'WrongNumber' | 'Postponed' | 'Cancelled', postponedUntil?: string) {
   const order = current.value
   if (!order || acting.value) return
   acting.value = true
-  const result = await run(() => api(`/admin/orders/${order.id}/transition`, { method: 'POST', body: { to } }), {
-    success: actionLabel[to],
-    errorFallback: 'Could not update the order'
-  })
+  const result = await run(
+    () => api(`/admin/orders/${order.id}/transition`, { method: 'POST', body: { to, ...(postponedUntil && { postponedUntil }) } }),
+    { success: actionLabel[to], errorFallback: 'Could not update the order' }
+  )
   acting.value = false
   if (result === undefined) return
   if (to === 'Confirmed') stats.Confirmed++
   else stats[to]++
   queue.value = queue.value.filter((o) => o.id !== order.id)
+}
+
+// Postponing now requires picking a follow-up date/time — the order stays
+// hidden from this queue until it's reached (see AdminOrdersService.
+// dropQueue). A plain "Postpone" click used to instantly re-hide-then-
+// immediately-reshow the same order, which is why it needed this gate at
+// all: without a real date, "postponed" and "no answer" were functionally
+// identical.
+const postponeModalOpen = ref(false)
+const postponeDate = ref('')
+function openPostpone() {
+  if (!current.value) return
+  // Default to 4 hours from now — a reasonable "try again later today"
+  // starting point the agent can just confirm or adjust, rather than an
+  // empty field with no anchor.
+  const d = new Date(Date.now() + 4 * 3600 * 1000)
+  d.setSeconds(0, 0)
+  postponeDate.value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+  postponeModalOpen.value = true
+}
+async function confirmPostpone() {
+  if (!postponeDate.value) return
+  const iso = new Date(postponeDate.value).toISOString()
+  postponeModalOpen.value = false
+  await act('Postponed', iso)
 }
 
 function skip() {
@@ -176,6 +201,96 @@ async function savePrice() {
   }
 }
 
+// ---- Customer/address/shipping-method correction (ADM-14) — same
+// pre-confirmation scope as price editing (the drop queue is entirely
+// pre-confirmation orders by construction, so no state check needed here
+// either). Wilaya/commune are edited via the same cascading selects the
+// storefront checkout uses (GET /wilayas, GET /communes?wilayaId=) rather
+// than free text, so a corrected address stays consistent with the real
+// Algeria reference data — Address itself only stores plain name strings
+// (see Address's Prisma comment), not a wilayaId/communeId FK, so the
+// select's *name* is what actually gets sent, the id is only used locally
+// to drive the commune fetch.
+interface WilayaOption { id: string; name: string }
+interface CommuneOption { id: string; name: string; wilayaId: string }
+const wilayaOptions = ref<WilayaOption[]>([])
+const communeOptions = ref<CommuneOption[]>([])
+const wilayaOptionsLoaded = ref(false)
+async function ensureWilayas() {
+  if (wilayaOptionsLoaded.value) return
+  wilayaOptionsLoaded.value = true
+  wilayaOptions.value = await api<WilayaOption[]>('/wilayas')
+}
+
+const customerModalOpen = ref(false)
+const editCustomerName = ref('')
+const editCustomerPhone = ref('')
+const editWilayaId = ref<string | undefined>(undefined)
+const editCommuneName = ref('')
+const editAddressLine1 = ref('')
+const editShippingType = ref<'Home' | 'Desk' | undefined>(undefined)
+const savingCustomer = ref(false)
+
+async function openCustomerEditor() {
+  const order = current.value
+  if (!order) return
+  await ensureWilayas()
+  editCustomerName.value = order.customer.name ?? ''
+  editCustomerPhone.value = formatPhoneLocal(order.customer.phone)
+  editAddressLine1.value = order.address.line1
+  editCommuneName.value = order.address.city
+  editShippingType.value = order.shippingType ?? undefined
+  const matchedWilaya = wilayaOptions.value.find((w) => w.name === order.address.region)
+  editWilayaId.value = matchedWilaya?.id ?? undefined
+  if (editWilayaId.value) await loadCommunes(editWilayaId.value)
+  customerModalOpen.value = true
+}
+
+async function loadCommunes(wilayaId: string) {
+  communeOptions.value = await api<CommuneOption[]>('/communes', { query: { wilayaId } })
+}
+watch(editWilayaId, (id, oldId) => {
+  if (id && id !== oldId) {
+    editCommuneName.value = ''
+    loadCommunes(id)
+  }
+})
+
+async function saveCustomer() {
+  const order = current.value
+  if (!order) return
+  const wilayaName = wilayaOptions.value.find((w) => w.id === editWilayaId.value)?.name
+  savingCustomer.value = true
+  const body: Record<string, string> = {}
+  if (editCustomerName.value.trim() !== (order.customer.name ?? '')) body.customerName = editCustomerName.value.trim()
+  if (editCustomerPhone.value.trim() && editCustomerPhone.value.trim() !== formatPhoneLocal(order.customer.phone)) body.customerPhone = editCustomerPhone.value.trim()
+  if (wilayaName && wilayaName !== order.address.region) body.wilaya = wilayaName
+  if (editCommuneName.value && editCommuneName.value !== order.address.city) body.commune = editCommuneName.value
+  if (editAddressLine1.value.trim() && editAddressLine1.value.trim() !== order.address.line1) body.addressLine1 = editAddressLine1.value.trim()
+  if (editShippingType.value && editShippingType.value !== order.shippingType) body.shippingType = editShippingType.value
+  if (Object.keys(body).length === 0) {
+    savingCustomer.value = false
+    customerModalOpen.value = false
+    return
+  }
+  const result = await run(() => api(`/admin/orders/${order.id}/customer-info`, { method: 'PATCH', body }), {
+    success: 'Customer info updated',
+    errorFallback: 'Could not update customer info'
+  })
+  savingCustomer.value = false
+  if (result === undefined) return
+  customerModalOpen.value = false
+  const updated = queue.value.find((o) => o.id === order.id)
+  if (updated) {
+    if (body.customerName !== undefined) updated.customer.name = body.customerName
+    if (body.customerPhone !== undefined) updated.customer.phone = body.customerPhone
+    if (body.wilaya !== undefined) updated.address.region = body.wilaya
+    if (body.commune !== undefined) updated.address.city = body.commune
+    if (body.addressLine1 !== undefined) updated.address.line1 = body.addressLine1
+    if (body.shippingType !== undefined) updated.shippingType = body.shippingType as 'Home' | 'Desk'
+  }
+}
+
 // ---- Call-center notes — same pattern as call-center/index.vue.
 const notesModalOpen = ref(false)
 const notesText = ref('')
@@ -216,7 +331,7 @@ function onKeydown(e: KeyboardEvent) {
     case '1': act('Confirmed'); break
     case '2': act('CallCenterNoAnswer'); break
     case '3': act('WrongNumber'); break
-    case '4': act('Postponed'); break
+    case '4': openPostpone(); break
     case '5': act('Cancelled'); break
     case 's': case 'S': skip(); break
     case 'n': case 'N': openNotes(); break
@@ -357,7 +472,10 @@ const tierLabel: Record<string, string> = {
               <a :href="`tel:${current.customer.phone}`" class="tabular mt-0.5 flex items-center gap-1.5 text-lg text-primary hover:underline">
                 <UIcon name="i-lucide-phone-call" class="size-4 shrink-0" />{{ formatPhoneLocal(current.customer.phone) }}
               </a>
-              <p class="mt-1 text-sm text-muted">{{ addressLine(current) }}</p>
+              <p class="mt-1 text-sm text-muted">
+                {{ addressLine(current) }}
+                <UButton icon="i-lucide-pencil" size="xs" variant="link" color="neutral" label="Edit" @click="openCustomerEditor" />
+              </p>
             </div>
             <div class="flex shrink-0 items-center justify-between gap-3 sm:flex-col sm:items-end sm:justify-start sm:text-right">
               <PriceDisplay :amount-cents="current.totalCents" class="tabular text-xl font-semibold text-highlighted" />
@@ -383,7 +501,7 @@ const tierLabel: Record<string, string> = {
           <div class="grid grid-cols-2 gap-2">
             <UButton icon="i-lucide-phone-missed" color="warning" variant="outline" :loading="acting" label="No answer" @click="act('CallCenterNoAnswer')" />
             <UButton icon="i-lucide-phone-off" color="error" variant="outline" :loading="acting" label="Wrong number" @click="act('WrongNumber')" />
-            <UButton icon="i-lucide-calendar-clock" color="warning" variant="outline" :loading="acting" label="Postpone" @click="act('Postponed')" />
+            <UButton icon="i-lucide-calendar-clock" color="warning" variant="outline" :loading="acting" label="Postpone" @click="openPostpone" />
             <UButton icon="i-lucide-x" color="error" variant="outline" :loading="acting" label="Cancel" @click="act('Cancelled')" />
           </div>
           <div class="grid grid-cols-2 gap-2">
@@ -425,6 +543,71 @@ const tierLabel: Record<string, string> = {
         <div class="flex justify-end gap-2">
           <UButton color="neutral" variant="ghost" @click="priceModalOpen = false">Cancel</UButton>
           <UButton :loading="savingPrice" color="primary" icon="i-lucide-check" @click="savePrice">Save</UButton>
+        </div>
+      </div>
+    </template>
+  </UModal>
+
+  <UModal v-model:open="postponeModalOpen">
+    <template #content>
+      <div class="space-y-4 p-6">
+        <h3 class="text-lg font-semibold">Postpone — pick a follow-up date</h3>
+        <p class="text-sm text-muted">The order stays out of the Drop Queue until this date/time is reached.</p>
+        <UFormField label="Follow up at">
+          <UInput v-model="postponeDate" type="datetime-local" class="w-full" />
+        </UFormField>
+        <div class="flex justify-end gap-2">
+          <UButton color="neutral" variant="ghost" @click="postponeModalOpen = false">Cancel</UButton>
+          <UButton :disabled="!postponeDate" :loading="acting" color="primary" icon="i-lucide-check" @click="confirmPostpone">Postpone</UButton>
+        </div>
+      </div>
+    </template>
+  </UModal>
+
+  <UModal v-model:open="customerModalOpen">
+    <template #content>
+      <div class="space-y-4 p-6">
+        <h3 class="text-lg font-semibold">Edit customer / delivery info</h3>
+        <div class="grid grid-cols-2 gap-3">
+          <UFormField label="Name">
+            <UInput v-model="editCustomerName" class="w-full" />
+          </UFormField>
+          <UFormField label="Phone">
+            <UInput v-model="editCustomerPhone" class="w-full" />
+          </UFormField>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <UFormField label="Wilaya">
+            <USelectMenu
+              v-model="editWilayaId"
+              :items="wilayaOptions.map(w => ({ label: w.name, value: w.id }))"
+              value-key="value"
+              class="w-full"
+            />
+          </UFormField>
+          <UFormField label="Commune">
+            <USelectMenu
+              v-model="editCommuneName"
+              :items="communeOptions.map(c => ({ label: c.name, value: c.name }))"
+              value-key="value"
+              :disabled="!editWilayaId"
+              class="w-full"
+            />
+          </UFormField>
+        </div>
+        <UFormField label="Address line">
+          <UInput v-model="editAddressLine1" class="w-full" />
+        </UFormField>
+        <UFormField label="Shipping method">
+          <URadioGroup
+            v-model="editShippingType"
+            orientation="horizontal"
+            :items="[{ label: 'Home delivery', value: 'Home' }, { label: 'Desk pickup', value: 'Desk' }]"
+          />
+        </UFormField>
+        <div class="flex justify-end gap-2">
+          <UButton color="neutral" variant="ghost" @click="customerModalOpen = false">Cancel</UButton>
+          <UButton :loading="savingCustomer" color="primary" icon="i-lucide-check" @click="saveCustomer">Save</UButton>
         </div>
       </div>
     </template>

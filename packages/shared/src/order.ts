@@ -392,6 +392,11 @@ export interface AdminOrderListItem {
   // flags it so call-center can spot an accidental/bot-driven repeat.
   isDuplicate: boolean
   duplicateOfOrderId: string | null
+  // Set when transitioning to Postponed (now required — see
+  // TransitionOrderSchema) — the Drop Queue hides the order until this is
+  // reached. Null for legacy Postponed orders from before this field
+  // existed, or for any order not currently Postponed.
+  postponedUntil: string | null
 }
 
 export interface OrderListResponse {
@@ -430,6 +435,7 @@ export interface AdminOrderDetail {
   notes: string | null
   isDuplicate: boolean
   duplicateOfOrderId: string | null
+  postponedUntil: string | null
 }
 
 // Call-center notes — free text, not part of the order-state machine.
@@ -465,6 +471,43 @@ export const UpdateOrderPriceSchema = z
     message: 'Provide shippingPriceCents and/or totalCents'
   })
 export type UpdateOrderPrice = z.infer<typeof UpdateOrderPriceSchema>
+
+// Manual state transition — validated via isValidTransition server-side
+// regardless (AdminOrdersService.transition), this schema just shapes the
+// body. postponedUntil is required when to === 'Postponed' (a call-center
+// agent must now commit to an actual follow-up date, not just "later" —
+// see AdminOrdersService.dropQueue's comment on why Postponed orders used
+// to resurface immediately) and ignored/cleared for every other target
+// state — the .refine below is what enforces that at the boundary instead
+// of leaving it to the service layer to catch a missing date late.
+export const TransitionOrderSchema = z
+  .object({
+    to: OrderState,
+    postponedUntil: z.string().datetime().optional()
+  })
+  .refine((v) => v.to !== 'Postponed' || v.postponedUntil !== undefined, {
+    message: 'postponedUntil is required when postponing an order',
+    path: ['postponedUntil']
+  })
+export type TransitionOrder = z.infer<typeof TransitionOrderSchema>
+
+// Same call-center-confirmation-step window as price editing (see
+// PRICE_EDITABLE_STATES above) — editing the customer's name/phone,
+// delivery wilaya/commune, or shipping method after Confirmed would desync
+// what fulfillment has already picked/dispatched against. Every field is
+// optional so the admin UI can send just what actually changed; at least
+// one must be present or there's nothing to do.
+export const UpdateOrderCustomerInfoSchema = z
+  .object({
+    customerName: z.string().min(1).max(200).nullable().optional(),
+    customerPhone: PhoneSchema.optional(),
+    wilaya: z.string().min(1).max(100).optional(),
+    commune: z.string().min(1).max(100).optional(),
+    addressLine1: z.string().min(1).max(300).optional(),
+    shippingType: ShippingTypeSchema.optional()
+  })
+  .refine((v) => Object.values(v).some((val) => val !== undefined), { message: 'Provide at least one field to update' })
+export type UpdateOrderCustomerInfo = z.infer<typeof UpdateOrderCustomerInfoSchema>
 
 // Admin/call-center "add item to order" — covers the upsells system's
 // manual-add path (Task: upsells). variantId lets an agent pick a specific

@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { isValidTransition, PRICE_EDITABLE_STATES, type OrderState, type UpdateOrderPrice } from '@amalice/shared'
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, type OrderState, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
 import type { Prisma } from '../generated/prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
@@ -134,37 +134,64 @@ export class AdminOrdersService {
   // Priority: brand-new leads first (tier 1) — conversion drops fast with
   // response time, so a lead that's never been called outranks a retry.
   // No-answer retries (tier 2) and postponed follow-ups (tier 3) come next.
-  // Wrong-number (tier 4) sinks toward the bottom — these usually need the
-  // customer's number corrected via another channel (SMS/WhatsApp) before a
-  // call is even possible, so surfacing them first would waste dial time.
-  // Abandoned-cart orders (tier 5, lowest) sink below even that — the
-  // customer never actually finished submitting the form, so these are the
+  // Abandoned-cart orders (tier 4, lowest) sink below both — the customer
+  // never actually finished submitting the form, so these are the
   // lowest-intent leads in the queue; still worth a follow-up call, just
   // never ahead of someone who actually completed checkout. Within a tier:
   // higher COD value first (bigger RTO loss if never confirmed), then
   // oldest-first as the final tiebreak so nothing starves.
   //
-  // Includes abandoned orders now (previously excluded) — they only ever
-  // sit in PendingCallCenter (see OrdersService.createAbandonedOrder), so
-  // they're already covered by DROP_QUEUE_STATES; confirming one here goes
-  // through transition(), which clears isAbandoned so it becomes a normal
-  // order the rest of the pipeline (fulfillment/shipping) can see.
+  // WrongNumber is deliberately NOT in this queue at all (was tier 4,
+  // removed) — these need the customer's number corrected via another
+  // channel (SMS/WhatsApp) before a call is even possible, so they'd just
+  // sit un-actionable at the bottom forever; an agent who fixes a number
+  // moves the order back to PendingCallCenter by hand from the regular
+  // Call Center queue (call-center/index.vue's own Wrong Number section),
+  // which re-admits it here naturally.
+  //
+  // CallCenterNoAnswer and Postponed both get a re-surface delay instead of
+  // showing again the instant they're acted on (dialing the same
+  // unreachable number twice in five minutes wastes the agent's time and
+  // looks amateurish to anyone who does pick up on a retry):
+  //  - No-answer: hidden for NO_ANSWER_COOLDOWN_HOURS from whenever the
+  //    order last changed (updatedAt) — an approximation, since updatedAt
+  //    bumps on ANY edit (a note, a price fix), not just the transition
+  //    into this state, but that's a rare edge case worth accepting rather
+  //    than adding a dedicated "entered this state at" column.
+  //  - Postponed: hidden until Order.postponedUntil (now a required field
+  //    when transitioning to Postponed — see TransitionOrderSchema).
+  //    postponedUntil === null only for legacy rows predating this field;
+  //    those are shown immediately rather than hidden forever with no way
+  //    to know when to re-surface them.
+  //
+  // Includes abandoned orders — they only ever sit in PendingCallCenter (see
+  // OrdersService.createAbandonedOrder); confirming one here goes through
+  // transition(), which clears isAbandoned so it becomes a normal order the
+  // rest of the pipeline (fulfillment/shipping) can see.
   //
   // Capped at 500 rows before sorting rather than loading the entire
   // backlog — call-center backlogs are bounded in practice (an unconfirmed
   // queue that size is its own emergency); revisit if that stops holding.
-  private static readonly DROP_QUEUE_STATES: OrderState[] = ['PendingCallCenter', 'CallCenterNoAnswer', 'Postponed', 'WrongNumber']
+  private static readonly NO_ANSWER_COOLDOWN_HOURS = 4
   private static readonly DROP_QUEUE_TIER: Record<string, number> = {
     PendingCallCenter: 1,
     CallCenterNoAnswer: 2,
-    Postponed: 3,
-    WrongNumber: 4
+    Postponed: 3
   }
-  private static readonly DROP_QUEUE_ABANDONED_TIER = 5
+  private static readonly DROP_QUEUE_ABANDONED_TIER = 4
 
   async dropQueue(pageSize: number) {
+    const now = new Date()
+    const noAnswerCutoff = new Date(now.getTime() - AdminOrdersService.NO_ANSWER_COOLDOWN_HOURS * 3600 * 1000)
+
     const rows = await this.prisma.order.findMany({
-      where: { state: { in: AdminOrdersService.DROP_QUEUE_STATES } },
+      where: {
+        OR: [
+          { state: 'PendingCallCenter' },
+          { state: 'CallCenterNoAnswer', updatedAt: { lte: noAnswerCutoff } },
+          { state: 'Postponed', OR: [{ postponedUntil: null }, { postponedUntil: { lte: now } }] }
+        ]
+      },
       include: {
         customer: { select: { id: true, name: true, phone: true } },
         address: { select: { line1: true, line2: true, city: true, region: true, postalCode: true, country: true } },
@@ -246,13 +273,19 @@ export class AdminOrdersService {
   // server-side (client-side gating is UX only). Every transition is
   // audit-logged with from/to (SEC-03). Rejecting illegal transitions here
   // means the UI can't bypass the machine even if it tried.
-  async transition(id: string, to: OrderState, actor: AuditActor) {
+  async transition(id: string, to: OrderState, actor: AuditActor, postponedUntil?: string) {
     const order = await this.prisma.order.findUnique({ where: { id } })
     if (!order) throw new NotFoundException('Order not found')
     const from = order.state
     if (from === to) throw new BadRequestException(`Order is already ${to}`)
     if (!isValidTransition(from, to)) {
       throw new BadRequestException(`Illegal transition: ${from} → ${to}`)
+    }
+    // TransitionOrderSchema already requires postponedUntil in the request
+    // body when to === 'Postponed' — this is the server-side backstop for
+    // the same rule (never trust client-side validation alone).
+    if (to === 'Postponed' && !postponedUntil) {
+      throw new BadRequestException('postponedUntil is required when postponing an order')
     }
 
     // Confirming an abandoned-cart order (see Order.isAbandoned's Prisma
@@ -264,13 +297,24 @@ export class AdminOrdersService {
     // other query in this service filters on isAbandoned, so leaving it
     // true here would silently strand a confirmed order forever.
     const clearsAbandoned = order.isAbandoned && to === 'Confirmed'
-    await this.prisma.order.update({ where: { id }, data: { state: to, ...(clearsAbandoned && { isAbandoned: false }) } })
+    await this.prisma.order.update({
+      where: { id },
+      data: {
+        state: to,
+        // postponedUntil is scoped to CURRENT Postponed status — cleared on
+        // every other transition so a stale date never lingers on an order
+        // that has since moved on (e.g. confirmed after a later, different
+        // call), which would otherwise misreport if it's ever postponed again.
+        postponedUntil: to === 'Postponed' ? new Date(postponedUntil!) : null,
+        ...(clearsAbandoned && { isAbandoned: false })
+      }
+    })
     await this.audit.log({
       actor,
       action: 'StateTransition',
       entity: 'Order',
       entityId: id,
-      metadata: { from, to, ...(clearsAbandoned && { convertedFromAbandoned: true }) }
+      metadata: { from, to, ...(clearsAbandoned && { convertedFromAbandoned: true }), ...(to === 'Postponed' && { postponedUntil }) }
     })
 
     // Fire-and-forget, same rule as OrdersService's pixel/Sheets calls at
@@ -349,6 +393,96 @@ export class AdminOrdersService {
 
     this.googleSheets.updateNotes(id, notes).catch((error: Error) => {
       this.logger.warn(`Google Sheets notes update failed for order ${id}: ${error.message}`)
+    })
+
+    return this.findOne(id)
+  }
+
+  // Customer/address/shipping-method correction (ADM-14) — a call-center
+  // agent catching a typo'd name, wrong commune, or the wrong home/desk pick
+  // mid-call. Same pre-confirmation window as updatePrice (see
+  // PRICE_EDITABLE_STATES) — editing the delivery address or shipping
+  // method after Confirmed would desync what fulfillment has already
+  // picked/dispatched against.
+  //
+  // customerPhone is the one genuinely risky field: Customer.phone is
+  // globally unique (checkout/lead-form upsert-by-phone, abandoned-cart
+  // matching) — silently overwriting it could merge this order's contact
+  // details onto a DIFFERENT real customer's history if the new number
+  // already belongs to someone else. Rejected with a clear conflict instead
+  // of ever letting that happen quietly.
+  async updateCustomerInfo(id: string, input: UpdateOrderCustomerInfo, actor: AuditActor) {
+    const order = await this.prisma.order.findUnique({ where: { id }, include: { customer: true, address: true } })
+    if (!order) throw new NotFoundException('Order not found')
+    if (!PRICE_EDITABLE_STATES.includes(order.state)) {
+      throw new BadRequestException(`Can't edit customer info for an order in state ${order.state} — it's already past the call-center confirmation step.`)
+    }
+
+    const changes: Record<string, { from: unknown; to: unknown }> = {}
+
+    if (input.customerPhone !== undefined) {
+      const normalized = normalizeAlgerianPhone(input.customerPhone)
+      if (normalized !== order.customer.phone) {
+        const existing = await this.prisma.customer.findUnique({ where: { phone: normalized } })
+        if (existing && existing.id !== order.customerId) {
+          throw new ConflictException('That phone number already belongs to a different customer — merging customer records is not supported here.')
+        }
+        changes.customerPhone = { from: order.customer.phone, to: normalized }
+      }
+    }
+    if (input.customerName !== undefined && input.customerName !== order.customer.name) {
+      changes.customerName = { from: order.customer.name, to: input.customerName }
+    }
+    if (input.wilaya !== undefined && input.wilaya !== order.address.region) {
+      changes.wilaya = { from: order.address.region, to: input.wilaya }
+    }
+    if (input.commune !== undefined && input.commune !== order.address.city) {
+      changes.commune = { from: order.address.city, to: input.commune }
+    }
+    if (input.addressLine1 !== undefined && input.addressLine1 !== order.address.line1) {
+      changes.addressLine1 = { from: order.address.line1, to: input.addressLine1 }
+    }
+    if (input.shippingType !== undefined && input.shippingType !== order.shippingType) {
+      changes.shippingType = { from: order.shippingType, to: input.shippingType }
+    }
+
+    if (Object.keys(changes).length === 0) return this.findOne(id)
+
+    const ops: Prisma.PrismaPromise<unknown>[] = []
+    if (changes.customerName || changes.customerPhone) {
+      ops.push(
+        this.prisma.customer.update({
+          where: { id: order.customerId },
+          data: {
+            ...(changes.customerName && { name: input.customerName }),
+            ...(changes.customerPhone && { phone: normalizeAlgerianPhone(input.customerPhone!) })
+          }
+        })
+      )
+    }
+    if (changes.wilaya || changes.commune || changes.addressLine1) {
+      ops.push(
+        this.prisma.address.update({
+          where: { id: order.addressId },
+          data: {
+            ...(changes.wilaya && { region: input.wilaya }),
+            ...(changes.commune && { city: input.commune }),
+            ...(changes.addressLine1 && { line1: input.addressLine1 })
+          }
+        })
+      )
+    }
+    if (changes.shippingType) {
+      ops.push(this.prisma.order.update({ where: { id }, data: { shippingType: input.shippingType } }))
+    }
+    await this.prisma.$transaction(ops)
+
+    await this.audit.log({
+      actor,
+      action: 'Update',
+      entity: 'Order',
+      entityId: id,
+      metadata: { field: 'customerInfo', changes }
     })
 
     return this.findOne(id)

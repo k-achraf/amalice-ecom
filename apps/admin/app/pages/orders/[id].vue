@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PRICE_EDITABLE_STATES, type AdminOrderDetail, type OrderState, type ShippingCompanyView } from '@amalice/shared'
+import { formatPhoneLocal, PRICE_EDITABLE_STATES, type AdminOrderDetail, type OrderState, type ShippingCompanyView } from '@amalice/shared'
 import { VALID_TRANSITIONS } from '~/composables/order-transitions'
 
 // Orders states that can still take an added item — mirrors
@@ -19,14 +19,36 @@ const { data: order, pending, error, refresh } = await useAdminFetch<AdminOrderD
 
 const transitioning = ref<OrderState | null>(null)
 
-async function transition(to: OrderState) {
+async function transition(to: OrderState, postponedUntil?: string) {
   transitioning.value = to
-  await run(() => api(`/admin/orders/${id}/transition`, { method: 'POST', body: { to } }), {
+  await run(() => api(`/admin/orders/${id}/transition`, { method: 'POST', body: { to, postponedUntil } }), {
     success: `Order moved to ${to}`,
     errorFallback: 'Could not update the order'
   })
   await refresh()
   transitioning.value = null
+}
+
+// Postpone requires a follow-up date/time (server rejects a bare
+// `{to: 'Postponed'}` — see TransitionOrderSchema's refine in packages/shared).
+// 'Postponed' is a reachable next state from PendingCallCenter (see
+// VALID_TRANSITIONS), so the generic "Advance status" button for it needs
+// the same date gate as the dedicated call-center pages.
+const postponeModalOpen = ref(false)
+const postponeDate = ref('')
+
+function openPostpone() {
+  const d = new Date(Date.now() + 4 * 60 * 60 * 1000)
+  d.setSeconds(0, 0)
+  postponeDate.value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+  postponeModalOpen.value = true
+}
+
+async function confirmPostpone() {
+  if (!postponeDate.value) return
+  const iso = new Date(postponeDate.value).toISOString()
+  postponeModalOpen.value = false
+  await transition('Postponed', iso)
 }
 
 // ---- Call-center price override (ADM-12) — shipping fee and/or total,
@@ -67,6 +89,105 @@ async function savePrice() {
   })
   savingPrice.value = false
   if (result !== undefined) priceModalOpen.value = false
+  await refresh()
+}
+
+// ---- Notes — free text per order, mirrored into the Google Sheets
+// integration's Notes column (see GoogleSheetsService.updateNotes), so this
+// generic order page and the call-center pages stay in sync either way.
+const notesModalOpen = ref(false)
+const notesText = ref('')
+const savingNotes = ref(false)
+
+function openNotes() {
+  notesText.value = order.value?.notes ?? ''
+  notesModalOpen.value = true
+}
+
+async function saveNotes() {
+  savingNotes.value = true
+  const result = await run(
+    () => api(`/admin/orders/${id}/notes`, { method: 'PATCH', body: { notes: notesText.value.trim() || null } }),
+    { success: 'Notes saved', errorFallback: 'Could not save notes' }
+  )
+  savingNotes.value = false
+  if (result !== undefined) notesModalOpen.value = false
+  await refresh()
+}
+
+// ---- Customer / delivery info edit — only while the order is still
+// pre-confirmation (see PRICE_EDITABLE_STATES); editing address/shipping
+// method after Confirmed would desync what's already been picked/dispatched.
+// Address only stores plain name strings, not a wilayaId/communeId FK (see
+// Address's Prisma comment), so the select's *name* is what actually gets
+// sent — the wilaya id is only used locally to drive the commune fetch.
+interface WilayaOption { id: string; name: string }
+interface CommuneOption { id: string; name: string; wilayaId: string }
+const wilayaOptions = ref<WilayaOption[]>([])
+const communeOptions = ref<CommuneOption[]>([])
+const wilayaOptionsLoaded = ref(false)
+async function ensureWilayas() {
+  if (wilayaOptionsLoaded.value) return
+  wilayaOptionsLoaded.value = true
+  wilayaOptions.value = await api<WilayaOption[]>('/wilayas')
+}
+
+const customerModalOpen = ref(false)
+const editCustomerName = ref('')
+const editCustomerPhone = ref('')
+const editWilayaId = ref<string | undefined>(undefined)
+const editCommuneName = ref('')
+const editAddressLine1 = ref('')
+const editShippingType = ref<'Home' | 'Desk' | undefined>(undefined)
+const savingCustomer = ref(false)
+
+async function openCustomerEditor() {
+  if (!order.value) return
+  await ensureWilayas()
+  editCustomerName.value = order.value.customer.name ?? ''
+  editCustomerPhone.value = formatPhoneLocal(order.value.customer.phone)
+  editAddressLine1.value = order.value.address.line1
+  editCommuneName.value = order.value.address.city
+  editShippingType.value = order.value.shippingType ?? undefined
+  const matchedWilaya = wilayaOptions.value.find((w) => w.name === order.value!.address.region)
+  editWilayaId.value = matchedWilaya?.id ?? undefined
+  if (editWilayaId.value) await loadCommunes(editWilayaId.value)
+  customerModalOpen.value = true
+}
+
+async function loadCommunes(wilayaId: string) {
+  communeOptions.value = await api<CommuneOption[]>('/communes', { query: { wilayaId } })
+}
+watch(editWilayaId, (id, oldId) => {
+  if (id && id !== oldId) {
+    editCommuneName.value = ''
+    loadCommunes(id)
+  }
+})
+
+async function saveCustomer() {
+  if (!order.value) return
+  const wilayaName = wilayaOptions.value.find((w) => w.id === editWilayaId.value)?.name
+  savingCustomer.value = true
+  const body: Record<string, string> = {}
+  if (editCustomerName.value.trim() !== (order.value.customer.name ?? '')) body.customerName = editCustomerName.value.trim()
+  if (editCustomerPhone.value.trim() && editCustomerPhone.value.trim() !== formatPhoneLocal(order.value.customer.phone)) body.customerPhone = editCustomerPhone.value.trim()
+  if (wilayaName && wilayaName !== order.value.address.region) body.wilaya = wilayaName
+  if (editCommuneName.value && editCommuneName.value !== order.value.address.city) body.commune = editCommuneName.value
+  if (editAddressLine1.value.trim() && editAddressLine1.value.trim() !== order.value.address.line1) body.addressLine1 = editAddressLine1.value.trim()
+  if (editShippingType.value && editShippingType.value !== order.value.shippingType) body.shippingType = editShippingType.value
+  if (Object.keys(body).length === 0) {
+    savingCustomer.value = false
+    customerModalOpen.value = false
+    return
+  }
+  const result = await run(() => api(`/admin/orders/${id}/customer-info`, { method: 'PATCH', body }), {
+    success: 'Customer info updated',
+    errorFallback: 'Could not update customer info'
+  })
+  savingCustomer.value = false
+  if (result === undefined) return
+  customerModalOpen.value = false
   await refresh()
 }
 
@@ -371,10 +492,28 @@ async function submitAddItem() {
                 :loading="transitioning === next"
                 :label="next"
                 size="sm"
-                @click="transition(next)"
+                @click="next === 'Postponed' ? openPostpone() : transition(next)"
               />
             </div>
             <p class="mt-3 text-xs text-muted">Only valid transitions are shown. The server re-validates each one.</p>
+          </div>
+
+          <!-- Notes — free text per order, shared with the call-center pages and
+               mirrored into the Google Sheets integration (see GoogleSheetsService). -->
+          <div class="admin-kpi-card p-5">
+            <div class="mb-2 flex items-center justify-between">
+              <h3 class="text-sm font-medium text-muted">Notes</h3>
+              <UButton
+                icon="i-lucide-sticky-note"
+                size="xs"
+                variant="outline"
+                color="neutral"
+                :label="order.notes ? 'Edit note' : 'Add note'"
+                @click="openNotes"
+              />
+            </div>
+            <p v-if="order.notes" class="whitespace-pre-wrap text-sm text-muted">{{ order.notes }}</p>
+            <p v-else class="text-sm text-muted">No notes yet.</p>
           </div>
 
           <!-- Shipping assignment — required before dispatch; never defaults
@@ -509,7 +648,18 @@ async function submitAddItem() {
         <!-- Side column: customer + address -->
         <div class="space-y-6">
           <div class="admin-kpi-card p-5">
-            <h3 class="mb-3 text-sm font-medium text-muted">Customer</h3>
+            <div class="mb-3 flex items-center justify-between">
+              <h3 class="text-sm font-medium text-muted">Customer</h3>
+              <UButton
+                v-if="PRICE_EDITABLE_STATES.includes(order.state)"
+                icon="i-lucide-pencil"
+                size="xs"
+                variant="link"
+                color="neutral"
+                label="Edit"
+                @click="openCustomerEditor"
+              />
+            </div>
             <NuxtLink :to="`/customers/${order.customer.id}`" class="block font-medium hover:underline">
               {{ order.customer.name ?? '—' }}
             </NuxtLink>
@@ -517,7 +667,18 @@ async function submitAddItem() {
           </div>
 
           <div class="admin-kpi-card p-5">
-            <h3 class="mb-3 text-sm font-medium text-muted">Delivery address</h3>
+            <div class="mb-3 flex items-center justify-between">
+              <h3 class="text-sm font-medium text-muted">Delivery address</h3>
+              <UButton
+                v-if="PRICE_EDITABLE_STATES.includes(order.state)"
+                icon="i-lucide-pencil"
+                size="xs"
+                variant="link"
+                color="neutral"
+                label="Edit"
+                @click="openCustomerEditor"
+              />
+            </div>
             <address class="text-sm not-italic leading-relaxed text-muted">
               {{ order.address.line1 || '-' }}<br />
               <span v-if="order.address.line2">{{ order.address.line2 }}<br /></span>
@@ -615,6 +776,87 @@ async function submitAddItem() {
         <div class="flex justify-end gap-2">
           <UButton color="neutral" variant="ghost" @click="priceModalOpen = false">Cancel</UButton>
           <UButton :loading="savingPrice" color="primary" icon="i-lucide-check" @click="savePrice">Save</UButton>
+        </div>
+      </div>
+    </template>
+  </UModal>
+
+  <!-- Notes modal -->
+  <UModal v-model:open="notesModalOpen">
+    <template #content>
+      <div class="space-y-4 p-6">
+        <h3 class="text-lg font-semibold">Order note</h3>
+        <UTextarea v-model="notesText" :rows="5" placeholder="Notes for this order…" class="w-full" autofocus />
+        <div class="flex justify-end gap-2">
+          <UButton color="neutral" variant="ghost" @click="notesModalOpen = false">Cancel</UButton>
+          <UButton :loading="savingNotes" color="primary" icon="i-lucide-check" @click="saveNotes">Save</UButton>
+        </div>
+      </div>
+    </template>
+  </UModal>
+
+  <!-- Postpone date picker -->
+  <UModal v-model:open="postponeModalOpen">
+    <template #content>
+      <div class="space-y-4 p-6">
+        <h3 class="text-lg font-semibold">Postpone — pick a follow-up date</h3>
+        <p class="text-sm text-muted">The order stays out of the queues until this date/time is reached.</p>
+        <UFormField label="Follow up at">
+          <UInput v-model="postponeDate" type="datetime-local" class="w-full" />
+        </UFormField>
+        <div class="flex justify-end gap-2">
+          <UButton color="neutral" variant="ghost" @click="postponeModalOpen = false">Cancel</UButton>
+          <UButton :disabled="!postponeDate" :loading="transitioning === 'Postponed'" color="primary" icon="i-lucide-check" @click="confirmPostpone">Postpone</UButton>
+        </div>
+      </div>
+    </template>
+  </UModal>
+
+  <!-- Customer / delivery info editor -->
+  <UModal v-model:open="customerModalOpen">
+    <template #content>
+      <div class="space-y-4 p-6">
+        <h3 class="text-lg font-semibold">Edit customer / delivery info</h3>
+        <div class="grid grid-cols-2 gap-3">
+          <UFormField label="Name">
+            <UInput v-model="editCustomerName" class="w-full" />
+          </UFormField>
+          <UFormField label="Phone">
+            <UInput v-model="editCustomerPhone" class="w-full" />
+          </UFormField>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <UFormField label="Wilaya">
+            <USelectMenu
+              v-model="editWilayaId"
+              :items="wilayaOptions.map(w => ({ label: w.name, value: w.id }))"
+              value-key="value"
+              class="w-full"
+            />
+          </UFormField>
+          <UFormField label="Commune">
+            <USelectMenu
+              v-model="editCommuneName"
+              :items="communeOptions.map(c => ({ label: c.name, value: c.name }))"
+              value-key="value"
+              :disabled="!editWilayaId"
+              class="w-full"
+            />
+          </UFormField>
+        </div>
+        <UFormField label="Address line">
+          <UInput v-model="editAddressLine1" class="w-full" />
+        </UFormField>
+        <UFormField label="Shipping method">
+          <URadioGroup
+            v-model="editShippingType"
+            orientation="horizontal"
+            :items="[{ label: 'Home delivery', value: 'Home' }, { label: 'Desk pickup', value: 'Desk' }]"
+          />
+        </UFormField>
+        <div class="flex justify-end gap-2">
+          <UButton color="neutral" variant="ghost" @click="customerModalOpen = false">Cancel</UButton>
+          <UButton :loading="savingCustomer" color="primary" icon="i-lucide-check" @click="saveCustomer">Save</UButton>
         </div>
       </div>
     </template>

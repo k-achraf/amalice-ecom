@@ -24,6 +24,8 @@ import {
   UpdateProductUpsellSchema,
   UpdateOrderNotesSchema,
   UpdateOrderPriceSchema,
+  TransitionOrderSchema,
+  UpdateOrderCustomerInfoSchema,
   OrderState,
   ProductListQuerySchema,
   type AdjustStock,
@@ -59,6 +61,8 @@ class CreateProductUpsellDto extends createZodDto(CreateProductUpsellSchema) {}
 class UpdateProductUpsellDto extends createZodDto(UpdateProductUpsellSchema) {}
 class UpdateOrderNotesDto extends createZodDto(UpdateOrderNotesSchema) {}
 class UpdateOrderPriceDto extends createZodDto(UpdateOrderPriceSchema) {}
+class TransitionOrderDto extends createZodDto(TransitionOrderSchema) {}
+class UpdateOrderCustomerInfoDto extends createZodDto(UpdateOrderCustomerInfoSchema) {}
 class ProductListQueryDto extends createZodDto(ProductListQuerySchema) {}
 
 interface AuthedRequest extends Request {
@@ -162,8 +166,8 @@ export class AdminController {
   // the same generic transition endpoint every other stage already uses.
   @Post('orders/:id/transition')
   @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
-  transition(@Param('id') id: string, @Body() body: { to: OrderState }, @Req() req: AuthedRequest) {
-    return this.orders.transition(id, body.to, actorFrom(req))
+  transition(@Param('id') id: string, @Body() body: TransitionOrderDto, @Req() req: AuthedRequest) {
+    return this.orders.transition(id, body.to, actorFrom(req), body.postponedUntil)
   }
 
   // Call-center notes — free text, same role set as transition() since it's
@@ -172,6 +176,16 @@ export class AdminController {
   @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
   updateNotes(@Param('id') id: string, @Body() body: UpdateOrderNotesDto, @Req() req: AuthedRequest) {
     return this.orders.updateNotes(id, body.notes, actorFrom(req))
+  }
+
+  // Customer/address/shipping-method correction (ADM-14) — same role set as
+  // updatePrice() since it's the same call-center confirmation-step action;
+  // "only before Confirmed" is enforced server-side in
+  // AdminOrdersService.updateCustomerInfo, not here.
+  @Patch('orders/:id/customer-info')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  updateCustomerInfo(@Param('id') id: string, @Body() body: UpdateOrderCustomerInfoDto, @Req() req: AuthedRequest) {
+    return this.orders.updateCustomerInfo(id, body, actorFrom(req))
   }
 
   // Call-center price override (ADM-12) — same role set as transition()/

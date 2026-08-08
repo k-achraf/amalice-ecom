@@ -87,7 +87,12 @@ async function sendMockStatus() {
                 <tr v-for="o in withCourier?.items" :key="o.id">
                   <td class="px-4 py-3"><NuxtLink :to="`/orders/${o.id}`" class="tabular text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink></td>
                   <td class="px-4 py-3"><OrderLineItemsInline :items="o.items" compact class="max-w-64" /></td>
-                  <td class="px-4 py-3">{{ o.customer.name ?? '—' }}</td>
+                  <td class="px-4 py-3">
+                    <span class="inline-flex items-center gap-1.5">
+                      {{ o.customer.name ?? '—' }}
+                      <UIcon v-if="o.notes" name="i-lucide-sticky-note" class="size-3.5 shrink-0 text-muted" :title="o.notes" />
+                    </span>
+                  </td>
                   <td class="px-4 py-3"><StatusBadge :state="o.state" /></td>
                   <td class="px-4 py-3 text-right">
                     <UButton v-for="next in VALID_TRANSITIONS[o.state]" :key="next" size="xs" variant="soft" class="ml-2" :loading="acting === `${o.id}:${next}`" :label="`→ ${next}`" @click="transition(o.id, next)" />
@@ -110,7 +115,12 @@ async function sendMockStatus() {
                 <tr v-for="o in outForDelivery?.items" :key="o.id">
                   <td class="px-4 py-3"><NuxtLink :to="`/orders/${o.id}`" class="tabular text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink></td>
                   <td class="px-4 py-3"><OrderLineItemsInline :items="o.items" compact class="max-w-64" /></td>
-                  <td class="px-4 py-3">{{ o.customer.name ?? '—' }}</td>
+                  <td class="px-4 py-3">
+                    <span class="inline-flex items-center gap-1.5">
+                      {{ o.customer.name ?? '—' }}
+                      <UIcon v-if="o.notes" name="i-lucide-sticky-note" class="size-3.5 shrink-0 text-muted" :title="o.notes" />
+                    </span>
+                  </td>
                   <td class="px-4 py-3"><StatusBadge :state="o.state" /></td>
                   <td class="px-4 py-3 text-right">
                     <UButton
@@ -142,7 +152,12 @@ async function sendMockStatus() {
                 <tr v-for="o in [...(failed?.items ?? []), ...(returned?.items ?? [])]" :key="o.id">
                   <td class="px-4 py-3"><NuxtLink :to="`/orders/${o.id}`" class="tabular text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink></td>
                   <td class="px-4 py-3"><OrderLineItemsInline :items="o.items" compact class="max-w-64" /></td>
-                  <td class="px-4 py-3">{{ o.customer.name ?? '—' }}</td>
+                  <td class="px-4 py-3">
+                    <span class="inline-flex items-center gap-1.5">
+                      {{ o.customer.name ?? '—' }}
+                      <UIcon v-if="o.notes" name="i-lucide-sticky-note" class="size-3.5 shrink-0 text-muted" :title="o.notes" />
+                    </span>
+                  </td>
                   <td class="px-4 py-3"><StatusBadge :state="o.state" /></td>
                   <td class="px-4 py-3 text-right">
                     <UButton v-for="next in VALID_TRANSITIONS[o.state]" :key="next" size="xs" variant="soft" class="ml-2" :loading="acting === `${o.id}:${next}`" :label="`→ ${next}`" @click="transition(o.id, next)" />
