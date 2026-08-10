@@ -26,6 +26,14 @@ import type { FulfillmentMethod } from './shipment'
 // deferred to a later date (distinct from "no answer", so it doesn't get
 // retried immediately), and a confirmed order that can't be packed as-is
 // (stock ran out between confirm and pack) without cancelling it outright.
+// CancelledShipping was added after real-world use surfaced that "Cancelled"
+// alone conflated two very different outcomes: a call-center agent never
+// even confirming the order (the ORIGINAL Cancelled — a call-center/pre-
+// confirmation outcome) vs. an order that WAS confirmed and then had to be
+// cancelled somewhere in fulfillment/shipping (stock ran out, courier
+// couldn't deliver it, etc). Splitting them is what makes the derived
+// call-center/shipping tracks below unambiguous — see deriveCallCenterState/
+// deriveShippingState's comment.
 export const OrderState = z.enum([
   'PendingCallCenter',
   'CallCenterNoAnswer',
@@ -43,7 +51,8 @@ export const OrderState = z.enum([
   'Restocked',
   'CashCollected',
   'Reconciled',
-  'Settled'
+  'Settled',
+  'CancelledShipping'
 ])
 export type OrderState = z.infer<typeof OrderState>
 
@@ -60,8 +69,8 @@ export const VALID_TRANSITIONS: Record<OrderState, OrderState[]> = {
   WrongNumber: ['PendingCallCenter', 'Cancelled'],
   Postponed: ['PendingCallCenter', 'Cancelled'],
   Cancelled: [],
-  Confirmed: ['Packed', 'OnHold', 'Cancelled'],
-  OnHold: ['Confirmed', 'Packed', 'Cancelled'],
+  Confirmed: ['Packed', 'OnHold', 'CancelledShipping'],
+  OnHold: ['Confirmed', 'Packed', 'CancelledShipping'],
   Packed: ['HandedToCourier'],
   HandedToCourier: ['OutForDelivery'],
   OutForDelivery: ['Delivered', 'DeliveryFailed'],
@@ -71,7 +80,8 @@ export const VALID_TRANSITIONS: Record<OrderState, OrderState[]> = {
   Restocked: [],
   CashCollected: ['Reconciled'],
   Reconciled: ['Settled'],
-  Settled: []
+  Settled: [],
+  CancelledShipping: []
 }
 
 export function isValidTransition(from: OrderState, to: OrderState): boolean {
@@ -106,11 +116,114 @@ export const ORDER_STAGE_BY_STATE: Record<OrderState, OrderStage> = {
   Restocked: 'Other',
   CashCollected: 'Finance',
   Reconciled: 'Finance',
-  Settled: 'Finance'
+  Settled: 'Finance',
+  CancelledShipping: 'Other'
 }
 
 export function statesForStage(stage: OrderStage): OrderState[] {
   return OrderState.options.filter((s) => ORDER_STAGE_BY_STATE[s] === stage)
+}
+
+// ---- Call-center vs shipping tracks ----
+// The lifecycle above is stored as ONE state column (Order.state), but a
+// call-center agent and a warehouse/shipping agent think about an order in
+// two genuinely independent terms: "did call-center confirm this order?"
+// and, separately, "where is it in fulfillment/shipping?" Rather than add a
+// second column that could drift from `state`, both tracks are DERIVED from
+// the single underlying value:
+//  - callCenterState starts at 'New' and tracks the pre-confirmation outcome
+//    (NoAnswer/WrongNumber/Postponed/Cancelled) until the order is
+//    Confirmed — at which point it FREEZES at 'Confirmed' forever. Nothing
+//    that happens afterward in fulfillment/shipping (Packed, HandedToCourier,
+//    even a later shipping-side cancellation) ever changes what call-center
+//    already decided — see CancelledShipping's comment on OrderState for why
+//    a post-confirmation cancel is a distinct value from the pre-confirmation
+//    one specifically so this derivation stays unambiguous.
+//  - shippingState starts out null (call-center hasn't finished yet — there
+//    is nothing to ship) and only becomes non-null the moment the order is
+//    Confirmed, from which point it tracks `state` verbatim.
+export const CallCenterState = z.enum(['New', 'NoAnswer', 'WrongNumber', 'Postponed', 'Confirmed', 'Cancelled'])
+export type CallCenterState = z.infer<typeof CallCenterState>
+
+export const ShippingState = z.enum([
+  'Confirmed',
+  'OnHold',
+  'Packed',
+  'HandedToCourier',
+  'OutForDelivery',
+  'DeliveryFailed',
+  'Delivered',
+  'ReturnedToOrigin',
+  'Restocked',
+  'CashCollected',
+  'Reconciled',
+  'Settled',
+  'Cancelled'
+])
+export type ShippingState = z.infer<typeof ShippingState>
+
+const CALL_CENTER_STATE_BY_ORDER_STATE: Partial<Record<OrderState, CallCenterState>> = {
+  PendingCallCenter: 'New',
+  CallCenterNoAnswer: 'NoAnswer',
+  WrongNumber: 'WrongNumber',
+  Postponed: 'Postponed',
+  Cancelled: 'Cancelled'
+}
+
+const SHIPPING_STATE_BY_ORDER_STATE: Partial<Record<OrderState, ShippingState>> = {
+  Confirmed: 'Confirmed',
+  OnHold: 'OnHold',
+  Packed: 'Packed',
+  HandedToCourier: 'HandedToCourier',
+  OutForDelivery: 'OutForDelivery',
+  DeliveryFailed: 'DeliveryFailed',
+  Delivered: 'Delivered',
+  ReturnedToOrigin: 'ReturnedToOrigin',
+  Restocked: 'Restocked',
+  CashCollected: 'CashCollected',
+  Reconciled: 'Reconciled',
+  Settled: 'Settled',
+  CancelledShipping: 'Cancelled'
+}
+
+export function deriveCallCenterState(state: OrderState): CallCenterState {
+  // Anything not in the pre-confirmation map means call-center's job on this
+  // order is done — frozen at 'Confirmed' regardless of how far along
+  // fulfillment/shipping has since gotten.
+  return CALL_CENTER_STATE_BY_ORDER_STATE[state] ?? 'Confirmed'
+}
+
+export function deriveShippingState(state: OrderState): ShippingState | null {
+  return SHIPPING_STATE_BY_ORDER_STATE[state] ?? null
+}
+
+// Maps a derived CallCenterState/ShippingState back onto the underlying
+// OrderState key StatusBadge (packages/ui) already knows how to color/label
+// — lets the two derived-state badges reuse the existing per-state palette
+// instead of needing a parallel one.
+export const CALL_CENTER_STATE_TO_ORDER_STATE: Record<CallCenterState, OrderState> = {
+  New: 'PendingCallCenter',
+  NoAnswer: 'CallCenterNoAnswer',
+  WrongNumber: 'WrongNumber',
+  Postponed: 'Postponed',
+  Confirmed: 'Confirmed',
+  Cancelled: 'Cancelled'
+}
+
+export const SHIPPING_STATE_TO_ORDER_STATE: Record<ShippingState, OrderState> = {
+  Confirmed: 'Confirmed',
+  OnHold: 'OnHold',
+  Packed: 'Packed',
+  HandedToCourier: 'HandedToCourier',
+  OutForDelivery: 'OutForDelivery',
+  DeliveryFailed: 'DeliveryFailed',
+  Delivered: 'Delivered',
+  ReturnedToOrigin: 'ReturnedToOrigin',
+  Restocked: 'Restocked',
+  CashCollected: 'CashCollected',
+  Reconciled: 'Reconciled',
+  Settled: 'Settled',
+  Cancelled: 'CancelledShipping'
 }
 
 // Human-readable label per state — the single source of truth StatusBadge
@@ -135,7 +248,13 @@ export const ORDER_STATE_LABELS: Record<OrderState, string> = {
   Restocked: 'Restocked',
   CashCollected: 'Cash collected',
   Reconciled: 'Reconciled',
-  Settled: 'Settled'
+  Settled: 'Settled',
+  // Deliberately distinct text from 'Cancelled' (not just "Cancelled" again)
+  // — GoogleSheetsService's LABEL_TO_STATE does a reverse lookup on this map
+  // to resolve a sheet cell's label back to a state; two states sharing one
+  // label would make that lookup ambiguous (whichever key iterates last
+  // silently wins, shadowing the other).
+  CancelledShipping: 'Cancelled (post-confirmation)'
 }
 
 // Per-state cell color for the Google Sheets integration's 3 status columns
@@ -170,7 +289,8 @@ export const ORDER_STATE_SHEET_COLORS: Record<OrderState, { background: string; 
   Restocked: { background: '#F1F5F9', text: '#1E293B' }, // slate
   CashCollected: { background: '#ECFCCB', text: '#3F6212' }, // lime
   Reconciled: { background: '#CCFBF1', text: '#115E59' }, // teal
-  Settled: { background: '#CFFAFE', text: '#155E75' } // cyan
+  Settled: { background: '#CFFAFE', text: '#155E75' }, // cyan
+  CancelledShipping: { background: '#F3E8FF', text: '#6B21A8' } // purple
 }
 
 export const OrderItemSchema = z.object({
@@ -368,6 +488,13 @@ export interface AdminOrderLineItem {
 export interface AdminOrderListItem {
   id: string
   state: OrderState
+  // Derived from `state` — see deriveCallCenterState/deriveShippingState's
+  // comment. Every page that shows an order's status should read these two
+  // instead of treating `state` as one blended value; `state` itself stays
+  // on the wire only because it's still what a generic "advance to the next
+  // valid state" control needs to look up VALID_TRANSITIONS by.
+  callCenterState: CallCenterState
+  shippingState: ShippingState | null
   totalCents: number
   shippingType: ShippingType | null
   shippingPriceCents: number
@@ -414,6 +541,9 @@ export interface OrderListResponse {
 export interface AdminOrderDetail {
   id: string
   state: OrderState
+  // See AdminOrderListItem's comment.
+  callCenterState: CallCenterState
+  shippingState: ShippingState | null
   totalCents: number
   shippingType: ShippingType | null
   shippingPriceCents: number

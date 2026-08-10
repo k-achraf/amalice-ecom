@@ -14,6 +14,35 @@ import { PrismaService } from '../prisma/prisma.service'
 import { Prisma } from '../generated/prisma/client'
 import { AuditService, type AuditActor } from '../common/audit.service'
 
+// Spreads the store owner's selected product photos across sections — each
+// section gets only 1 or 2 of them, never the whole set. Previously every
+// section was handed ALL selected images (see this file's git history), so
+// a 7-image/7-section landing page sent Gemini 7 reference photos per
+// section-image call with no indication of which one to actually feature;
+// the model would arbitrarily latch onto just one (sometimes the same one
+// every time), which is exactly the "only one image gets used" bug this
+// exists to fix — a request with fewer, section-specific reference photos
+// makes it far more likely the model uses all of what it's given.
+// Round-robins every image across sections' first slot, then every
+// section's second slot, capped at 2 slots/section — so with imageCount <=
+// 2 * sectionCount (the common case, e.g. 7 images / 7 sections) every
+// selected image ends up used in at least one section. If imageCount
+// exceeds that cap, the earliest-selected images win and the rest simply
+// don't get a dedicated section — a store owner picking far more images
+// than sections is the only case that happens in.
+export function distributeSourceImages(imageUrls: string[], sectionCount: number): string[][] {
+  if (sectionCount === 0) return []
+  if (imageUrls.length === 0) return Array.from({ length: sectionCount }, () => [])
+
+  const perSection: string[][] = Array.from({ length: sectionCount }, () => [])
+  const totalSlots = sectionCount * 2
+  const slotCount = Math.min(Math.max(imageUrls.length, sectionCount), totalSlots)
+  for (let i = 0; i < slotCount; i++) {
+    perSection[i % sectionCount].push(imageUrls[i % imageUrls.length]!)
+  }
+  return perSection.map((urls) => [...new Set(urls)])
+}
+
 @Injectable()
 export class LandingPagesService {
   constructor(
@@ -95,6 +124,7 @@ export class LandingPagesService {
 
     const number = await this.nextNumber(productId)
 
+    const sourceImagesBySection = distributeSourceImages(input.sourceImageUrls, input.sectionCount)
     const placeholderSections: LandingPageSection[] = Array.from({ length: input.sectionCount }, (_, i) => ({
       id: randomUUID(),
       order: i,
@@ -102,7 +132,7 @@ export class LandingPagesService {
       headline: '',
       body: '',
       imageUrl: null,
-      sourceImageUrls: input.sourceImageUrls,
+      sourceImageUrls: sourceImagesBySection[i]!.length > 0 ? sourceImagesBySection[i]! : input.sourceImageUrls,
       status: 'pending'
     }))
 

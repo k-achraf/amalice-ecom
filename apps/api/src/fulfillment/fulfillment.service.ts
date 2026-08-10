@@ -19,7 +19,11 @@ const STATUS_TO_ORDER_STATE: Record<NormalizedCourierStatus, string | null> = {
   delivered: 'Delivered',
   delivery_failed: 'DeliveryFailed',
   returned: 'ReturnedToOrigin',
-  cancelled: 'Cancelled'
+  // The courier cancelling a shipment only ever happens post-dispatch, i.e.
+  // well after call-center confirmation — CancelledShipping (not the
+  // pre-confirmation Cancelled) is the correct target. See OrderState's
+  // Prisma comment.
+  cancelled: 'CancelledShipping'
 }
 
 @Injectable()

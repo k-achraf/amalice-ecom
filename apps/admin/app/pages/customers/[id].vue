@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { OrderState } from '@amalice/shared'
+import { CALL_CENTER_STATE_TO_ORDER_STATE, SHIPPING_STATE_TO_ORDER_STATE, type CallCenterState, type OrderState, type ShippingState } from '@amalice/shared'
 
 interface CustomerDetail {
   id: string
   name: string | null
   phone: string
   addresses: { id: string; line1: string; city: string; region: string; postalCode: string }[]
-  orders: { id: string; state: OrderState; totalCents: number; createdAt: string }[]
+  orders: { id: string; state: OrderState; callCenterState: CallCenterState; shippingState: ShippingState | null; totalCents: number; createdAt: string }[]
 }
 
 const route = useRoute()
@@ -40,7 +40,12 @@ const { data: customer, pending, error } = await useAdminFetch<CustomerDetail>(`
               <tbody>
                 <tr v-for="o in customer.orders" :key="o.id" class="cursor-pointer" @click="navigateTo(`/orders/${o.id}`)">
                   <td class="px-2 py-2 tabular text-primary">{{ o.id.slice(0, 8) }}</td>
-                  <td class="px-2 py-2"><StatusBadge :state="o.state" /></td>
+                  <td class="px-2 py-2">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                      <StatusBadge :state="CALL_CENTER_STATE_TO_ORDER_STATE[o.callCenterState]" />
+                      <StatusBadge v-if="o.shippingState" :state="SHIPPING_STATE_TO_ORDER_STATE[o.shippingState]" />
+                    </div>
+                  </td>
                   <td class="tabular px-2 py-2 text-right"><PriceDisplay :amount-cents="o.totalCents" /></td>
                 </tr>
               </tbody>

@@ -60,7 +60,10 @@ async function resumeFromHold(orderId: string) {
 
 async function cancelOnHold(orderId: string) {
   acting.value = orderId
-  await run(() => api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to: 'Cancelled' } }), {
+  // CancelledShipping, not Cancelled — this order was already confirmed by
+  // call-center, so this is a post-confirmation cancel (see OrderState's
+  // Prisma comment / deriveCallCenterState's comment in packages/shared).
+  await run(() => api(`/admin/orders/${orderId}/transition`, { method: 'POST', body: { to: 'CancelledShipping' } }), {
     success: 'Order cancelled',
     errorFallback: 'Could not cancel the order'
   })

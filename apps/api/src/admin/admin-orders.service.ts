@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, type OrderState, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
+import { deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, type OrderState, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
 import type { Prisma } from '../generated/prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
@@ -39,6 +39,14 @@ function variantLabel(item: ItemWithRelations): string | null {
   }
   const attrs = item.variant.attributes as Record<string, string> | null
   return attrs && Object.keys(attrs).length ? Object.values(attrs).join(' / ') : null
+}
+
+// Adds the two derived call-center/shipping fields (see order.ts's
+// deriveCallCenterState/deriveShippingState) onto every order shape this
+// service returns — every list()/dropQueue()/findOne() caller needs them,
+// so it's centralized here rather than repeated at each call site.
+function withDerivedStates<T extends { state: OrderState }>(order: T): T & { callCenterState: ReturnType<typeof deriveCallCenterState>; shippingState: ReturnType<typeof deriveShippingState> } {
+  return { ...order, callCenterState: deriveCallCenterState(order.state), shippingState: deriveShippingState(order.state) }
 }
 
 function toLineItem(item: ItemWithRelations) {
@@ -116,11 +124,13 @@ export class AdminOrdersService {
       }),
       this.prisma.order.count({ where })
     ])
-    const items = rows.map((order) => ({
-      ...order,
-      items: order.items.map(toLineItem),
-      shippingCompanyName: order.shippingCompany?.name ?? null
-    }))
+    const items = rows.map((order) =>
+      withDerivedStates({
+        ...order,
+        items: order.items.map(toLineItem),
+        shippingCompanyName: order.shippingCompany?.name ?? null
+      })
+    )
     return { items, total, page: args.page, pageSize: args.pageSize }
   }
 
@@ -203,11 +213,13 @@ export class AdminOrdersService {
       take: 500
     })
     const items = rows
-      .map((order) => ({
-        ...order,
-        items: order.items.map(toLineItem),
-        shippingCompanyName: order.shippingCompany?.name ?? null
-      }))
+      .map((order) =>
+        withDerivedStates({
+          ...order,
+          items: order.items.map(toLineItem),
+          shippingCompanyName: order.shippingCompany?.name ?? null
+        })
+      )
       .sort((a, b) => {
         const tierOf = (o: typeof a) => (o.isAbandoned ? AdminOrdersService.DROP_QUEUE_ABANDONED_TIER : AdminOrdersService.DROP_QUEUE_TIER[o.state])
         const tierDiff = tierOf(a) - tierOf(b)
@@ -266,7 +278,7 @@ export class AdminOrdersService {
       }
     })
     if (!order) throw new NotFoundException('Order not found')
-    return { ...order, items: order.items.map(toLineItem), shippingCompanyName: order.shippingCompany?.name ?? null }
+    return withDerivedStates({ ...order, items: order.items.map(toLineItem), shippingCompanyName: order.shippingCompany?.name ?? null })
   }
 
   // ADM-05 — manual state transition. Re-validates against the state machine

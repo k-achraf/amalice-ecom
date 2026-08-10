@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import type { DashboardStats } from '@amalice/shared'
+import { deriveCallCenterState, deriveShippingState, type DashboardStats } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 
 // ADM-09 — operations dashboard KPIs. One query per metric rather than one
@@ -123,6 +123,10 @@ export class AdminStatsService {
         }
       }
     })
-    return customer
+    if (!customer) return customer
+    return {
+      ...customer,
+      orders: customer.orders.map((o) => ({ ...o, callCenterState: deriveCallCenterState(o.state), shippingState: deriveShippingState(o.state) }))
+    }
   }
 }

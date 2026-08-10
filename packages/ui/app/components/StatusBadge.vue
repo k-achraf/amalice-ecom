@@ -18,6 +18,9 @@ import { ORDER_STATE_LABELS, type OrderState } from '@amalice/shared'
 // but visually distinct from each other; Cancelled and ReturnedToOrigin both
 // sit in the red family (red / rose) as the two clearly-negative outcomes,
 // again using different exact hues so neither collides with the other.
+// (CancelledShipping — the post-confirmation cancel — gets its own hue
+// entirely rather than joining the red family, on the same "never collide"
+// principle.)
 const STATE_MAP: Record<OrderState, { hue: string; icon: string }> = {
   PendingCallCenter: { hue: 'amber', icon: 'i-lucide-phone-call' },
   CallCenterNoAnswer: { hue: 'orange', icon: 'i-lucide-phone-missed' },
@@ -35,7 +38,11 @@ const STATE_MAP: Record<OrderState, { hue: string; icon: string }> = {
   Restocked: { hue: 'slate', icon: 'i-lucide-package-check' },
   CashCollected: { hue: 'lime', icon: 'i-lucide-banknote' },
   Reconciled: { hue: 'teal', icon: 'i-lucide-check-circle' },
-  Settled: { hue: 'cyan', icon: 'i-lucide-badge-check' }
+  Settled: { hue: 'cyan', icon: 'i-lucide-badge-check' },
+  // A post-confirmation cancel (see OrderState's Prisma comment) — its own
+  // hue so it reads as visually distinct from the pre-confirmation Cancelled
+  // above, even though both are "cancelled".
+  CancelledShipping: { hue: 'purple', icon: 'i-lucide-x-circle' }
 }
 
 // Tailwind can't see dynamically-built class strings at build time, so every
@@ -59,7 +66,8 @@ const HUE_CLASSES: Record<string, string> = {
   green: 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-400/10 dark:text-green-400 dark:ring-green-400/20',
   lime: 'bg-lime-50 text-lime-700 ring-lime-600/20 dark:bg-lime-400/10 dark:text-lime-400 dark:ring-lime-400/20',
   teal: 'bg-teal-50 text-teal-700 ring-teal-600/20 dark:bg-teal-400/10 dark:text-teal-400 dark:ring-teal-400/20',
-  cyan: 'bg-cyan-50 text-cyan-700 ring-cyan-600/20 dark:bg-cyan-400/10 dark:text-cyan-400 dark:ring-cyan-400/20'
+  cyan: 'bg-cyan-50 text-cyan-700 ring-cyan-600/20 dark:bg-cyan-400/10 dark:text-cyan-400 dark:ring-cyan-400/20',
+  purple: 'bg-purple-50 text-purple-700 ring-purple-600/20 dark:bg-purple-400/10 dark:text-purple-400 dark:ring-purple-400/20'
 }
 
 const props = defineProps<{ state: OrderState }>()

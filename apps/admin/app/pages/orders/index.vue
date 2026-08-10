@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { OrderState, OrderListResponse } from '@amalice/shared'
+import { CALL_CENTER_STATE_TO_ORDER_STATE, SHIPPING_STATE_TO_ORDER_STATE, type OrderState, type OrderListResponse } from '@amalice/shared'
 import { VALID_TRANSITIONS } from '~/composables/order-transitions'
 
 useHead({ title: 'Orders' })
@@ -25,7 +25,8 @@ const stateOptions = [
     'Cancelled',
     'DeliveryFailed',
     'ReturnedToOrigin',
-    'Settled'
+    'Settled',
+    'CancelledShipping'
   ] as OrderState[]).map((s) => ({ label: s, value: s }))
 ]
 
@@ -151,7 +152,8 @@ function fmtDate(iso: string) {
                   <td class="px-4 py-3 text-muted">{{ order.address.region }}</td>
                   <td class="px-4 py-3">
                     <div class="flex flex-wrap items-center gap-1.5">
-                      <StatusBadge :state="order.state" />
+                      <StatusBadge :state="CALL_CENTER_STATE_TO_ORDER_STATE[order.callCenterState]" />
+                      <StatusBadge v-if="order.shippingState" :state="SHIPPING_STATE_TO_ORDER_STATE[order.shippingState]" />
                       <UBadge v-if="order.isDuplicate" color="error" variant="subtle" size="sm" title="Same customer + product within the last 2 days">Possible Duplicate</UBadge>
                     </div>
                   </td>

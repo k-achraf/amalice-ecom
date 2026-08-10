@@ -161,15 +161,29 @@ Keep every line short — this is text overlaid on an image, not a paragraph. Do
       cta: 'Confident call-to-action banner. Use a strong accent color block or button-style graphic. Include a "cash on delivery" / easy-ordering visual cue. Do not add countdown timers, "limited stock", "offer expires", or other fabricated urgency graphics.'
     }
 
+    // Explicit "use every attached photo" instruction, phrased differently
+    // depending on how many source images this section actually has — with
+    // multiple reference photos attached, Gemini tends to arbitrarily latch
+    // onto just one of them unless told point-blank to combine ALL of them
+    // into the single output image (see LandingPagesService.
+    // distributeSourceImages's comment for the other half of this fix: each
+    // section is now only ever handed 1-2 images to begin with, never the
+    // whole product gallery).
+    const sourceImageCount = input.sourceImages.length
+    const useAllPhotosInstruction =
+      sourceImageCount > 1
+        ? `You have been given ${sourceImageCount} product reference photos for this ONE section — use ALL ${sourceImageCount} of them together in the single output image (e.g. side by side, or as a small collage/grouping within the composition). Do not ignore any of them and do not output an image that only shows one of the ${sourceImageCount} photos.`
+        : `Use the attached product photo as the actual product shown in the image.`
+
     const prompt = input.editImage
       ? `The first attached image is a previously generated e-commerce landing-page section. Edit it according to these instructions, keeping everything else about the composition, text, and product unchanged unless the instructions say otherwise:
 
 Instructions: "${input.instructions}"
 
-The remaining attached image(s) are the real product photo(s) for reference — keep the product itself accurate to them. Keep the existing overlaid text ("${input.headline}" / "${input.body}") unless the instructions ask to change it. Output ONE image, same portrait/vertical orientation, same high-quality advertising photography look.`
+The remaining attached image(s) are the real product photo(s) for reference — keep the product itself accurate to them. ${sourceImageCount > 1 ? `There are ${sourceImageCount} of them; keep all of them represented if the original composition already did.` : ''} Keep the existing overlaid text ("${input.headline}" / "${input.body}") unless the instructions ask to change it. Output ONE image, same portrait/vertical orientation, same high-quality advertising photography look.`
       : `Create ONE professional e-commerce marketing image, portrait/vertical orientation, for one section of a product landing page.
 
-Use the attached product photo(s) as the actual product shown in the image — do not replace, redesign, or reinvent the product itself, only the background/composition/effects around it.
+${useAllPhotosInstruction} Do not replace, redesign, or reinvent the product itself, only the background/composition/effects around it.
 
 Section style: ${styleByRole[input.role]}
 ${input.instructions ? `\nAdditional instructions from the store owner (follow these closely): ${input.instructions}\n` : ''}

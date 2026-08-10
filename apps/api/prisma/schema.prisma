@@ -29,6 +29,12 @@ enum OrderState {
   CashCollected
   Reconciled
   Settled
+  // A post-confirmation cancellation (fulfillment/shipping) — distinct from
+  // the pre-confirmation Cancelled above so the derived call-center/shipping
+  // tracks (see order.ts's deriveCallCenterState/deriveShippingState) can
+  // tell the two apart unambiguously. See packages/shared's OrderState
+  // comment for the full reasoning.
+  CancelledShipping
 }
 
 // The five roles from cod-platform-plan.md §8.

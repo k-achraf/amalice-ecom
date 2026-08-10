@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatPhoneLocal, PRICE_EDITABLE_STATES, type AdminOrderDetail, type OrderState, type ShippingCompanyView } from '@amalice/shared'
+import { CALL_CENTER_STATE_TO_ORDER_STATE, formatPhoneLocal, PRICE_EDITABLE_STATES, SHIPPING_STATE_TO_ORDER_STATE, type AdminOrderDetail, type OrderState, type ShippingCompanyView } from '@amalice/shared'
 import { VALID_TRANSITIONS } from '~/composables/order-transitions'
 
 // Orders states that can still take an added item — mirrors
@@ -415,7 +415,10 @@ async function submitAddItem() {
                 <p class="text-sm text-muted">Total due (COD)</p>
                 <PriceDisplay :amount-cents="order.totalCents" class="text-2xl font-semibold" />
               </div>
-              <StatusBadge :state="order.state" />
+              <div class="flex flex-wrap items-center gap-1.5">
+                <StatusBadge :state="CALL_CENTER_STATE_TO_ORDER_STATE[order.callCenterState]" />
+                <StatusBadge v-if="order.shippingState" :state="SHIPPING_STATE_TO_ORDER_STATE[order.shippingState]" />
+              </div>
             </div>
 
             <div class="mb-2 flex items-center justify-between">
