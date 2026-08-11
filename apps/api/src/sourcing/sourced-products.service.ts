@@ -3,21 +3,27 @@ import type {
   CreateProductAdTest,
   CreateProductSourcingRequest,
   CreateSourcedProduct,
+  CreateSourcedProductCompetitor,
   CreateSourcedProductLink,
   CreateSourcedProductMedia,
+  CreateSourcedProductVideoCreative,
   LinkSourcedProduct,
   ProductAdTestView,
   ProductSourcingRequestView,
   ReorderSourcedProductMedia,
+  SourcedProductCompetitorView,
   SourcedProductDetail,
   SourcedProductLinkView,
   SourcedProductListItem,
   SourcedProductMediaView,
+  SourcedProductVideoCreativeView,
   UpdateProductAdTest,
   UpdateProductSourcingRequest,
   UpdateSourcedProduct,
+  UpdateSourcedProductCompetitor,
   UpdateSourcedProductLink,
-  UpdateSourcedProductMedia
+  UpdateSourcedProductMedia,
+  UpdateSourcedProductVideoCreative
 } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
@@ -25,9 +31,11 @@ import { AuditService, type AuditActor } from '../common/audit.service'
 const detailInclude = {
   linkedProduct: { select: { id: true, name: true, slug: true } },
   adTests: { orderBy: { createdAt: 'desc' as const } },
-  sourcingRequests: { include: { wholesaler: { select: { id: true, name: true } } }, orderBy: { createdAt: 'desc' as const } },
+  sourcingRequests: { orderBy: { createdAt: 'desc' as const } },
   media: { orderBy: { sortOrder: 'asc' as const } },
-  links: { orderBy: { createdAt: 'asc' as const } }
+  links: { orderBy: { createdAt: 'asc' as const } },
+  videoCreatives: { orderBy: { createdAt: 'asc' as const } },
+  competitors: { orderBy: { createdAt: 'asc' as const } }
 }
 
 function toMediaView(row: { id: string; sourcedProductId: string; type: string; url: string; caption: string | null; sortOrder: number; createdAt: Date }): SourcedProductMediaView {
@@ -48,6 +56,29 @@ function toLinkView(row: { id: string; sourcedProductId: string; label: string; 
     sourcedProductId: row.sourcedProductId,
     label: row.label,
     url: row.url,
+    createdAt: row.createdAt.toISOString()
+  }
+}
+
+function toVideoCreativeView(row: { id: string; sourcedProductId: string; url: string; platform: string | null; notes: string | null; createdAt: Date }): SourcedProductVideoCreativeView {
+  return {
+    id: row.id,
+    sourcedProductId: row.sourcedProductId,
+    url: row.url,
+    platform: row.platform as SourcedProductVideoCreativeView['platform'],
+    notes: row.notes,
+    createdAt: row.createdAt.toISOString()
+  }
+}
+
+function toCompetitorView(row: { id: string; sourcedProductId: string; name: string | null; url: string; priceCents: number | null; details: string | null; createdAt: Date }): SourcedProductCompetitorView {
+  return {
+    id: row.id,
+    sourcedProductId: row.sourcedProductId,
+    name: row.name,
+    url: row.url,
+    priceCents: row.priceCents,
+    details: row.details,
     createdAt: row.createdAt.toISOString()
   }
 }
@@ -93,7 +124,6 @@ function toAdTestView(row: {
 function toRequestView(row: {
   id: string
   sourcedProductId: string
-  wholesaler: { id: string; name: string }
   requestedQuantity: number
   requestedCountry: string
   unitCostCents: number | null
@@ -107,7 +137,6 @@ function toRequestView(row: {
   return {
     id: row.id,
     sourcedProductId: row.sourcedProductId,
-    wholesaler: row.wholesaler,
     requestedQuantity: row.requestedQuantity,
     requestedCountry: row.requestedCountry,
     unitCostCents: row.unitCostCents,
@@ -179,6 +208,8 @@ export class SourcedProductsService {
       sourcingRequests: row.sourcingRequests.map(toRequestView),
       media: row.media.map(toMediaView),
       links: row.links.map(toLinkView),
+      videoCreatives: row.videoCreatives.map(toVideoCreativeView),
+      competitors: row.competitors.map(toCompetitorView),
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString()
     }
@@ -272,20 +303,16 @@ export class SourcedProductsService {
 
   async createRequest(sourcedProductId: string, input: CreateProductSourcingRequest, actor: AuditActor): Promise<ProductSourcingRequestView> {
     await this.ensureExists(sourcedProductId)
-    const wholesaler = await this.prisma.wholesaler.findUnique({ where: { id: input.wholesalerId } })
-    if (!wholesaler) throw new NotFoundException('Wholesaler not found')
     const row = await this.prisma.productSourcingRequest.create({
       data: {
         sourcedProductId,
-        wholesalerId: input.wholesalerId,
         requestedQuantity: input.requestedQuantity,
         requestedCountry: input.requestedCountry,
         unitCostCents: input.unitCostCents,
         status: input.status,
         notes: input.notes,
         receivedAt: input.receivedAt ? new Date(input.receivedAt) : null
-      },
-      include: { wholesaler: { select: { id: true, name: true } } }
+      }
     })
     await this.audit.log({ actor, action: 'Create', entity: 'ProductSourcingRequest', entityId: row.id, metadata: input })
     return toRequestView(row)
@@ -294,17 +321,12 @@ export class SourcedProductsService {
   async updateRequest(id: string, input: UpdateProductSourcingRequest, actor: AuditActor): Promise<ProductSourcingRequestView> {
     const existing = await this.prisma.productSourcingRequest.findUnique({ where: { id } })
     if (!existing) throw new NotFoundException('Sourcing request not found')
-    if (input.wholesalerId) {
-      const wholesaler = await this.prisma.wholesaler.findUnique({ where: { id: input.wholesalerId } })
-      if (!wholesaler) throw new NotFoundException('Wholesaler not found')
-    }
     const row = await this.prisma.productSourcingRequest.update({
       where: { id },
       data: {
         ...input,
         ...(input.receivedAt !== undefined && { receivedAt: input.receivedAt ? new Date(input.receivedAt) : null })
-      },
-      include: { wholesaler: { select: { id: true, name: true } } }
+      }
     })
     await this.audit.log({ actor, action: 'Update', entity: 'ProductSourcingRequest', entityId: id, metadata: input })
     return toRequestView(row)
@@ -391,5 +413,57 @@ export class SourcedProductsService {
     if (!existing) throw new NotFoundException('Link not found')
     await this.prisma.sourcedProductLink.delete({ where: { id } })
     await this.audit.log({ actor, action: 'Delete', entity: 'SourcedProductLink', entityId: id })
+  }
+
+  // ---- Video creatives ----
+
+  async addVideoCreative(sourcedProductId: string, input: CreateSourcedProductVideoCreative, actor: AuditActor): Promise<SourcedProductVideoCreativeView> {
+    await this.ensureExists(sourcedProductId)
+    const row = await this.prisma.sourcedProductVideoCreative.create({
+      data: { sourcedProductId, url: input.url, platform: input.platform ?? null, notes: input.notes }
+    })
+    await this.audit.log({ actor, action: 'Create', entity: 'SourcedProductVideoCreative', entityId: row.id, metadata: input })
+    return toVideoCreativeView(row)
+  }
+
+  async updateVideoCreative(id: string, input: UpdateSourcedProductVideoCreative, actor: AuditActor): Promise<SourcedProductVideoCreativeView> {
+    const existing = await this.prisma.sourcedProductVideoCreative.findUnique({ where: { id } })
+    if (!existing) throw new NotFoundException('Video creative not found')
+    const row = await this.prisma.sourcedProductVideoCreative.update({ where: { id }, data: input })
+    await this.audit.log({ actor, action: 'Update', entity: 'SourcedProductVideoCreative', entityId: id, metadata: input })
+    return toVideoCreativeView(row)
+  }
+
+  async removeVideoCreative(id: string, actor: AuditActor): Promise<void> {
+    const existing = await this.prisma.sourcedProductVideoCreative.findUnique({ where: { id } })
+    if (!existing) throw new NotFoundException('Video creative not found')
+    await this.prisma.sourcedProductVideoCreative.delete({ where: { id } })
+    await this.audit.log({ actor, action: 'Delete', entity: 'SourcedProductVideoCreative', entityId: id })
+  }
+
+  // ---- Competitors ----
+
+  async addCompetitor(sourcedProductId: string, input: CreateSourcedProductCompetitor, actor: AuditActor): Promise<SourcedProductCompetitorView> {
+    await this.ensureExists(sourcedProductId)
+    const row = await this.prisma.sourcedProductCompetitor.create({
+      data: { sourcedProductId, name: input.name, url: input.url, priceCents: input.priceCents, details: input.details }
+    })
+    await this.audit.log({ actor, action: 'Create', entity: 'SourcedProductCompetitor', entityId: row.id, metadata: input })
+    return toCompetitorView(row)
+  }
+
+  async updateCompetitor(id: string, input: UpdateSourcedProductCompetitor, actor: AuditActor): Promise<SourcedProductCompetitorView> {
+    const existing = await this.prisma.sourcedProductCompetitor.findUnique({ where: { id } })
+    if (!existing) throw new NotFoundException('Competitor not found')
+    const row = await this.prisma.sourcedProductCompetitor.update({ where: { id }, data: input })
+    await this.audit.log({ actor, action: 'Update', entity: 'SourcedProductCompetitor', entityId: id, metadata: input })
+    return toCompetitorView(row)
+  }
+
+  async removeCompetitor(id: string, actor: AuditActor): Promise<void> {
+    const existing = await this.prisma.sourcedProductCompetitor.findUnique({ where: { id } })
+    if (!existing) throw new NotFoundException('Competitor not found')
+    await this.prisma.sourcedProductCompetitor.delete({ where: { id } })
+    await this.audit.log({ actor, action: 'Delete', entity: 'SourcedProductCompetitor', entityId: id })
   }
 }

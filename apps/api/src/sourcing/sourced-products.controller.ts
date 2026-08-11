@@ -3,16 +3,20 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import {
   CreateProductAdTestSchema,
   CreateProductSourcingRequestSchema,
+  CreateSourcedProductCompetitorSchema,
   CreateSourcedProductLinkSchema,
   CreateSourcedProductMediaSchema,
   CreateSourcedProductSchema,
+  CreateSourcedProductVideoCreativeSchema,
   LinkSourcedProductSchema,
   ReorderSourcedProductMediaSchema,
   UpdateProductAdTestSchema,
   UpdateProductSourcingRequestSchema,
+  UpdateSourcedProductCompetitorSchema,
   UpdateSourcedProductLinkSchema,
   UpdateSourcedProductMediaSchema,
-  UpdateSourcedProductSchema
+  UpdateSourcedProductSchema,
+  UpdateSourcedProductVideoCreativeSchema
 } from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
@@ -35,6 +39,10 @@ class UpdateSourcedProductMediaDto extends createZodDto(UpdateSourcedProductMedi
 class ReorderSourcedProductMediaDto extends createZodDto(ReorderSourcedProductMediaSchema) {}
 class CreateSourcedProductLinkDto extends createZodDto(CreateSourcedProductLinkSchema) {}
 class UpdateSourcedProductLinkDto extends createZodDto(UpdateSourcedProductLinkSchema) {}
+class CreateSourcedProductVideoCreativeDto extends createZodDto(CreateSourcedProductVideoCreativeSchema) {}
+class UpdateSourcedProductVideoCreativeDto extends createZodDto(UpdateSourcedProductVideoCreativeSchema) {}
+class CreateSourcedProductCompetitorDto extends createZodDto(CreateSourcedProductCompetitorSchema) {}
+class UpdateSourcedProductCompetitorDto extends createZodDto(UpdateSourcedProductCompetitorSchema) {}
 
 interface AuthedRequest extends Request {
   user: AdminJwtPayload
@@ -164,5 +172,45 @@ export class SourcedProductsController {
   removeLink(@Param('linkId') linkId: string, @Req() req: AuthedRequest) {
     const actor: AuditActor = { id: req.user.sub, email: req.user.email }
     return this.sourcedProducts.removeLink(linkId, actor)
+  }
+
+  // ---- Video creatives ----
+
+  @Post(':id/video-creatives')
+  addVideoCreative(@Param('id') id: string, @Body() body: CreateSourcedProductVideoCreativeDto, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.sourcedProducts.addVideoCreative(id, body, actor)
+  }
+
+  @Patch('video-creatives/:videoCreativeId')
+  updateVideoCreative(@Param('videoCreativeId') videoCreativeId: string, @Body() body: UpdateSourcedProductVideoCreativeDto, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.sourcedProducts.updateVideoCreative(videoCreativeId, body, actor)
+  }
+
+  @Delete('video-creatives/:videoCreativeId')
+  removeVideoCreative(@Param('videoCreativeId') videoCreativeId: string, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.sourcedProducts.removeVideoCreative(videoCreativeId, actor)
+  }
+
+  // ---- Competitors ----
+
+  @Post(':id/competitors')
+  addCompetitor(@Param('id') id: string, @Body() body: CreateSourcedProductCompetitorDto, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.sourcedProducts.addCompetitor(id, body, actor)
+  }
+
+  @Patch('competitors/:competitorId')
+  updateCompetitor(@Param('competitorId') competitorId: string, @Body() body: UpdateSourcedProductCompetitorDto, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.sourcedProducts.updateCompetitor(competitorId, body, actor)
+  }
+
+  @Delete('competitors/:competitorId')
+  removeCompetitor(@Param('competitorId') competitorId: string, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.sourcedProducts.removeCompetitor(competitorId, actor)
   }
 }

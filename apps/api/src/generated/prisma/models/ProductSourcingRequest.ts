@@ -39,7 +39,6 @@ export type ProductSourcingRequestSumAggregateOutputType = {
 export type ProductSourcingRequestMinAggregateOutputType = {
   id: string | null
   sourcedProductId: string | null
-  wholesalerId: string | null
   requestedQuantity: number | null
   requestedCountry: string | null
   unitCostCents: number | null
@@ -54,7 +53,6 @@ export type ProductSourcingRequestMinAggregateOutputType = {
 export type ProductSourcingRequestMaxAggregateOutputType = {
   id: string | null
   sourcedProductId: string | null
-  wholesalerId: string | null
   requestedQuantity: number | null
   requestedCountry: string | null
   unitCostCents: number | null
@@ -69,7 +67,6 @@ export type ProductSourcingRequestMaxAggregateOutputType = {
 export type ProductSourcingRequestCountAggregateOutputType = {
   id: number
   sourcedProductId: number
-  wholesalerId: number
   requestedQuantity: number
   requestedCountry: number
   unitCostCents: number
@@ -96,7 +93,6 @@ export type ProductSourcingRequestSumAggregateInputType = {
 export type ProductSourcingRequestMinAggregateInputType = {
   id?: true
   sourcedProductId?: true
-  wholesalerId?: true
   requestedQuantity?: true
   requestedCountry?: true
   unitCostCents?: true
@@ -111,7 +107,6 @@ export type ProductSourcingRequestMinAggregateInputType = {
 export type ProductSourcingRequestMaxAggregateInputType = {
   id?: true
   sourcedProductId?: true
-  wholesalerId?: true
   requestedQuantity?: true
   requestedCountry?: true
   unitCostCents?: true
@@ -126,7 +121,6 @@ export type ProductSourcingRequestMaxAggregateInputType = {
 export type ProductSourcingRequestCountAggregateInputType = {
   id?: true
   sourcedProductId?: true
-  wholesalerId?: true
   requestedQuantity?: true
   requestedCountry?: true
   unitCostCents?: true
@@ -228,7 +222,6 @@ export type ProductSourcingRequestGroupByArgs<ExtArgs extends runtime.Types.Exte
 export type ProductSourcingRequestGroupByOutputType = {
   id: string
   sourcedProductId: string
-  wholesalerId: string
   requestedQuantity: number
   requestedCountry: string
   unitCostCents: number | null
@@ -266,7 +259,6 @@ export type ProductSourcingRequestWhereInput = {
   NOT?: Prisma.ProductSourcingRequestWhereInput | Prisma.ProductSourcingRequestWhereInput[]
   id?: Prisma.StringFilter<"ProductSourcingRequest"> | string
   sourcedProductId?: Prisma.StringFilter<"ProductSourcingRequest"> | string
-  wholesalerId?: Prisma.StringFilter<"ProductSourcingRequest"> | string
   requestedQuantity?: Prisma.IntFilter<"ProductSourcingRequest"> | number
   requestedCountry?: Prisma.StringFilter<"ProductSourcingRequest"> | string
   unitCostCents?: Prisma.IntNullableFilter<"ProductSourcingRequest"> | number | null
@@ -277,13 +269,11 @@ export type ProductSourcingRequestWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"ProductSourcingRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductSourcingRequest"> | Date | string
   sourcedProduct?: Prisma.XOR<Prisma.SourcedProductScalarRelationFilter, Prisma.SourcedProductWhereInput>
-  wholesaler?: Prisma.XOR<Prisma.WholesalerScalarRelationFilter, Prisma.WholesalerWhereInput>
 }
 
 export type ProductSourcingRequestOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   sourcedProductId?: Prisma.SortOrder
-  wholesalerId?: Prisma.SortOrder
   requestedQuantity?: Prisma.SortOrder
   requestedCountry?: Prisma.SortOrder
   unitCostCents?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -294,7 +284,6 @@ export type ProductSourcingRequestOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   sourcedProduct?: Prisma.SourcedProductOrderByWithRelationInput
-  wholesaler?: Prisma.WholesalerOrderByWithRelationInput
 }
 
 export type ProductSourcingRequestWhereUniqueInput = Prisma.AtLeast<{
@@ -303,7 +292,6 @@ export type ProductSourcingRequestWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.ProductSourcingRequestWhereInput[]
   NOT?: Prisma.ProductSourcingRequestWhereInput | Prisma.ProductSourcingRequestWhereInput[]
   sourcedProductId?: Prisma.StringFilter<"ProductSourcingRequest"> | string
-  wholesalerId?: Prisma.StringFilter<"ProductSourcingRequest"> | string
   requestedQuantity?: Prisma.IntFilter<"ProductSourcingRequest"> | number
   requestedCountry?: Prisma.StringFilter<"ProductSourcingRequest"> | string
   unitCostCents?: Prisma.IntNullableFilter<"ProductSourcingRequest"> | number | null
@@ -314,13 +302,11 @@ export type ProductSourcingRequestWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"ProductSourcingRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductSourcingRequest"> | Date | string
   sourcedProduct?: Prisma.XOR<Prisma.SourcedProductScalarRelationFilter, Prisma.SourcedProductWhereInput>
-  wholesaler?: Prisma.XOR<Prisma.WholesalerScalarRelationFilter, Prisma.WholesalerWhereInput>
 }, "id">
 
 export type ProductSourcingRequestOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   sourcedProductId?: Prisma.SortOrder
-  wholesalerId?: Prisma.SortOrder
   requestedQuantity?: Prisma.SortOrder
   requestedCountry?: Prisma.SortOrder
   unitCostCents?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -343,7 +329,6 @@ export type ProductSourcingRequestScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ProductSourcingRequestScalarWhereWithAggregatesInput | Prisma.ProductSourcingRequestScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"ProductSourcingRequest"> | string
   sourcedProductId?: Prisma.StringWithAggregatesFilter<"ProductSourcingRequest"> | string
-  wholesalerId?: Prisma.StringWithAggregatesFilter<"ProductSourcingRequest"> | string
   requestedQuantity?: Prisma.IntWithAggregatesFilter<"ProductSourcingRequest"> | number
   requestedCountry?: Prisma.StringWithAggregatesFilter<"ProductSourcingRequest"> | string
   unitCostCents?: Prisma.IntNullableWithAggregatesFilter<"ProductSourcingRequest"> | number | null
@@ -367,13 +352,11 @@ export type ProductSourcingRequestCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   sourcedProduct: Prisma.SourcedProductCreateNestedOneWithoutSourcingRequestsInput
-  wholesaler: Prisma.WholesalerCreateNestedOneWithoutSourcingRequestsInput
 }
 
 export type ProductSourcingRequestUncheckedCreateInput = {
   id?: string
   sourcedProductId: string
-  wholesalerId: string
   requestedQuantity: number
   requestedCountry: string
   unitCostCents?: number | null
@@ -397,13 +380,11 @@ export type ProductSourcingRequestUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sourcedProduct?: Prisma.SourcedProductUpdateOneRequiredWithoutSourcingRequestsNestedInput
-  wholesaler?: Prisma.WholesalerUpdateOneRequiredWithoutSourcingRequestsNestedInput
 }
 
 export type ProductSourcingRequestUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sourcedProductId?: Prisma.StringFieldUpdateOperationsInput | string
-  wholesalerId?: Prisma.StringFieldUpdateOperationsInput | string
   requestedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   requestedCountry?: Prisma.StringFieldUpdateOperationsInput | string
   unitCostCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -418,7 +399,6 @@ export type ProductSourcingRequestUncheckedUpdateInput = {
 export type ProductSourcingRequestCreateManyInput = {
   id?: string
   sourcedProductId: string
-  wholesalerId: string
   requestedQuantity: number
   requestedCountry: string
   unitCostCents?: number | null
@@ -446,7 +426,6 @@ export type ProductSourcingRequestUpdateManyMutationInput = {
 export type ProductSourcingRequestUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sourcedProductId?: Prisma.StringFieldUpdateOperationsInput | string
-  wholesalerId?: Prisma.StringFieldUpdateOperationsInput | string
   requestedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   requestedCountry?: Prisma.StringFieldUpdateOperationsInput | string
   unitCostCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -471,7 +450,6 @@ export type ProductSourcingRequestOrderByRelationAggregateInput = {
 export type ProductSourcingRequestCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   sourcedProductId?: Prisma.SortOrder
-  wholesalerId?: Prisma.SortOrder
   requestedQuantity?: Prisma.SortOrder
   requestedCountry?: Prisma.SortOrder
   unitCostCents?: Prisma.SortOrder
@@ -491,7 +469,6 @@ export type ProductSourcingRequestAvgOrderByAggregateInput = {
 export type ProductSourcingRequestMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   sourcedProductId?: Prisma.SortOrder
-  wholesalerId?: Prisma.SortOrder
   requestedQuantity?: Prisma.SortOrder
   requestedCountry?: Prisma.SortOrder
   unitCostCents?: Prisma.SortOrder
@@ -506,7 +483,6 @@ export type ProductSourcingRequestMaxOrderByAggregateInput = {
 export type ProductSourcingRequestMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   sourcedProductId?: Prisma.SortOrder
-  wholesalerId?: Prisma.SortOrder
   requestedQuantity?: Prisma.SortOrder
   requestedCountry?: Prisma.SortOrder
   unitCostCents?: Prisma.SortOrder
@@ -565,48 +541,6 @@ export type ProductSourcingRequestUncheckedUpdateManyWithoutSourcedProductNested
   deleteMany?: Prisma.ProductSourcingRequestScalarWhereInput | Prisma.ProductSourcingRequestScalarWhereInput[]
 }
 
-export type ProductSourcingRequestCreateNestedManyWithoutWholesalerInput = {
-  create?: Prisma.XOR<Prisma.ProductSourcingRequestCreateWithoutWholesalerInput, Prisma.ProductSourcingRequestUncheckedCreateWithoutWholesalerInput> | Prisma.ProductSourcingRequestCreateWithoutWholesalerInput[] | Prisma.ProductSourcingRequestUncheckedCreateWithoutWholesalerInput[]
-  connectOrCreate?: Prisma.ProductSourcingRequestCreateOrConnectWithoutWholesalerInput | Prisma.ProductSourcingRequestCreateOrConnectWithoutWholesalerInput[]
-  createMany?: Prisma.ProductSourcingRequestCreateManyWholesalerInputEnvelope
-  connect?: Prisma.ProductSourcingRequestWhereUniqueInput | Prisma.ProductSourcingRequestWhereUniqueInput[]
-}
-
-export type ProductSourcingRequestUncheckedCreateNestedManyWithoutWholesalerInput = {
-  create?: Prisma.XOR<Prisma.ProductSourcingRequestCreateWithoutWholesalerInput, Prisma.ProductSourcingRequestUncheckedCreateWithoutWholesalerInput> | Prisma.ProductSourcingRequestCreateWithoutWholesalerInput[] | Prisma.ProductSourcingRequestUncheckedCreateWithoutWholesalerInput[]
-  connectOrCreate?: Prisma.ProductSourcingRequestCreateOrConnectWithoutWholesalerInput | Prisma.ProductSourcingRequestCreateOrConnectWithoutWholesalerInput[]
-  createMany?: Prisma.ProductSourcingRequestCreateManyWholesalerInputEnvelope
-  connect?: Prisma.ProductSourcingRequestWhereUniqueInput | Prisma.ProductSourcingRequestWhereUniqueInput[]
-}
-
-export type ProductSourcingRequestUpdateManyWithoutWholesalerNestedInput = {
-  create?: Prisma.XOR<Prisma.ProductSourcingRequestCreateWithoutWholesalerInput, Prisma.ProductSourcingRequestUncheckedCreateWithoutWholesalerInput> | Prisma.ProductSourcingRequestCreateWithoutWholesalerInput[] | Prisma.ProductSourcingRequestUncheckedCreateWithoutWholesalerInput[]
-  connectOrCreate?: Prisma.ProductSourcingRequestCreateOrConnectWithoutWholesalerInput | Prisma.ProductSourcingRequestCreateOrConnectWithoutWholesalerInput[]
-  upsert?: Prisma.ProductSourcingRequestUpsertWithWhereUniqueWithoutWholesalerInput | Prisma.ProductSourcingRequestUpsertWithWhereUniqueWithoutWholesalerInput[]
-  createMany?: Prisma.ProductSourcingRequestCreateManyWholesalerInputEnvelope
-  set?: Prisma.ProductSourcingRequestWhereUniqueInput | Prisma.ProductSourcingRequestWhereUniqueInput[]
-  disconnect?: Prisma.ProductSourcingRequestWhereUniqueInput | Prisma.ProductSourcingRequestWhereUniqueInput[]
-  delete?: Prisma.ProductSourcingRequestWhereUniqueInput | Prisma.ProductSourcingRequestWhereUniqueInput[]
-  connect?: Prisma.ProductSourcingRequestWhereUniqueInput | Prisma.ProductSourcingRequestWhereUniqueInput[]
-  update?: Prisma.ProductSourcingRequestUpdateWithWhereUniqueWithoutWholesalerInput | Prisma.ProductSourcingRequestUpdateWithWhereUniqueWithoutWholesalerInput[]
-  updateMany?: Prisma.ProductSourcingRequestUpdateManyWithWhereWithoutWholesalerInput | Prisma.ProductSourcingRequestUpdateManyWithWhereWithoutWholesalerInput[]
-  deleteMany?: Prisma.ProductSourcingRequestScalarWhereInput | Prisma.ProductSourcingRequestScalarWhereInput[]
-}
-
-export type ProductSourcingRequestUncheckedUpdateManyWithoutWholesalerNestedInput = {
-  create?: Prisma.XOR<Prisma.ProductSourcingRequestCreateWithoutWholesalerInput, Prisma.ProductSourcingRequestUncheckedCreateWithoutWholesalerInput> | Prisma.ProductSourcingRequestCreateWithoutWholesalerInput[] | Prisma.ProductSourcingRequestUncheckedCreateWithoutWholesalerInput[]
-  connectOrCreate?: Prisma.ProductSourcingRequestCreateOrConnectWithoutWholesalerInput | Prisma.ProductSourcingRequestCreateOrConnectWithoutWholesalerInput[]
-  upsert?: Prisma.ProductSourcingRequestUpsertWithWhereUniqueWithoutWholesalerInput | Prisma.ProductSourcingRequestUpsertWithWhereUniqueWithoutWholesalerInput[]
-  createMany?: Prisma.ProductSourcingRequestCreateManyWholesalerInputEnvelope
-  set?: Prisma.ProductSourcingRequestWhereUniqueInput | Prisma.ProductSourcingRequestWhereUniqueInput[]
-  disconnect?: Prisma.ProductSourcingRequestWhereUniqueInput | Prisma.ProductSourcingRequestWhereUniqueInput[]
-  delete?: Prisma.ProductSourcingRequestWhereUniqueInput | Prisma.ProductSourcingRequestWhereUniqueInput[]
-  connect?: Prisma.ProductSourcingRequestWhereUniqueInput | Prisma.ProductSourcingRequestWhereUniqueInput[]
-  update?: Prisma.ProductSourcingRequestUpdateWithWhereUniqueWithoutWholesalerInput | Prisma.ProductSourcingRequestUpdateWithWhereUniqueWithoutWholesalerInput[]
-  updateMany?: Prisma.ProductSourcingRequestUpdateManyWithWhereWithoutWholesalerInput | Prisma.ProductSourcingRequestUpdateManyWithWhereWithoutWholesalerInput[]
-  deleteMany?: Prisma.ProductSourcingRequestScalarWhereInput | Prisma.ProductSourcingRequestScalarWhereInput[]
-}
-
 export type EnumSourcingRequestStatusFieldUpdateOperationsInput = {
   set?: $Enums.SourcingRequestStatus
 }
@@ -622,12 +556,10 @@ export type ProductSourcingRequestCreateWithoutSourcedProductInput = {
   receivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  wholesaler: Prisma.WholesalerCreateNestedOneWithoutSourcingRequestsInput
 }
 
 export type ProductSourcingRequestUncheckedCreateWithoutSourcedProductInput = {
   id?: string
-  wholesalerId: string
   requestedQuantity: number
   requestedCountry: string
   unitCostCents?: number | null
@@ -671,7 +603,6 @@ export type ProductSourcingRequestScalarWhereInput = {
   NOT?: Prisma.ProductSourcingRequestScalarWhereInput | Prisma.ProductSourcingRequestScalarWhereInput[]
   id?: Prisma.StringFilter<"ProductSourcingRequest"> | string
   sourcedProductId?: Prisma.StringFilter<"ProductSourcingRequest"> | string
-  wholesalerId?: Prisma.StringFilter<"ProductSourcingRequest"> | string
   requestedQuantity?: Prisma.IntFilter<"ProductSourcingRequest"> | number
   requestedCountry?: Prisma.StringFilter<"ProductSourcingRequest"> | string
   unitCostCents?: Prisma.IntNullableFilter<"ProductSourcingRequest"> | number | null
@@ -683,63 +614,8 @@ export type ProductSourcingRequestScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"ProductSourcingRequest"> | Date | string
 }
 
-export type ProductSourcingRequestCreateWithoutWholesalerInput = {
-  id?: string
-  requestedQuantity: number
-  requestedCountry: string
-  unitCostCents?: number | null
-  status?: $Enums.SourcingRequestStatus
-  notes?: string | null
-  requestedAt?: Date | string
-  receivedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  sourcedProduct: Prisma.SourcedProductCreateNestedOneWithoutSourcingRequestsInput
-}
-
-export type ProductSourcingRequestUncheckedCreateWithoutWholesalerInput = {
-  id?: string
-  sourcedProductId: string
-  requestedQuantity: number
-  requestedCountry: string
-  unitCostCents?: number | null
-  status?: $Enums.SourcingRequestStatus
-  notes?: string | null
-  requestedAt?: Date | string
-  receivedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-}
-
-export type ProductSourcingRequestCreateOrConnectWithoutWholesalerInput = {
-  where: Prisma.ProductSourcingRequestWhereUniqueInput
-  create: Prisma.XOR<Prisma.ProductSourcingRequestCreateWithoutWholesalerInput, Prisma.ProductSourcingRequestUncheckedCreateWithoutWholesalerInput>
-}
-
-export type ProductSourcingRequestCreateManyWholesalerInputEnvelope = {
-  data: Prisma.ProductSourcingRequestCreateManyWholesalerInput | Prisma.ProductSourcingRequestCreateManyWholesalerInput[]
-  skipDuplicates?: boolean
-}
-
-export type ProductSourcingRequestUpsertWithWhereUniqueWithoutWholesalerInput = {
-  where: Prisma.ProductSourcingRequestWhereUniqueInput
-  update: Prisma.XOR<Prisma.ProductSourcingRequestUpdateWithoutWholesalerInput, Prisma.ProductSourcingRequestUncheckedUpdateWithoutWholesalerInput>
-  create: Prisma.XOR<Prisma.ProductSourcingRequestCreateWithoutWholesalerInput, Prisma.ProductSourcingRequestUncheckedCreateWithoutWholesalerInput>
-}
-
-export type ProductSourcingRequestUpdateWithWhereUniqueWithoutWholesalerInput = {
-  where: Prisma.ProductSourcingRequestWhereUniqueInput
-  data: Prisma.XOR<Prisma.ProductSourcingRequestUpdateWithoutWholesalerInput, Prisma.ProductSourcingRequestUncheckedUpdateWithoutWholesalerInput>
-}
-
-export type ProductSourcingRequestUpdateManyWithWhereWithoutWholesalerInput = {
-  where: Prisma.ProductSourcingRequestScalarWhereInput
-  data: Prisma.XOR<Prisma.ProductSourcingRequestUpdateManyMutationInput, Prisma.ProductSourcingRequestUncheckedUpdateManyWithoutWholesalerInput>
-}
-
 export type ProductSourcingRequestCreateManySourcedProductInput = {
   id?: string
-  wholesalerId: string
   requestedQuantity: number
   requestedCountry: string
   unitCostCents?: number | null
@@ -762,12 +638,10 @@ export type ProductSourcingRequestUpdateWithoutSourcedProductInput = {
   receivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  wholesaler?: Prisma.WholesalerUpdateOneRequiredWithoutSourcingRequestsNestedInput
 }
 
 export type ProductSourcingRequestUncheckedUpdateWithoutSourcedProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  wholesalerId?: Prisma.StringFieldUpdateOperationsInput | string
   requestedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   requestedCountry?: Prisma.StringFieldUpdateOperationsInput | string
   unitCostCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -781,63 +655,6 @@ export type ProductSourcingRequestUncheckedUpdateWithoutSourcedProductInput = {
 
 export type ProductSourcingRequestUncheckedUpdateManyWithoutSourcedProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  wholesalerId?: Prisma.StringFieldUpdateOperationsInput | string
-  requestedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  requestedCountry?: Prisma.StringFieldUpdateOperationsInput | string
-  unitCostCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumSourcingRequestStatusFieldUpdateOperationsInput | $Enums.SourcingRequestStatus
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  receivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type ProductSourcingRequestCreateManyWholesalerInput = {
-  id?: string
-  sourcedProductId: string
-  requestedQuantity: number
-  requestedCountry: string
-  unitCostCents?: number | null
-  status?: $Enums.SourcingRequestStatus
-  notes?: string | null
-  requestedAt?: Date | string
-  receivedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-}
-
-export type ProductSourcingRequestUpdateWithoutWholesalerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  requestedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  requestedCountry?: Prisma.StringFieldUpdateOperationsInput | string
-  unitCostCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumSourcingRequestStatusFieldUpdateOperationsInput | $Enums.SourcingRequestStatus
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  receivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  sourcedProduct?: Prisma.SourcedProductUpdateOneRequiredWithoutSourcingRequestsNestedInput
-}
-
-export type ProductSourcingRequestUncheckedUpdateWithoutWholesalerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  sourcedProductId?: Prisma.StringFieldUpdateOperationsInput | string
-  requestedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  requestedCountry?: Prisma.StringFieldUpdateOperationsInput | string
-  unitCostCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumSourcingRequestStatusFieldUpdateOperationsInput | $Enums.SourcingRequestStatus
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  requestedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  receivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type ProductSourcingRequestUncheckedUpdateManyWithoutWholesalerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  sourcedProductId?: Prisma.StringFieldUpdateOperationsInput | string
   requestedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   requestedCountry?: Prisma.StringFieldUpdateOperationsInput | string
   unitCostCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -854,7 +671,6 @@ export type ProductSourcingRequestUncheckedUpdateManyWithoutWholesalerInput = {
 export type ProductSourcingRequestSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   sourcedProductId?: boolean
-  wholesalerId?: boolean
   requestedQuantity?: boolean
   requestedCountry?: boolean
   unitCostCents?: boolean
@@ -865,13 +681,11 @@ export type ProductSourcingRequestSelect<ExtArgs extends runtime.Types.Extension
   createdAt?: boolean
   updatedAt?: boolean
   sourcedProduct?: boolean | Prisma.SourcedProductDefaultArgs<ExtArgs>
-  wholesaler?: boolean | Prisma.WholesalerDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["productSourcingRequest"]>
 
 export type ProductSourcingRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   sourcedProductId?: boolean
-  wholesalerId?: boolean
   requestedQuantity?: boolean
   requestedCountry?: boolean
   unitCostCents?: boolean
@@ -882,13 +696,11 @@ export type ProductSourcingRequestSelectCreateManyAndReturn<ExtArgs extends runt
   createdAt?: boolean
   updatedAt?: boolean
   sourcedProduct?: boolean | Prisma.SourcedProductDefaultArgs<ExtArgs>
-  wholesaler?: boolean | Prisma.WholesalerDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["productSourcingRequest"]>
 
 export type ProductSourcingRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   sourcedProductId?: boolean
-  wholesalerId?: boolean
   requestedQuantity?: boolean
   requestedCountry?: boolean
   unitCostCents?: boolean
@@ -899,13 +711,11 @@ export type ProductSourcingRequestSelectUpdateManyAndReturn<ExtArgs extends runt
   createdAt?: boolean
   updatedAt?: boolean
   sourcedProduct?: boolean | Prisma.SourcedProductDefaultArgs<ExtArgs>
-  wholesaler?: boolean | Prisma.WholesalerDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["productSourcingRequest"]>
 
 export type ProductSourcingRequestSelectScalar = {
   id?: boolean
   sourcedProductId?: boolean
-  wholesalerId?: boolean
   requestedQuantity?: boolean
   requestedCountry?: boolean
   unitCostCents?: boolean
@@ -917,30 +727,25 @@ export type ProductSourcingRequestSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProductSourcingRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sourcedProductId" | "wholesalerId" | "requestedQuantity" | "requestedCountry" | "unitCostCents" | "status" | "notes" | "requestedAt" | "receivedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["productSourcingRequest"]>
+export type ProductSourcingRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sourcedProductId" | "requestedQuantity" | "requestedCountry" | "unitCostCents" | "status" | "notes" | "requestedAt" | "receivedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["productSourcingRequest"]>
 export type ProductSourcingRequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sourcedProduct?: boolean | Prisma.SourcedProductDefaultArgs<ExtArgs>
-  wholesaler?: boolean | Prisma.WholesalerDefaultArgs<ExtArgs>
 }
 export type ProductSourcingRequestIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sourcedProduct?: boolean | Prisma.SourcedProductDefaultArgs<ExtArgs>
-  wholesaler?: boolean | Prisma.WholesalerDefaultArgs<ExtArgs>
 }
 export type ProductSourcingRequestIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sourcedProduct?: boolean | Prisma.SourcedProductDefaultArgs<ExtArgs>
-  wholesaler?: boolean | Prisma.WholesalerDefaultArgs<ExtArgs>
 }
 
 export type $ProductSourcingRequestPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ProductSourcingRequest"
   objects: {
     sourcedProduct: Prisma.$SourcedProductPayload<ExtArgs>
-    wholesaler: Prisma.$WholesalerPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     sourcedProductId: string
-    wholesalerId: string
     requestedQuantity: number
     requestedCountry: string
     unitCostCents: number | null
@@ -1345,7 +1150,6 @@ readonly fields: ProductSourcingRequestFieldRefs;
 export interface Prisma__ProductSourcingRequestClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   sourcedProduct<T extends Prisma.SourcedProductDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SourcedProductDefaultArgs<ExtArgs>>): Prisma.Prisma__SourcedProductClient<runtime.Types.Result.GetResult<Prisma.$SourcedProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  wholesaler<T extends Prisma.WholesalerDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WholesalerDefaultArgs<ExtArgs>>): Prisma.Prisma__WholesalerClient<runtime.Types.Result.GetResult<Prisma.$WholesalerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1377,7 +1181,6 @@ export interface Prisma__ProductSourcingRequestClient<T, Null = never, ExtArgs e
 export interface ProductSourcingRequestFieldRefs {
   readonly id: Prisma.FieldRef<"ProductSourcingRequest", 'String'>
   readonly sourcedProductId: Prisma.FieldRef<"ProductSourcingRequest", 'String'>
-  readonly wholesalerId: Prisma.FieldRef<"ProductSourcingRequest", 'String'>
   readonly requestedQuantity: Prisma.FieldRef<"ProductSourcingRequest", 'Int'>
   readonly requestedCountry: Prisma.FieldRef<"ProductSourcingRequest", 'String'>
   readonly unitCostCents: Prisma.FieldRef<"ProductSourcingRequest", 'Int'>

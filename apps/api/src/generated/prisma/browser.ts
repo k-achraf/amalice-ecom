@@ -228,15 +228,20 @@ export type SourcedProductMedia = Prisma.SourcedProductMediaModel
  */
 export type SourcedProductLink = Prisma.SourcedProductLinkModel
 /**
+ * Model SourcedProductVideoCreative
+ * 
+ */
+export type SourcedProductVideoCreative = Prisma.SourcedProductVideoCreativeModel
+/**
+ * Model SourcedProductCompetitor
+ * 
+ */
+export type SourcedProductCompetitor = Prisma.SourcedProductCompetitorModel
+/**
  * Model ProductAdTest
  * 
  */
 export type ProductAdTest = Prisma.ProductAdTestModel
-/**
- * Model Wholesaler
- * 
- */
-export type Wholesaler = Prisma.WholesalerModel
 /**
  * Model ProductSourcingRequest
  * 

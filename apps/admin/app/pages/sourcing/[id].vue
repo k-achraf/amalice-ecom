@@ -6,8 +6,7 @@ import type {
   Product,
   SourcedProductDetail,
   SourcedProductStatus,
-  SourcingRequestStatus,
-  WholesalerView
+  SourcingRequestStatus
 } from '@amalice/shared'
 import { SOURCED_PRODUCT_STATUSES, adTestCpaCents, adTestRoas } from '@amalice/shared'
 
@@ -28,12 +27,22 @@ interface AdTestFormState {
   notes: string
 }
 interface RequestFormState {
-  wholesalerId: string
   requestedQuantity: number
   requestedCountry: string
   unitCostCents: number | null
   status: SourcingRequestStatus
   notes: string
+}
+interface VideoCreativeFormState {
+  url: string
+  platform: AdTestPlatform | null
+  notes: string
+}
+interface CompetitorFormState {
+  name: string
+  url: string
+  priceCents: number | null
+  details: string
 }
 
 const route = useRoute()
@@ -43,7 +52,6 @@ const toast = useToast()
 const runtimeConfig = useRuntimeConfig()
 
 const { data: sourced, pending, refresh } = await useAdminFetch<SourcedProductDetail>(`/admin/sourcing/products/${id}`, { key: `admin-sourcing-product-${id}` })
-const { data: wholesalers } = await useAdminFetch<WholesalerView[]>('/admin/sourcing/wholesalers', { key: 'admin-sourcing-wholesalers' })
 // pageSize capped at 100 by ProductListQuerySchema — see google-sheets.vue's
 // comment on the same fix; a larger value 400s and useAdminFetch swallows it
 // silently, leaving this picker looking empty instead of erroring visibly.
@@ -51,7 +59,7 @@ const { data: products } = await useAdminFetch<{ items: Product[] }>('/admin/pro
 
 useHead({ title: () => sourced.value?.name ?? 'Sourced product' })
 
-const activeTab = ref<'overview' | 'media' | 'adTests' | 'requests'>('overview')
+const activeTab = ref<'overview' | 'media' | 'adTests' | 'requests' | 'videoCreatives' | 'competitors'>('overview')
 
 // Local uploads are stored relative (/uploads/xxx) — resolve against the API
 // base for display, same pattern as products/[id].vue's Images tab.
@@ -221,7 +229,6 @@ const adTestStatusColor: Record<AdTestStatus, 'neutral' | 'success' | 'error'> =
 const showRequestModal = ref(false)
 const editingRequestId = ref<string | null>(null)
 const requestForm = reactive<RequestFormState>({
-  wholesalerId: '',
   requestedQuantity: 1,
   requestedCountry: '',
   unitCostCents: null,
@@ -236,14 +243,13 @@ const savingRequest = ref(false)
 
 function openCreateRequest() {
   editingRequestId.value = null
-  Object.assign(requestForm, { wholesalerId: wholesalers.value?.[0]?.id ?? '', requestedQuantity: 1, requestedCountry: '', unitCostCents: null, status: 'Requested', notes: '' })
+  Object.assign(requestForm, { requestedQuantity: 1, requestedCountry: '', unitCostCents: null, status: 'Requested', notes: '' })
   showRequestModal.value = true
 }
 
 function openEditRequest(r: SourcedProductDetail['sourcingRequests'][number]) {
   editingRequestId.value = r.id
   Object.assign(requestForm, {
-    wholesalerId: r.wholesaler.id,
     requestedQuantity: r.requestedQuantity,
     requestedCountry: r.requestedCountry,
     unitCostCents: r.unitCostCents,
@@ -254,7 +260,7 @@ function openEditRequest(r: SourcedProductDetail['sourcingRequests'][number]) {
 }
 
 async function saveRequest() {
-  if (!requestForm.wholesalerId || !requestForm.requestedCountry.trim()) return
+  if (!requestForm.requestedCountry.trim()) return
   savingRequest.value = true
   try {
     const body = { ...requestForm, notes: requestForm.notes || null }
@@ -450,6 +456,128 @@ async function deleteLink(linkId: string) {
     toast.add({ title: 'Failed to remove link', color: 'error' })
   }
 }
+
+// ---- Video Creatives tab ----
+const newVideoCreative = reactive<VideoCreativeFormState>({ url: '', platform: null, notes: '' })
+const savingVideoCreative = ref(false)
+const editingVideoCreativeId = ref<string | null>(null)
+const editVideoCreative = reactive<VideoCreativeFormState>({ url: '', platform: null, notes: '' })
+
+async function addVideoCreative() {
+  if (!newVideoCreative.url.trim()) return
+  savingVideoCreative.value = true
+  try {
+    await api(`/admin/sourcing/products/${id}/video-creatives`, {
+      method: 'POST',
+      body: { url: newVideoCreative.url, platform: newVideoCreative.platform, notes: newVideoCreative.notes || null }
+    })
+    Object.assign(newVideoCreative, { url: '', platform: null, notes: '' })
+    await refresh()
+    toast.add({ title: 'Video creative added', color: 'success' })
+  } catch {
+    toast.add({ title: 'Failed to add video creative', color: 'error' })
+  } finally {
+    savingVideoCreative.value = false
+  }
+}
+
+function openEditVideoCreative(v: SourcedProductDetail['videoCreatives'][number]) {
+  editingVideoCreativeId.value = v.id
+  Object.assign(editVideoCreative, { url: v.url, platform: v.platform, notes: v.notes ?? '' })
+}
+
+async function saveEditVideoCreative() {
+  if (!editingVideoCreativeId.value || !editVideoCreative.url.trim()) return
+  savingVideoCreative.value = true
+  try {
+    await api(`/admin/sourcing/products/video-creatives/${editingVideoCreativeId.value}`, {
+      method: 'PATCH',
+      body: { url: editVideoCreative.url, platform: editVideoCreative.platform, notes: editVideoCreative.notes || null }
+    })
+    editingVideoCreativeId.value = null
+    await refresh()
+    toast.add({ title: 'Video creative updated', color: 'success' })
+  } catch {
+    toast.add({ title: 'Failed to update video creative', color: 'error' })
+  } finally {
+    savingVideoCreative.value = false
+  }
+}
+
+async function deleteVideoCreative(videoCreativeId: string) {
+  try {
+    await api(`/admin/sourcing/products/video-creatives/${videoCreativeId}`, { method: 'DELETE' })
+    await refresh()
+    toast.add({ title: 'Video creative removed', color: 'success' })
+  } catch {
+    toast.add({ title: 'Failed to remove video creative', color: 'error' })
+  }
+}
+
+// ---- Competitors tab ----
+const newCompetitor = reactive<CompetitorFormState>({ name: '', url: '', priceCents: null, details: '' })
+const newCompetitorPriceDzd = computed<number | null>({
+  get: () => (newCompetitor.priceCents == null ? null : newCompetitor.priceCents / 100),
+  set: (v) => { newCompetitor.priceCents = v == null ? null : Math.round(v * 100) }
+})
+const savingCompetitor = ref(false)
+const editingCompetitorId = ref<string | null>(null)
+const editCompetitor = reactive<CompetitorFormState>({ name: '', url: '', priceCents: null, details: '' })
+const editCompetitorPriceDzd = computed<number | null>({
+  get: () => (editCompetitor.priceCents == null ? null : editCompetitor.priceCents / 100),
+  set: (v) => { editCompetitor.priceCents = v == null ? null : Math.round(v * 100) }
+})
+
+async function addCompetitor() {
+  if (!newCompetitor.url.trim()) return
+  savingCompetitor.value = true
+  try {
+    await api(`/admin/sourcing/products/${id}/competitors`, {
+      method: 'POST',
+      body: { name: newCompetitor.name || null, url: newCompetitor.url, priceCents: newCompetitor.priceCents, details: newCompetitor.details || null }
+    })
+    Object.assign(newCompetitor, { name: '', url: '', priceCents: null, details: '' })
+    await refresh()
+    toast.add({ title: 'Competitor added', color: 'success' })
+  } catch {
+    toast.add({ title: 'Failed to add competitor', color: 'error' })
+  } finally {
+    savingCompetitor.value = false
+  }
+}
+
+function openEditCompetitor(c: SourcedProductDetail['competitors'][number]) {
+  editingCompetitorId.value = c.id
+  Object.assign(editCompetitor, { name: c.name ?? '', url: c.url, priceCents: c.priceCents, details: c.details ?? '' })
+}
+
+async function saveEditCompetitor() {
+  if (!editingCompetitorId.value || !editCompetitor.url.trim()) return
+  savingCompetitor.value = true
+  try {
+    await api(`/admin/sourcing/products/competitors/${editingCompetitorId.value}`, {
+      method: 'PATCH',
+      body: { name: editCompetitor.name || null, url: editCompetitor.url, priceCents: editCompetitor.priceCents, details: editCompetitor.details || null }
+    })
+    editingCompetitorId.value = null
+    await refresh()
+    toast.add({ title: 'Competitor updated', color: 'success' })
+  } catch {
+    toast.add({ title: 'Failed to update competitor', color: 'error' })
+  } finally {
+    savingCompetitor.value = false
+  }
+}
+
+async function deleteCompetitor(competitorId: string) {
+  try {
+    await api(`/admin/sourcing/products/competitors/${competitorId}`, { method: 'DELETE' })
+    await refresh()
+    toast.add({ title: 'Competitor removed', color: 'success' })
+  } catch {
+    toast.add({ title: 'Failed to remove competitor', color: 'error' })
+  }
+}
 </script>
 
 <template>
@@ -472,6 +600,8 @@ async function deleteLink(linkId: string) {
           :items="[
             { label: 'Overview', value: 'overview', icon: 'i-lucide-file-text' },
             { label: 'Media & Links', value: 'media', icon: 'i-lucide-images' },
+            { label: 'Video Creatives', value: 'videoCreatives', icon: 'i-lucide-clapperboard' },
+            { label: 'Competitors', value: 'competitors', icon: 'i-lucide-swords' },
             { label: 'Ad Tests', value: 'adTests', icon: 'i-lucide-megaphone' },
             { label: 'Sourcing Requests', value: 'requests', icon: 'i-lucide-truck' }
           ]"
@@ -587,6 +717,111 @@ async function deleteLink(linkId: string) {
           </div>
         </div>
 
+        <!-- Video Creatives Tab -->
+        <div v-show="activeTab === 'videoCreatives'" class="admin-table-wrap">
+          <div class="flex items-center justify-between border-b border-[var(--color-admin-border)] p-4">
+            <h3 class="text-sm font-medium text-muted">Video creatives ({{ sourced.videoCreatives.length }})</h3>
+          </div>
+          <p class="px-4 pt-3 text-xs text-muted">Video ad-creative links worth keeping an eye on — yours or a competitor's — spotted while researching or testing this product.</p>
+          <div class="space-y-2 p-4">
+            <div v-for="v in sourced.videoCreatives" :key="v.id" class="rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg)] p-3">
+              <template v-if="editingVideoCreativeId === v.id">
+                <div class="flex flex-wrap items-center gap-3">
+                  <UInput v-model="editVideoCreative.url" placeholder="https://…" class="min-w-64 flex-1" />
+                  <USelect
+                    v-model="editVideoCreative.platform"
+                    :items="[{ label: 'No platform', value: null }, ...platformOptions.map((p) => ({ label: p, value: p }))]"
+                    value-key="value"
+                    label-key="label"
+                    class="w-40"
+                  />
+                  <UButton icon="i-lucide-check" size="xs" color="primary" :loading="savingVideoCreative" @click="saveEditVideoCreative" />
+                  <UButton icon="i-lucide-x" size="xs" variant="ghost" color="neutral" @click="editingVideoCreativeId = null" />
+                </div>
+                <UInput v-model="editVideoCreative.notes" placeholder="Notes (optional)" class="mt-2 w-full" />
+              </template>
+              <template v-else>
+                <div class="flex items-center gap-3">
+                  <UBadge v-if="v.platform" color="neutral" variant="subtle">{{ v.platform }}</UBadge>
+                  <a :href="v.url" target="_blank" rel="noopener noreferrer" class="flex-1 truncate text-sm text-primary hover:underline">{{ v.url }}</a>
+                  <UButton icon="i-lucide-pencil" size="xs" variant="ghost" color="neutral" @click="openEditVideoCreative(v)" />
+                  <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="deleteVideoCreative(v.id)" />
+                </div>
+                <p v-if="v.notes" class="mt-1 text-xs text-muted">{{ v.notes }}</p>
+              </template>
+            </div>
+            <p v-if="!sourced.videoCreatives.length" class="py-8 text-center text-sm text-muted">No video creatives yet.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3 border-t border-[var(--color-admin-border)] p-4">
+            <UInput v-model="newVideoCreative.url" placeholder="https://…" class="min-w-64 flex-1" />
+            <USelect
+              v-model="newVideoCreative.platform"
+              :items="[{ label: 'No platform', value: null }, ...platformOptions.map((p) => ({ label: p, value: p }))]"
+              value-key="value"
+              label-key="label"
+              class="w-40"
+              placeholder="Platform"
+            />
+            <UInput v-model="newVideoCreative.notes" placeholder="Notes (optional)" class="w-48" />
+            <UButton icon="i-lucide-plus" :loading="savingVideoCreative" color="primary" :disabled="!newVideoCreative.url.trim()" @click="addVideoCreative">Add</UButton>
+          </div>
+        </div>
+
+        <!-- Competitors Tab -->
+        <div v-show="activeTab === 'competitors'" class="admin-table-wrap">
+          <div class="flex items-center justify-between border-b border-[var(--color-admin-border)] p-4">
+            <h3 class="text-sm font-medium text-muted">Competitors ({{ sourced.competitors.length }})</h3>
+          </div>
+          <p class="px-4 pt-3 text-xs text-muted">Who else is selling this product, at what price, and any other detail worth noting.</p>
+          <table v-if="sourced.competitors.length" class="admin-table w-full text-sm">
+            <thead>
+              <tr>
+                <th class="px-4 py-2.5 text-left">Name</th>
+                <th class="px-4 py-2.5 text-left">Link</th>
+                <th class="px-4 py-2.5 text-right">Price</th>
+                <th class="px-4 py-2.5 text-left">Details</th>
+                <th class="px-4 py-2.5 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="c in sourced.competitors" :key="c.id">
+                <template v-if="editingCompetitorId === c.id">
+                  <td class="px-4 py-3" colspan="5">
+                    <div class="flex flex-wrap items-center gap-3">
+                      <UInput v-model="editCompetitor.name" placeholder="Name (optional)" class="w-40" />
+                      <UInput v-model="editCompetitor.url" placeholder="https://…" class="min-w-56 flex-1" />
+                      <UInputNumber v-model="editCompetitorPriceDzd" :min="0" placeholder="Price (DZD)" class="w-36" />
+                      <UButton icon="i-lucide-check" size="xs" color="primary" :loading="savingCompetitor" @click="saveEditCompetitor" />
+                      <UButton icon="i-lucide-x" size="xs" variant="ghost" color="neutral" @click="editingCompetitorId = null" />
+                    </div>
+                    <UTextarea v-model="editCompetitor.details" placeholder="Details (optional)" class="mt-2 w-full" :rows="2" />
+                  </td>
+                </template>
+                <template v-else>
+                  <td class="px-4 py-3 font-medium text-highlighted">{{ c.name || '—' }}</td>
+                  <td class="px-4 py-3"><a :href="c.url" target="_blank" rel="noopener noreferrer" class="truncate text-primary hover:underline">{{ c.url }}</a></td>
+                  <td class="tabular px-4 py-3 text-right">{{ c.priceCents == null ? '—' : formatDzd(c.priceCents) }}</td>
+                  <td class="max-w-64 truncate px-4 py-3 text-muted" :title="c.details ?? ''">{{ c.details || '—' }}</td>
+                  <td class="px-4 py-3 text-right">
+                    <UButton icon="i-lucide-pencil" size="xs" variant="ghost" color="neutral" @click="openEditCompetitor(c)" />
+                    <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="deleteCompetitor(c.id)" />
+                  </td>
+                </template>
+              </tr>
+            </tbody>
+          </table>
+          <p v-else class="px-4 py-8 text-center text-sm text-muted">No competitors logged yet.</p>
+          <div class="space-y-3 border-t border-[var(--color-admin-border)] p-4">
+            <div class="flex flex-wrap items-center gap-3">
+              <UInput v-model="newCompetitor.name" placeholder="Name (optional)" class="w-40" />
+              <UInput v-model="newCompetitor.url" placeholder="https://…" class="min-w-56 flex-1" />
+              <UInputNumber v-model="newCompetitorPriceDzd" :min="0" placeholder="Price (DZD)" class="w-36" />
+              <UButton icon="i-lucide-plus" :loading="savingCompetitor" color="primary" :disabled="!newCompetitor.url.trim()" @click="addCompetitor">Add</UButton>
+            </div>
+            <UTextarea v-model="newCompetitor.details" placeholder="Details (optional)" class="w-full" :rows="2" />
+          </div>
+        </div>
+
         <!-- Ad Tests Tab -->
         <div v-show="activeTab === 'adTests'" class="admin-table-wrap">
           <div class="flex items-center justify-between border-b border-[var(--color-admin-border)] p-4">
@@ -635,13 +870,11 @@ async function deleteLink(linkId: string) {
         <div v-show="activeTab === 'requests'" class="admin-table-wrap">
           <div class="flex items-center justify-between border-b border-[var(--color-admin-border)] p-4">
             <h3 class="text-sm font-medium text-muted">Sourcing requests ({{ sourced.sourcingRequests.length }})</h3>
-            <UButton icon="i-lucide-plus" size="xs" color="primary" label="New request" :disabled="!wholesalers?.length" @click="openCreateRequest" />
+            <UButton icon="i-lucide-plus" size="xs" color="primary" label="New request" @click="openCreateRequest" />
           </div>
-          <p v-if="!wholesalers?.length" class="px-4 pb-3 text-xs text-muted">Add a wholesaler on the Sourcing list page first.</p>
           <table v-if="sourced.sourcingRequests.length" class="admin-table w-full text-sm">
             <thead>
               <tr>
-                <th class="px-4 py-2.5 text-left">Wholesaler</th>
                 <th class="px-4 py-2.5 text-right">Quantity</th>
                 <th class="px-4 py-2.5 text-left">Country</th>
                 <th class="px-4 py-2.5 text-right">Unit cost</th>
@@ -651,7 +884,6 @@ async function deleteLink(linkId: string) {
             </thead>
             <tbody>
               <tr v-for="r in sourced.sourcingRequests" :key="r.id">
-                <td class="px-4 py-3 font-medium text-highlighted">{{ r.wholesaler.name }}</td>
                 <td class="tabular px-4 py-3 text-right">{{ r.requestedQuantity }}</td>
                 <td class="px-4 py-3 text-muted">{{ r.requestedCountry }}</td>
                 <td class="tabular px-4 py-3 text-right">{{ r.unitCostCents == null ? '—' : formatDzd(r.unitCostCents) }}</td>
@@ -711,9 +943,6 @@ async function deleteLink(linkId: string) {
         <template #content>
           <div class="space-y-4 p-6">
             <h3 class="text-lg font-semibold">{{ editingRequestId ? 'Edit' : 'New' }} sourcing request</h3>
-            <UFormField label="Wholesaler">
-              <USelect v-model="requestForm.wholesalerId" :items="(wholesalers ?? []).map((w) => ({ label: w.name, value: w.id }))" value-key="value" label-key="label" class="w-full" />
-            </UFormField>
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <UFormField label="Requested quantity"><UInputNumber v-model="requestForm.requestedQuantity" :min="1" class="w-full" /></UFormField>
               <UFormField label="Requested country"><UInput v-model="requestForm.requestedCountry" class="w-full" /></UFormField>
@@ -727,7 +956,7 @@ async function deleteLink(linkId: string) {
             <UFormField label="Notes"><UTextarea v-model="requestForm.notes" class="w-full" :rows="3" /></UFormField>
             <div class="flex justify-end gap-2">
               <UButton color="neutral" variant="ghost" label="Cancel" @click="showRequestModal = false" />
-              <UButton :loading="savingRequest" :disabled="!requestForm.wholesalerId || !requestForm.requestedCountry.trim()" label="Save" color="primary" @click="saveRequest" />
+              <UButton :loading="savingRequest" :disabled="!requestForm.requestedCountry.trim()" label="Save" color="primary" @click="saveRequest" />
             </div>
           </div>
         </template>

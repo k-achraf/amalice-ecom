@@ -1202,6 +1202,14 @@ model SourcedProduct {
   // marketplace pages, competitor stores, social ad posts, etc.) — distinct
   // from sourceUrl above, which is just "where we first found it."
   links            SourcedProductLink[]
+  // Video ad-creative links (yours or a competitor's, spotted while
+  // researching) — distinct from ProductAdTest.creativeUrl, which is tied to
+  // one specific price/spend experiment; this is just a running collection
+  // of creatives worth keeping an eye on before/while testing.
+  videoCreatives   SourcedProductVideoCreative[]
+  // Competing listings for this product — who else sells it, at what price,
+  // and any other detail worth noting (shipping time, reviews, etc).
+  competitors      SourcedProductCompetitor[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -1244,6 +1252,42 @@ model SourcedProductLink {
 
   @@index([sourcedProductId])
   @@map("sourced_product_links")
+}
+
+// A video ad-creative link worth keeping track of while researching/testing
+// this product — yours or a competitor's. `platform` reuses AdTestPlatform
+// (Facebook/TikTok/Snapchat/Google/Other) since it's the same fixed set of
+// places a creative could be running; nullable because the platform isn't
+// always known/relevant (e.g. a raw video file link).
+model SourcedProductVideoCreative {
+  id               String          @id @default(uuid())
+  sourcedProductId String          @map("sourced_product_id")
+  sourcedProduct   SourcedProduct  @relation(fields: [sourcedProductId], references: [id], onDelete: Cascade)
+  url              String
+  platform         AdTestPlatform?
+  notes            String?
+  createdAt        DateTime        @default(now()) @map("created_at")
+
+  @@index([sourcedProductId])
+  @@map("sourced_product_video_creatives")
+}
+
+// A competing listing for this product — who else is selling it, at what
+// price, and any other detail worth noting (shipping time, reviews, ad
+// spend they appear to be running, etc — `details` is free text since this
+// is research scratch space, not a structured competitor-intel system).
+model SourcedProductCompetitor {
+  id               String         @id @default(uuid())
+  sourcedProductId String         @map("sourced_product_id")
+  sourcedProduct   SourcedProduct @relation(fields: [sourcedProductId], references: [id], onDelete: Cascade)
+  name             String?
+  url              String
+  priceCents       Int?           @map("price_cents")
+  details          String?
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  @@index([sourcedProductId])
+  @@map("sourced_product_competitors")
 }
 
 enum AdTestPlatform {
@@ -1300,24 +1344,6 @@ model ProductAdTest {
   @@map("product_ad_tests")
 }
 
-model Wholesaler {
-  id           String  @id @default(uuid())
-  name         String
-  country      String?
-  contactName  String? @map("contact_name")
-  contactPhone String? @map("contact_phone")
-  contactEmail String? @map("contact_email")
-  website      String?
-  notes        String?
-
-  sourcingRequests ProductSourcingRequest[]
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("wholesalers")
-}
-
 enum SourcingRequestStatus {
   Requested
   Confirmed
@@ -1326,16 +1352,15 @@ enum SourcingRequestStatus {
   Cancelled
 }
 
-// A stock request placed with a wholesaler for a sourced product — kept as
-// its own history table (not fields on SourcedProduct) since a product can
-// reasonably be reordered multiple times over its life, each with its own
-// quantity/cost/status.
+// A stock request for a sourced product — kept as its own history table
+// (not fields on SourcedProduct) since a product can reasonably be
+// reordered multiple times over its life, each with its own
+// quantity/cost/status. No supplier/wholesaler reference — that concept was
+// removed; this is now just "we requested N units, here's the status."
 model ProductSourcingRequest {
   id               String         @id @default(uuid())
   sourcedProductId String         @map("sourced_product_id")
   sourcedProduct   SourcedProduct @relation(fields: [sourcedProductId], references: [id], onDelete: Cascade)
-  wholesalerId     String         @map("wholesaler_id")
-  wholesaler       Wholesaler     @relation(fields: [wholesalerId], references: [id])
 
   requestedQuantity Int                   @map("requested_quantity")
   // Destination country for this request — free text (this is an ops log,
@@ -1352,7 +1377,6 @@ model ProductSourcingRequest {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([sourcedProductId])
-  @@index([wholesalerId])
   @@map("product_sourcing_requests")
 }
 

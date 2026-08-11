@@ -227,6 +227,8 @@ export type SourcedProductWhereInput = {
   sourcingRequests?: Prisma.ProductSourcingRequestListRelationFilter
   media?: Prisma.SourcedProductMediaListRelationFilter
   links?: Prisma.SourcedProductLinkListRelationFilter
+  videoCreatives?: Prisma.SourcedProductVideoCreativeListRelationFilter
+  competitors?: Prisma.SourcedProductCompetitorListRelationFilter
 }
 
 export type SourcedProductOrderByWithRelationInput = {
@@ -245,6 +247,8 @@ export type SourcedProductOrderByWithRelationInput = {
   sourcingRequests?: Prisma.ProductSourcingRequestOrderByRelationAggregateInput
   media?: Prisma.SourcedProductMediaOrderByRelationAggregateInput
   links?: Prisma.SourcedProductLinkOrderByRelationAggregateInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeOrderByRelationAggregateInput
+  competitors?: Prisma.SourcedProductCompetitorOrderByRelationAggregateInput
 }
 
 export type SourcedProductWhereUniqueInput = Prisma.AtLeast<{
@@ -266,6 +270,8 @@ export type SourcedProductWhereUniqueInput = Prisma.AtLeast<{
   sourcingRequests?: Prisma.ProductSourcingRequestListRelationFilter
   media?: Prisma.SourcedProductMediaListRelationFilter
   links?: Prisma.SourcedProductLinkListRelationFilter
+  videoCreatives?: Prisma.SourcedProductVideoCreativeListRelationFilter
+  competitors?: Prisma.SourcedProductCompetitorListRelationFilter
 }, "id" | "linkedProductId">
 
 export type SourcedProductOrderByWithAggregationInput = {
@@ -315,6 +321,8 @@ export type SourcedProductCreateInput = {
   sourcingRequests?: Prisma.ProductSourcingRequestCreateNestedManyWithoutSourcedProductInput
   media?: Prisma.SourcedProductMediaCreateNestedManyWithoutSourcedProductInput
   links?: Prisma.SourcedProductLinkCreateNestedManyWithoutSourcedProductInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeCreateNestedManyWithoutSourcedProductInput
+  competitors?: Prisma.SourcedProductCompetitorCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductUncheckedCreateInput = {
@@ -332,6 +340,8 @@ export type SourcedProductUncheckedCreateInput = {
   sourcingRequests?: Prisma.ProductSourcingRequestUncheckedCreateNestedManyWithoutSourcedProductInput
   media?: Prisma.SourcedProductMediaUncheckedCreateNestedManyWithoutSourcedProductInput
   links?: Prisma.SourcedProductLinkUncheckedCreateNestedManyWithoutSourcedProductInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUncheckedCreateNestedManyWithoutSourcedProductInput
+  competitors?: Prisma.SourcedProductCompetitorUncheckedCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductUpdateInput = {
@@ -349,6 +359,8 @@ export type SourcedProductUpdateInput = {
   sourcingRequests?: Prisma.ProductSourcingRequestUpdateManyWithoutSourcedProductNestedInput
   media?: Prisma.SourcedProductMediaUpdateManyWithoutSourcedProductNestedInput
   links?: Prisma.SourcedProductLinkUpdateManyWithoutSourcedProductNestedInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUpdateManyWithoutSourcedProductNestedInput
+  competitors?: Prisma.SourcedProductCompetitorUpdateManyWithoutSourcedProductNestedInput
 }
 
 export type SourcedProductUncheckedUpdateInput = {
@@ -366,6 +378,8 @@ export type SourcedProductUncheckedUpdateInput = {
   sourcingRequests?: Prisma.ProductSourcingRequestUncheckedUpdateManyWithoutSourcedProductNestedInput
   media?: Prisma.SourcedProductMediaUncheckedUpdateManyWithoutSourcedProductNestedInput
   links?: Prisma.SourcedProductLinkUncheckedUpdateManyWithoutSourcedProductNestedInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUncheckedUpdateManyWithoutSourcedProductNestedInput
+  competitors?: Prisma.SourcedProductCompetitorUncheckedUpdateManyWithoutSourcedProductNestedInput
 }
 
 export type SourcedProductCreateManyInput = {
@@ -519,6 +533,34 @@ export type SourcedProductUpdateOneRequiredWithoutLinksNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SourcedProductUpdateToOneWithWhereWithoutLinksInput, Prisma.SourcedProductUpdateWithoutLinksInput>, Prisma.SourcedProductUncheckedUpdateWithoutLinksInput>
 }
 
+export type SourcedProductCreateNestedOneWithoutVideoCreativesInput = {
+  create?: Prisma.XOR<Prisma.SourcedProductCreateWithoutVideoCreativesInput, Prisma.SourcedProductUncheckedCreateWithoutVideoCreativesInput>
+  connectOrCreate?: Prisma.SourcedProductCreateOrConnectWithoutVideoCreativesInput
+  connect?: Prisma.SourcedProductWhereUniqueInput
+}
+
+export type SourcedProductUpdateOneRequiredWithoutVideoCreativesNestedInput = {
+  create?: Prisma.XOR<Prisma.SourcedProductCreateWithoutVideoCreativesInput, Prisma.SourcedProductUncheckedCreateWithoutVideoCreativesInput>
+  connectOrCreate?: Prisma.SourcedProductCreateOrConnectWithoutVideoCreativesInput
+  upsert?: Prisma.SourcedProductUpsertWithoutVideoCreativesInput
+  connect?: Prisma.SourcedProductWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SourcedProductUpdateToOneWithWhereWithoutVideoCreativesInput, Prisma.SourcedProductUpdateWithoutVideoCreativesInput>, Prisma.SourcedProductUncheckedUpdateWithoutVideoCreativesInput>
+}
+
+export type SourcedProductCreateNestedOneWithoutCompetitorsInput = {
+  create?: Prisma.XOR<Prisma.SourcedProductCreateWithoutCompetitorsInput, Prisma.SourcedProductUncheckedCreateWithoutCompetitorsInput>
+  connectOrCreate?: Prisma.SourcedProductCreateOrConnectWithoutCompetitorsInput
+  connect?: Prisma.SourcedProductWhereUniqueInput
+}
+
+export type SourcedProductUpdateOneRequiredWithoutCompetitorsNestedInput = {
+  create?: Prisma.XOR<Prisma.SourcedProductCreateWithoutCompetitorsInput, Prisma.SourcedProductUncheckedCreateWithoutCompetitorsInput>
+  connectOrCreate?: Prisma.SourcedProductCreateOrConnectWithoutCompetitorsInput
+  upsert?: Prisma.SourcedProductUpsertWithoutCompetitorsInput
+  connect?: Prisma.SourcedProductWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SourcedProductUpdateToOneWithWhereWithoutCompetitorsInput, Prisma.SourcedProductUpdateWithoutCompetitorsInput>, Prisma.SourcedProductUncheckedUpdateWithoutCompetitorsInput>
+}
+
 export type SourcedProductCreateNestedOneWithoutAdTestsInput = {
   create?: Prisma.XOR<Prisma.SourcedProductCreateWithoutAdTestsInput, Prisma.SourcedProductUncheckedCreateWithoutAdTestsInput>
   connectOrCreate?: Prisma.SourcedProductCreateOrConnectWithoutAdTestsInput
@@ -561,6 +603,8 @@ export type SourcedProductCreateWithoutLinkedProductInput = {
   sourcingRequests?: Prisma.ProductSourcingRequestCreateNestedManyWithoutSourcedProductInput
   media?: Prisma.SourcedProductMediaCreateNestedManyWithoutSourcedProductInput
   links?: Prisma.SourcedProductLinkCreateNestedManyWithoutSourcedProductInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeCreateNestedManyWithoutSourcedProductInput
+  competitors?: Prisma.SourcedProductCompetitorCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductUncheckedCreateWithoutLinkedProductInput = {
@@ -577,6 +621,8 @@ export type SourcedProductUncheckedCreateWithoutLinkedProductInput = {
   sourcingRequests?: Prisma.ProductSourcingRequestUncheckedCreateNestedManyWithoutSourcedProductInput
   media?: Prisma.SourcedProductMediaUncheckedCreateNestedManyWithoutSourcedProductInput
   links?: Prisma.SourcedProductLinkUncheckedCreateNestedManyWithoutSourcedProductInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUncheckedCreateNestedManyWithoutSourcedProductInput
+  competitors?: Prisma.SourcedProductCompetitorUncheckedCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductCreateOrConnectWithoutLinkedProductInput = {
@@ -609,6 +655,8 @@ export type SourcedProductUpdateWithoutLinkedProductInput = {
   sourcingRequests?: Prisma.ProductSourcingRequestUpdateManyWithoutSourcedProductNestedInput
   media?: Prisma.SourcedProductMediaUpdateManyWithoutSourcedProductNestedInput
   links?: Prisma.SourcedProductLinkUpdateManyWithoutSourcedProductNestedInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUpdateManyWithoutSourcedProductNestedInput
+  competitors?: Prisma.SourcedProductCompetitorUpdateManyWithoutSourcedProductNestedInput
 }
 
 export type SourcedProductUncheckedUpdateWithoutLinkedProductInput = {
@@ -625,6 +673,8 @@ export type SourcedProductUncheckedUpdateWithoutLinkedProductInput = {
   sourcingRequests?: Prisma.ProductSourcingRequestUncheckedUpdateManyWithoutSourcedProductNestedInput
   media?: Prisma.SourcedProductMediaUncheckedUpdateManyWithoutSourcedProductNestedInput
   links?: Prisma.SourcedProductLinkUncheckedUpdateManyWithoutSourcedProductNestedInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUncheckedUpdateManyWithoutSourcedProductNestedInput
+  competitors?: Prisma.SourcedProductCompetitorUncheckedUpdateManyWithoutSourcedProductNestedInput
 }
 
 export type SourcedProductCreateWithoutMediaInput = {
@@ -641,6 +691,8 @@ export type SourcedProductCreateWithoutMediaInput = {
   adTests?: Prisma.ProductAdTestCreateNestedManyWithoutSourcedProductInput
   sourcingRequests?: Prisma.ProductSourcingRequestCreateNestedManyWithoutSourcedProductInput
   links?: Prisma.SourcedProductLinkCreateNestedManyWithoutSourcedProductInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeCreateNestedManyWithoutSourcedProductInput
+  competitors?: Prisma.SourcedProductCompetitorCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductUncheckedCreateWithoutMediaInput = {
@@ -657,6 +709,8 @@ export type SourcedProductUncheckedCreateWithoutMediaInput = {
   adTests?: Prisma.ProductAdTestUncheckedCreateNestedManyWithoutSourcedProductInput
   sourcingRequests?: Prisma.ProductSourcingRequestUncheckedCreateNestedManyWithoutSourcedProductInput
   links?: Prisma.SourcedProductLinkUncheckedCreateNestedManyWithoutSourcedProductInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUncheckedCreateNestedManyWithoutSourcedProductInput
+  competitors?: Prisma.SourcedProductCompetitorUncheckedCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductCreateOrConnectWithoutMediaInput = {
@@ -689,6 +743,8 @@ export type SourcedProductUpdateWithoutMediaInput = {
   adTests?: Prisma.ProductAdTestUpdateManyWithoutSourcedProductNestedInput
   sourcingRequests?: Prisma.ProductSourcingRequestUpdateManyWithoutSourcedProductNestedInput
   links?: Prisma.SourcedProductLinkUpdateManyWithoutSourcedProductNestedInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUpdateManyWithoutSourcedProductNestedInput
+  competitors?: Prisma.SourcedProductCompetitorUpdateManyWithoutSourcedProductNestedInput
 }
 
 export type SourcedProductUncheckedUpdateWithoutMediaInput = {
@@ -705,6 +761,8 @@ export type SourcedProductUncheckedUpdateWithoutMediaInput = {
   adTests?: Prisma.ProductAdTestUncheckedUpdateManyWithoutSourcedProductNestedInput
   sourcingRequests?: Prisma.ProductSourcingRequestUncheckedUpdateManyWithoutSourcedProductNestedInput
   links?: Prisma.SourcedProductLinkUncheckedUpdateManyWithoutSourcedProductNestedInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUncheckedUpdateManyWithoutSourcedProductNestedInput
+  competitors?: Prisma.SourcedProductCompetitorUncheckedUpdateManyWithoutSourcedProductNestedInput
 }
 
 export type SourcedProductCreateWithoutLinksInput = {
@@ -721,6 +779,8 @@ export type SourcedProductCreateWithoutLinksInput = {
   adTests?: Prisma.ProductAdTestCreateNestedManyWithoutSourcedProductInput
   sourcingRequests?: Prisma.ProductSourcingRequestCreateNestedManyWithoutSourcedProductInput
   media?: Prisma.SourcedProductMediaCreateNestedManyWithoutSourcedProductInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeCreateNestedManyWithoutSourcedProductInput
+  competitors?: Prisma.SourcedProductCompetitorCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductUncheckedCreateWithoutLinksInput = {
@@ -737,6 +797,8 @@ export type SourcedProductUncheckedCreateWithoutLinksInput = {
   adTests?: Prisma.ProductAdTestUncheckedCreateNestedManyWithoutSourcedProductInput
   sourcingRequests?: Prisma.ProductSourcingRequestUncheckedCreateNestedManyWithoutSourcedProductInput
   media?: Prisma.SourcedProductMediaUncheckedCreateNestedManyWithoutSourcedProductInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUncheckedCreateNestedManyWithoutSourcedProductInput
+  competitors?: Prisma.SourcedProductCompetitorUncheckedCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductCreateOrConnectWithoutLinksInput = {
@@ -769,6 +831,8 @@ export type SourcedProductUpdateWithoutLinksInput = {
   adTests?: Prisma.ProductAdTestUpdateManyWithoutSourcedProductNestedInput
   sourcingRequests?: Prisma.ProductSourcingRequestUpdateManyWithoutSourcedProductNestedInput
   media?: Prisma.SourcedProductMediaUpdateManyWithoutSourcedProductNestedInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUpdateManyWithoutSourcedProductNestedInput
+  competitors?: Prisma.SourcedProductCompetitorUpdateManyWithoutSourcedProductNestedInput
 }
 
 export type SourcedProductUncheckedUpdateWithoutLinksInput = {
@@ -785,6 +849,184 @@ export type SourcedProductUncheckedUpdateWithoutLinksInput = {
   adTests?: Prisma.ProductAdTestUncheckedUpdateManyWithoutSourcedProductNestedInput
   sourcingRequests?: Prisma.ProductSourcingRequestUncheckedUpdateManyWithoutSourcedProductNestedInput
   media?: Prisma.SourcedProductMediaUncheckedUpdateManyWithoutSourcedProductNestedInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUncheckedUpdateManyWithoutSourcedProductNestedInput
+  competitors?: Prisma.SourcedProductCompetitorUncheckedUpdateManyWithoutSourcedProductNestedInput
+}
+
+export type SourcedProductCreateWithoutVideoCreativesInput = {
+  id?: string
+  name: string
+  sourceUrl?: string | null
+  imageUrl?: string | null
+  niche?: string | null
+  notes?: string | null
+  status?: $Enums.SourcedProductStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  linkedProduct?: Prisma.ProductCreateNestedOneWithoutSourcedFromInput
+  adTests?: Prisma.ProductAdTestCreateNestedManyWithoutSourcedProductInput
+  sourcingRequests?: Prisma.ProductSourcingRequestCreateNestedManyWithoutSourcedProductInput
+  media?: Prisma.SourcedProductMediaCreateNestedManyWithoutSourcedProductInput
+  links?: Prisma.SourcedProductLinkCreateNestedManyWithoutSourcedProductInput
+  competitors?: Prisma.SourcedProductCompetitorCreateNestedManyWithoutSourcedProductInput
+}
+
+export type SourcedProductUncheckedCreateWithoutVideoCreativesInput = {
+  id?: string
+  name: string
+  sourceUrl?: string | null
+  imageUrl?: string | null
+  niche?: string | null
+  notes?: string | null
+  status?: $Enums.SourcedProductStatus
+  linkedProductId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  adTests?: Prisma.ProductAdTestUncheckedCreateNestedManyWithoutSourcedProductInput
+  sourcingRequests?: Prisma.ProductSourcingRequestUncheckedCreateNestedManyWithoutSourcedProductInput
+  media?: Prisma.SourcedProductMediaUncheckedCreateNestedManyWithoutSourcedProductInput
+  links?: Prisma.SourcedProductLinkUncheckedCreateNestedManyWithoutSourcedProductInput
+  competitors?: Prisma.SourcedProductCompetitorUncheckedCreateNestedManyWithoutSourcedProductInput
+}
+
+export type SourcedProductCreateOrConnectWithoutVideoCreativesInput = {
+  where: Prisma.SourcedProductWhereUniqueInput
+  create: Prisma.XOR<Prisma.SourcedProductCreateWithoutVideoCreativesInput, Prisma.SourcedProductUncheckedCreateWithoutVideoCreativesInput>
+}
+
+export type SourcedProductUpsertWithoutVideoCreativesInput = {
+  update: Prisma.XOR<Prisma.SourcedProductUpdateWithoutVideoCreativesInput, Prisma.SourcedProductUncheckedUpdateWithoutVideoCreativesInput>
+  create: Prisma.XOR<Prisma.SourcedProductCreateWithoutVideoCreativesInput, Prisma.SourcedProductUncheckedCreateWithoutVideoCreativesInput>
+  where?: Prisma.SourcedProductWhereInput
+}
+
+export type SourcedProductUpdateToOneWithWhereWithoutVideoCreativesInput = {
+  where?: Prisma.SourcedProductWhereInput
+  data: Prisma.XOR<Prisma.SourcedProductUpdateWithoutVideoCreativesInput, Prisma.SourcedProductUncheckedUpdateWithoutVideoCreativesInput>
+}
+
+export type SourcedProductUpdateWithoutVideoCreativesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  niche?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSourcedProductStatusFieldUpdateOperationsInput | $Enums.SourcedProductStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedProduct?: Prisma.ProductUpdateOneWithoutSourcedFromNestedInput
+  adTests?: Prisma.ProductAdTestUpdateManyWithoutSourcedProductNestedInput
+  sourcingRequests?: Prisma.ProductSourcingRequestUpdateManyWithoutSourcedProductNestedInput
+  media?: Prisma.SourcedProductMediaUpdateManyWithoutSourcedProductNestedInput
+  links?: Prisma.SourcedProductLinkUpdateManyWithoutSourcedProductNestedInput
+  competitors?: Prisma.SourcedProductCompetitorUpdateManyWithoutSourcedProductNestedInput
+}
+
+export type SourcedProductUncheckedUpdateWithoutVideoCreativesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  niche?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSourcedProductStatusFieldUpdateOperationsInput | $Enums.SourcedProductStatus
+  linkedProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  adTests?: Prisma.ProductAdTestUncheckedUpdateManyWithoutSourcedProductNestedInput
+  sourcingRequests?: Prisma.ProductSourcingRequestUncheckedUpdateManyWithoutSourcedProductNestedInput
+  media?: Prisma.SourcedProductMediaUncheckedUpdateManyWithoutSourcedProductNestedInput
+  links?: Prisma.SourcedProductLinkUncheckedUpdateManyWithoutSourcedProductNestedInput
+  competitors?: Prisma.SourcedProductCompetitorUncheckedUpdateManyWithoutSourcedProductNestedInput
+}
+
+export type SourcedProductCreateWithoutCompetitorsInput = {
+  id?: string
+  name: string
+  sourceUrl?: string | null
+  imageUrl?: string | null
+  niche?: string | null
+  notes?: string | null
+  status?: $Enums.SourcedProductStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  linkedProduct?: Prisma.ProductCreateNestedOneWithoutSourcedFromInput
+  adTests?: Prisma.ProductAdTestCreateNestedManyWithoutSourcedProductInput
+  sourcingRequests?: Prisma.ProductSourcingRequestCreateNestedManyWithoutSourcedProductInput
+  media?: Prisma.SourcedProductMediaCreateNestedManyWithoutSourcedProductInput
+  links?: Prisma.SourcedProductLinkCreateNestedManyWithoutSourcedProductInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeCreateNestedManyWithoutSourcedProductInput
+}
+
+export type SourcedProductUncheckedCreateWithoutCompetitorsInput = {
+  id?: string
+  name: string
+  sourceUrl?: string | null
+  imageUrl?: string | null
+  niche?: string | null
+  notes?: string | null
+  status?: $Enums.SourcedProductStatus
+  linkedProductId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  adTests?: Prisma.ProductAdTestUncheckedCreateNestedManyWithoutSourcedProductInput
+  sourcingRequests?: Prisma.ProductSourcingRequestUncheckedCreateNestedManyWithoutSourcedProductInput
+  media?: Prisma.SourcedProductMediaUncheckedCreateNestedManyWithoutSourcedProductInput
+  links?: Prisma.SourcedProductLinkUncheckedCreateNestedManyWithoutSourcedProductInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUncheckedCreateNestedManyWithoutSourcedProductInput
+}
+
+export type SourcedProductCreateOrConnectWithoutCompetitorsInput = {
+  where: Prisma.SourcedProductWhereUniqueInput
+  create: Prisma.XOR<Prisma.SourcedProductCreateWithoutCompetitorsInput, Prisma.SourcedProductUncheckedCreateWithoutCompetitorsInput>
+}
+
+export type SourcedProductUpsertWithoutCompetitorsInput = {
+  update: Prisma.XOR<Prisma.SourcedProductUpdateWithoutCompetitorsInput, Prisma.SourcedProductUncheckedUpdateWithoutCompetitorsInput>
+  create: Prisma.XOR<Prisma.SourcedProductCreateWithoutCompetitorsInput, Prisma.SourcedProductUncheckedCreateWithoutCompetitorsInput>
+  where?: Prisma.SourcedProductWhereInput
+}
+
+export type SourcedProductUpdateToOneWithWhereWithoutCompetitorsInput = {
+  where?: Prisma.SourcedProductWhereInput
+  data: Prisma.XOR<Prisma.SourcedProductUpdateWithoutCompetitorsInput, Prisma.SourcedProductUncheckedUpdateWithoutCompetitorsInput>
+}
+
+export type SourcedProductUpdateWithoutCompetitorsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  niche?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSourcedProductStatusFieldUpdateOperationsInput | $Enums.SourcedProductStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  linkedProduct?: Prisma.ProductUpdateOneWithoutSourcedFromNestedInput
+  adTests?: Prisma.ProductAdTestUpdateManyWithoutSourcedProductNestedInput
+  sourcingRequests?: Prisma.ProductSourcingRequestUpdateManyWithoutSourcedProductNestedInput
+  media?: Prisma.SourcedProductMediaUpdateManyWithoutSourcedProductNestedInput
+  links?: Prisma.SourcedProductLinkUpdateManyWithoutSourcedProductNestedInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUpdateManyWithoutSourcedProductNestedInput
+}
+
+export type SourcedProductUncheckedUpdateWithoutCompetitorsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  niche?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSourcedProductStatusFieldUpdateOperationsInput | $Enums.SourcedProductStatus
+  linkedProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  adTests?: Prisma.ProductAdTestUncheckedUpdateManyWithoutSourcedProductNestedInput
+  sourcingRequests?: Prisma.ProductSourcingRequestUncheckedUpdateManyWithoutSourcedProductNestedInput
+  media?: Prisma.SourcedProductMediaUncheckedUpdateManyWithoutSourcedProductNestedInput
+  links?: Prisma.SourcedProductLinkUncheckedUpdateManyWithoutSourcedProductNestedInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUncheckedUpdateManyWithoutSourcedProductNestedInput
 }
 
 export type SourcedProductCreateWithoutAdTestsInput = {
@@ -801,6 +1043,8 @@ export type SourcedProductCreateWithoutAdTestsInput = {
   sourcingRequests?: Prisma.ProductSourcingRequestCreateNestedManyWithoutSourcedProductInput
   media?: Prisma.SourcedProductMediaCreateNestedManyWithoutSourcedProductInput
   links?: Prisma.SourcedProductLinkCreateNestedManyWithoutSourcedProductInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeCreateNestedManyWithoutSourcedProductInput
+  competitors?: Prisma.SourcedProductCompetitorCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductUncheckedCreateWithoutAdTestsInput = {
@@ -817,6 +1061,8 @@ export type SourcedProductUncheckedCreateWithoutAdTestsInput = {
   sourcingRequests?: Prisma.ProductSourcingRequestUncheckedCreateNestedManyWithoutSourcedProductInput
   media?: Prisma.SourcedProductMediaUncheckedCreateNestedManyWithoutSourcedProductInput
   links?: Prisma.SourcedProductLinkUncheckedCreateNestedManyWithoutSourcedProductInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUncheckedCreateNestedManyWithoutSourcedProductInput
+  competitors?: Prisma.SourcedProductCompetitorUncheckedCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductCreateOrConnectWithoutAdTestsInput = {
@@ -849,6 +1095,8 @@ export type SourcedProductUpdateWithoutAdTestsInput = {
   sourcingRequests?: Prisma.ProductSourcingRequestUpdateManyWithoutSourcedProductNestedInput
   media?: Prisma.SourcedProductMediaUpdateManyWithoutSourcedProductNestedInput
   links?: Prisma.SourcedProductLinkUpdateManyWithoutSourcedProductNestedInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUpdateManyWithoutSourcedProductNestedInput
+  competitors?: Prisma.SourcedProductCompetitorUpdateManyWithoutSourcedProductNestedInput
 }
 
 export type SourcedProductUncheckedUpdateWithoutAdTestsInput = {
@@ -865,6 +1113,8 @@ export type SourcedProductUncheckedUpdateWithoutAdTestsInput = {
   sourcingRequests?: Prisma.ProductSourcingRequestUncheckedUpdateManyWithoutSourcedProductNestedInput
   media?: Prisma.SourcedProductMediaUncheckedUpdateManyWithoutSourcedProductNestedInput
   links?: Prisma.SourcedProductLinkUncheckedUpdateManyWithoutSourcedProductNestedInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUncheckedUpdateManyWithoutSourcedProductNestedInput
+  competitors?: Prisma.SourcedProductCompetitorUncheckedUpdateManyWithoutSourcedProductNestedInput
 }
 
 export type SourcedProductCreateWithoutSourcingRequestsInput = {
@@ -881,6 +1131,8 @@ export type SourcedProductCreateWithoutSourcingRequestsInput = {
   adTests?: Prisma.ProductAdTestCreateNestedManyWithoutSourcedProductInput
   media?: Prisma.SourcedProductMediaCreateNestedManyWithoutSourcedProductInput
   links?: Prisma.SourcedProductLinkCreateNestedManyWithoutSourcedProductInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeCreateNestedManyWithoutSourcedProductInput
+  competitors?: Prisma.SourcedProductCompetitorCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductUncheckedCreateWithoutSourcingRequestsInput = {
@@ -897,6 +1149,8 @@ export type SourcedProductUncheckedCreateWithoutSourcingRequestsInput = {
   adTests?: Prisma.ProductAdTestUncheckedCreateNestedManyWithoutSourcedProductInput
   media?: Prisma.SourcedProductMediaUncheckedCreateNestedManyWithoutSourcedProductInput
   links?: Prisma.SourcedProductLinkUncheckedCreateNestedManyWithoutSourcedProductInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUncheckedCreateNestedManyWithoutSourcedProductInput
+  competitors?: Prisma.SourcedProductCompetitorUncheckedCreateNestedManyWithoutSourcedProductInput
 }
 
 export type SourcedProductCreateOrConnectWithoutSourcingRequestsInput = {
@@ -929,6 +1183,8 @@ export type SourcedProductUpdateWithoutSourcingRequestsInput = {
   adTests?: Prisma.ProductAdTestUpdateManyWithoutSourcedProductNestedInput
   media?: Prisma.SourcedProductMediaUpdateManyWithoutSourcedProductNestedInput
   links?: Prisma.SourcedProductLinkUpdateManyWithoutSourcedProductNestedInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUpdateManyWithoutSourcedProductNestedInput
+  competitors?: Prisma.SourcedProductCompetitorUpdateManyWithoutSourcedProductNestedInput
 }
 
 export type SourcedProductUncheckedUpdateWithoutSourcingRequestsInput = {
@@ -945,6 +1201,8 @@ export type SourcedProductUncheckedUpdateWithoutSourcingRequestsInput = {
   adTests?: Prisma.ProductAdTestUncheckedUpdateManyWithoutSourcedProductNestedInput
   media?: Prisma.SourcedProductMediaUncheckedUpdateManyWithoutSourcedProductNestedInput
   links?: Prisma.SourcedProductLinkUncheckedUpdateManyWithoutSourcedProductNestedInput
+  videoCreatives?: Prisma.SourcedProductVideoCreativeUncheckedUpdateManyWithoutSourcedProductNestedInput
+  competitors?: Prisma.SourcedProductCompetitorUncheckedUpdateManyWithoutSourcedProductNestedInput
 }
 
 
@@ -957,6 +1215,8 @@ export type SourcedProductCountOutputType = {
   sourcingRequests: number
   media: number
   links: number
+  videoCreatives: number
+  competitors: number
 }
 
 export type SourcedProductCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -964,6 +1224,8 @@ export type SourcedProductCountOutputTypeSelect<ExtArgs extends runtime.Types.Ex
   sourcingRequests?: boolean | SourcedProductCountOutputTypeCountSourcingRequestsArgs
   media?: boolean | SourcedProductCountOutputTypeCountMediaArgs
   links?: boolean | SourcedProductCountOutputTypeCountLinksArgs
+  videoCreatives?: boolean | SourcedProductCountOutputTypeCountVideoCreativesArgs
+  competitors?: boolean | SourcedProductCountOutputTypeCountCompetitorsArgs
 }
 
 /**
@@ -1004,6 +1266,20 @@ export type SourcedProductCountOutputTypeCountLinksArgs<ExtArgs extends runtime.
   where?: Prisma.SourcedProductLinkWhereInput
 }
 
+/**
+ * SourcedProductCountOutputType without action
+ */
+export type SourcedProductCountOutputTypeCountVideoCreativesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SourcedProductVideoCreativeWhereInput
+}
+
+/**
+ * SourcedProductCountOutputType without action
+ */
+export type SourcedProductCountOutputTypeCountCompetitorsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SourcedProductCompetitorWhereInput
+}
+
 
 export type SourcedProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1021,6 +1297,8 @@ export type SourcedProductSelect<ExtArgs extends runtime.Types.Extensions.Intern
   sourcingRequests?: boolean | Prisma.SourcedProduct$sourcingRequestsArgs<ExtArgs>
   media?: boolean | Prisma.SourcedProduct$mediaArgs<ExtArgs>
   links?: boolean | Prisma.SourcedProduct$linksArgs<ExtArgs>
+  videoCreatives?: boolean | Prisma.SourcedProduct$videoCreativesArgs<ExtArgs>
+  competitors?: boolean | Prisma.SourcedProduct$competitorsArgs<ExtArgs>
   _count?: boolean | Prisma.SourcedProductCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["sourcedProduct"]>
 
@@ -1072,6 +1350,8 @@ export type SourcedProductInclude<ExtArgs extends runtime.Types.Extensions.Inter
   sourcingRequests?: boolean | Prisma.SourcedProduct$sourcingRequestsArgs<ExtArgs>
   media?: boolean | Prisma.SourcedProduct$mediaArgs<ExtArgs>
   links?: boolean | Prisma.SourcedProduct$linksArgs<ExtArgs>
+  videoCreatives?: boolean | Prisma.SourcedProduct$videoCreativesArgs<ExtArgs>
+  competitors?: boolean | Prisma.SourcedProduct$competitorsArgs<ExtArgs>
   _count?: boolean | Prisma.SourcedProductCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SourcedProductIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1089,6 +1369,8 @@ export type $SourcedProductPayload<ExtArgs extends runtime.Types.Extensions.Inte
     sourcingRequests: Prisma.$ProductSourcingRequestPayload<ExtArgs>[]
     media: Prisma.$SourcedProductMediaPayload<ExtArgs>[]
     links: Prisma.$SourcedProductLinkPayload<ExtArgs>[]
+    videoCreatives: Prisma.$SourcedProductVideoCreativePayload<ExtArgs>[]
+    competitors: Prisma.$SourcedProductCompetitorPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1500,6 +1782,8 @@ export interface Prisma__SourcedProductClient<T, Null = never, ExtArgs extends r
   sourcingRequests<T extends Prisma.SourcedProduct$sourcingRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SourcedProduct$sourcingRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductSourcingRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   media<T extends Prisma.SourcedProduct$mediaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SourcedProduct$mediaArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SourcedProductMediaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   links<T extends Prisma.SourcedProduct$linksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SourcedProduct$linksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SourcedProductLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  videoCreatives<T extends Prisma.SourcedProduct$videoCreativesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SourcedProduct$videoCreativesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SourcedProductVideoCreativePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  competitors<T extends Prisma.SourcedProduct$competitorsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SourcedProduct$competitorsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SourcedProductCompetitorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2052,6 +2336,54 @@ export type SourcedProduct$linksArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.SourcedProductLinkScalarFieldEnum | Prisma.SourcedProductLinkScalarFieldEnum[]
+}
+
+/**
+ * SourcedProduct.videoCreatives
+ */
+export type SourcedProduct$videoCreativesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SourcedProductVideoCreative
+   */
+  select?: Prisma.SourcedProductVideoCreativeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SourcedProductVideoCreative
+   */
+  omit?: Prisma.SourcedProductVideoCreativeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SourcedProductVideoCreativeInclude<ExtArgs> | null
+  where?: Prisma.SourcedProductVideoCreativeWhereInput
+  orderBy?: Prisma.SourcedProductVideoCreativeOrderByWithRelationInput | Prisma.SourcedProductVideoCreativeOrderByWithRelationInput[]
+  cursor?: Prisma.SourcedProductVideoCreativeWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SourcedProductVideoCreativeScalarFieldEnum | Prisma.SourcedProductVideoCreativeScalarFieldEnum[]
+}
+
+/**
+ * SourcedProduct.competitors
+ */
+export type SourcedProduct$competitorsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SourcedProductCompetitor
+   */
+  select?: Prisma.SourcedProductCompetitorSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SourcedProductCompetitor
+   */
+  omit?: Prisma.SourcedProductCompetitorOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SourcedProductCompetitorInclude<ExtArgs> | null
+  where?: Prisma.SourcedProductCompetitorWhereInput
+  orderBy?: Prisma.SourcedProductCompetitorOrderByWithRelationInput | Prisma.SourcedProductCompetitorOrderByWithRelationInput[]
+  cursor?: Prisma.SourcedProductCompetitorWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SourcedProductCompetitorScalarFieldEnum | Prisma.SourcedProductCompetitorScalarFieldEnum[]
 }
 
 /**

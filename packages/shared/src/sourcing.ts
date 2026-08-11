@@ -2,11 +2,12 @@ import { z } from 'zod'
 
 // Product sourcing / ad-testing operations — the pipeline a product goes
 // through BEFORE it's a real storefront Product: found → tested with ads
-// (multiple price/creative combinations) → if the numbers are good,
-// requested from a wholesaler → once stock arrives, linked to a real
-// Product and sold. See the Prisma schema's own comment on SourcedProduct
-// for the full rationale on why this is a separate model tree rather than
-// draft fields on Product.
+// (multiple price/creative combinations) → if the numbers are good, stock is
+// requested → once it arrives, linked to a real Product and sold. See the
+// Prisma schema's own comment on SourcedProduct for the full rationale on
+// why this is a separate model tree rather than draft fields on Product.
+// (No supplier/wholesaler tracking here — that concept was removed; a
+// sourcing request is just "we requested N units, here's the status.")
 
 export const SourcedProductStatus = z.enum([
   'Researching',
@@ -37,38 +38,6 @@ export type AdTestStatus = z.infer<typeof AdTestStatus>
 
 export const SourcingRequestStatus = z.enum(['Requested', 'Confirmed', 'Shipped', 'Received', 'Cancelled'])
 export type SourcingRequestStatus = z.infer<typeof SourcingRequestStatus>
-
-// ---- Wholesalers ----
-
-export const CreateWholesalerSchema = z.object({
-  name: z.string().trim().min(1).max(200),
-  country: z.string().trim().max(100).nullable().optional(),
-  contactName: z.string().trim().max(200).nullable().optional(),
-  contactPhone: z.string().trim().max(50).nullable().optional(),
-  contactEmail: z.string().trim().max(200).nullable().optional(),
-  website: z.string().trim().max(300).nullable().optional(),
-  notes: z.string().trim().max(2000).nullable().optional()
-})
-export type CreateWholesaler = z.infer<typeof CreateWholesalerSchema>
-
-export const UpdateWholesalerSchema = CreateWholesalerSchema.partial()
-export type UpdateWholesaler = z.infer<typeof UpdateWholesalerSchema>
-
-export interface WholesalerView {
-  id: string
-  name: string
-  country: string | null
-  contactName: string | null
-  contactPhone: string | null
-  contactEmail: string | null
-  website: string | null
-  notes: string | null
-  // How many sourcing requests reference this wholesaler — shown in the
-  // list so an admin knows before deleting one whether it's actually in use.
-  requestCount: number
-  createdAt: string
-  updatedAt: string
-}
 
 // ---- Sourced products ----
 
@@ -118,6 +87,8 @@ export interface SourcedProductDetail {
   sourcingRequests: ProductSourcingRequestView[]
   media: SourcedProductMediaView[]
   links: SourcedProductLinkView[]
+  videoCreatives: SourcedProductVideoCreativeView[]
+  competitors: SourcedProductCompetitorView[]
   createdAt: string
   updatedAt: string
 }
@@ -173,6 +144,57 @@ export interface SourcedProductLinkView {
   sourcedProductId: string
   label: string
   url: string
+  createdAt: string
+}
+
+// ---- Video creatives ----
+// A running collection of video ad-creative links worth keeping an eye on
+// while researching/testing this product — yours or a competitor's. Distinct
+// from ProductAdTest.creativeUrl below, which is tied to one specific
+// price/spend experiment.
+
+export const CreateSourcedProductVideoCreativeSchema = z.object({
+  url: z.string().trim().min(1).max(500),
+  platform: AdTestPlatform.nullable().optional(),
+  notes: z.string().trim().max(500).nullable().optional()
+})
+export type CreateSourcedProductVideoCreative = z.infer<typeof CreateSourcedProductVideoCreativeSchema>
+
+export const UpdateSourcedProductVideoCreativeSchema = CreateSourcedProductVideoCreativeSchema.partial()
+export type UpdateSourcedProductVideoCreative = z.infer<typeof UpdateSourcedProductVideoCreativeSchema>
+
+export interface SourcedProductVideoCreativeView {
+  id: string
+  sourcedProductId: string
+  url: string
+  platform: AdTestPlatform | null
+  notes: string | null
+  createdAt: string
+}
+
+// ---- Competitors ----
+// Who else is selling this product, at what price, and any other detail
+// worth noting — research scratch space, not a structured competitor-intel
+// system, hence the free-text `details` field.
+
+export const CreateSourcedProductCompetitorSchema = z.object({
+  name: z.string().trim().max(200).nullable().optional(),
+  url: z.string().trim().min(1).max(500),
+  priceCents: z.number().int().nonnegative().nullable().optional(),
+  details: z.string().trim().max(2000).nullable().optional()
+})
+export type CreateSourcedProductCompetitor = z.infer<typeof CreateSourcedProductCompetitorSchema>
+
+export const UpdateSourcedProductCompetitorSchema = CreateSourcedProductCompetitorSchema.partial()
+export type UpdateSourcedProductCompetitor = z.infer<typeof UpdateSourcedProductCompetitorSchema>
+
+export interface SourcedProductCompetitorView {
+  id: string
+  sourcedProductId: string
+  name: string | null
+  url: string
+  priceCents: number | null
+  details: string | null
   createdAt: string
 }
 
@@ -232,7 +254,6 @@ export function adTestRoas(test: Pick<ProductAdTestView, 'adSpendCents' | 'reven
 // ---- Sourcing requests ----
 
 export const CreateProductSourcingRequestSchema = z.object({
-  wholesalerId: z.uuid(),
   requestedQuantity: z.number().int().positive(),
   requestedCountry: z.string().trim().min(1).max(100),
   unitCostCents: z.number().int().nonnegative().nullable().optional(),
@@ -248,7 +269,6 @@ export type UpdateProductSourcingRequest = z.infer<typeof UpdateProductSourcingR
 export interface ProductSourcingRequestView {
   id: string
   sourcedProductId: string
-  wholesaler: { id: string; name: string }
   requestedQuantity: number
   requestedCountry: string
   unitCostCents: number | null

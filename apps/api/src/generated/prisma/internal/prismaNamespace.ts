@@ -426,8 +426,9 @@ export const ModelName = {
   SourcedProduct: 'SourcedProduct',
   SourcedProductMedia: 'SourcedProductMedia',
   SourcedProductLink: 'SourcedProductLink',
+  SourcedProductVideoCreative: 'SourcedProductVideoCreative',
+  SourcedProductCompetitor: 'SourcedProductCompetitor',
   ProductAdTest: 'ProductAdTest',
-  Wholesaler: 'Wholesaler',
   ProductSourcingRequest: 'ProductSourcingRequest',
   PageViewEvent: 'PageViewEvent'
 } as const
@@ -445,7 +446,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "productAdTest" | "wholesaler" | "productSourcingRequest" | "pageViewEvent"
+    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "sourcedProductVideoCreative" | "sourcedProductCompetitor" | "productAdTest" | "productSourcingRequest" | "pageViewEvent"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3557,6 +3558,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SourcedProductVideoCreative: {
+      payload: Prisma.$SourcedProductVideoCreativePayload<ExtArgs>
+      fields: Prisma.SourcedProductVideoCreativeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SourcedProductVideoCreativeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductVideoCreativePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SourcedProductVideoCreativeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductVideoCreativePayload>
+        }
+        findFirst: {
+          args: Prisma.SourcedProductVideoCreativeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductVideoCreativePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SourcedProductVideoCreativeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductVideoCreativePayload>
+        }
+        findMany: {
+          args: Prisma.SourcedProductVideoCreativeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductVideoCreativePayload>[]
+        }
+        create: {
+          args: Prisma.SourcedProductVideoCreativeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductVideoCreativePayload>
+        }
+        createMany: {
+          args: Prisma.SourcedProductVideoCreativeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SourcedProductVideoCreativeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductVideoCreativePayload>[]
+        }
+        delete: {
+          args: Prisma.SourcedProductVideoCreativeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductVideoCreativePayload>
+        }
+        update: {
+          args: Prisma.SourcedProductVideoCreativeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductVideoCreativePayload>
+        }
+        deleteMany: {
+          args: Prisma.SourcedProductVideoCreativeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SourcedProductVideoCreativeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SourcedProductVideoCreativeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductVideoCreativePayload>[]
+        }
+        upsert: {
+          args: Prisma.SourcedProductVideoCreativeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductVideoCreativePayload>
+        }
+        aggregate: {
+          args: Prisma.SourcedProductVideoCreativeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSourcedProductVideoCreative>
+        }
+        groupBy: {
+          args: Prisma.SourcedProductVideoCreativeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SourcedProductVideoCreativeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SourcedProductVideoCreativeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SourcedProductVideoCreativeCountAggregateOutputType> | number
+        }
+      }
+    }
+    SourcedProductCompetitor: {
+      payload: Prisma.$SourcedProductCompetitorPayload<ExtArgs>
+      fields: Prisma.SourcedProductCompetitorFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SourcedProductCompetitorFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductCompetitorPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SourcedProductCompetitorFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductCompetitorPayload>
+        }
+        findFirst: {
+          args: Prisma.SourcedProductCompetitorFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductCompetitorPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SourcedProductCompetitorFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductCompetitorPayload>
+        }
+        findMany: {
+          args: Prisma.SourcedProductCompetitorFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductCompetitorPayload>[]
+        }
+        create: {
+          args: Prisma.SourcedProductCompetitorCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductCompetitorPayload>
+        }
+        createMany: {
+          args: Prisma.SourcedProductCompetitorCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SourcedProductCompetitorCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductCompetitorPayload>[]
+        }
+        delete: {
+          args: Prisma.SourcedProductCompetitorDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductCompetitorPayload>
+        }
+        update: {
+          args: Prisma.SourcedProductCompetitorUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductCompetitorPayload>
+        }
+        deleteMany: {
+          args: Prisma.SourcedProductCompetitorDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SourcedProductCompetitorUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SourcedProductCompetitorUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductCompetitorPayload>[]
+        }
+        upsert: {
+          args: Prisma.SourcedProductCompetitorUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourcedProductCompetitorPayload>
+        }
+        aggregate: {
+          args: Prisma.SourcedProductCompetitorAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSourcedProductCompetitor>
+        }
+        groupBy: {
+          args: Prisma.SourcedProductCompetitorGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SourcedProductCompetitorGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SourcedProductCompetitorCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SourcedProductCompetitorCountAggregateOutputType> | number
+        }
+      }
+    }
     ProductAdTest: {
       payload: Prisma.$ProductAdTestPayload<ExtArgs>
       fields: Prisma.ProductAdTestFieldRefs
@@ -3628,80 +3777,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.ProductAdTestCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.ProductAdTestCountAggregateOutputType> | number
-        }
-      }
-    }
-    Wholesaler: {
-      payload: Prisma.$WholesalerPayload<ExtArgs>
-      fields: Prisma.WholesalerFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.WholesalerFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WholesalerPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.WholesalerFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WholesalerPayload>
-        }
-        findFirst: {
-          args: Prisma.WholesalerFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WholesalerPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.WholesalerFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WholesalerPayload>
-        }
-        findMany: {
-          args: Prisma.WholesalerFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WholesalerPayload>[]
-        }
-        create: {
-          args: Prisma.WholesalerCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WholesalerPayload>
-        }
-        createMany: {
-          args: Prisma.WholesalerCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.WholesalerCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WholesalerPayload>[]
-        }
-        delete: {
-          args: Prisma.WholesalerDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WholesalerPayload>
-        }
-        update: {
-          args: Prisma.WholesalerUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WholesalerPayload>
-        }
-        deleteMany: {
-          args: Prisma.WholesalerDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.WholesalerUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.WholesalerUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WholesalerPayload>[]
-        }
-        upsert: {
-          args: Prisma.WholesalerUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WholesalerPayload>
-        }
-        aggregate: {
-          args: Prisma.WholesalerAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateWholesaler>
-        }
-        groupBy: {
-          args: Prisma.WholesalerGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.WholesalerGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.WholesalerCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.WholesalerCountAggregateOutputType> | number
         }
       }
     }
@@ -4464,6 +4539,31 @@ export const SourcedProductLinkScalarFieldEnum = {
 export type SourcedProductLinkScalarFieldEnum = (typeof SourcedProductLinkScalarFieldEnum)[keyof typeof SourcedProductLinkScalarFieldEnum]
 
 
+export const SourcedProductVideoCreativeScalarFieldEnum = {
+  id: 'id',
+  sourcedProductId: 'sourcedProductId',
+  url: 'url',
+  platform: 'platform',
+  notes: 'notes',
+  createdAt: 'createdAt'
+} as const
+
+export type SourcedProductVideoCreativeScalarFieldEnum = (typeof SourcedProductVideoCreativeScalarFieldEnum)[keyof typeof SourcedProductVideoCreativeScalarFieldEnum]
+
+
+export const SourcedProductCompetitorScalarFieldEnum = {
+  id: 'id',
+  sourcedProductId: 'sourcedProductId',
+  name: 'name',
+  url: 'url',
+  priceCents: 'priceCents',
+  details: 'details',
+  createdAt: 'createdAt'
+} as const
+
+export type SourcedProductCompetitorScalarFieldEnum = (typeof SourcedProductCompetitorScalarFieldEnum)[keyof typeof SourcedProductCompetitorScalarFieldEnum]
+
+
 export const ProductAdTestScalarFieldEnum = {
   id: 'id',
   sourcedProductId: 'sourcedProductId',
@@ -4486,26 +4586,9 @@ export const ProductAdTestScalarFieldEnum = {
 export type ProductAdTestScalarFieldEnum = (typeof ProductAdTestScalarFieldEnum)[keyof typeof ProductAdTestScalarFieldEnum]
 
 
-export const WholesalerScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  country: 'country',
-  contactName: 'contactName',
-  contactPhone: 'contactPhone',
-  contactEmail: 'contactEmail',
-  website: 'website',
-  notes: 'notes',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type WholesalerScalarFieldEnum = (typeof WholesalerScalarFieldEnum)[keyof typeof WholesalerScalarFieldEnum]
-
-
 export const ProductSourcingRequestScalarFieldEnum = {
   id: 'id',
   sourcedProductId: 'sourcedProductId',
-  wholesalerId: 'wholesalerId',
   requestedQuantity: 'requestedQuantity',
   requestedCountry: 'requestedCountry',
   unitCostCents: 'unitCostCents',
@@ -5136,8 +5219,9 @@ export type GlobalOmitConfig = {
   sourcedProduct?: Prisma.SourcedProductOmit
   sourcedProductMedia?: Prisma.SourcedProductMediaOmit
   sourcedProductLink?: Prisma.SourcedProductLinkOmit
+  sourcedProductVideoCreative?: Prisma.SourcedProductVideoCreativeOmit
+  sourcedProductCompetitor?: Prisma.SourcedProductCompetitorOmit
   productAdTest?: Prisma.ProductAdTestOmit
-  wholesaler?: Prisma.WholesalerOmit
   productSourcingRequest?: Prisma.ProductSourcingRequestOmit
   pageViewEvent?: Prisma.PageViewEventOmit
 }

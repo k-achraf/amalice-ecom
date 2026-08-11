@@ -93,8 +93,9 @@ export const ModelName = {
   SourcedProduct: 'SourcedProduct',
   SourcedProductMedia: 'SourcedProductMedia',
   SourcedProductLink: 'SourcedProductLink',
+  SourcedProductVideoCreative: 'SourcedProductVideoCreative',
+  SourcedProductCompetitor: 'SourcedProductCompetitor',
   ProductAdTest: 'ProductAdTest',
-  Wholesaler: 'Wholesaler',
   ProductSourcingRequest: 'ProductSourcingRequest',
   PageViewEvent: 'PageViewEvent'
 } as const
@@ -687,6 +688,31 @@ export const SourcedProductLinkScalarFieldEnum = {
 export type SourcedProductLinkScalarFieldEnum = (typeof SourcedProductLinkScalarFieldEnum)[keyof typeof SourcedProductLinkScalarFieldEnum]
 
 
+export const SourcedProductVideoCreativeScalarFieldEnum = {
+  id: 'id',
+  sourcedProductId: 'sourcedProductId',
+  url: 'url',
+  platform: 'platform',
+  notes: 'notes',
+  createdAt: 'createdAt'
+} as const
+
+export type SourcedProductVideoCreativeScalarFieldEnum = (typeof SourcedProductVideoCreativeScalarFieldEnum)[keyof typeof SourcedProductVideoCreativeScalarFieldEnum]
+
+
+export const SourcedProductCompetitorScalarFieldEnum = {
+  id: 'id',
+  sourcedProductId: 'sourcedProductId',
+  name: 'name',
+  url: 'url',
+  priceCents: 'priceCents',
+  details: 'details',
+  createdAt: 'createdAt'
+} as const
+
+export type SourcedProductCompetitorScalarFieldEnum = (typeof SourcedProductCompetitorScalarFieldEnum)[keyof typeof SourcedProductCompetitorScalarFieldEnum]
+
+
 export const ProductAdTestScalarFieldEnum = {
   id: 'id',
   sourcedProductId: 'sourcedProductId',
@@ -709,26 +735,9 @@ export const ProductAdTestScalarFieldEnum = {
 export type ProductAdTestScalarFieldEnum = (typeof ProductAdTestScalarFieldEnum)[keyof typeof ProductAdTestScalarFieldEnum]
 
 
-export const WholesalerScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  country: 'country',
-  contactName: 'contactName',
-  contactPhone: 'contactPhone',
-  contactEmail: 'contactEmail',
-  website: 'website',
-  notes: 'notes',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type WholesalerScalarFieldEnum = (typeof WholesalerScalarFieldEnum)[keyof typeof WholesalerScalarFieldEnum]
-
-
 export const ProductSourcingRequestScalarFieldEnum = {
   id: 'id',
   sourcedProductId: 'sourcedProductId',
-  wholesalerId: 'wholesalerId',
   requestedQuantity: 'requestedQuantity',
   requestedCountry: 'requestedCountry',
   unitCostCents: 'unitCostCents',

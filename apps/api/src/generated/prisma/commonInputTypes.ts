@@ -623,6 +623,23 @@ export type EnumSourcedProductMediaTypeWithAggregatesFilter<$PrismaModel = never
   _max?: Prisma.NestedEnumSourcedProductMediaTypeFilter<$PrismaModel>
 }
 
+export type EnumAdTestPlatformNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.AdTestPlatform | Prisma.EnumAdTestPlatformFieldRefInput<$PrismaModel> | null
+  in?: $Enums.AdTestPlatform[] | Prisma.ListEnumAdTestPlatformFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.AdTestPlatform[] | Prisma.ListEnumAdTestPlatformFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumAdTestPlatformNullableFilter<$PrismaModel> | $Enums.AdTestPlatform | null
+}
+
+export type EnumAdTestPlatformNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AdTestPlatform | Prisma.EnumAdTestPlatformFieldRefInput<$PrismaModel> | null
+  in?: $Enums.AdTestPlatform[] | Prisma.ListEnumAdTestPlatformFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.AdTestPlatform[] | Prisma.ListEnumAdTestPlatformFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumAdTestPlatformNullableWithAggregatesFilter<$PrismaModel> | $Enums.AdTestPlatform | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAdTestPlatformNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAdTestPlatformNullableFilter<$PrismaModel>
+}
+
 export type EnumAdTestPlatformFilter<$PrismaModel = never> = {
   equals?: $Enums.AdTestPlatform | Prisma.EnumAdTestPlatformFieldRefInput<$PrismaModel>
   in?: $Enums.AdTestPlatform[] | Prisma.ListEnumAdTestPlatformFieldRefInput<$PrismaModel>
@@ -1274,6 +1291,23 @@ export type NestedEnumSourcedProductMediaTypeWithAggregatesFilter<$PrismaModel =
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumSourcedProductMediaTypeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumSourcedProductMediaTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumAdTestPlatformNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.AdTestPlatform | Prisma.EnumAdTestPlatformFieldRefInput<$PrismaModel> | null
+  in?: $Enums.AdTestPlatform[] | Prisma.ListEnumAdTestPlatformFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.AdTestPlatform[] | Prisma.ListEnumAdTestPlatformFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumAdTestPlatformNullableFilter<$PrismaModel> | $Enums.AdTestPlatform | null
+}
+
+export type NestedEnumAdTestPlatformNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AdTestPlatform | Prisma.EnumAdTestPlatformFieldRefInput<$PrismaModel> | null
+  in?: $Enums.AdTestPlatform[] | Prisma.ListEnumAdTestPlatformFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.AdTestPlatform[] | Prisma.ListEnumAdTestPlatformFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumAdTestPlatformNullableWithAggregatesFilter<$PrismaModel> | $Enums.AdTestPlatform | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAdTestPlatformNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAdTestPlatformNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumAdTestPlatformFilter<$PrismaModel = never> = {
