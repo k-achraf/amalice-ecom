@@ -29,6 +29,11 @@ export type SourcedProductVideoCreativeMinAggregateOutputType = {
   sourcedProductId: string | null
   url: string | null
   platform: $Enums.AdTestPlatform | null
+  name: string | null
+  angle: string | null
+  hook: string | null
+  description: string | null
+  status: $Enums.VideoCreativeStatus | null
   notes: string | null
   createdAt: Date | null
 }
@@ -38,6 +43,11 @@ export type SourcedProductVideoCreativeMaxAggregateOutputType = {
   sourcedProductId: string | null
   url: string | null
   platform: $Enums.AdTestPlatform | null
+  name: string | null
+  angle: string | null
+  hook: string | null
+  description: string | null
+  status: $Enums.VideoCreativeStatus | null
   notes: string | null
   createdAt: Date | null
 }
@@ -47,6 +57,11 @@ export type SourcedProductVideoCreativeCountAggregateOutputType = {
   sourcedProductId: number
   url: number
   platform: number
+  name: number
+  angle: number
+  hook: number
+  description: number
+  status: number
   notes: number
   createdAt: number
   _all: number
@@ -58,6 +73,11 @@ export type SourcedProductVideoCreativeMinAggregateInputType = {
   sourcedProductId?: true
   url?: true
   platform?: true
+  name?: true
+  angle?: true
+  hook?: true
+  description?: true
+  status?: true
   notes?: true
   createdAt?: true
 }
@@ -67,6 +87,11 @@ export type SourcedProductVideoCreativeMaxAggregateInputType = {
   sourcedProductId?: true
   url?: true
   platform?: true
+  name?: true
+  angle?: true
+  hook?: true
+  description?: true
+  status?: true
   notes?: true
   createdAt?: true
 }
@@ -76,6 +101,11 @@ export type SourcedProductVideoCreativeCountAggregateInputType = {
   sourcedProductId?: true
   url?: true
   platform?: true
+  name?: true
+  angle?: true
+  hook?: true
+  description?: true
+  status?: true
   notes?: true
   createdAt?: true
   _all?: true
@@ -158,6 +188,11 @@ export type SourcedProductVideoCreativeGroupByOutputType = {
   sourcedProductId: string
   url: string
   platform: $Enums.AdTestPlatform | null
+  name: string | null
+  angle: string | null
+  hook: string | null
+  description: string | null
+  status: $Enums.VideoCreativeStatus
   notes: string | null
   createdAt: Date
   _count: SourcedProductVideoCreativeCountAggregateOutputType | null
@@ -188,6 +223,11 @@ export type SourcedProductVideoCreativeWhereInput = {
   sourcedProductId?: Prisma.StringFilter<"SourcedProductVideoCreative"> | string
   url?: Prisma.StringFilter<"SourcedProductVideoCreative"> | string
   platform?: Prisma.EnumAdTestPlatformNullableFilter<"SourcedProductVideoCreative"> | $Enums.AdTestPlatform | null
+  name?: Prisma.StringNullableFilter<"SourcedProductVideoCreative"> | string | null
+  angle?: Prisma.StringNullableFilter<"SourcedProductVideoCreative"> | string | null
+  hook?: Prisma.StringNullableFilter<"SourcedProductVideoCreative"> | string | null
+  description?: Prisma.StringNullableFilter<"SourcedProductVideoCreative"> | string | null
+  status?: Prisma.EnumVideoCreativeStatusFilter<"SourcedProductVideoCreative"> | $Enums.VideoCreativeStatus
   notes?: Prisma.StringNullableFilter<"SourcedProductVideoCreative"> | string | null
   createdAt?: Prisma.DateTimeFilter<"SourcedProductVideoCreative"> | Date | string
   sourcedProduct?: Prisma.XOR<Prisma.SourcedProductScalarRelationFilter, Prisma.SourcedProductWhereInput>
@@ -198,6 +238,11 @@ export type SourcedProductVideoCreativeOrderByWithRelationInput = {
   sourcedProductId?: Prisma.SortOrder
   url?: Prisma.SortOrder
   platform?: Prisma.SortOrderInput | Prisma.SortOrder
+  name?: Prisma.SortOrderInput | Prisma.SortOrder
+  angle?: Prisma.SortOrderInput | Prisma.SortOrder
+  hook?: Prisma.SortOrderInput | Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
+  status?: Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   sourcedProduct?: Prisma.SourcedProductOrderByWithRelationInput
@@ -211,6 +256,11 @@ export type SourcedProductVideoCreativeWhereUniqueInput = Prisma.AtLeast<{
   sourcedProductId?: Prisma.StringFilter<"SourcedProductVideoCreative"> | string
   url?: Prisma.StringFilter<"SourcedProductVideoCreative"> | string
   platform?: Prisma.EnumAdTestPlatformNullableFilter<"SourcedProductVideoCreative"> | $Enums.AdTestPlatform | null
+  name?: Prisma.StringNullableFilter<"SourcedProductVideoCreative"> | string | null
+  angle?: Prisma.StringNullableFilter<"SourcedProductVideoCreative"> | string | null
+  hook?: Prisma.StringNullableFilter<"SourcedProductVideoCreative"> | string | null
+  description?: Prisma.StringNullableFilter<"SourcedProductVideoCreative"> | string | null
+  status?: Prisma.EnumVideoCreativeStatusFilter<"SourcedProductVideoCreative"> | $Enums.VideoCreativeStatus
   notes?: Prisma.StringNullableFilter<"SourcedProductVideoCreative"> | string | null
   createdAt?: Prisma.DateTimeFilter<"SourcedProductVideoCreative"> | Date | string
   sourcedProduct?: Prisma.XOR<Prisma.SourcedProductScalarRelationFilter, Prisma.SourcedProductWhereInput>
@@ -221,6 +271,11 @@ export type SourcedProductVideoCreativeOrderByWithAggregationInput = {
   sourcedProductId?: Prisma.SortOrder
   url?: Prisma.SortOrder
   platform?: Prisma.SortOrderInput | Prisma.SortOrder
+  name?: Prisma.SortOrderInput | Prisma.SortOrder
+  angle?: Prisma.SortOrderInput | Prisma.SortOrder
+  hook?: Prisma.SortOrderInput | Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
+  status?: Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.SourcedProductVideoCreativeCountOrderByAggregateInput
@@ -236,6 +291,11 @@ export type SourcedProductVideoCreativeScalarWhereWithAggregatesInput = {
   sourcedProductId?: Prisma.StringWithAggregatesFilter<"SourcedProductVideoCreative"> | string
   url?: Prisma.StringWithAggregatesFilter<"SourcedProductVideoCreative"> | string
   platform?: Prisma.EnumAdTestPlatformNullableWithAggregatesFilter<"SourcedProductVideoCreative"> | $Enums.AdTestPlatform | null
+  name?: Prisma.StringNullableWithAggregatesFilter<"SourcedProductVideoCreative"> | string | null
+  angle?: Prisma.StringNullableWithAggregatesFilter<"SourcedProductVideoCreative"> | string | null
+  hook?: Prisma.StringNullableWithAggregatesFilter<"SourcedProductVideoCreative"> | string | null
+  description?: Prisma.StringNullableWithAggregatesFilter<"SourcedProductVideoCreative"> | string | null
+  status?: Prisma.EnumVideoCreativeStatusWithAggregatesFilter<"SourcedProductVideoCreative"> | $Enums.VideoCreativeStatus
   notes?: Prisma.StringNullableWithAggregatesFilter<"SourcedProductVideoCreative"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"SourcedProductVideoCreative"> | Date | string
 }
@@ -244,6 +304,11 @@ export type SourcedProductVideoCreativeCreateInput = {
   id?: string
   url: string
   platform?: $Enums.AdTestPlatform | null
+  name?: string | null
+  angle?: string | null
+  hook?: string | null
+  description?: string | null
+  status?: $Enums.VideoCreativeStatus
   notes?: string | null
   createdAt?: Date | string
   sourcedProduct: Prisma.SourcedProductCreateNestedOneWithoutVideoCreativesInput
@@ -254,6 +319,11 @@ export type SourcedProductVideoCreativeUncheckedCreateInput = {
   sourcedProductId: string
   url: string
   platform?: $Enums.AdTestPlatform | null
+  name?: string | null
+  angle?: string | null
+  hook?: string | null
+  description?: string | null
+  status?: $Enums.VideoCreativeStatus
   notes?: string | null
   createdAt?: Date | string
 }
@@ -262,6 +332,11 @@ export type SourcedProductVideoCreativeUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
   platform?: Prisma.NullableEnumAdTestPlatformFieldUpdateOperationsInput | $Enums.AdTestPlatform | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  angle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumVideoCreativeStatusFieldUpdateOperationsInput | $Enums.VideoCreativeStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sourcedProduct?: Prisma.SourcedProductUpdateOneRequiredWithoutVideoCreativesNestedInput
@@ -272,6 +347,11 @@ export type SourcedProductVideoCreativeUncheckedUpdateInput = {
   sourcedProductId?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
   platform?: Prisma.NullableEnumAdTestPlatformFieldUpdateOperationsInput | $Enums.AdTestPlatform | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  angle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumVideoCreativeStatusFieldUpdateOperationsInput | $Enums.VideoCreativeStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -281,6 +361,11 @@ export type SourcedProductVideoCreativeCreateManyInput = {
   sourcedProductId: string
   url: string
   platform?: $Enums.AdTestPlatform | null
+  name?: string | null
+  angle?: string | null
+  hook?: string | null
+  description?: string | null
+  status?: $Enums.VideoCreativeStatus
   notes?: string | null
   createdAt?: Date | string
 }
@@ -289,6 +374,11 @@ export type SourcedProductVideoCreativeUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
   platform?: Prisma.NullableEnumAdTestPlatformFieldUpdateOperationsInput | $Enums.AdTestPlatform | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  angle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumVideoCreativeStatusFieldUpdateOperationsInput | $Enums.VideoCreativeStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -298,6 +388,11 @@ export type SourcedProductVideoCreativeUncheckedUpdateManyInput = {
   sourcedProductId?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
   platform?: Prisma.NullableEnumAdTestPlatformFieldUpdateOperationsInput | $Enums.AdTestPlatform | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  angle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumVideoCreativeStatusFieldUpdateOperationsInput | $Enums.VideoCreativeStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -317,6 +412,11 @@ export type SourcedProductVideoCreativeCountOrderByAggregateInput = {
   sourcedProductId?: Prisma.SortOrder
   url?: Prisma.SortOrder
   platform?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  angle?: Prisma.SortOrder
+  hook?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -326,6 +426,11 @@ export type SourcedProductVideoCreativeMaxOrderByAggregateInput = {
   sourcedProductId?: Prisma.SortOrder
   url?: Prisma.SortOrder
   platform?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  angle?: Prisma.SortOrder
+  hook?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -335,6 +440,11 @@ export type SourcedProductVideoCreativeMinOrderByAggregateInput = {
   sourcedProductId?: Prisma.SortOrder
   url?: Prisma.SortOrder
   platform?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  angle?: Prisma.SortOrder
+  hook?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -385,10 +495,19 @@ export type NullableEnumAdTestPlatformFieldUpdateOperationsInput = {
   set?: $Enums.AdTestPlatform | null
 }
 
+export type EnumVideoCreativeStatusFieldUpdateOperationsInput = {
+  set?: $Enums.VideoCreativeStatus
+}
+
 export type SourcedProductVideoCreativeCreateWithoutSourcedProductInput = {
   id?: string
   url: string
   platform?: $Enums.AdTestPlatform | null
+  name?: string | null
+  angle?: string | null
+  hook?: string | null
+  description?: string | null
+  status?: $Enums.VideoCreativeStatus
   notes?: string | null
   createdAt?: Date | string
 }
@@ -397,6 +516,11 @@ export type SourcedProductVideoCreativeUncheckedCreateWithoutSourcedProductInput
   id?: string
   url: string
   platform?: $Enums.AdTestPlatform | null
+  name?: string | null
+  angle?: string | null
+  hook?: string | null
+  description?: string | null
+  status?: $Enums.VideoCreativeStatus
   notes?: string | null
   createdAt?: Date | string
 }
@@ -435,6 +559,11 @@ export type SourcedProductVideoCreativeScalarWhereInput = {
   sourcedProductId?: Prisma.StringFilter<"SourcedProductVideoCreative"> | string
   url?: Prisma.StringFilter<"SourcedProductVideoCreative"> | string
   platform?: Prisma.EnumAdTestPlatformNullableFilter<"SourcedProductVideoCreative"> | $Enums.AdTestPlatform | null
+  name?: Prisma.StringNullableFilter<"SourcedProductVideoCreative"> | string | null
+  angle?: Prisma.StringNullableFilter<"SourcedProductVideoCreative"> | string | null
+  hook?: Prisma.StringNullableFilter<"SourcedProductVideoCreative"> | string | null
+  description?: Prisma.StringNullableFilter<"SourcedProductVideoCreative"> | string | null
+  status?: Prisma.EnumVideoCreativeStatusFilter<"SourcedProductVideoCreative"> | $Enums.VideoCreativeStatus
   notes?: Prisma.StringNullableFilter<"SourcedProductVideoCreative"> | string | null
   createdAt?: Prisma.DateTimeFilter<"SourcedProductVideoCreative"> | Date | string
 }
@@ -443,6 +572,11 @@ export type SourcedProductVideoCreativeCreateManySourcedProductInput = {
   id?: string
   url: string
   platform?: $Enums.AdTestPlatform | null
+  name?: string | null
+  angle?: string | null
+  hook?: string | null
+  description?: string | null
+  status?: $Enums.VideoCreativeStatus
   notes?: string | null
   createdAt?: Date | string
 }
@@ -451,6 +585,11 @@ export type SourcedProductVideoCreativeUpdateWithoutSourcedProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
   platform?: Prisma.NullableEnumAdTestPlatformFieldUpdateOperationsInput | $Enums.AdTestPlatform | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  angle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumVideoCreativeStatusFieldUpdateOperationsInput | $Enums.VideoCreativeStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -459,6 +598,11 @@ export type SourcedProductVideoCreativeUncheckedUpdateWithoutSourcedProductInput
   id?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
   platform?: Prisma.NullableEnumAdTestPlatformFieldUpdateOperationsInput | $Enums.AdTestPlatform | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  angle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumVideoCreativeStatusFieldUpdateOperationsInput | $Enums.VideoCreativeStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -467,6 +611,11 @@ export type SourcedProductVideoCreativeUncheckedUpdateManyWithoutSourcedProductI
   id?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
   platform?: Prisma.NullableEnumAdTestPlatformFieldUpdateOperationsInput | $Enums.AdTestPlatform | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  angle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hook?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumVideoCreativeStatusFieldUpdateOperationsInput | $Enums.VideoCreativeStatus
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -478,6 +627,11 @@ export type SourcedProductVideoCreativeSelect<ExtArgs extends runtime.Types.Exte
   sourcedProductId?: boolean
   url?: boolean
   platform?: boolean
+  name?: boolean
+  angle?: boolean
+  hook?: boolean
+  description?: boolean
+  status?: boolean
   notes?: boolean
   createdAt?: boolean
   sourcedProduct?: boolean | Prisma.SourcedProductDefaultArgs<ExtArgs>
@@ -488,6 +642,11 @@ export type SourcedProductVideoCreativeSelectCreateManyAndReturn<ExtArgs extends
   sourcedProductId?: boolean
   url?: boolean
   platform?: boolean
+  name?: boolean
+  angle?: boolean
+  hook?: boolean
+  description?: boolean
+  status?: boolean
   notes?: boolean
   createdAt?: boolean
   sourcedProduct?: boolean | Prisma.SourcedProductDefaultArgs<ExtArgs>
@@ -498,6 +657,11 @@ export type SourcedProductVideoCreativeSelectUpdateManyAndReturn<ExtArgs extends
   sourcedProductId?: boolean
   url?: boolean
   platform?: boolean
+  name?: boolean
+  angle?: boolean
+  hook?: boolean
+  description?: boolean
+  status?: boolean
   notes?: boolean
   createdAt?: boolean
   sourcedProduct?: boolean | Prisma.SourcedProductDefaultArgs<ExtArgs>
@@ -508,11 +672,16 @@ export type SourcedProductVideoCreativeSelectScalar = {
   sourcedProductId?: boolean
   url?: boolean
   platform?: boolean
+  name?: boolean
+  angle?: boolean
+  hook?: boolean
+  description?: boolean
+  status?: boolean
   notes?: boolean
   createdAt?: boolean
 }
 
-export type SourcedProductVideoCreativeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sourcedProductId" | "url" | "platform" | "notes" | "createdAt", ExtArgs["result"]["sourcedProductVideoCreative"]>
+export type SourcedProductVideoCreativeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sourcedProductId" | "url" | "platform" | "name" | "angle" | "hook" | "description" | "status" | "notes" | "createdAt", ExtArgs["result"]["sourcedProductVideoCreative"]>
 export type SourcedProductVideoCreativeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sourcedProduct?: boolean | Prisma.SourcedProductDefaultArgs<ExtArgs>
 }
@@ -533,6 +702,11 @@ export type $SourcedProductVideoCreativePayload<ExtArgs extends runtime.Types.Ex
     sourcedProductId: string
     url: string
     platform: $Enums.AdTestPlatform | null
+    name: string | null
+    angle: string | null
+    hook: string | null
+    description: string | null
+    status: $Enums.VideoCreativeStatus
     notes: string | null
     createdAt: Date
   }, ExtArgs["result"]["sourcedProductVideoCreative"]>
@@ -963,6 +1137,11 @@ export interface SourcedProductVideoCreativeFieldRefs {
   readonly sourcedProductId: Prisma.FieldRef<"SourcedProductVideoCreative", 'String'>
   readonly url: Prisma.FieldRef<"SourcedProductVideoCreative", 'String'>
   readonly platform: Prisma.FieldRef<"SourcedProductVideoCreative", 'AdTestPlatform'>
+  readonly name: Prisma.FieldRef<"SourcedProductVideoCreative", 'String'>
+  readonly angle: Prisma.FieldRef<"SourcedProductVideoCreative", 'String'>
+  readonly hook: Prisma.FieldRef<"SourcedProductVideoCreative", 'String'>
+  readonly description: Prisma.FieldRef<"SourcedProductVideoCreative", 'String'>
+  readonly status: Prisma.FieldRef<"SourcedProductVideoCreative", 'VideoCreativeStatus'>
   readonly notes: Prisma.FieldRef<"SourcedProductVideoCreative", 'String'>
   readonly createdAt: Prisma.FieldRef<"SourcedProductVideoCreative", 'DateTime'>
 }

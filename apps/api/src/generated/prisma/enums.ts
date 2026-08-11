@@ -198,6 +198,16 @@ export const SourcedProductMediaType = {
 export type SourcedProductMediaType = (typeof SourcedProductMediaType)[keyof typeof SourcedProductMediaType]
 
 
+export const VideoCreativeStatus = {
+  Idea: 'Idea',
+  Testing: 'Testing',
+  Winner: 'Winner',
+  Killed: 'Killed'
+} as const
+
+export type VideoCreativeStatus = (typeof VideoCreativeStatus)[keyof typeof VideoCreativeStatus]
+
+
 export const AdTestPlatform = {
   Facebook: 'Facebook',
   TikTok: 'TikTok',

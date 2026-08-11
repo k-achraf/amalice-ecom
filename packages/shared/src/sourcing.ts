@@ -148,14 +148,31 @@ export interface SourcedProductLinkView {
 }
 
 // ---- Video creatives ----
-// A running collection of video ad-creative links worth keeping an eye on
-// while researching/testing this product — yours or a competitor's. Distinct
-// from ProductAdTest.creativeUrl below, which is tied to one specific
-// price/spend experiment.
+// A running collection of video ad-creatives worth keeping an eye on while
+// researching/testing this product — yours or a competitor's. Distinct from
+// ProductAdTest.creativeUrl below, which is tied to one specific
+// price/spend experiment. The marketing-angle fields (angle/hook/
+// description) mirror the columns a real ad-testing spreadsheet tracks per
+// creative — see SourcedProductVideoCreative's Prisma comment.
+
+export const VideoCreativeStatus = z.enum(['Idea', 'Testing', 'Winner', 'Killed'])
+export type VideoCreativeStatus = z.infer<typeof VideoCreativeStatus>
 
 export const CreateSourcedProductVideoCreativeSchema = z.object({
   url: z.string().trim().min(1).max(500),
   platform: AdTestPlatform.nullable().optional(),
+  name: z.string().trim().max(200).nullable().optional(),
+  // The marketing angle this creative is built around (e.g. "Pain point",
+  // "Before/after", "Social proof", "Urgency/FOMO") — free text, not an
+  // enum; angles are ad-buyer vocabulary, not a fixed taxonomy.
+  angle: z.string().trim().max(200).nullable().optional(),
+  // The opening line/visual — what stops the scroll in the first 1-3
+  // seconds.
+  hook: z.string().trim().max(500).nullable().optional(),
+  // What the creative actually shows/says beyond the hook — a short script
+  // summary or shot list, not the full script verbatim.
+  description: z.string().trim().max(2000).nullable().optional(),
+  status: VideoCreativeStatus.default('Idea'),
   notes: z.string().trim().max(500).nullable().optional()
 })
 export type CreateSourcedProductVideoCreative = z.infer<typeof CreateSourcedProductVideoCreativeSchema>
@@ -168,6 +185,11 @@ export interface SourcedProductVideoCreativeView {
   sourcedProductId: string
   url: string
   platform: AdTestPlatform | null
+  name: string | null
+  angle: string | null
+  hook: string | null
+  description: string | null
+  status: VideoCreativeStatus
   notes: string | null
   createdAt: string
 }

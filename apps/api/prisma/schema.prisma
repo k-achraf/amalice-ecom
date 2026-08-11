@@ -1254,19 +1254,49 @@ model SourcedProductLink {
   @@map("sourced_product_links")
 }
 
-// A video ad-creative link worth keeping track of while researching/testing
-// this product — yours or a competitor's. `platform` reuses AdTestPlatform
+// Lifecycle of a creative idea/asset, independent of ProductAdTest.status
+// (which tracks one specific price/spend experiment's outcome) — this is
+// "where is this creative in our testing pipeline right now."
+enum VideoCreativeStatus {
+  Idea
+  Testing
+  Winner
+  Killed
+}
+
+// A video ad-creative worth keeping track of while researching/testing this
+// product — yours or a competitor's. `platform` reuses AdTestPlatform
 // (Facebook/TikTok/Snapchat/Google/Other) since it's the same fixed set of
 // places a creative could be running; nullable because the platform isn't
-// always known/relevant (e.g. a raw video file link).
+// always known/relevant (e.g. a raw video file link). The marketing-angle
+// fields (angle/hook/description) mirror the columns a real ad-testing
+// spreadsheet tracks per creative, so this is genuinely useful for deciding
+// what to test next instead of just being a bare link list.
 model SourcedProductVideoCreative {
-  id               String          @id @default(uuid())
-  sourcedProductId String          @map("sourced_product_id")
-  sourcedProduct   SourcedProduct  @relation(fields: [sourcedProductId], references: [id], onDelete: Cascade)
+  id               String              @id @default(uuid())
+  sourcedProductId String              @map("sourced_product_id")
+  sourcedProduct   SourcedProduct      @relation(fields: [sourcedProductId], references: [id], onDelete: Cascade)
   url              String
   platform         AdTestPlatform?
+  // Short internal label so a list of creatives is scannable at a glance
+  // instead of just a wall of URLs (e.g. "UGC unboxing v2").
+  name             String?
+  // The marketing angle this creative is built around — e.g. "Pain point",
+  // "Before/after", "Social proof", "Urgency/FOMO", "Problem-solution". Free
+  // text, not an enum: angles are a matter of ad-buyer vocabulary, not a
+  // fixed taxonomy worth locking down.
+  angle            String?
+  // The opening line/visual — what stops the scroll in the first 1-3
+  // seconds. Called out separately from `description` because it's the
+  // single most-scrutinized part of a video ad when deciding what to test
+  // next.
+  hook             String?
+  // What the creative actually shows/says beyond the hook — a short script
+  // summary or shot list, not the full script verbatim.
+  description      String?
+  status           VideoCreativeStatus @default(Idea)
   notes            String?
-  createdAt        DateTime        @default(now()) @map("created_at")
+  createdAt        DateTime            @default(now()) @map("created_at")
 
   @@index([sourcedProductId])
   @@map("sourced_product_video_creatives")

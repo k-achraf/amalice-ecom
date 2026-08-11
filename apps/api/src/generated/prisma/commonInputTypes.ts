@@ -630,6 +630,13 @@ export type EnumAdTestPlatformNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumAdTestPlatformNullableFilter<$PrismaModel> | $Enums.AdTestPlatform | null
 }
 
+export type EnumVideoCreativeStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.VideoCreativeStatus | Prisma.EnumVideoCreativeStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.VideoCreativeStatus[] | Prisma.ListEnumVideoCreativeStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.VideoCreativeStatus[] | Prisma.ListEnumVideoCreativeStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumVideoCreativeStatusFilter<$PrismaModel> | $Enums.VideoCreativeStatus
+}
+
 export type EnumAdTestPlatformNullableWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.AdTestPlatform | Prisma.EnumAdTestPlatformFieldRefInput<$PrismaModel> | null
   in?: $Enums.AdTestPlatform[] | Prisma.ListEnumAdTestPlatformFieldRefInput<$PrismaModel> | null
@@ -638,6 +645,16 @@ export type EnumAdTestPlatformNullableWithAggregatesFilter<$PrismaModel = never>
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedEnumAdTestPlatformNullableFilter<$PrismaModel>
   _max?: Prisma.NestedEnumAdTestPlatformNullableFilter<$PrismaModel>
+}
+
+export type EnumVideoCreativeStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.VideoCreativeStatus | Prisma.EnumVideoCreativeStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.VideoCreativeStatus[] | Prisma.ListEnumVideoCreativeStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.VideoCreativeStatus[] | Prisma.ListEnumVideoCreativeStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumVideoCreativeStatusWithAggregatesFilter<$PrismaModel> | $Enums.VideoCreativeStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumVideoCreativeStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumVideoCreativeStatusFilter<$PrismaModel>
 }
 
 export type EnumAdTestPlatformFilter<$PrismaModel = never> = {
@@ -1300,6 +1317,13 @@ export type NestedEnumAdTestPlatformNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumAdTestPlatformNullableFilter<$PrismaModel> | $Enums.AdTestPlatform | null
 }
 
+export type NestedEnumVideoCreativeStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.VideoCreativeStatus | Prisma.EnumVideoCreativeStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.VideoCreativeStatus[] | Prisma.ListEnumVideoCreativeStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.VideoCreativeStatus[] | Prisma.ListEnumVideoCreativeStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumVideoCreativeStatusFilter<$PrismaModel> | $Enums.VideoCreativeStatus
+}
+
 export type NestedEnumAdTestPlatformNullableWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.AdTestPlatform | Prisma.EnumAdTestPlatformFieldRefInput<$PrismaModel> | null
   in?: $Enums.AdTestPlatform[] | Prisma.ListEnumAdTestPlatformFieldRefInput<$PrismaModel> | null
@@ -1308,6 +1332,16 @@ export type NestedEnumAdTestPlatformNullableWithAggregatesFilter<$PrismaModel = 
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedEnumAdTestPlatformNullableFilter<$PrismaModel>
   _max?: Prisma.NestedEnumAdTestPlatformNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumVideoCreativeStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.VideoCreativeStatus | Prisma.EnumVideoCreativeStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.VideoCreativeStatus[] | Prisma.ListEnumVideoCreativeStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.VideoCreativeStatus[] | Prisma.ListEnumVideoCreativeStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumVideoCreativeStatusWithAggregatesFilter<$PrismaModel> | $Enums.VideoCreativeStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumVideoCreativeStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumVideoCreativeStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumAdTestPlatformFilter<$PrismaModel = never> = {

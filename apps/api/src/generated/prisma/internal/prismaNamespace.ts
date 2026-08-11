@@ -4544,6 +4544,11 @@ export const SourcedProductVideoCreativeScalarFieldEnum = {
   sourcedProductId: 'sourcedProductId',
   url: 'url',
   platform: 'platform',
+  name: 'name',
+  angle: 'angle',
+  hook: 'hook',
+  description: 'description',
+  status: 'status',
   notes: 'notes',
   createdAt: 'createdAt'
 } as const
@@ -4995,6 +5000,20 @@ export type EnumAdTestPlatformFieldRefInput<$PrismaModel> = FieldRefInputType<$P
  * Reference to a field of type 'AdTestPlatform[]'
  */
 export type ListEnumAdTestPlatformFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AdTestPlatform[]'>
+    
+
+
+/**
+ * Reference to a field of type 'VideoCreativeStatus'
+ */
+export type EnumVideoCreativeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VideoCreativeStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'VideoCreativeStatus[]'
+ */
+export type ListEnumVideoCreativeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VideoCreativeStatus[]'>
     
 
 

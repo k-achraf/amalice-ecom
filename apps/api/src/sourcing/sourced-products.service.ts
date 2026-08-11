@@ -60,12 +60,29 @@ function toLinkView(row: { id: string; sourcedProductId: string; label: string; 
   }
 }
 
-function toVideoCreativeView(row: { id: string; sourcedProductId: string; url: string; platform: string | null; notes: string | null; createdAt: Date }): SourcedProductVideoCreativeView {
+function toVideoCreativeView(row: {
+  id: string
+  sourcedProductId: string
+  url: string
+  platform: string | null
+  name: string | null
+  angle: string | null
+  hook: string | null
+  description: string | null
+  status: string
+  notes: string | null
+  createdAt: Date
+}): SourcedProductVideoCreativeView {
   return {
     id: row.id,
     sourcedProductId: row.sourcedProductId,
     url: row.url,
     platform: row.platform as SourcedProductVideoCreativeView['platform'],
+    name: row.name,
+    angle: row.angle,
+    hook: row.hook,
+    description: row.description,
+    status: row.status as SourcedProductVideoCreativeView['status'],
     notes: row.notes,
     createdAt: row.createdAt.toISOString()
   }
@@ -420,7 +437,17 @@ export class SourcedProductsService {
   async addVideoCreative(sourcedProductId: string, input: CreateSourcedProductVideoCreative, actor: AuditActor): Promise<SourcedProductVideoCreativeView> {
     await this.ensureExists(sourcedProductId)
     const row = await this.prisma.sourcedProductVideoCreative.create({
-      data: { sourcedProductId, url: input.url, platform: input.platform ?? null, notes: input.notes }
+      data: {
+        sourcedProductId,
+        url: input.url,
+        platform: input.platform ?? null,
+        name: input.name,
+        angle: input.angle,
+        hook: input.hook,
+        description: input.description,
+        status: input.status,
+        notes: input.notes
+      }
     })
     await this.audit.log({ actor, action: 'Create', entity: 'SourcedProductVideoCreative', entityId: row.id, metadata: input })
     return toVideoCreativeView(row)

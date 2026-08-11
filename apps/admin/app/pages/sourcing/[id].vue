@@ -6,7 +6,8 @@ import type {
   Product,
   SourcedProductDetail,
   SourcedProductStatus,
-  SourcingRequestStatus
+  SourcingRequestStatus,
+  VideoCreativeStatus
 } from '@amalice/shared'
 import { SOURCED_PRODUCT_STATUSES, adTestCpaCents, adTestRoas } from '@amalice/shared'
 
@@ -36,6 +37,11 @@ interface RequestFormState {
 interface VideoCreativeFormState {
   url: string
   platform: AdTestPlatform | null
+  name: string
+  angle: string
+  hook: string
+  description: string
+  status: VideoCreativeStatus
   notes: string
 }
 interface CompetitorFormState {
@@ -74,6 +80,13 @@ const platformOptions: AdTestPlatform[] = ['Facebook', 'TikTok', 'Snapchat', 'Go
 const creativeTypeOptions: AdCreativeType[] = ['Image', 'Video']
 const adTestStatusOptions: AdTestStatus[] = ['Running', 'Passed', 'Failed']
 const requestStatusOptions: SourcingRequestStatus[] = ['Requested', 'Confirmed', 'Shipped', 'Received', 'Cancelled']
+const videoCreativeStatusOptions: VideoCreativeStatus[] = ['Idea', 'Testing', 'Winner', 'Killed']
+const videoCreativeStatusColor: Record<VideoCreativeStatus, 'neutral' | 'info' | 'success' | 'error'> = {
+  Idea: 'neutral',
+  Testing: 'info',
+  Winner: 'success',
+  Killed: 'error'
+}
 
 const dzdFormatter = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'DZD' })
 function formatDzd(cents: number) {
@@ -458,47 +471,60 @@ async function deleteLink(linkId: string) {
 }
 
 // ---- Video Creatives tab ----
-const newVideoCreative = reactive<VideoCreativeFormState>({ url: '', platform: null, notes: '' })
-const savingVideoCreative = ref(false)
+// Modal-based (not inline-row, like Links/Competitors) — enough fields
+// (url/platform/name/angle/hook/description/status/notes) that an inline
+// row editor would be unusably cramped, same reasoning as the Ad Test modal
+// below.
+const showVideoCreativeModal = ref(false)
 const editingVideoCreativeId = ref<string | null>(null)
-const editVideoCreative = reactive<VideoCreativeFormState>({ url: '', platform: null, notes: '' })
+const videoCreativeForm = reactive<VideoCreativeFormState>({ url: '', platform: null, name: '', angle: '', hook: '', description: '', status: 'Idea', notes: '' })
+const savingVideoCreative = ref(false)
 
-async function addVideoCreative() {
-  if (!newVideoCreative.url.trim()) return
-  savingVideoCreative.value = true
-  try {
-    await api(`/admin/sourcing/products/${id}/video-creatives`, {
-      method: 'POST',
-      body: { url: newVideoCreative.url, platform: newVideoCreative.platform, notes: newVideoCreative.notes || null }
-    })
-    Object.assign(newVideoCreative, { url: '', platform: null, notes: '' })
-    await refresh()
-    toast.add({ title: 'Video creative added', color: 'success' })
-  } catch {
-    toast.add({ title: 'Failed to add video creative', color: 'error' })
-  } finally {
-    savingVideoCreative.value = false
-  }
+function openCreateVideoCreative() {
+  editingVideoCreativeId.value = null
+  Object.assign(videoCreativeForm, { url: '', platform: null, name: '', angle: '', hook: '', description: '', status: 'Idea', notes: '' })
+  showVideoCreativeModal.value = true
 }
 
 function openEditVideoCreative(v: SourcedProductDetail['videoCreatives'][number]) {
   editingVideoCreativeId.value = v.id
-  Object.assign(editVideoCreative, { url: v.url, platform: v.platform, notes: v.notes ?? '' })
+  Object.assign(videoCreativeForm, {
+    url: v.url,
+    platform: v.platform,
+    name: v.name ?? '',
+    angle: v.angle ?? '',
+    hook: v.hook ?? '',
+    description: v.description ?? '',
+    status: v.status,
+    notes: v.notes ?? ''
+  })
+  showVideoCreativeModal.value = true
 }
 
-async function saveEditVideoCreative() {
-  if (!editingVideoCreativeId.value || !editVideoCreative.url.trim()) return
+async function saveVideoCreative() {
+  if (!videoCreativeForm.url.trim()) return
   savingVideoCreative.value = true
+  const body = {
+    url: videoCreativeForm.url,
+    platform: videoCreativeForm.platform,
+    name: videoCreativeForm.name || null,
+    angle: videoCreativeForm.angle || null,
+    hook: videoCreativeForm.hook || null,
+    description: videoCreativeForm.description || null,
+    status: videoCreativeForm.status,
+    notes: videoCreativeForm.notes || null
+  }
   try {
-    await api(`/admin/sourcing/products/video-creatives/${editingVideoCreativeId.value}`, {
-      method: 'PATCH',
-      body: { url: editVideoCreative.url, platform: editVideoCreative.platform, notes: editVideoCreative.notes || null }
-    })
-    editingVideoCreativeId.value = null
+    if (editingVideoCreativeId.value) {
+      await api(`/admin/sourcing/products/video-creatives/${editingVideoCreativeId.value}`, { method: 'PATCH', body })
+    } else {
+      await api(`/admin/sourcing/products/${id}/video-creatives`, { method: 'POST', body })
+    }
+    showVideoCreativeModal.value = false
     await refresh()
-    toast.add({ title: 'Video creative updated', color: 'success' })
+    toast.add({ title: 'Video creative saved', color: 'success' })
   } catch {
-    toast.add({ title: 'Failed to update video creative', color: 'error' })
+    toast.add({ title: 'Failed to save video creative', color: 'error' })
   } finally {
     savingVideoCreative.value = false
   }
@@ -721,49 +747,33 @@ async function deleteCompetitor(competitorId: string) {
         <div v-show="activeTab === 'videoCreatives'" class="admin-table-wrap">
           <div class="flex items-center justify-between border-b border-[var(--color-admin-border)] p-4">
             <h3 class="text-sm font-medium text-muted">Video creatives ({{ sourced.videoCreatives.length }})</h3>
+            <UButton icon="i-lucide-plus" size="xs" color="primary" label="New video creative" @click="openCreateVideoCreative" />
           </div>
-          <p class="px-4 pt-3 text-xs text-muted">Video ad-creative links worth keeping an eye on — yours or a competitor's — spotted while researching or testing this product.</p>
-          <div class="space-y-2 p-4">
-            <div v-for="v in sourced.videoCreatives" :key="v.id" class="rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg)] p-3">
-              <template v-if="editingVideoCreativeId === v.id">
-                <div class="flex flex-wrap items-center gap-3">
-                  <UInput v-model="editVideoCreative.url" placeholder="https://…" class="min-w-64 flex-1" />
-                  <USelect
-                    v-model="editVideoCreative.platform"
-                    :items="[{ label: 'No platform', value: null }, ...platformOptions.map((p) => ({ label: p, value: p }))]"
-                    value-key="value"
-                    label-key="label"
-                    class="w-40"
-                  />
-                  <UButton icon="i-lucide-check" size="xs" color="primary" :loading="savingVideoCreative" @click="saveEditVideoCreative" />
-                  <UButton icon="i-lucide-x" size="xs" variant="ghost" color="neutral" @click="editingVideoCreativeId = null" />
+          <p class="px-4 pt-3 text-xs text-muted">Video ad-creatives worth keeping an eye on — yours or a competitor's — with the angle/hook/description that make it clear why each one is worth testing.</p>
+          <div class="space-y-3 p-4">
+            <div v-for="v in sourced.videoCreatives" :key="v.id" class="rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg)] p-4">
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-medium text-highlighted">{{ v.name || 'Untitled creative' }}</span>
+                    <UBadge :color="videoCreativeStatusColor[v.status]" variant="subtle">{{ v.status }}</UBadge>
+                    <UBadge v-if="v.platform" color="neutral" variant="subtle">{{ v.platform }}</UBadge>
+                  </div>
+                  <a :href="v.url" target="_blank" rel="noopener noreferrer" class="mt-1 block truncate text-sm text-primary hover:underline">{{ v.url }}</a>
                 </div>
-                <UInput v-model="editVideoCreative.notes" placeholder="Notes (optional)" class="mt-2 w-full" />
-              </template>
-              <template v-else>
-                <div class="flex items-center gap-3">
-                  <UBadge v-if="v.platform" color="neutral" variant="subtle">{{ v.platform }}</UBadge>
-                  <a :href="v.url" target="_blank" rel="noopener noreferrer" class="flex-1 truncate text-sm text-primary hover:underline">{{ v.url }}</a>
+                <div class="flex shrink-0 gap-1">
                   <UButton icon="i-lucide-pencil" size="xs" variant="ghost" color="neutral" @click="openEditVideoCreative(v)" />
                   <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="deleteVideoCreative(v.id)" />
                 </div>
-                <p v-if="v.notes" class="mt-1 text-xs text-muted">{{ v.notes }}</p>
-              </template>
+              </div>
+              <dl v-if="v.angle || v.hook || v.description" class="mt-3 space-y-1.5 border-t border-[var(--color-admin-border)] pt-3 text-sm">
+                <div v-if="v.angle" class="flex gap-2"><dt class="w-20 shrink-0 text-muted">Angle</dt><dd class="text-highlighted">{{ v.angle }}</dd></div>
+                <div v-if="v.hook" class="flex gap-2"><dt class="w-20 shrink-0 text-muted">Hook</dt><dd>{{ v.hook }}</dd></div>
+                <div v-if="v.description" class="flex gap-2"><dt class="w-20 shrink-0 text-muted">Description</dt><dd class="text-muted">{{ v.description }}</dd></div>
+              </dl>
+              <p v-if="v.notes" class="mt-2 text-xs text-muted">{{ v.notes }}</p>
             </div>
-            <p v-if="!sourced.videoCreatives.length" class="py-8 text-center text-sm text-muted">No video creatives yet.</p>
-          </div>
-          <div class="flex flex-wrap items-center gap-3 border-t border-[var(--color-admin-border)] p-4">
-            <UInput v-model="newVideoCreative.url" placeholder="https://…" class="min-w-64 flex-1" />
-            <USelect
-              v-model="newVideoCreative.platform"
-              :items="[{ label: 'No platform', value: null }, ...platformOptions.map((p) => ({ label: p, value: p }))]"
-              value-key="value"
-              label-key="label"
-              class="w-40"
-              placeholder="Platform"
-            />
-            <UInput v-model="newVideoCreative.notes" placeholder="Notes (optional)" class="w-48" />
-            <UButton icon="i-lucide-plus" :loading="savingVideoCreative" color="primary" :disabled="!newVideoCreative.url.trim()" @click="addVideoCreative">Add</UButton>
+            <p v-if="!sourced.videoCreatives.length" class="py-8 text-center text-sm text-muted">No video creatives yet. Click "New video creative" to log one.</p>
           </div>
         </div>
 
@@ -957,6 +967,45 @@ async function deleteCompetitor(competitorId: string) {
             <div class="flex justify-end gap-2">
               <UButton color="neutral" variant="ghost" label="Cancel" @click="showRequestModal = false" />
               <UButton :loading="savingRequest" :disabled="!requestForm.requestedCountry.trim()" label="Save" color="primary" @click="saveRequest" />
+            </div>
+          </div>
+        </template>
+      </UModal>
+
+      <!-- Video creative modal -->
+      <UModal v-model:open="showVideoCreativeModal">
+        <template #content>
+          <div class="space-y-4 p-6">
+            <h3 class="text-lg font-semibold">{{ editingVideoCreativeId ? 'Edit' : 'New' }} video creative</h3>
+            <UFormField label="Video URL"><UInput v-model="videoCreativeForm.url" class="w-full" placeholder="https://…" /></UFormField>
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <UFormField label="Name" help="Short internal label"><UInput v-model="videoCreativeForm.name" class="w-full" placeholder="e.g. UGC unboxing v2" /></UFormField>
+              <UFormField label="Platform">
+                <USelect
+                  v-model="videoCreativeForm.platform"
+                  :items="[{ label: 'None', value: null }, ...platformOptions.map((p) => ({ label: p, value: p }))]"
+                  value-key="value"
+                  label-key="label"
+                  class="w-full"
+                />
+              </UFormField>
+              <UFormField label="Status">
+                <USelect v-model="videoCreativeForm.status" :items="videoCreativeStatusOptions" class="w-full" />
+              </UFormField>
+            </div>
+            <UFormField label="Angle" help="The marketing angle this creative is built around">
+              <UInput v-model="videoCreativeForm.angle" class="w-full" placeholder="e.g. Pain point, Before/after, Social proof, Urgency" />
+            </UFormField>
+            <UFormField label="Hook" help="The opening line/visual — what stops the scroll">
+              <UInput v-model="videoCreativeForm.hook" class="w-full" />
+            </UFormField>
+            <UFormField label="Description" help="What the creative shows/says beyond the hook — a short script summary">
+              <UTextarea v-model="videoCreativeForm.description" class="w-full" :rows="3" />
+            </UFormField>
+            <UFormField label="Notes"><UTextarea v-model="videoCreativeForm.notes" class="w-full" :rows="2" /></UFormField>
+            <div class="flex justify-end gap-2">
+              <UButton color="neutral" variant="ghost" label="Cancel" @click="showVideoCreativeModal = false" />
+              <UButton :loading="savingVideoCreative" :disabled="!videoCreativeForm.url.trim()" label="Save" color="primary" @click="saveVideoCreative" />
             </div>
           </div>
         </template>

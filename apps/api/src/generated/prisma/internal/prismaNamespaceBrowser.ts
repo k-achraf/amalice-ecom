@@ -693,6 +693,11 @@ export const SourcedProductVideoCreativeScalarFieldEnum = {
   sourcedProductId: 'sourcedProductId',
   url: 'url',
   platform: 'platform',
+  name: 'name',
+  angle: 'angle',
+  hook: 'hook',
+  description: 'description',
+  status: 'status',
   notes: 'notes',
   createdAt: 'createdAt'
 } as const
