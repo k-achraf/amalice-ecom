@@ -27,7 +27,13 @@ export class AdminStatsService {
       totalOrders30d,
       lowStockProducts
     ] = await Promise.all([
-      this.prisma.order.count({ where: { createdAt: { gte: startOfToday } } }),
+      // Excludes abandoned-cart orders (see Order.isAbandoned's Prisma
+      // comment) — the customer never actually finished submitting those,
+      // so counting them here would inflate "orders today" past what was
+      // really placed. Matches AdminOrdersService.list()'s default
+      // (isAbandoned excluded unless explicitly asked for), which is what
+      // every other admin orders view already does.
+      this.prisma.order.count({ where: { createdAt: { gte: startOfToday }, isAbandoned: false } }),
       // COD "pending" = total of orders not yet at CashCollected/Reconciled/Settled.
       this.prisma.order.aggregate({
         where: { state: { in: ['Confirmed', 'Packed', 'HandedToCourier', 'OutForDelivery', 'Delivered'] } },
@@ -46,7 +52,10 @@ export class AdminStatsService {
       this.prisma.order.count({
         where: { state: { in: ['ReturnedToOrigin', 'Restocked' as never] }, createdAt: { gte: thirtyDaysAgo } }
       }),
-      this.prisma.order.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
+      // Same isAbandoned exclusion as ordersToday above — this feeds the
+      // RTO-rate stat, which would be diluted by including orders that were
+      // never actually placed.
+      this.prisma.order.count({ where: { createdAt: { gte: thirtyDaysAgo }, isAbandoned: false } }),
       this.prisma.product.count({
         where: { stockQuantity: { lte: this.prisma.product.fields.lowStockThreshold } }
       })

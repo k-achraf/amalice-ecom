@@ -65,7 +65,7 @@ const { data: products } = await useAdminFetch<{ items: Product[] }>('/admin/pro
 
 useHead({ title: () => sourced.value?.name ?? 'Sourced product' })
 
-const activeTab = ref<'overview' | 'media' | 'adTests' | 'requests' | 'videoCreatives' | 'competitors'>('overview')
+const activeTab = ref<'view' | 'overview' | 'media' | 'adTests' | 'requests' | 'videoCreatives' | 'competitors'>('view')
 
 // Local uploads are stored relative (/uploads/xxx) — resolve against the API
 // base for display, same pattern as products/[id].vue's Images tab.
@@ -76,6 +76,16 @@ function resolveMediaUrl(url: string): string {
 }
 
 const statusOptions = SOURCED_PRODUCT_STATUSES.map((s) => ({ label: s, value: s }))
+const statusColor: Record<SourcedProductStatus, 'neutral' | 'info' | 'warning' | 'error' | 'success' | 'primary'> = {
+  Researching: 'neutral',
+  Testing: 'info',
+  TestPassed: 'success',
+  TestFailed: 'error',
+  Sourcing: 'warning',
+  Received: 'primary',
+  Live: 'success',
+  Discontinued: 'neutral'
+}
 const platformOptions: AdTestPlatform[] = ['Facebook', 'TikTok', 'Snapchat', 'Google', 'Other']
 const creativeTypeOptions: AdCreativeType[] = ['Image', 'Video']
 const adTestStatusOptions: AdTestStatus[] = ['Running', 'Passed', 'Failed']
@@ -624,6 +634,7 @@ async function deleteCompetitor(competitorId: string) {
         <UTabs
           v-model="activeTab"
           :items="[
+            { label: 'View', value: 'view', icon: 'i-lucide-eye' },
             { label: 'Overview', value: 'overview', icon: 'i-lucide-file-text' },
             { label: 'Media & Links', value: 'media', icon: 'i-lucide-images' },
             { label: 'Video Creatives', value: 'videoCreatives', icon: 'i-lucide-clapperboard' },
@@ -632,6 +643,173 @@ async function deleteCompetitor(competitorId: string) {
             { label: 'Sourcing Requests', value: 'requests', icon: 'i-lucide-truck' }
           ]"
         />
+
+        <!-- View Tab — read-only, everything about this sourced product and
+             all its related assets on one scroll, so reviewing a candidate
+             (deciding whether to test/source it further) doesn't require
+             clicking through 6 separate edit tabs. Every other tab stays
+             the place to actually change something; this one is purely for
+             looking. Each section links back to its edit tab via "Edit →". -->
+        <div v-show="activeTab === 'view'" class="space-y-5">
+          <div class="admin-kpi-card p-6">
+            <div class="flex flex-wrap items-start gap-5">
+              <img v-if="sourced.imageUrl" :src="sourced.imageUrl" class="size-24 shrink-0 rounded-lg object-cover" />
+              <div v-else class="flex size-24 shrink-0 items-center justify-center rounded-lg bg-[var(--color-admin-surface-tint)]"><UIcon name="i-lucide-package-search" class="size-8 text-muted" /></div>
+              <div class="min-w-0 flex-1 space-y-2">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h2 class="text-xl font-semibold text-highlighted">{{ sourced.name }}</h2>
+                  <UBadge :color="statusColor[sourced.status]" variant="subtle">{{ sourced.status }}</UBadge>
+                </div>
+                <div class="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted">
+                  <span v-if="sourced.niche"><UIcon name="i-lucide-tag" class="mr-1 inline size-3.5" />{{ sourced.niche }}</span>
+                  <a v-if="sourced.sourceUrl" :href="sourced.sourceUrl" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline"><UIcon name="i-lucide-external-link" class="mr-1 inline size-3.5" />Source</a>
+                  <NuxtLink v-if="sourced.linkedProduct" :to="`/products/${sourced.linkedProduct.id}`" class="text-primary hover:underline"><UIcon name="i-lucide-link" class="mr-1 inline size-3.5" />{{ sourced.linkedProduct.name }} (live)</NuxtLink>
+                </div>
+                <p v-if="sourced.notes" class="whitespace-pre-wrap text-sm text-muted">{{ sourced.notes }}</p>
+                <p class="text-xs text-muted">Added {{ new Date(sourced.createdAt).toLocaleDateString() }} · Updated {{ new Date(sourced.updatedAt).toLocaleDateString() }}</p>
+              </div>
+              <UButton icon="i-lucide-pencil" size="xs" variant="outline" color="neutral" label="Edit details" @click="activeTab = 'overview'" />
+            </div>
+          </div>
+
+          <!-- Media -->
+          <div class="admin-kpi-card p-5">
+            <div class="mb-3 flex items-center justify-between">
+              <h3 class="text-sm font-medium text-muted">Media ({{ sourced.media.length }})</h3>
+              <UButton size="xs" variant="link" color="neutral" trailing-icon="i-lucide-arrow-right" label="Edit" @click="activeTab = 'media'" />
+            </div>
+            <div v-if="sourced.media.length" class="grid grid-cols-3 gap-3 sm:grid-cols-5 md:grid-cols-6">
+              <div v-for="m in sourced.media" :key="m.id" class="relative overflow-hidden rounded-lg border border-[var(--color-admin-border)]">
+                <video v-if="m.type === 'Video'" :src="resolveMediaUrl(m.url)" class="aspect-square size-full object-cover" muted />
+                <img v-else :src="resolveMediaUrl(m.url)" :alt="m.caption ?? ''" class="aspect-square size-full object-cover" />
+              </div>
+            </div>
+            <p v-else class="py-6 text-center text-sm text-muted">No media yet.</p>
+          </div>
+
+          <!-- Links -->
+          <div class="admin-kpi-card p-5">
+            <div class="mb-3 flex items-center justify-between">
+              <h3 class="text-sm font-medium text-muted">Links ({{ sourced.links.length }})</h3>
+              <UButton size="xs" variant="link" color="neutral" trailing-icon="i-lucide-arrow-right" label="Edit" @click="activeTab = 'media'" />
+            </div>
+            <div v-if="sourced.links.length" class="flex flex-wrap gap-2">
+              <a v-for="l in sourced.links" :key="l.id" :href="l.url" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-admin-border)] px-3 py-1 text-xs text-primary hover:underline">
+                <UBadge color="neutral" variant="subtle" size="sm">{{ l.label }}</UBadge>{{ l.url }}
+              </a>
+            </div>
+            <p v-else class="py-2 text-sm text-muted">No links yet.</p>
+          </div>
+
+          <!-- Video Creatives -->
+          <div class="admin-kpi-card p-5">
+            <div class="mb-3 flex items-center justify-between">
+              <h3 class="text-sm font-medium text-muted">Video creatives ({{ sourced.videoCreatives.length }})</h3>
+              <UButton size="xs" variant="link" color="neutral" trailing-icon="i-lucide-arrow-right" label="Edit" @click="activeTab = 'videoCreatives'" />
+            </div>
+            <div v-if="sourced.videoCreatives.length" class="space-y-3">
+              <div v-for="v in sourced.videoCreatives" :key="v.id" class="rounded-lg border border-[var(--color-admin-border)] p-3">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="font-medium text-highlighted">{{ v.name || 'Untitled creative' }}</span>
+                  <UBadge :color="videoCreativeStatusColor[v.status]" variant="subtle" size="sm">{{ v.status }}</UBadge>
+                  <UBadge v-if="v.platform" color="neutral" variant="subtle" size="sm">{{ v.platform }}</UBadge>
+                </div>
+                <a :href="v.url" target="_blank" rel="noopener noreferrer" class="mt-1 block truncate text-sm text-primary hover:underline">{{ v.url }}</a>
+                <dl v-if="v.angle || v.hook || v.description" class="mt-2 space-y-1 text-sm">
+                  <div v-if="v.angle" class="flex gap-2"><dt class="w-20 shrink-0 text-muted">Angle</dt><dd class="text-highlighted">{{ v.angle }}</dd></div>
+                  <div v-if="v.hook" class="flex gap-2"><dt class="w-20 shrink-0 text-muted">Hook</dt><dd>{{ v.hook }}</dd></div>
+                  <div v-if="v.description" class="flex gap-2"><dt class="w-20 shrink-0 text-muted">Description</dt><dd class="text-muted">{{ v.description }}</dd></div>
+                </dl>
+              </div>
+            </div>
+            <p v-else class="py-2 text-sm text-muted">No video creatives yet.</p>
+          </div>
+
+          <!-- Competitors -->
+          <div class="admin-kpi-card p-5">
+            <div class="mb-3 flex items-center justify-between">
+              <h3 class="text-sm font-medium text-muted">Competitors ({{ sourced.competitors.length }})</h3>
+              <UButton size="xs" variant="link" color="neutral" trailing-icon="i-lucide-arrow-right" label="Edit" @click="activeTab = 'competitors'" />
+            </div>
+            <table v-if="sourced.competitors.length" class="admin-table w-full text-sm">
+              <thead>
+                <tr>
+                  <th class="px-3 py-2 text-left">Name</th>
+                  <th class="px-3 py-2 text-left">Link</th>
+                  <th class="px-3 py-2 text-right">Price</th>
+                  <th class="px-3 py-2 text-left">Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="c in sourced.competitors" :key="c.id">
+                  <td class="px-3 py-2 font-medium text-highlighted">{{ c.name || '—' }}</td>
+                  <td class="px-3 py-2"><a :href="c.url" target="_blank" rel="noopener noreferrer" class="truncate text-primary hover:underline">{{ c.url }}</a></td>
+                  <td class="tabular px-3 py-2 text-right">{{ c.priceCents == null ? '—' : formatDzd(c.priceCents) }}</td>
+                  <td class="max-w-64 truncate px-3 py-2 text-muted" :title="c.details ?? ''">{{ c.details || '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <p v-else class="py-2 text-sm text-muted">No competitors logged yet.</p>
+          </div>
+
+          <!-- Ad Tests -->
+          <div class="admin-kpi-card p-5">
+            <div class="mb-3 flex items-center justify-between">
+              <h3 class="text-sm font-medium text-muted">Ad tests ({{ sourced.adTests.length }})</h3>
+              <UButton size="xs" variant="link" color="neutral" trailing-icon="i-lucide-arrow-right" label="Edit" @click="activeTab = 'adTests'" />
+            </div>
+            <table v-if="sourced.adTests.length" class="admin-table w-full text-sm">
+              <thead>
+                <tr>
+                  <th class="px-3 py-2 text-left">Platform</th>
+                  <th class="px-3 py-2 text-right">Price</th>
+                  <th class="px-3 py-2 text-right">CPA</th>
+                  <th class="px-3 py-2 text-right">ROAS</th>
+                  <th class="px-3 py-2 text-left">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="t in sourced.adTests" :key="t.id">
+                  <td class="px-3 py-2">
+                    <div class="flex items-center gap-1.5">{{ t.platform }}<UIcon v-if="t.isWinner" name="i-lucide-trophy" class="size-3.5 text-warning" /></div>
+                  </td>
+                  <td class="tabular px-3 py-2 text-right">{{ formatDzd(t.priceCents) }}</td>
+                  <td class="tabular px-3 py-2 text-right">{{ adTestCpaCents(t) == null ? '—' : formatDzd(adTestCpaCents(t)!) }}</td>
+                  <td class="tabular px-3 py-2 text-right">{{ adTestRoas(t) == null ? '—' : `${adTestRoas(t)!.toFixed(2)}x` }}</td>
+                  <td class="px-3 py-2"><UBadge :color="adTestStatusColor[t.status]" variant="subtle" size="sm">{{ t.status }}</UBadge></td>
+                </tr>
+              </tbody>
+            </table>
+            <p v-else class="py-2 text-sm text-muted">No ad tests yet.</p>
+          </div>
+
+          <!-- Sourcing Requests -->
+          <div class="admin-kpi-card p-5">
+            <div class="mb-3 flex items-center justify-between">
+              <h3 class="text-sm font-medium text-muted">Sourcing requests ({{ sourced.sourcingRequests.length }})</h3>
+              <UButton size="xs" variant="link" color="neutral" trailing-icon="i-lucide-arrow-right" label="Edit" @click="activeTab = 'requests'" />
+            </div>
+            <table v-if="sourced.sourcingRequests.length" class="admin-table w-full text-sm">
+              <thead>
+                <tr>
+                  <th class="px-3 py-2 text-right">Quantity</th>
+                  <th class="px-3 py-2 text-left">Country</th>
+                  <th class="px-3 py-2 text-right">Unit cost</th>
+                  <th class="px-3 py-2 text-left">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="r in sourced.sourcingRequests" :key="r.id">
+                  <td class="tabular px-3 py-2 text-right">{{ r.requestedQuantity }}</td>
+                  <td class="px-3 py-2 text-muted">{{ r.requestedCountry }}</td>
+                  <td class="tabular px-3 py-2 text-right">{{ r.unitCostCents == null ? '—' : formatDzd(r.unitCostCents) }}</td>
+                  <td class="px-3 py-2"><UBadge :color="requestStatusColor[r.status]" variant="subtle" size="sm">{{ r.status }}</UBadge></td>
+                </tr>
+              </tbody>
+            </table>
+            <p v-else class="py-2 text-sm text-muted">No sourcing requests yet.</p>
+          </div>
+        </div>
 
         <!-- Overview Tab -->
         <div v-show="activeTab === 'overview'" class="admin-kpi-card space-y-5 p-6">
