@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { LeadFormField, ProductOffer, ProductVariant } from '@amalice/shared'
+import type { LeadFormField, ProductOffer, ProductVariant, VariantSwatches } from '@amalice/shared'
 import { offerPriceCents } from '@amalice/shared'
 
 // Default/fallback lead-capture block for the AI landing-page funnel
@@ -11,7 +11,7 @@ import { offerPriceCents } from '@amalice/shared'
 // without its own full card still gets its own form-field styling and
 // button, just in this generic layout shell.
 const props = defineProps<{
-  product: { name: string; priceCents: number; requireOfferSelection: boolean; variants: ProductVariant[]; offers: ProductOffer[] }
+  product: { name: string; priceCents: number; requireOfferSelection: boolean; variants: ProductVariant[]; offers: ProductOffer[]; variantSwatches?: VariantSwatches }
   fields: LeadFormField[]
   data: Record<string, string>
   submitting: boolean
@@ -27,6 +27,12 @@ const props = defineProps<{
   onSelectVariantByKey: (key: string, val: string) => void
   onUpdateQuantity: (v: number) => void
 }>()
+
+// See VariantSwatchesSchema's comment (packages/shared/src/catalog.ts) — undefined
+// for a non-color attribute or a color option with no hex set.
+function swatchColor(key: string, val: string): string | undefined {
+  return props.product.variantSwatches?.[key]?.[val]
+}
 
 // Per-offer savings vs buying the same units at the regular price.
 function offerSavingsCents(offer: ProductOffer) {
@@ -96,7 +102,7 @@ const bestOfferId = computed(() => {
               : 'border-muted text-highlighted hover:border-primary/50'"
             @click="onSelectVariantByKey(key, val)"
           >
-            {{ val }}
+            <span v-if="swatchColor(key, val)" class="me-1.5 inline-block size-3 rounded-full border border-black/15 align-middle" :style="{ backgroundColor: swatchColor(key, val) }" />{{ val }}
           </button>
         </div>
       </div>

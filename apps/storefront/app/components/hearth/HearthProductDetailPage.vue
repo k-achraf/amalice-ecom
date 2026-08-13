@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review, LeadFormField } from '@amalice/shared'
+import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review, LeadFormField, VariantSwatches } from '@amalice/shared'
 
 // Hearth PDP — a framed-photo gallery (thick cream mat around the main
 // image) + hearth-card order summary. Variants as rounded-xl chips. Lead
@@ -10,6 +10,8 @@ interface RichProduct extends Product {
   variants: ProductVariant[]
   related: Product[]
   categoryRef: { name: string; slug: string } | null
+  // See VariantSwatchesSchema's comment (packages/shared/src/catalog.ts).
+  variantSwatches?: VariantSwatches
 }
 
 const props = defineProps<{
@@ -42,6 +44,12 @@ const props = defineProps<{
   onSubmitLead?: () => void
   onSelectOffer?: (offer: ProductOffer) => void
 }>()
+
+// See VariantSwatchesSchema's comment (packages/shared/src/catalog.ts) — undefined
+// for a non-color attribute or a color option with no hex set.
+function swatchColor(key: string, val: string): string | undefined {
+  return props.product?.variantSwatches?.[key]?.[val]
+}
 </script>
 
 <template>
@@ -157,7 +165,7 @@ const props = defineProps<{
                   : 'border-neutral-200 text-neutral-600 hover:border-primary-300'"
                 @click="props.onSelectVariantByKey(key, val)"
               >
-                {{ val }}
+                <span v-if="swatchColor(key, val)" class="me-1.5 inline-block size-3 rounded-full border border-black/15 align-middle" :style="{ backgroundColor: swatchColor(key, val) }" />{{ val }}
               </button>
             </div>
           </div>

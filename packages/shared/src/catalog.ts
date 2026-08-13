@@ -40,6 +40,18 @@ export const ProductVariantSchema = z.object({
 })
 export type ProductVariant = z.infer<typeof ProductVariantSchema>
 
+// Per-attribute-key → per-option-value hex color, resolved server-side from
+// the normalized Attribute/AttributeOption system (only for Color-type
+// attributes whose option has a colorHex set — see AttributeOptionSchema
+// below) — lets a storefront variant picker render a small color swatch
+// next to a variant option's plain-text label (ProductVariant.attributes)
+// without needing the full admin-only Attribute/AttributeOption shapes on
+// the public API. A missing `[key][value]` entry just means "no swatch,
+// plain text only" — either a non-color attribute or a color option with no
+// hex set, both valid and common.
+export const VariantSwatchesSchema = z.record(z.string(), z.record(z.string(), z.string()))
+export type VariantSwatches = z.infer<typeof VariantSwatchesSchema>
+
 // SF-16 — review. Rating 1–5, moderation via `approved` (no auto-publish).
 // One per customer+product (enforced in the schema, not just here).
 export const ReviewSchema = z.object({

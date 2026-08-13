@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ProductVariantSchema } from './catalog'
+import { ProductVariantSchema, VariantSwatchesSchema } from './catalog'
 import { ProductOfferSchema } from './offer'
 
 // AI landing page builder — see the ProductLandingPage Prisma model comment
@@ -122,6 +122,9 @@ export const PublicLandingPageSchema = z.object({
     // own form. Allows the LP funnel to render the variant picker and offer
     // bundle cards that were previously omitted (see ImpulseLandingPageLeadCard).
     variants: z.array(ProductVariantSchema),
+    // See VariantSwatchesSchema's comment (catalog.ts) — lets the LP funnel's
+    // variant picker show a color swatch the same way the normal PDP does.
+    variantSwatches: VariantSwatchesSchema.optional(),
     offers: z.array(ProductOfferSchema)
   })
 })

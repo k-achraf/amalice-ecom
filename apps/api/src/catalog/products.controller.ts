@@ -71,7 +71,7 @@ export class ProductsController {
             options: {
               include: {
                 option: {
-                  include: { attribute: { select: { name: true } } }
+                  include: { attribute: { select: { name: true, type: true } } }
                 }
               }
             }
@@ -99,6 +99,21 @@ export class ProductsController {
       return { ...v, attributes: { ...legacyAttrs, ...resolved } }
     })
 
+    // { attrKey: { value: hex } } — only Color-type attribute options that
+    // actually have a colorHex set produce an entry; see VariantSwatchesSchema
+    // (packages/shared) for why this is a separate map rather than folding
+    // colorHex into `attributes` itself (that map's values are plain
+    // strings, one per key, so there's no room for a second per-value field).
+    const variantSwatches: Record<string, Record<string, string>> = {}
+    for (const v of product.variants) {
+      for (const vo of v.options) {
+        if (vo.option.attribute.type !== 'Color' || !vo.option.colorHex) continue
+        const key = vo.option.attribute.name.toLowerCase()
+        variantSwatches[key] ??= {}
+        variantSwatches[key][vo.option.value] = vo.option.colorHex
+      }
+    }
+
     // Related: same category (tag or FK), excluding self, capped at 4. Falls
     // back to "nothing" cleanly if the product is the only one in its category.
     // Unlisted products (visible=false) never show up as someone else's
@@ -112,6 +127,6 @@ export class ProductsController {
       orderBy: { createdAt: 'desc' }
     })
 
-    return { ...product, variants: variantsWithResolvedAttrs, related }
+    return { ...product, variants: variantsWithResolvedAttrs, variantSwatches, related }
   }
 }

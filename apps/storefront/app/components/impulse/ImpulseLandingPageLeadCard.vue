@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { LeadFormField, ProductOffer, ProductVariant } from '@amalice/shared'
+import type { LeadFormField, ProductOffer, ProductVariant, VariantSwatches } from '@amalice/shared'
 
 // Faithful recreation of Impulse's own PDP lead-capture block (see the
 // `displayCart === false` branch in ImpulseProductDetailPage.vue) for the
@@ -14,7 +14,7 @@ import type { LeadFormField, ProductOffer, ProductVariant } from '@amalice/share
 // markup from ImpulseProductDetailPage.vue — plus a quantity stepper and
 // total price line above the CTA.
 const props = defineProps<{
-  product: { name: string; priceCents: number; requireOfferSelection: boolean; variants: ProductVariant[]; offers: ProductOffer[] }
+  product: { name: string; priceCents: number; requireOfferSelection: boolean; variants: ProductVariant[]; offers: ProductOffer[]; variantSwatches?: VariantSwatches }
   fields: LeadFormField[]
   data: Record<string, string>
   submitting: boolean
@@ -30,6 +30,12 @@ const props = defineProps<{
   onSelectVariantByKey: (key: string, val: string) => void
   onUpdateQuantity: (v: number) => void
 }>()
+
+// See VariantSwatchesSchema's comment (packages/shared/src/catalog.ts) — undefined
+// for a non-color attribute or a color option with no hex set.
+function swatchColor(key: string, val: string): string | undefined {
+  return props.product.variantSwatches?.[key]?.[val]
+}
 
 // Per-offer savings — real math, same as ImpulseProductDetailPage's
 // offerSavingsCents. Largest saver gets the "BEST VALUE" badge.
@@ -114,7 +120,7 @@ function scrollToForm() {
                 : 'border-neutral-200 text-neutral-700 hover:border-primary-300'"
               @click="onSelectVariantByKey(key, val)"
             >
-              {{ val }}
+              <span v-if="swatchColor(key, val)" class="me-1.5 inline-block size-3 rounded-full border border-black/15 align-middle" :style="{ backgroundColor: swatchColor(key, val) }" />{{ val }}
             </button>
           </div>
         </div>

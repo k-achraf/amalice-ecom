@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review, LeadFormField } from '@amalice/shared'
+import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review, LeadFormField, VariantSwatches } from '@amalice/shared'
 
 // Editorial PDP — full-width magazine spread. Gallery left, bold headline
 // overlapping, story-style description, big pull-quote reviews. Distinct from
@@ -9,6 +9,8 @@ interface RichProduct extends Product {
   variants: ProductVariant[]
   related: Product[]
   categoryRef: { name: string; slug: string } | null
+  // See VariantSwatchesSchema's comment (packages/shared/src/catalog.ts).
+  variantSwatches?: VariantSwatches
 }
 
 const props = defineProps<{
@@ -39,6 +41,12 @@ const props = defineProps<{
   onSubmitLead?: () => void
   onSelectOffer?: (offer: ProductOffer) => void
 }>()
+
+// See VariantSwatchesSchema's comment (packages/shared/src/catalog.ts) — undefined
+// for a non-color attribute or a color option with no hex set.
+function swatchColor(key: string, val: string): string | undefined {
+  return props.product?.variantSwatches?.[key]?.[val]
+}
 </script>
 
 <template>
@@ -109,7 +117,7 @@ const props = defineProps<{
         <div v-for="(values, key) in props.variantOptions" :key="key" class="mt-6 space-y-2">
           <p class="text-xs font-semibold text-muted">{{ key }}</p>
           <div class="flex flex-wrap gap-2">
-            <button v-for="val in values" :key="val" class="border-2 px-4 py-2 text-sm font-medium transition-colors" :class="props.selectedVariant?.attributes[key] === val ? 'border-highlighted bg-highlighted text-inverted' : 'border-default hover:border-highlighted'" @click="props.onSelectVariantByKey(key, val)">{{ val }}</button>
+            <button v-for="val in values" :key="val" class="border-2 px-4 py-2 text-sm font-medium transition-colors" :class="props.selectedVariant?.attributes[key] === val ? 'border-highlighted bg-highlighted text-inverted' : 'border-default hover:border-highlighted'" @click="props.onSelectVariantByKey(key, val)"><span v-if="swatchColor(key, val)" class="me-1.5 inline-block size-3 rounded-full border border-black/15 align-middle" :style="{ backgroundColor: swatchColor(key, val) }" />{{ val }}</button>
           </div>
         </div>
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review, LeadFormField } from '@amalice/shared'
+import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review, LeadFormField, VariantSwatches } from '@amalice/shared'
 
 // Impulse PDP — the funnel's money page. Single centered column, ordered by
 // the classic direct-response sequence (every block earns the scroll to the
@@ -13,6 +13,8 @@ interface RichProduct extends Product {
   variants: ProductVariant[]
   related: Product[]
   categoryRef: { name: string; slug: string } | null
+  // See VariantSwatchesSchema's comment (packages/shared/src/catalog.ts).
+  variantSwatches?: VariantSwatches
 }
 
 const props = defineProps<{
@@ -45,6 +47,12 @@ const props = defineProps<{
   onSubmitLead?: () => void
   onSelectOffer?: (offer: ProductOffer) => void
 }>()
+
+// See VariantSwatchesSchema's comment (packages/shared/src/catalog.ts) — undefined
+// for a non-color attribute or a color option with no hex set.
+function swatchColor(key: string, val: string): string | undefined {
+  return props.product?.variantSwatches?.[key]?.[val]
+}
 
 
 // Per-offer savings vs buying the same units at the regular price — real
@@ -186,7 +194,7 @@ function onStickyCta() {
                 : 'border-neutral-200 text-neutral-700 hover:border-primary-300'"
               @click="props.onSelectVariantByKey(key, val)"
             >
-              {{ val }}
+              <span v-if="swatchColor(key, val)" class="me-1.5 inline-block size-3 rounded-full border border-black/15 align-middle" :style="{ backgroundColor: swatchColor(key, val) }" />{{ val }}
             </button>
           </div>
         </div>

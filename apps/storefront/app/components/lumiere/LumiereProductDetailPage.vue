@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review, LeadFormField } from '@amalice/shared'
+import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review, LeadFormField, VariantSwatches } from '@amalice/shared'
 
 // Lumiere PDP — a diagonal-split layout echoing the home hero: a black
 // diagonal color-block bleeds behind the gallery corner (the same
@@ -14,6 +14,8 @@ interface RichProduct extends Product {
   variants: ProductVariant[]
   related: Product[]
   categoryRef: { name: string; slug: string } | null
+  // See VariantSwatchesSchema's comment (packages/shared/src/catalog.ts).
+  variantSwatches?: VariantSwatches
 }
 
 const props = defineProps<{
@@ -46,6 +48,12 @@ const props = defineProps<{
   onSubmitLead?: () => void
   onSelectOffer?: (offer: ProductOffer) => void
 }>()
+
+// See VariantSwatchesSchema's comment (packages/shared/src/catalog.ts) — undefined
+// for a non-color attribute or a color option with no hex set.
+function swatchColor(key: string, val: string): string | undefined {
+  return props.product?.variantSwatches?.[key]?.[val]
+}
 
 function isSwatchKey(key: string) {
   return /color|shade|tint|hue/i.test(key)
@@ -155,17 +163,17 @@ function isSwatchKey(key: string) {
           <div v-for="(values, key) in props.variantOptions" :key="key" class="space-y-3">
             <p class="text-sm font-bold uppercase tracking-wide text-black">{{ key }}</p>
 
-            <div v-if="isSwatchKey(String(key))" class="flex flex-wrap gap-3">
+            <div v-if="isSwatchKey(String(key))" class="flex flex-wrap gap-2">
               <button
                 v-for="val in values"
                 :key="val"
-                class="lumiere-swatch flex size-9 items-center justify-center border-2 transition-all"
+                class="lumiere-swatch flex items-center gap-2 rounded-full border-2 py-1.5 pe-3 ps-1.5 transition-all"
                 :class="props.selectedVariant?.attributes[key] === val ? 'border-black' : 'border-black/15 hover:border-black/40'"
-                :aria-label="val"
                 :title="val"
                 @click="props.onSelectVariantByKey(key, val)"
               >
-                <span class="lumiere-swatch size-6" :style="{ backgroundColor: val }" />
+                <span class="lumiere-swatch size-6 shrink-0 rounded-full" :style="{ backgroundColor: swatchColor(key, val) ?? val }" />
+                <span class="text-sm font-medium text-black">{{ val }}</span>
               </button>
             </div>
             <div v-else class="flex flex-wrap gap-2">

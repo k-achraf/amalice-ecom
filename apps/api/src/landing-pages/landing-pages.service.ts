@@ -249,6 +249,12 @@ export class LandingPagesService {
         priceCents: true,
         imageUrl: true,
         requireOfferSelection: true,
+        // Same normalized options→attribute join as ProductsController's
+        // GET /products/:slug — resolving through VariantOption/
+        // AttributeOption (not just the legacy `attributes` JSON blob) is
+        // what makes a variant's attributes and color swatches (see
+        // VariantSwatchesSchema, packages/shared) match the normal PDP
+        // exactly instead of only reflecting pre-normalized-system data.
         variants: {
           select: {
             id: true,
@@ -256,7 +262,14 @@ export class LandingPagesService {
             sku: true,
             attributes: true,
             priceCents: true,
-            stockQuantity: true
+            stockQuantity: true,
+            options: {
+              include: {
+                option: {
+                  include: { attribute: { select: { name: true, type: true } } }
+                }
+              }
+            }
           }
         },
         offers: {
@@ -281,16 +294,34 @@ export class LandingPagesService {
       where: { productId_number: { productId: product.id, number } }
     })
     if (!row || !row.enabled || row.status !== 'Completed' || !row.finalImageUrl) return null
+
+    // Same resolution as ProductsController.findOne — merge normalized
+    // options over the legacy JSON blob, then separately collect Color-type
+    // swatches. See that method's comments for the reasoning.
+    const variantSwatches: Record<string, Record<string, string>> = {}
+    const variantsWithResolvedAttrs = product.variants.map((v) => {
+      const resolved: Record<string, string> = {}
+      for (const vo of v.options) {
+        const key = vo.option.attribute.name.toLowerCase()
+        resolved[key] = vo.option.value
+        if (vo.option.attribute.type === 'Color' && vo.option.colorHex) {
+          variantSwatches[key] ??= {}
+          variantSwatches[key][vo.option.value] = vo.option.colorHex
+        }
+      }
+      const legacyAttrs = (v.attributes as Record<string, string> | null) ?? {}
+      const { options: _options, ...rest } = v
+      return { ...rest, attributes: { ...legacyAttrs, ...resolved } }
+    })
+
     return {
       id: row.id,
       number: row.number,
       finalImageUrl: row.finalImageUrl,
       product: {
         ...product,
-        variants: product.variants.map((v) => ({
-          ...v,
-          attributes: v.attributes as Record<string, string>
-        })),
+        variants: variantsWithResolvedAttrs,
+        variantSwatches,
         offers: product.offers.map((o) => ({
           ...o,
           type: o.type as 'FixedBundlePrice' | 'BuyXGetYFree' | 'FreeShipping',

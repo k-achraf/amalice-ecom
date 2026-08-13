@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review } from '@amalice/shared'
+import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary, Review, VariantSwatches } from '@amalice/shared'
 import { CheckoutSchema, offerTotalQuantity, offerPriceCents } from '@amalice/shared'
 
 // LOGIC ONLY — presentation resolved by <TemplatePage name="ProductDetail">.
@@ -14,6 +14,8 @@ interface RichProduct extends Product {
   related: Product[]
   categoryRef: { name: string; slug: string } | null
   offers: ProductOffer[]
+  // See VariantSwatchesSchema's comment (packages/shared/src/catalog.ts).
+  variantSwatches?: VariantSwatches
 }
 
 const route = useRoute()
