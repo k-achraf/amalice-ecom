@@ -3,11 +3,12 @@ import type { Product, ProductImage, ProductVariant, ProductOffer, RatingSummary
 
 // Impulse PDP — the funnel's money page. Single centered column, ordered by
 // the classic direct-response sequence (every block earns the scroll to the
-// next): urgency countdown → social-proof header → gallery → price +
-// savings → offer cards (best value flagged) → scarcity bar → variants →
-// benefits checklist → THE order form with the pulsing CTA → trust row →
-// how-it-works → testimonials → "customers also ordered". A sticky bottom
-// order bar keeps the CTA on screen for the entire scroll. No @nuxt/ui.
+// next): urgency countdown → social-proof header → gallery → price + scarcity
+// bar → description → THE order form (offer cards, variants, lead/cart
+// fields, and the pulsing CTA all together in one card, not split across
+// several) → trust row → how-it-works → testimonials → "customers also
+// ordered". A sticky bottom order bar keeps the CTA on screen for the entire
+// scroll. No @nuxt/ui.
 interface RichProduct extends Product {
   images: ProductImage[]
   variants: ProductVariant[]
@@ -138,7 +139,9 @@ function onStickyCta() {
         </div>
       </div>
 
-      <!-- 4. Price block — price + the free-delivery/COD value framing. -->
+      <!-- 4. Price block — price + the free-delivery/COD value framing.
+           Offer/variant selection now lives inside the order form (6), not
+           its own card — see that section. -->
       <div class="funnel-card space-y-3 p-6 text-center">
         <div class="flex items-center justify-center gap-3">
           <PriceDisplay :amount-cents="props.effectivePriceCents" class="font-display text-4xl font-black text-neutral-900" />
@@ -149,8 +152,36 @@ function onStickyCta() {
           الدفع عند الاستلام — لا تدفع شيئاً حتى يصل الطلب إلى يديك
         </p>
 
-        <!-- 5. Offer cards — best value flagged with real computed savings. -->
-        <div v-if="props.offers?.length" class="space-y-2 pt-2 text-start">
+        <!-- Scarcity bar — real stock, striped animated fill. -->
+        <ImpulseScarcity :stock="props.effectiveStock" :threshold="props.product.lowStockThreshold" class="pt-2" />
+      </div>
+
+      <!-- 5. Product description — rendered as real HTML (headings, bold,
+           lists, images, video) from the admin's rich-text editor, same as
+           every other template's PDP. -->
+      <div v-if="props.product.description && !props.landingPageImageUrl" class="funnel-card space-y-3 p-6">
+        <h2 class="font-display text-lg font-black uppercase text-neutral-900">لماذا ستحبه</h2>
+        <div class="product-description-html text-sm leading-relaxed text-neutral-700" v-html="sanitizeDescriptionHtml(props.product.description)" />
+      </div>
+
+      <!-- 6. THE order form — the funnel's single conversion point. Offer
+           and variant selection live directly in it now, not their own
+           cards, so the whole "choose what you want, then order it" flow
+           reads as one continuous action. -->
+      <div id="impulse-order-form" class="funnel-card scroll-mt-24 space-y-4 border-2 !border-primary-300 p-6">
+        <div class="text-center">
+          <ImpulseBadge color="primary" variant="subtle">
+            <Icon name="i-lucide-lock" class="size-3.5" />
+            طلب آمن — يستغرق 30 ثانية
+          </ImpulseBadge>
+          <h2 class="mt-2 font-display text-2xl font-black uppercase text-neutral-900">
+            <span class="marker">اطلب الآن</span> — ادفع عند الاستلام
+          </h2>
+        </div>
+
+        <!-- Offer cards — best value flagged with real computed savings.
+             Lives directly in the order form now, not its own card. -->
+        <div v-if="props.offers?.length" class="space-y-2 text-start">
           <button
             v-for="offer in props.offers"
             :key="offer.id"
@@ -176,48 +207,25 @@ function onStickyCta() {
           </button>
         </div>
 
-        <!-- 6. Scarcity bar — real stock, striped animated fill. -->
-        <ImpulseScarcity :stock="props.effectiveStock" :threshold="props.product.lowStockThreshold" class="pt-2" />
-      </div>
-
-      <!-- 7. Variants -->
-      <div v-if="Object.keys(props.variantOptions).length" class="funnel-card space-y-4 p-6">
-        <div v-for="(values, key) in props.variantOptions" :key="key" class="space-y-2">
-          <p class="text-xs font-bold uppercase tracking-wide text-neutral-600">اختر {{ key }}</p>
-          <div class="flex flex-wrap gap-2">
-            <button
-              v-for="val in values"
-              :key="val"
-              class="rounded-full border-2 px-5 py-2 text-sm font-bold transition-all"
-              :class="props.selectedVariant?.attributes[key] === val
-                ? 'border-primary-500 bg-primary-500 text-white'
-                : 'border-neutral-200 text-neutral-700 hover:border-primary-300'"
-              @click="props.onSelectVariantByKey(key, val)"
-            >
-              <span v-if="swatchColor(key, val)" class="me-1.5 inline-block size-3 rounded-full border border-black/15 align-middle" :style="{ backgroundColor: swatchColor(key, val) }" />{{ val }}
-            </button>
+        <!-- Variant picker — lives directly in the order form now, not its
+             own card. -->
+        <div v-if="Object.keys(props.variantOptions).length" class="space-y-3">
+          <div v-for="(values, key) in props.variantOptions" :key="key" class="space-y-2">
+            <p class="text-xs font-bold uppercase tracking-wide text-neutral-600">اختر {{ key }}</p>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="val in values"
+                :key="val"
+                class="rounded-full border-2 px-5 py-2 text-sm font-bold transition-all"
+                :class="props.selectedVariant?.attributes[key] === val
+                  ? 'border-primary-500 bg-primary-500 text-white'
+                  : 'border-neutral-200 text-neutral-700 hover:border-primary-300'"
+                @click="props.onSelectVariantByKey(key, val)"
+              >
+                <span v-if="swatchColor(key, val)" class="me-1.5 inline-block size-3 rounded-full border border-black/15 align-middle" :style="{ backgroundColor: swatchColor(key, val) }" />{{ val }}
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <!-- 8. Product description — rendered as real HTML (headings, bold,
-           lists, images, video) from the admin's rich-text editor, same as
-           every other template's PDP. -->
-      <div v-if="props.product.description && !props.landingPageImageUrl" class="funnel-card space-y-3 p-6">
-        <h2 class="font-display text-lg font-black uppercase text-neutral-900">لماذا ستحبه</h2>
-        <div class="product-description-html text-sm leading-relaxed text-neutral-700" v-html="sanitizeDescriptionHtml(props.product.description)" />
-      </div>
-
-      <!-- 9. THE order form — the funnel's single conversion point. -->
-      <div id="impulse-order-form" class="funnel-card scroll-mt-24 space-y-4 border-2 !border-primary-300 p-6">
-        <div class="text-center">
-          <ImpulseBadge color="primary" variant="subtle">
-            <Icon name="i-lucide-lock" class="size-3.5" />
-            طلب آمن — يستغرق 30 ثانية
-          </ImpulseBadge>
-          <h2 class="mt-2 font-display text-2xl font-black uppercase text-neutral-900">
-            <span class="marker">اطلب الآن</span> — ادفع عند الاستلام
-          </h2>
         </div>
 
         <!-- Cart mode -->

@@ -10,9 +10,9 @@ import type { LeadFormField, ProductOffer, ProductVariant, VariantSwatches } fro
 // the PDP, not a re-styled approximation. No urgency countdown / free-
 // shipping badge — removed from both here and the PDP itself.
 //
-// Now fully mirrors the PDP's offer-card and variant-picker UI — the same
-// markup from ImpulseProductDetailPage.vue — plus a quantity stepper and
-// total price line above the CTA.
+// Offer cards and the variant picker live directly inside the lead-form
+// card now (not their own cards), same as ImpulseProductDetailPage.vue's
+// order form — plus a quantity stepper and total price line above the CTA.
 const props = defineProps<{
   product: { name: string; priceCents: number; requireOfferSelection: boolean; variants: ProductVariant[]; offers: ProductOffer[]; variantSwatches?: VariantSwatches }
   fields: LeadFormField[]
@@ -76,9 +76,14 @@ function scrollToForm() {
           <Icon name="i-lucide-banknote" class="me-1 inline size-3.5 align-[-2px] text-[var(--color-impulse-green)]" />
           الدفع عند الاستلام — لا تدفع شيئاً حتى يصل الطلب إلى يديك
         </p>
+      </div>
 
-        <!-- 2. Offer cards — same markup as ImpulseProductDetailPage, section 5. -->
-        <div v-if="offers.length" class="space-y-2 pt-2 text-start">
+      <!-- 2. Lead form card — offer cards + variant picker now live directly
+           in it (not their own cards), same as ImpulseProductDetailPage's
+           order form. -->
+      <div id="impulse-order-form" class="funnel-card space-y-4 p-6">
+        <!-- Offer cards -->
+        <div v-if="offers.length" class="space-y-2 text-start">
           <button
             v-for="offer in offers"
             :key="offer.id"
@@ -103,31 +108,28 @@ function scrollToForm() {
             </span>
           </button>
         </div>
-      </div>
 
-      <!-- 3. Variant picker — same pill-button style as ImpulseProductDetailPage, section 7. -->
-      <div v-if="Object.keys(variantOptions).length" class="funnel-card space-y-4 p-6">
-        <div v-for="(values, key) in variantOptions" :key="key" class="space-y-2">
-          <p class="text-xs font-bold uppercase tracking-wide text-neutral-600">اختر {{ key }}</p>
-          <div class="flex flex-wrap gap-2">
-            <button
-              v-for="val in values"
-              :key="val"
-              type="button"
-              class="rounded-full border-2 px-5 py-2 text-sm font-bold transition-all"
-              :class="selectedVariant?.attributes[key] === val
-                ? 'border-primary-500 bg-primary-500 text-white'
-                : 'border-neutral-200 text-neutral-700 hover:border-primary-300'"
-              @click="onSelectVariantByKey(key, val)"
-            >
-              <span v-if="swatchColor(key, val)" class="me-1.5 inline-block size-3 rounded-full border border-black/15 align-middle" :style="{ backgroundColor: swatchColor(key, val) }" />{{ val }}
-            </button>
+        <!-- Variant picker -->
+        <div v-if="Object.keys(variantOptions).length" class="space-y-3">
+          <div v-for="(values, key) in variantOptions" :key="key" class="space-y-2">
+            <p class="text-xs font-bold uppercase tracking-wide text-neutral-600">اختر {{ key }}</p>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="val in values"
+                :key="val"
+                type="button"
+                class="rounded-full border-2 px-5 py-2 text-sm font-bold transition-all"
+                :class="selectedVariant?.attributes[key] === val
+                  ? 'border-primary-500 bg-primary-500 text-white'
+                  : 'border-neutral-200 text-neutral-700 hover:border-primary-300'"
+                @click="onSelectVariantByKey(key, val)"
+              >
+                <span v-if="swatchColor(key, val)" class="me-1.5 inline-block size-3 rounded-full border border-black/15 align-middle" :style="{ backgroundColor: swatchColor(key, val) }" />{{ val }}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- 4. Lead form + quantity + total + CTA — mirrors the PDP's lead-form mode. -->
-      <div id="impulse-order-form" class="funnel-card space-y-4 p-6">
         <ImpulseLeadFormFields :fields="fields" :data="data" />
 
         <!-- Quantity stepper + total — hidden when an offer is active (offer sets the quantity) -->
@@ -155,11 +157,11 @@ function scrollToForm() {
         بدون دفع مسبق. نتصل بك للتأكيد قبل شحن أي شيء.
       </p>
 
-      <!-- 5. Trust row — the same 4 risk-reversal signals repeated near the ask. -->
+      <!-- 3. Trust row — the same 4 risk-reversal signals repeated near the ask. -->
       <ImpulseTrustRow />
     </div>
 
-    <!-- 6. Sticky bottom order bar — keeps the CTA on screen through the whole scroll. -->
+    <!-- 4. Sticky bottom order bar — keeps the CTA on screen through the whole scroll. -->
     <div class="fixed inset-x-0 bottom-0 z-40 border-t-2 border-neutral-200 bg-white/95 py-3 shadow-[0_-8px_24px_-8px_rgba(28,23,18,0.18)] backdrop-blur-sm">
       <div class="mx-auto flex max-w-2xl items-center justify-between gap-4 px-4 sm:px-6">
         <div>
