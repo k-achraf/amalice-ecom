@@ -160,6 +160,16 @@ model Product {
   // buy (true). Meaningless with zero enabled offers; the admin UI warns
   // rather than silently making the product unbuyable.
   requireOfferSelection Boolean              @default(false) @map("require_offer_selection")
+  // Admin-authored content for the richer conversion-focused PDP layouts
+  // (e.g. Impulse's "Key Benefits"/FAQ/Specifications sections) — all
+  // optional/empty by default so templates render nothing rather than
+  // fabricate copy when a merchant hasn't filled them in. Stored as JSON
+  // arrays (not their own tables) since they're small, product-scoped, and
+  // have no independent identity worth a relation — same reasoning as
+  // StoreSettings.leadFormConfig.
+  keyBenefits           String[]             @default([]) @map("key_benefits")
+  faqs                  Json?                @map("faqs")
+  specifications        Json?                @map("specifications")
   // Upsells system — products suggested when THIS product is bought
   // (upsellsOffered) vs configs where THIS product IS the suggested upsell
   // for some other product (upsellsAsTarget). See ProductUpsell below.

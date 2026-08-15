@@ -1,12 +1,23 @@
 import { Controller, Get, NotFoundException, Param, Query } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
-import { ProductListQuerySchema, type ProductListResponse } from '@amalice/shared'
+import { ProductListQuerySchema, type ProductListResponse, type ProductFaq, type ProductSpecification } from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
 import { PrismaService } from '../prisma/prisma.service'
 import { CatalogSearchService } from './catalog-search.service'
-import type { Prisma } from '../generated/prisma/client'
+import type { Prisma, Product as ProductRow } from '../generated/prisma/client'
 
 class ProductListQueryDto extends createZodDto(ProductListQuerySchema) {}
+
+// faqs/specifications are nullable Json columns with no DB default (most
+// rows are NULL, not []) — every read path normalizes to [] here so nothing
+// consuming the shared `Product` type needs its own null-check.
+function withNormalizedContent<T extends ProductRow>(product: T) {
+  return {
+    ...product,
+    faqs: (product.faqs as ProductFaq[] | null) ?? [],
+    specifications: (product.specifications as ProductSpecification[] | null) ?? []
+  }
+}
 
 @ApiTags('catalog')
 @Controller('products')
@@ -53,7 +64,7 @@ export class ProductsController {
       this.prisma.product.count({ where })
     ])
 
-    return { items, total, page: query.page, pageSize: query.pageSize }
+    return { items: items.map(withNormalizedContent), total, page: query.page, pageSize: query.pageSize }
   }
 
   // SF-15 — rich PDP. Includes the image gallery, variants, category, and
@@ -127,6 +138,11 @@ export class ProductsController {
       orderBy: { createdAt: 'desc' }
     })
 
-    return { ...product, variants: variantsWithResolvedAttrs, variantSwatches, related }
+    return {
+      ...withNormalizedContent(product),
+      variants: variantsWithResolvedAttrs,
+      variantSwatches,
+      related: related.map(withNormalizedContent)
+    }
   }
 }

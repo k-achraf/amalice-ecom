@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { ProductOffer } from './offer'
 import { PhoneSchema } from './phone'
+import type { ProductFaq, ProductSpecification } from './product'
 
 // SF-17 — collections. `category` is the normalized model behind the
 // collection landing pages; the flat string tag on Product is kept for
@@ -216,6 +217,9 @@ export interface AdminProductDetail {
   stockQuantity: number
   lowStockThreshold: number
   requireOfferSelection: boolean
+  keyBenefits: string[]
+  faqs: ProductFaq[]
+  specifications: ProductSpecification[]
   createdAt: string
   updatedAt: string
   images: { id: string; url: string; altText: string | null; sortOrder: number }[]

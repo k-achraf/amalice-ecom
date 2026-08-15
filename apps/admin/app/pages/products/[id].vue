@@ -29,7 +29,7 @@ const { data: product, pending, refresh } = await useAdminFetch<AdminProductDeta
 const { data: categories } = await useAdminFetch<Category[]>('/categories', { key: 'admin-all-categories' })
 const { data: allAttributes } = await useAdminFetch<{ id: string; name: string; type: string; options: { id: string; value: string; colorHex: string | null }[] }[]>('/admin/attributes', { key: 'admin-attributes' })
 
-const activeTab = ref<'details' | 'variants' | 'images' | 'landingPage' | 'offers' | 'upsells' | 'inventory'>('details')
+const activeTab = ref<'details' | 'content' | 'variants' | 'images' | 'landingPage' | 'offers' | 'upsells' | 'inventory'>('details')
 
 // Every *Cents field is stored as amount * 100 internally (this app's one
 // money convention — see PriceDisplay), but admins think in plain DZD, not
@@ -108,6 +108,57 @@ async function toggleRequireOfferSelection(value: boolean) {
     toast.add({ title: 'Failed to update', color: 'error' })
   } finally {
     savingRequireOffer.value = false
+  }
+}
+
+// ---- Content tab (richer-PDP sections: Key Benefits / FAQ / Specifications) ----
+// Same "edit in place on `product`, one explicit Save button" pattern as the
+// Details tab above, kept separate since these are optional marketing
+// sections rather than core product fields.
+const savingContent = ref(false)
+
+function addBenefit() {
+  product.value?.keyBenefits.push('')
+}
+function removeBenefit(index: number) {
+  product.value?.keyBenefits.splice(index, 1)
+}
+
+function addFaq() {
+  product.value?.faqs.push({ question: '', answer: '' })
+}
+function removeFaq(index: number) {
+  product.value?.faqs.splice(index, 1)
+}
+
+function addSpecification() {
+  product.value?.specifications.push({ label: '', value: '' })
+}
+function removeSpecification(index: number) {
+  product.value?.specifications.splice(index, 1)
+}
+
+async function saveContent() {
+  if (!product.value) return
+  savingContent.value = true
+  try {
+    await api(`/admin/products/${id}`, {
+      method: 'PATCH',
+      body: {
+        // Blank rows (an "Add" click left unfilled) are dropped rather than
+        // saved — a merchant abandoning a half-typed FAQ shouldn't publish
+        // an empty question to the storefront.
+        keyBenefits: product.value.keyBenefits.map((b) => b.trim()).filter(Boolean),
+        faqs: product.value.faqs.filter((f) => f.question.trim() && f.answer.trim()),
+        specifications: product.value.specifications.filter((s) => s.label.trim() && s.value.trim())
+      }
+    })
+    toast.add({ title: 'Content saved', color: 'success' })
+    await refresh()
+  } catch {
+    toast.add({ title: 'Failed to save', color: 'error' })
+  } finally {
+    savingContent.value = false
   }
 }
 
@@ -807,6 +858,7 @@ async function deleteUpsell(upsellId: string) {
           v-model="activeTab"
           :items="[
             { label: 'Details', value: 'details', icon: 'i-lucide-file-text' },
+            { label: 'Content', value: 'content', icon: 'i-lucide-layout-list' },
             { label: 'Variants', value: 'variants', icon: 'i-lucide-layers' },
             { label: 'Images', value: 'images', icon: 'i-lucide-image' },
             { label: 'Landing Page', value: 'landingPage', icon: 'i-lucide-sparkles' },
@@ -852,6 +904,62 @@ async function deleteUpsell(upsellId: string) {
           </div>
           <div class="flex justify-end">
             <UButton :loading="savingDetails" icon="i-lucide-save" color="primary" @click="saveDetails">Save details</UButton>
+          </div>
+        </div>
+
+        <!-- Content Tab — optional richer-PDP sections (currently used by the
+             Impulse template's Key Benefits/FAQ/Specifications sections).
+             Empty by default; a template shows nothing rather than fabricate
+             copy when a section is left blank. -->
+        <div v-show="activeTab === 'content'" class="space-y-5">
+          <div class="admin-kpi-card space-y-4 p-6">
+            <div>
+              <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
+                <UIcon name="i-lucide-sparkles" class="size-4 text-primary" /> Key benefits
+              </h3>
+              <p class="text-sm text-muted">Short, customer-facing bullet points (e.g. "Waterproof up to 50m") — up to 8.</p>
+            </div>
+            <div v-for="(benefit, idx) in product.keyBenefits" :key="idx" class="flex items-center gap-2">
+              <UInput v-model="product.keyBenefits[idx]" placeholder="e.g. Waterproof up to 50m" class="flex-1" />
+              <UButton icon="i-lucide-trash-2" size="sm" variant="ghost" color="error" @click="removeBenefit(idx)" />
+            </div>
+            <UButton v-if="product.keyBenefits.length < 8" icon="i-lucide-plus" size="sm" variant="outline" color="neutral" label="Add benefit" @click="addBenefit" />
+          </div>
+
+          <div class="admin-kpi-card space-y-4 p-6">
+            <div>
+              <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
+                <UIcon name="i-lucide-circle-help" class="size-4 text-primary" /> FAQ
+              </h3>
+              <p class="text-sm text-muted">Common questions about this product — payment, delivery, sizing, returns, etc.</p>
+            </div>
+            <div v-for="(faq, idx) in product.faqs" :key="idx" class="space-y-2 rounded-md border border-[var(--color-admin-border)] p-3">
+              <div class="flex items-start justify-between gap-2">
+                <UInput v-model="faq.question" placeholder="Question" class="flex-1" />
+                <UButton icon="i-lucide-trash-2" size="sm" variant="ghost" color="error" @click="removeFaq(idx)" />
+              </div>
+              <UTextarea v-model="faq.answer" placeholder="Answer" :rows="2" class="w-full" />
+            </div>
+            <UButton v-if="product.faqs.length < 20" icon="i-lucide-plus" size="sm" variant="outline" color="neutral" label="Add question" @click="addFaq" />
+          </div>
+
+          <div class="admin-kpi-card space-y-4 p-6">
+            <div>
+              <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
+                <UIcon name="i-lucide-list-checks" class="size-4 text-primary" /> Specifications
+              </h3>
+              <p class="text-sm text-muted">Technical spec-table rows (e.g. "Material" / "Stainless steel") — distinct from variant options.</p>
+            </div>
+            <div v-for="(spec, idx) in product.specifications" :key="idx" class="flex items-center gap-2">
+              <UInput v-model="spec.label" placeholder="Label (e.g. Material)" class="w-48" />
+              <UInput v-model="spec.value" placeholder="Value (e.g. Stainless steel)" class="flex-1" />
+              <UButton icon="i-lucide-trash-2" size="sm" variant="ghost" color="error" @click="removeSpecification(idx)" />
+            </div>
+            <UButton v-if="product.specifications.length < 30" icon="i-lucide-plus" size="sm" variant="outline" color="neutral" label="Add specification" @click="addSpecification" />
+          </div>
+
+          <div class="flex justify-end">
+            <UButton :loading="savingContent" icon="i-lucide-save" color="primary" @click="saveContent">Save content</UButton>
           </div>
         </div>
 

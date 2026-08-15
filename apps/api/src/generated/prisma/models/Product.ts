@@ -91,6 +91,9 @@ export type ProductCountAggregateOutputType = {
   stockQuantity: number
   lowStockThreshold: number
   requireOfferSelection: number
+  keyBenefits: number
+  faqs: number
+  specifications: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -162,6 +165,9 @@ export type ProductCountAggregateInputType = {
   stockQuantity?: true
   lowStockThreshold?: true
   requireOfferSelection?: true
+  keyBenefits?: true
+  faqs?: true
+  specifications?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -268,6 +274,9 @@ export type ProductGroupByOutputType = {
   stockQuantity: number
   lowStockThreshold: number
   requireOfferSelection: boolean
+  keyBenefits: string[]
+  faqs: runtime.JsonValue | null
+  specifications: runtime.JsonValue | null
   createdAt: Date
   updatedAt: Date
   _count: ProductCountAggregateOutputType | null
@@ -310,6 +319,9 @@ export type ProductWhereInput = {
   stockQuantity?: Prisma.IntFilter<"Product"> | number
   lowStockThreshold?: Prisma.IntFilter<"Product"> | number
   requireOfferSelection?: Prisma.BoolFilter<"Product"> | boolean
+  keyBenefits?: Prisma.StringNullableListFilter<"Product">
+  faqs?: Prisma.JsonNullableFilter<"Product">
+  specifications?: Prisma.JsonNullableFilter<"Product">
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   categoryRef?: Prisma.XOR<Prisma.CategoryNullableScalarRelationFilter, Prisma.CategoryWhereInput> | null
@@ -342,6 +354,9 @@ export type ProductOrderByWithRelationInput = {
   stockQuantity?: Prisma.SortOrder
   lowStockThreshold?: Prisma.SortOrder
   requireOfferSelection?: Prisma.SortOrder
+  keyBenefits?: Prisma.SortOrder
+  faqs?: Prisma.SortOrderInput | Prisma.SortOrder
+  specifications?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   categoryRef?: Prisma.CategoryOrderByWithRelationInput
@@ -377,6 +392,9 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   stockQuantity?: Prisma.IntFilter<"Product"> | number
   lowStockThreshold?: Prisma.IntFilter<"Product"> | number
   requireOfferSelection?: Prisma.BoolFilter<"Product"> | boolean
+  keyBenefits?: Prisma.StringNullableListFilter<"Product">
+  faqs?: Prisma.JsonNullableFilter<"Product">
+  specifications?: Prisma.JsonNullableFilter<"Product">
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   categoryRef?: Prisma.XOR<Prisma.CategoryNullableScalarRelationFilter, Prisma.CategoryWhereInput> | null
@@ -409,6 +427,9 @@ export type ProductOrderByWithAggregationInput = {
   stockQuantity?: Prisma.SortOrder
   lowStockThreshold?: Prisma.SortOrder
   requireOfferSelection?: Prisma.SortOrder
+  keyBenefits?: Prisma.SortOrder
+  faqs?: Prisma.SortOrderInput | Prisma.SortOrder
+  specifications?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ProductCountOrderByAggregateInput
@@ -436,6 +457,9 @@ export type ProductScalarWhereWithAggregatesInput = {
   stockQuantity?: Prisma.IntWithAggregatesFilter<"Product"> | number
   lowStockThreshold?: Prisma.IntWithAggregatesFilter<"Product"> | number
   requireOfferSelection?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
+  keyBenefits?: Prisma.StringNullableListFilter<"Product">
+  faqs?: Prisma.JsonNullableWithAggregatesFilter<"Product">
+  specifications?: Prisma.JsonNullableWithAggregatesFilter<"Product">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Product"> | Date | string
 }
@@ -454,6 +478,9 @@ export type ProductCreateInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -486,6 +513,9 @@ export type ProductUncheckedCreateInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -516,6 +546,9 @@ export type ProductUpdateInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -548,6 +581,9 @@ export type ProductUncheckedUpdateInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -579,6 +615,9 @@ export type ProductCreateManyInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -597,6 +636,9 @@ export type ProductUpdateManyMutationInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -616,6 +658,9 @@ export type ProductUncheckedUpdateManyInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -628,6 +673,14 @@ export type ProductListRelationFilter = {
 
 export type ProductOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type StringNullableListFilter<$PrismaModel = never> = {
+  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
 }
 
 export type ProductCountOrderByAggregateInput = {
@@ -645,6 +698,9 @@ export type ProductCountOrderByAggregateInput = {
   stockQuantity?: Prisma.SortOrder
   lowStockThreshold?: Prisma.SortOrder
   requireOfferSelection?: Prisma.SortOrder
+  keyBenefits?: Prisma.SortOrder
+  faqs?: Prisma.SortOrder
+  specifications?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -749,6 +805,15 @@ export type ProductUncheckedUpdateManyWithoutCategoryRefNestedInput = {
   update?: Prisma.ProductUpdateWithWhereUniqueWithoutCategoryRefInput | Prisma.ProductUpdateWithWhereUniqueWithoutCategoryRefInput[]
   updateMany?: Prisma.ProductUpdateManyWithWhereWithoutCategoryRefInput | Prisma.ProductUpdateManyWithWhereWithoutCategoryRefInput[]
   deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[]
+}
+
+export type ProductCreatekeyBenefitsInput = {
+  set: string[]
+}
+
+export type ProductUpdatekeyBenefitsInput = {
+  set?: string[]
+  push?: string | string[]
 }
 
 export type ProductCreateNestedOneWithoutLandingPagesInput = {
@@ -935,6 +1000,9 @@ export type ProductCreateWithoutCategoryRefInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageCreateNestedManyWithoutProductInput
@@ -965,6 +1033,9 @@ export type ProductUncheckedCreateWithoutCategoryRefInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -1025,6 +1096,9 @@ export type ProductScalarWhereInput = {
   stockQuantity?: Prisma.IntFilter<"Product"> | number
   lowStockThreshold?: Prisma.IntFilter<"Product"> | number
   requireOfferSelection?: Prisma.BoolFilter<"Product"> | boolean
+  keyBenefits?: Prisma.StringNullableListFilter<"Product">
+  faqs?: Prisma.JsonNullableFilter<"Product">
+  specifications?: Prisma.JsonNullableFilter<"Product">
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
 }
@@ -1043,6 +1117,9 @@ export type ProductCreateWithoutLandingPagesInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -1074,6 +1151,9 @@ export type ProductUncheckedCreateWithoutLandingPagesInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -1119,6 +1199,9 @@ export type ProductUpdateWithoutLandingPagesInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -1150,6 +1233,9 @@ export type ProductUncheckedUpdateWithoutLandingPagesInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -1179,6 +1265,9 @@ export type ProductCreateWithoutImagesInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -1210,6 +1299,9 @@ export type ProductUncheckedCreateWithoutImagesInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   variants?: Prisma.ProductVariantUncheckedCreateNestedManyWithoutProductInput
@@ -1255,6 +1347,9 @@ export type ProductUpdateWithoutImagesInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -1286,6 +1381,9 @@ export type ProductUncheckedUpdateWithoutImagesInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   variants?: Prisma.ProductVariantUncheckedUpdateManyWithoutProductNestedInput
@@ -1315,6 +1413,9 @@ export type ProductCreateWithoutVariantsInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -1346,6 +1447,9 @@ export type ProductUncheckedCreateWithoutVariantsInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -1391,6 +1495,9 @@ export type ProductUpdateWithoutVariantsInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -1422,6 +1529,9 @@ export type ProductUncheckedUpdateWithoutVariantsInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -1451,6 +1561,9 @@ export type ProductCreateWithoutStockAdjustmentsInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -1482,6 +1595,9 @@ export type ProductUncheckedCreateWithoutStockAdjustmentsInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -1527,6 +1643,9 @@ export type ProductUpdateWithoutStockAdjustmentsInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -1558,6 +1677,9 @@ export type ProductUncheckedUpdateWithoutStockAdjustmentsInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -1587,6 +1709,9 @@ export type ProductCreateWithoutProductAttributesInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -1618,6 +1743,9 @@ export type ProductUncheckedCreateWithoutProductAttributesInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -1663,6 +1791,9 @@ export type ProductUpdateWithoutProductAttributesInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -1694,6 +1825,9 @@ export type ProductUncheckedUpdateWithoutProductAttributesInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -1723,6 +1857,9 @@ export type ProductCreateWithoutReviewsInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -1754,6 +1891,9 @@ export type ProductUncheckedCreateWithoutReviewsInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -1799,6 +1939,9 @@ export type ProductUpdateWithoutReviewsInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -1830,6 +1973,9 @@ export type ProductUncheckedUpdateWithoutReviewsInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -1859,6 +2005,9 @@ export type ProductCreateWithoutOrderItemsInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -1890,6 +2039,9 @@ export type ProductUncheckedCreateWithoutOrderItemsInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -1935,6 +2087,9 @@ export type ProductUpdateWithoutOrderItemsInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -1966,6 +2121,9 @@ export type ProductUncheckedUpdateWithoutOrderItemsInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -1995,6 +2153,9 @@ export type ProductCreateWithoutOffersInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -2026,6 +2187,9 @@ export type ProductUncheckedCreateWithoutOffersInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -2071,6 +2235,9 @@ export type ProductUpdateWithoutOffersInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -2102,6 +2269,9 @@ export type ProductUncheckedUpdateWithoutOffersInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -2131,6 +2301,9 @@ export type ProductCreateWithoutUpsellsOfferedInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -2162,6 +2335,9 @@ export type ProductUncheckedCreateWithoutUpsellsOfferedInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -2196,6 +2372,9 @@ export type ProductCreateWithoutUpsellsAsTargetInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -2227,6 +2406,9 @@ export type ProductUncheckedCreateWithoutUpsellsAsTargetInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -2272,6 +2454,9 @@ export type ProductUpdateWithoutUpsellsOfferedInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -2303,6 +2488,9 @@ export type ProductUncheckedUpdateWithoutUpsellsOfferedInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -2343,6 +2531,9 @@ export type ProductUpdateWithoutUpsellsAsTargetInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -2374,6 +2565,9 @@ export type ProductUncheckedUpdateWithoutUpsellsAsTargetInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -2403,6 +2597,9 @@ export type ProductCreateWithoutGoogleSheetsInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -2434,6 +2631,9 @@ export type ProductUncheckedCreateWithoutGoogleSheetsInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -2479,6 +2679,9 @@ export type ProductUpdateWithoutGoogleSheetsInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -2510,6 +2713,9 @@ export type ProductUncheckedUpdateWithoutGoogleSheetsInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -2539,6 +2745,9 @@ export type ProductCreateWithoutSourcedFromInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   categoryRef?: Prisma.CategoryCreateNestedOneWithoutProductsInput
@@ -2570,6 +2779,9 @@ export type ProductUncheckedCreateWithoutSourcedFromInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.ProductImageUncheckedCreateNestedManyWithoutProductInput
@@ -2615,6 +2827,9 @@ export type ProductUpdateWithoutSourcedFromInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoryRef?: Prisma.CategoryUpdateOneWithoutProductsNestedInput
@@ -2646,6 +2861,9 @@ export type ProductUncheckedUpdateWithoutSourcedFromInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -2675,6 +2893,9 @@ export type ProductCreateManyCategoryRefInput = {
   stockQuantity?: number
   lowStockThreshold?: number
   requireOfferSelection?: boolean
+  keyBenefits?: Prisma.ProductCreatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -2693,6 +2914,9 @@ export type ProductUpdateWithoutCategoryRefInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUpdateManyWithoutProductNestedInput
@@ -2723,6 +2947,9 @@ export type ProductUncheckedUpdateWithoutCategoryRefInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ProductImageUncheckedUpdateManyWithoutProductNestedInput
@@ -2753,6 +2980,9 @@ export type ProductUncheckedUpdateManyWithoutCategoryRefInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
+  faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  specifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -2893,6 +3123,9 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   stockQuantity?: boolean
   lowStockThreshold?: boolean
   requireOfferSelection?: boolean
+  keyBenefits?: boolean
+  faqs?: boolean
+  specifications?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   categoryRef?: boolean | Prisma.Product$categoryRefArgs<ExtArgs>
@@ -2926,6 +3159,9 @@ export type ProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   stockQuantity?: boolean
   lowStockThreshold?: boolean
   requireOfferSelection?: boolean
+  keyBenefits?: boolean
+  faqs?: boolean
+  specifications?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   categoryRef?: boolean | Prisma.Product$categoryRefArgs<ExtArgs>
@@ -2946,6 +3182,9 @@ export type ProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   stockQuantity?: boolean
   lowStockThreshold?: boolean
   requireOfferSelection?: boolean
+  keyBenefits?: boolean
+  faqs?: boolean
+  specifications?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   categoryRef?: boolean | Prisma.Product$categoryRefArgs<ExtArgs>
@@ -2966,11 +3205,14 @@ export type ProductSelectScalar = {
   stockQuantity?: boolean
   lowStockThreshold?: boolean
   requireOfferSelection?: boolean
+  keyBenefits?: boolean
+  faqs?: boolean
+  specifications?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "category" | "categoryId" | "imageUrl" | "featured" | "bestSeller" | "visible" | "priceCents" | "stockQuantity" | "lowStockThreshold" | "requireOfferSelection" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
+export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "category" | "categoryId" | "imageUrl" | "featured" | "bestSeller" | "visible" | "priceCents" | "stockQuantity" | "lowStockThreshold" | "requireOfferSelection" | "keyBenefits" | "faqs" | "specifications" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
 export type ProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   categoryRef?: boolean | Prisma.Product$categoryRefArgs<ExtArgs>
   images?: boolean | Prisma.Product$imagesArgs<ExtArgs>
@@ -3026,6 +3268,9 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     stockQuantity: number
     lowStockThreshold: number
     requireOfferSelection: boolean
+    keyBenefits: string[]
+    faqs: runtime.JsonValue | null
+    specifications: runtime.JsonValue | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["product"]>
@@ -3478,6 +3723,9 @@ export interface ProductFieldRefs {
   readonly stockQuantity: Prisma.FieldRef<"Product", 'Int'>
   readonly lowStockThreshold: Prisma.FieldRef<"Product", 'Int'>
   readonly requireOfferSelection: Prisma.FieldRef<"Product", 'Boolean'>
+  readonly keyBenefits: Prisma.FieldRef<"Product", 'String[]'>
+  readonly faqs: Prisma.FieldRef<"Product", 'Json'>
+  readonly specifications: Prisma.FieldRef<"Product", 'Json'>
   readonly createdAt: Prisma.FieldRef<"Product", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Product", 'DateTime'>
 }

@@ -1,8 +1,20 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
-import type { AdjustStock, CreateProduct, ProductListQuery, ProductListResponse } from '@amalice/shared'
+import type { AdjustStock, CreateProduct, ProductFaq, ProductListQuery, ProductListResponse, ProductSpecification } from '@amalice/shared'
 import { Prisma } from '../generated/prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
+import type { Product as ProductRow } from '../generated/prisma/client'
+
+// faqs/specifications are nullable Json columns with no DB default (most
+// rows are NULL, not []) — every read path normalizes to [] here so nothing
+// consuming the shared `Product` type needs its own null-check.
+function withNormalizedContent<T extends ProductRow>(product: T) {
+  return {
+    ...product,
+    faqs: (product.faqs as ProductFaq[] | null) ?? [],
+    specifications: (product.specifications as ProductSpecification[] | null) ?? []
+  }
+}
 
 // ADM-07 — product CRUD + stock adjustments. Every stockQuantity change goes
 // through adjustStock and writes a StockAdjustment row + an audit entry; the
@@ -49,7 +61,7 @@ export class AdminCatalogService {
       this.prisma.product.count({ where })
     ])
 
-    return { items, total, page: query.page, pageSize: query.pageSize }
+    return { items: items.map(withNormalizedContent), total, page: query.page, pageSize: query.pageSize }
   }
 
   async createProduct(input: CreateProduct, actor: AuditActor) {
@@ -61,7 +73,7 @@ export class AdminCatalogService {
       entityId: product.id,
       metadata: { name: product.name, slug: product.slug }
     })
-    return product
+    return withNormalizedContent(product)
   }
 
   async updateProduct(id: string, input: Partial<CreateProduct>, actor: AuditActor) {
@@ -81,7 +93,7 @@ export class AdminCatalogService {
     if (Object.keys(changes).length > 0) {
       await this.audit.log({ actor, action: 'Update', entity: 'Product', entityId: id, metadata: changes })
     }
-    return product
+    return withNormalizedContent(product)
   }
 
   async archiveProduct(id: string, actor: AuditActor) {

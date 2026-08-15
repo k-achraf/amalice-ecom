@@ -10,7 +10,9 @@ import type {
   CreateProductOffer,
   UpdateProductOffer,
   CreateProductUpsell,
-  UpdateProductUpsell
+  UpdateProductUpsell,
+  ProductFaq,
+  ProductSpecification
 } from '@amalice/shared'
 import { Prisma } from '../generated/prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
@@ -71,6 +73,9 @@ export class AdminProductManagementService {
       stockQuantity: product.stockQuantity,
       lowStockThreshold: product.lowStockThreshold,
       requireOfferSelection: product.requireOfferSelection,
+      keyBenefits: product.keyBenefits,
+      faqs: (product.faqs as ProductFaq[] | null) ?? [],
+      specifications: (product.specifications as ProductSpecification[] | null) ?? [],
       createdAt: product.createdAt.toISOString(),
       updatedAt: product.updatedAt.toISOString(),
       images: product.images.map((i) => ({ id: i.id, url: i.url, altText: i.altText, sortOrder: i.sortOrder })),

@@ -1,5 +1,24 @@
 import { z } from 'zod'
 
+// Admin-authored FAQ entry — see Product.faqs's Prisma comment. Answers
+// support the same short prose an admin would type into a plain textarea,
+// not rich HTML (unlike description).
+export const ProductFaqSchema = z.object({
+  question: z.string().min(1).max(300),
+  answer: z.string().min(1).max(2000)
+})
+export type ProductFaq = z.infer<typeof ProductFaqSchema>
+
+// Admin-authored spec-table row — see Product.specifications's Prisma
+// comment. Deliberately separate from variant attributes: a spec (e.g.
+// "Material: Stainless steel") describes the product as a whole, not one
+// buyable variant combination.
+export const ProductSpecificationSchema = z.object({
+  label: z.string().min(1).max(100),
+  value: z.string().min(1).max(300)
+})
+export type ProductSpecification = z.infer<typeof ProductSpecificationSchema>
+
 export const CreateProductSchema = z.object({
   name: z.string().min(1).max(200),
   slug: z
@@ -37,7 +56,18 @@ export const CreateProductSchema = z.object({
   // free-quantity stepper and the customer must pick one of this product's
   // enabled ProductOffers (see offer.ts) to set quantity at all, the first
   // enabled one pre-selected by default. See Product's Prisma model comment.
-  requireOfferSelection: z.boolean().default(false)
+  requireOfferSelection: z.boolean().default(false),
+  // Optional richer-PDP content (Impulse's Key Benefits/FAQ/Specifications
+  // sections) — empty by default so a template renders nothing rather than
+  // fabricate copy when a merchant hasn't filled a section in. This is the
+  // read AND write contract: faqs/specifications are nullable Json columns
+  // at the DB level (no default — most existing rows are NULL, not []), but
+  // every API read path normalizes that null to [] before it reaches
+  // frontend code, so nothing consuming the `Product`/`CreateProduct` type
+  // needs its own null-check. See Product's Prisma model comment.
+  keyBenefits: z.array(z.string().min(1).max(120)).max(8).default([]),
+  faqs: z.array(ProductFaqSchema).max(20).default([]),
+  specifications: z.array(ProductSpecificationSchema).max(30).default([])
 })
 export type CreateProduct = z.infer<typeof CreateProductSchema>
 
