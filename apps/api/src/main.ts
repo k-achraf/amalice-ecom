@@ -5,8 +5,24 @@ import { NestExpressApplication } from '@nestjs/platform-express'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { join } from 'path'
 import * as fs from 'fs'
+import * as dns from 'dns'
 import { AppModule } from './app.module'
 import { PersistentLogger } from './common/persistent-logger.service'
+
+// Node's fetch (undici) races IPv4 and IPv6 for a dual-stack host and uses
+// whichever connects first ("Happy Eyeballs") — normally harmless, but
+// Gemini's API (generativelanguage.googleapis.com, used by the landing-page
+// builder and AI content features) geolocates the CALLING request's IP and
+// rejects unsupported regions. Plenty of VPS providers hand out an IPv6
+// address whose GeoIP data is stale/wrong even though the same box's IPv4
+// address geolocates correctly — so the exact same server, same API key,
+// can intermittently get "User location is not supported" depending on
+// which address won that race for a given connection. Forcing IPv4-first
+// resolution process-wide removes that non-determinism; it's Node's own
+// documented flag for this class of problem (equivalent to the CLI's
+// --dns-result-order=ipv4first) and has no downside for a server that has
+// no reason to prefer IPv6 for outbound calls.
+dns.setDefaultResultOrder('ipv4first')
 
 async function bootstrap() {
   // rawBody: true — Nest still parses JSON into req.body as normal, but also
