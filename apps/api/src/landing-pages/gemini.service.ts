@@ -109,12 +109,14 @@ export class GeminiService {
 Product: ${input.productName}
 Description: ${input.description}
 ${input.instructions ? `\nAdditional instructions from the store owner (follow these closely — they override the defaults below where they conflict): ${input.instructions}\n` : ''}
+STRICT LANGUAGE REQUIREMENT: write every headline and line in formal Modern Standard Arabic (الفصحى) ONLY — this store's storefront is Arabic-only. Never use colloquial/dialect words or expressions (Algerian, Gulf, Egyptian, or any other dialect), slang, or informal internet-Arabic phrasing, unless the instructions above explicitly ask for a different language.
+
 Write exactly ${input.sectionCount} sections in this order:
 1. One "hero" section — a bold, attention-grabbing headline (max 6 words) and one short supporting line (max 12 words).
-2. ${featureCount} "feature" section(s) — each highlights one distinct benefit or feature from the description, with a punchy headline (max 5 words) and a short supporting line (max 14 words).
+2. ${featureCount} "feature" section(s) — each highlights one distinct, SPECIFIC benefit or feature that is actually present in the description above (never a generic, vague claim that could describe any product), with a punchy headline (max 5 words) and a short supporting line (max 14 words).
 3. One "cta" section — a confident call-to-action headline (max 6 words) and a short line reinforcing cash-on-delivery / easy ordering (max 14 words).
 
-Keep every line short — this is text overlaid on an image, not a paragraph. Do not invent product claims not supported by the description, and do NOT invent promotions, discounts, "free delivery", or time-limited/urgency claims ("offer ends soon", "limited stock", countdowns, etc.) unless they are explicitly stated in the description above — cash-on-delivery and easy ordering are the only claims safe to make without support from the description.`
+Keep every line short — this is text overlaid on an image, not a paragraph. STRICT ACCURACY REQUIREMENT: every headline and line must accurately and specifically describe what's actually in the description above — do not invent product claims, features, or specs the description doesn't support, and do NOT invent promotions, discounts, "free delivery", or time-limited/urgency claims ("offer ends soon", "limited stock", countdowns, etc.) unless they are explicitly stated in the description above — cash-on-delivery and easy ordering are the only claims safe to make without support from the description. If the description doesn't give you enough distinct real details for ${featureCount} feature section(s), reuse and rephrase its strongest existing points rather than inventing new ones.`
 
     const schema = {
       type: 'ARRAY',
@@ -167,7 +169,7 @@ Raw notes:
 ${input.rawContent}
 """
 ${input.instructions ? `\nAdditional instructions from the store owner (follow these closely — they override the defaults below where they conflict): ${input.instructions}\n` : ''}
-Write the output in Arabic (this store's storefront is Arabic-only), unless the instructions above explicitly ask for a different language.
+STRICT LANGUAGE REQUIREMENT: write the entire output in formal Modern Standard Arabic (الفصحى) ONLY — this store's storefront is Arabic-only. Never use colloquial/dialect words or expressions (Algerian, Gulf, Egyptian, or any other dialect), slang, or informal internet-Arabic phrasing, unless the instructions above explicitly ask for a different language.
 
 Produce:
 - name: a short, clear, benefit-forward product title (max 12 words). Not clickbait, not ALL CAPS.
@@ -176,7 +178,7 @@ Produce:
 - faqs: 3-6 question/answer pairs a hesitant buyer would actually ask before ordering (shipping, payment, returns, product doubts) — answer only from what's in the raw notes or the photos; skip a question entirely rather than inventing an answer the notes don't support.
 - specifications: every concrete spec/attribute mentioned in the raw notes (material, size, weight, capacity, contents, compatibility, etc.) as label/value pairs — return an empty array if the notes have no concrete specs, don't invent any.
 
-Do not invent product claims, promotions, discounts, "free delivery", or time-limited/urgency claims ("offer ends soon", "limited stock", countdowns, etc.) that aren't in the raw notes — cash-on-delivery and easy ordering are the only claims safe to add without support from the notes. Every field should genuinely help push a hesitant shopper to place the order, not just fill space.`
+STRICT GROUNDING REQUIREMENT: every fact, feature, benefit, spec, and claim in your output must come directly from the raw notes above (or be visibly true in the attached photos, if any) — never invent, assume, embellish, or add anything not explicitly present, even if it would be typical or plausible for similar products. If the raw notes don't mention something, leave it out entirely rather than guessing or filling the gap. Do not invent promotions, discounts, "free delivery", or time-limited/urgency claims ("offer ends soon", "limited stock", countdowns, etc.) that aren't in the raw notes — cash-on-delivery and easy ordering are the only claims safe to add without support from the notes. Every field should genuinely help push a hesitant shopper to place the order, not just fill space — but never at the cost of accuracy.`
 
     const schema = {
       type: 'OBJECT',
@@ -242,7 +244,7 @@ ${input.productName ? `Product: ${input.productName}\n` : ''}Raw product informa
 ${input.text}
 """
 ${input.instructions ? `\nAdditional instructions from the store owner (follow these closely): ${input.instructions}\n` : ''}
-Improve this text: fix grammar and clarity, organize it so the description, specifications, and FAQ parts are easy to tell apart, and make the product's real benefits clearer and more concrete. Do not invent new specs, claims, or FAQ entries that aren't implied by the original text, and do not shorten it or drop concrete details — keep (or add clarity to) as much genuine detail as possible, since the later step needs rich material to draft from. Preserve whatever language(s) the original text already uses.`
+Improve this text: fix grammar and clarity, organize it so the description, specifications, and FAQ parts are easy to tell apart, and make the product's real benefits clearer and more concrete. STRICT GROUNDING REQUIREMENT: do not invent new specs, claims, features, or FAQ entries that aren't explicitly present in the original text — never add anything just because it seems plausible or typical for similar products. Do not shorten it or drop concrete details — keep (or add clarity to) as much genuine detail as possible, since the later step needs rich material to draft from. Preserve whatever language(s) the original text already uses; if it's Arabic, keep it in formal Modern Standard Arabic (الفصحى), not dialect or slang.`
 
     const schema = { type: 'OBJECT', properties: { text: { type: 'STRING' } }, required: ['text'] }
 
