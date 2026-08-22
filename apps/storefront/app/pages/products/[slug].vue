@@ -135,7 +135,19 @@ function onSelectImage(i: number) {
   activeImageIndex.value = i
 }
 function onSelectVariantByKey(key: string, val: string) {
-  selectedVariantId.value = product.value?.variants.find((v) => (v.attributes as Record<string, string>)[key] === val)?.id ?? null
+  const variants = product.value?.variants ?? []
+  // Preserve every other already-selected attribute, not just the one being
+  // clicked — matching on the clicked key alone picked whichever variant
+  // happened to come first in the array, silently flipping unrelated
+  // attributes (e.g. picking a color could change the selected phone type).
+  const targetAttrs = { ...(selectedVariant.value?.attributes as Record<string, string> | undefined), [key]: val }
+  const exactMatch = variants.find((v) => {
+    const attrs = v.attributes as Record<string, string>
+    return Object.entries(targetAttrs).every(([k, targetVal]) => attrs[k] === targetVal)
+  })
+  selectedVariantId.value = exactMatch?.id
+    ?? variants.find((v) => (v.attributes as Record<string, string>)[key] === val)?.id
+    ?? null
 }
 function onUpdateQuantity(v: number) {
   quantity.value = v

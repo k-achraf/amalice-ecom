@@ -117,25 +117,42 @@ async function toggleRequireOfferSelection(value: boolean) {
 // sections rather than core product fields.
 const savingContent = ref(false)
 
+// useAdminFetch's `product` is a shallowRef (Nuxt 4's useAsyncData default is
+// `deep: false`) — push/splice on a nested array mutate it in place but
+// never notify Vue, so the v-for list and the "N items" v-if silently never
+// re-render. triggerRef is the standard fix: keep the cheap in-place
+// mutation, then force a re-evaluation of everything depending on `product`.
 function addBenefit() {
-  product.value?.keyBenefits.push('')
+  if (!product.value) return
+  product.value.keyBenefits.push('')
+  triggerRef(product)
 }
 function removeBenefit(index: number) {
-  product.value?.keyBenefits.splice(index, 1)
+  if (!product.value) return
+  product.value.keyBenefits.splice(index, 1)
+  triggerRef(product)
 }
 
 function addFaq() {
-  product.value?.faqs.push({ question: '', answer: '' })
+  if (!product.value) return
+  product.value.faqs.push({ question: '', answer: '' })
+  triggerRef(product)
 }
 function removeFaq(index: number) {
-  product.value?.faqs.splice(index, 1)
+  if (!product.value) return
+  product.value.faqs.splice(index, 1)
+  triggerRef(product)
 }
 
 function addSpecification() {
-  product.value?.specifications.push({ label: '', value: '' })
+  if (!product.value) return
+  product.value.specifications.push({ label: '', value: '' })
+  triggerRef(product)
 }
 function removeSpecification(index: number) {
-  product.value?.specifications.splice(index, 1)
+  if (!product.value) return
+  product.value.specifications.splice(index, 1)
+  triggerRef(product)
 }
 
 async function saveContent() {
@@ -248,16 +265,30 @@ function openGenerate() {
   const combos = cartesian(optionArrays)
 
   const slugBase = product.value.slug.toUpperCase().replace(/-/g, '').slice(0, 8)
+  // Attribute values are truncated to 3 chars for the SKU suffix, so two
+  // values sharing that prefix (e.g. "Blue"/"Blush", or Arabic values
+  // sharing a common root) would otherwise collide. Disambiguate with a
+  // trailing counter, checked against both this batch and the product's
+  // existing variant SKUs, so every generated row gets a unique SKU.
+  const existingSkus = new Set(product.value.variants.map((v) => v.sku))
+  const usedSkus = new Set<string>()
   generatedVariants.value = combos
     .filter((combo) => combo.length > 0) // skip the degenerate empty combo
-    .map((combo, i) => {
+    .map((combo) => {
       const optionIds = combo.map((c) => c.optionId)
       const label = combo.map((c) => c.value).join(' / ')
       const skuSuffix = combo.map((c) => c.value.toUpperCase().slice(0, 3)).join('-')
+      let sku = `${slugBase}-${skuSuffix}`
+      let n = 2
+      while (usedSkus.has(sku) || existingSkus.has(sku)) {
+        sku = `${slugBase}-${skuSuffix}-${n}`
+        n++
+      }
+      usedSkus.add(sku)
       return {
         optionIds,
         label,
-        sku: `${slugBase}-${skuSuffix}`,
+        sku,
         priceCents: product.value!.priceCents,
         stockQuantity: 0,
         colorSwatches: combo
@@ -266,6 +297,12 @@ function openGenerate() {
       }
     })
   showGenerate.value = true
+}
+
+// Lets the admin drop combinations they don't actually want to stock before
+// bulk-creating (e.g. a color/size pairing that isn't offered).
+function removeGeneratedVariant(index: number) {
+  generatedVariants.value.splice(index, 1)
 }
 
 const generatingCount = computed(() => generatedVariants.value.length)
@@ -1566,11 +1603,11 @@ async function deleteUpsell(upsellId: string) {
             </div>
             <p class="text-sm text-muted">
               All combinations from the product's applied attributes. Edit SKU, price, and stock for each,
-              then click "Create all" to add them in bulk.
+              remove any you don't want, then click "Create all" to add the rest in bulk.
             </p>
 
             <!-- Preview table -->
-            <div class="max-h-96 overflow-y-auto rounded-lg border border-[var(--color-admin-border)]">
+            <div v-if="generatedVariants.length" class="max-h-96 overflow-y-auto rounded-lg border border-[var(--color-admin-border)]">
               <table class="w-full text-sm">
                 <thead class="sticky top-0 bg-[var(--color-admin-surface)]">
                   <tr>
@@ -1578,6 +1615,7 @@ async function deleteUpsell(upsellId: string) {
                     <th class="px-3 py-2 text-left">SKU</th>
                     <th class="px-3 py-2 text-right">Price</th>
                     <th class="px-3 py-2 text-right">Stock</th>
+                    <th class="px-3 py-2"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1604,16 +1642,22 @@ async function deleteUpsell(upsellId: string) {
                       />
                     </td>
                     <td class="px-3 py-2"><UInputNumber v-model="gv.stockQuantity" size="xs" class="w-20" /></td>
+                    <td class="px-3 py-2 text-right">
+                      <UButton icon="i-lucide-x" size="xs" variant="ghost" color="error" title="Remove" @click="removeGeneratedVariant(i)" />
+                    </td>
                   </tr>
                 </tbody>
               </table>
             </div>
+            <p v-else class="rounded-lg border border-dashed border-[var(--color-admin-border)] px-4 py-8 text-center text-sm text-muted">
+              All combinations removed. Click "Regenerate" to start over.
+            </p>
 
             <div class="flex items-center justify-between">
               <UButton size="xs" variant="ghost" color="neutral" icon="i-lucide-rotate-ccw" label="Regenerate" @click="openGenerate" />
               <div class="flex gap-2">
                 <UButton color="neutral" variant="ghost" label="Cancel" @click="showGenerateBool = false" />
-                <UButton :loading="generating" icon="i-lucide-check" label="Create all" color="primary" @click="createGeneratedVariants" />
+                <UButton :disabled="!generatedVariants.length" :loading="generating" icon="i-lucide-check" label="Create all" color="primary" @click="createGeneratedVariants" />
               </div>
             </div>
           </div>
