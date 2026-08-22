@@ -79,6 +79,37 @@ export type Product = z.infer<typeof ProductSchema>
 // Query params always arrive as strings over HTTP — z.coerce handles the
 // numeric ones whether this schema validates a NestJS @Query() object or a
 // parsed URLSearchParams on the storefront side.
+// Admin-triggered AI content draft — feeds a raw, messy content dump
+// (title/description/specs/FAQ all mixed together, in any language) plus
+// optionally some of the product's own photos into a free-tier Gemini text
+// model (apps/api/src/landing-pages/gemini.service.ts's draftProductContent)
+// and returns a polished, conversion-focused draft for the admin to review
+// and edit — this never writes to the product itself; saving still goes
+// through the normal PATCH /admin/products/:id the Details/Content tabs
+// already use.
+export const GenerateProductContentSchema = z.object({
+  rawContent: z.string().trim().min(1).max(20000),
+  // A subset of the product's own ProductImage.url values, validated
+  // server-side against the product's actual gallery — same pattern as
+  // GenerateLandingPageSchema.sourceImageUrls (landing-page.ts). Optional:
+  // rawContent alone is often enough.
+  sourceImageUrls: z.array(z.string()).max(5).default([]),
+  instructions: z.string().trim().max(1000).optional()
+})
+export type GenerateProductContent = z.infer<typeof GenerateProductContentSchema>
+
+// Loose caps here just guard against a malformed model response — the real
+// "keep it short and conversion-focused" requirement is enforced by the
+// prompt, not by truncating a good draft that ran slightly long.
+export const GeneratedProductContentSchema = z.object({
+  name: z.string().min(1).max(200),
+  description: z.string().min(1).max(20000),
+  keyBenefits: z.array(z.string().min(1).max(120)).max(8),
+  faqs: z.array(ProductFaqSchema).max(20),
+  specifications: z.array(ProductSpecificationSchema).max(30)
+})
+export type GeneratedProductContent = z.infer<typeof GeneratedProductContentSchema>
+
 export const ProductListQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().positive().max(100).default(20),

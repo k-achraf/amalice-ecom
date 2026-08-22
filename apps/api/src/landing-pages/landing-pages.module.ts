@@ -10,6 +10,10 @@ import { CommonModule } from '../common/common.module'
 @Module({
   imports: [BullModule.registerQueue({ name: 'landing-pages' }), CommonModule],
   controllers: [LandingPagesController],
-  providers: [LandingPagesService, LandingPagesProcessor, GeminiService, PollinationsService]
+  providers: [LandingPagesService, LandingPagesProcessor, GeminiService, PollinationsService],
+  // GeminiService is also used outside this module — AdminModule imports
+  // LandingPagesModule to reuse it for the product editor's "generate with
+  // AI" content drafter (see admin-product-management.service.ts).
+  exports: [GeminiService]
 })
 export class LandingPagesModule {}

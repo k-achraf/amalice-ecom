@@ -4,7 +4,7 @@ import type { Job } from 'bullmq'
 import { LandingPageSectionSchema, type LandingPageImageProvider, type LandingPageSection } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import { Prisma } from '../generated/prisma/client'
-import { GeminiService, type InlineImage } from './gemini.service'
+import { GeminiService } from './gemini.service'
 import { PollinationsService } from './pollinations.service'
 import { draftSectionCopyHeuristically } from './heuristic-copy.util'
 import { fetchImageAsInline, saveGeneratedImage, stitchSectionsVertically } from './landing-page-storage.util'
@@ -24,8 +24,11 @@ interface RegenerateSectionJob {
 // Does the actual AI work for the landing-page builder — see
 // landing-pages.service.ts for what enqueues these jobs, and
 // gemini.service.ts / landing-page-storage.util.ts for the pieces this
-// orchestrates (copy drafting, per-section image generation, disk storage,
-// vertical stitching).
+// orchestrates. Gemini composes the whole long-scroll page in ONE image
+// call (generateFullGeminiImage) instead of one call per section — see
+// gemini.service.ts's top comment. Pollinations has no photo-editing or
+// multi-section-in-one-image ability (text-to-image only, no real product
+// photos), so it keeps the original per-section-then-stitch approach.
 @Processor('landing-pages')
 export class LandingPagesProcessor extends WorkerHost {
   private readonly logger = new Logger(LandingPagesProcessor.name)
@@ -51,7 +54,7 @@ export class LandingPagesProcessor extends WorkerHost {
   // covers both the full-generation and single-section-regenerate paths.
   private async loadRow(
     landingPageId: string
-  ): Promise<{ sections: LandingPageSection[]; imageProvider: LandingPageImageProvider; productName: string }> {
+  ): Promise<{ sections: LandingPageSection[]; imageProvider: LandingPageImageProvider; productName: string; finalImageUrl: string | null }> {
     const row = await this.prisma.productLandingPage.findUniqueOrThrow({
       where: { id: landingPageId },
       include: { product: true }
@@ -59,7 +62,8 @@ export class LandingPagesProcessor extends WorkerHost {
     return {
       sections: LandingPageSectionSchema.array().parse(row.sections),
       imageProvider: row.imageProvider as LandingPageImageProvider,
-      productName: row.product.name
+      productName: row.product.name,
+      finalImageUrl: row.finalImageUrl
     }
   }
 
@@ -70,44 +74,25 @@ export class LandingPagesProcessor extends WorkerHost {
     })
   }
 
-  // Generates ONE section's image in place within a sections array —
-  // shared by both the full-generation and single-section-regenerate paths
-  // so they can't drift. Mutates and returns the same array reference.
-  private async generateOneSection(
+  // Pollinations section image, in place within a sections array — shared
+  // by both the full-generation and single-section-regenerate paths so they
+  // can't drift. Mutates and returns the same array reference. Gemini never
+  // goes through this — see generateFullGeminiImage / regenerateGeminiSection.
+  private async generatePollinationsSection(
     sections: LandingPageSection[],
     index: number,
-    imageProvider: LandingPageImageProvider,
     productName: string,
     instructions?: string
   ): Promise<LandingPageSection[]> {
     const section = sections[index]
     try {
-      let generated: InlineImage
-      if (imageProvider === 'Pollinations') {
-        generated = await this.pollinations.generateSectionImage({
-          role: section.role,
-          headline: section.headline,
-          body: section.body,
-          productName,
-          instructions
-        })
-      } else {
-        const sourceImages = await Promise.all(section.sourceImageUrls.map((url) => fetchImageAsInline(url)))
-        // If this section already has a generated image AND we're re-running
-        // it with instructions, treat it as an EDIT of that existing image
-        // (see gemini.service.ts's editImage param) instead of a from-
-        // scratch composition — that's what "regenerate with instructions"
-        // means in the admin UI.
-        const editImage = instructions && section.imageUrl ? await fetchImageAsInline(section.imageUrl) : undefined
-        generated = await this.gemini.generateSectionImage({
-          role: section.role,
-          headline: section.headline,
-          body: section.body,
-          sourceImages,
-          instructions,
-          editImage
-        })
-      }
+      const generated = await this.pollinations.generateSectionImage({
+        role: section.role,
+        headline: section.headline,
+        body: section.body,
+        productName,
+        instructions
+      })
       const imageUrl = saveGeneratedImage(generated.base64, generated.mimeType)
       sections[index] = { ...section, imageUrl, status: 'completed', errorMessage: null }
     } catch (error) {
@@ -121,7 +106,9 @@ export class LandingPagesProcessor extends WorkerHost {
   // If every section has a generated image, stitches them into the final
   // long image and marks the row Completed; otherwise marks it Failed with
   // a summary (individual section images/errors remain visible either way
-  // — this only decides the OVERALL status).
+  // — this only decides the OVERALL status). Pollinations only — the Gemini
+  // path produces (or fails to produce) the final image directly, with no
+  // separate stitching step.
   private async finalizeIfComplete(landingPageId: string, sections: LandingPageSection[]): Promise<void> {
     const failed = sections.filter((s) => s.status !== 'completed')
     if (failed.length > 0) {
@@ -148,6 +135,83 @@ export class LandingPagesProcessor extends WorkerHost {
       await this.prisma.productLandingPage.update({
         where: { id: landingPageId },
         data: { status: 'Failed', errorMessage: `All sections generated but combining them failed: ${message}` }
+      })
+    }
+  }
+
+  // Generates the ENTIRE long-scroll page in one Gemini call from every
+  // section's drafted copy plus the union of all sections' source photos
+  // (distributeSourceImages spread the store owner's picks across sections
+  // for the old per-section approach — one shot wants the whole set they
+  // picked, deduped, once). No per-section imageUrl is ever set for Gemini;
+  // only finalImageUrl.
+  private async generateFullGeminiImage(landingPageId: string, sections: LandingPageSection[], instructions?: string): Promise<void> {
+    const ordered = [...sections].sort((a, b) => a.order - b.order)
+    const sourceImageUrls = [...new Set(ordered.flatMap((s) => s.sourceImageUrls))]
+    try {
+      const sourceImages = await Promise.all(sourceImageUrls.map((url) => fetchImageAsInline(url)))
+      const generated = await this.gemini.generateLandingPageImage({
+        sections: ordered.map((s) => ({ role: s.role, headline: s.headline, body: s.body })),
+        sourceImages,
+        instructions
+      })
+      const finalImageUrl = saveGeneratedImage(generated.base64, generated.mimeType)
+      const completed = sections.map((s) => ({ ...s, status: 'completed' as const, errorMessage: null }))
+      await this.prisma.productLandingPage.update({
+        where: { id: landingPageId },
+        data: { status: 'Completed', finalImageUrl, errorMessage: null, sections: completed as unknown as Prisma.InputJsonValue }
+      })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      this.logger.warn(`Landing page ${landingPageId} full-image generation failed: ${message}`)
+      const failed = sections.map((s) => ({ ...s, status: 'failed' as const, errorMessage: message }))
+      await this.prisma.productLandingPage.update({
+        where: { id: landingPageId },
+        data: { status: 'Failed', errorMessage: message, sections: failed as unknown as Prisma.InputJsonValue }
+      })
+    }
+  }
+
+  // Edits the current full image in place to redo just one section (see
+  // gemini.service.ts's editLandingPageImage) instead of regenerating the
+  // whole page. If there's no full image yet (the very first generation
+  // never completed), falls back to a from-scratch full generation.
+  private async regenerateGeminiSection(
+    landingPageId: string,
+    sections: LandingPageSection[],
+    index: number,
+    currentFinalImageUrl: string | null,
+    instructions?: string
+  ): Promise<void> {
+    const section = sections[index]
+    if (!currentFinalImageUrl) {
+      await this.generateFullGeminiImage(landingPageId, sections, instructions)
+      return
+    }
+    try {
+      const [currentImage, sourceImages] = await Promise.all([
+        fetchImageAsInline(currentFinalImageUrl),
+        Promise.all(section.sourceImageUrls.map((url) => fetchImageAsInline(url)))
+      ])
+      const generated = await this.gemini.editLandingPageImage({
+        currentImage,
+        targetSection: { role: section.role, headline: section.headline, body: section.body },
+        instructions,
+        sourceImages
+      })
+      const finalImageUrl = saveGeneratedImage(generated.base64, generated.mimeType)
+      const updatedSections = sections.map((s, i) => (i === index ? { ...s, status: 'completed' as const, errorMessage: null } : s))
+      await this.prisma.productLandingPage.update({
+        where: { id: landingPageId },
+        data: { status: 'Completed', finalImageUrl, errorMessage: null, sections: updatedSections as unknown as Prisma.InputJsonValue }
+      })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      this.logger.warn(`Landing page ${landingPageId} section ${section.id} edit failed: ${message}`)
+      const failedSections = sections.map((s, i) => (i === index ? { ...s, status: 'failed' as const, errorMessage: message } : s))
+      await this.prisma.productLandingPage.update({
+        where: { id: landingPageId },
+        data: { status: 'Failed', errorMessage: message, sections: failedSections as unknown as Prisma.InputJsonValue }
       })
     }
   }
@@ -182,11 +246,16 @@ export class LandingPagesProcessor extends WorkerHost {
       return
     }
 
-    // Sections generated sequentially, not in parallel — keeps this within
-    // the free tier's per-minute rate limits instead of bursting N
-    // simultaneous requests at once.
+    if (imageProvider === 'Gemini') {
+      await this.generateFullGeminiImage(landingPageId, sections, instructions)
+      return
+    }
+
+    // Pollinations — sections generated sequentially, not in parallel, to
+    // stay within the free tier's per-minute rate limits instead of
+    // bursting N simultaneous requests at once.
     for (let i = 0; i < sections.length; i++) {
-      sections = await this.generateOneSection(sections, i, imageProvider, productName, instructions)
+      sections = await this.generatePollinationsSection(sections, i, productName, instructions)
       await this.saveSections(landingPageId, sections)
     }
 
@@ -195,16 +264,21 @@ export class LandingPagesProcessor extends WorkerHost {
 
   private async processRegenerateSection(job: Job<RegenerateSectionJob>): Promise<void> {
     const { landingPageId, sectionId, instructions } = job.data
-    const { sections: loadedSections, imageProvider, productName } = await this.loadRow(landingPageId)
-    let sections = loadedSections
+    const { sections: loadedSections, imageProvider, productName, finalImageUrl } = await this.loadRow(landingPageId)
+    const sections = loadedSections
     const index = sections.findIndex((s) => s.id === sectionId)
     if (index === -1) {
       this.logger.warn(`Landing page ${landingPageId}: section ${sectionId} no longer exists, skipping regenerate.`)
       return
     }
 
-    sections = await this.generateOneSection(sections, index, imageProvider, productName, instructions)
-    await this.saveSections(landingPageId, sections)
-    await this.finalizeIfComplete(landingPageId, sections)
+    if (imageProvider === 'Gemini') {
+      await this.regenerateGeminiSection(landingPageId, sections, index, finalImageUrl, instructions)
+      return
+    }
+
+    const updated = await this.generatePollinationsSection(sections, index, productName, instructions)
+    await this.saveSections(landingPageId, updated)
+    await this.finalizeIfComplete(landingPageId, updated)
   }
 }

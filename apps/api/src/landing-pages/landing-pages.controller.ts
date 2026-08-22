@@ -1,7 +1,13 @@
 import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Req, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Throttle } from '@nestjs/throttler'
-import { GenerateLandingPageSchema, RegenerateLandingPageSectionSchema, UpdateLandingPageSchema, type PublicLandingPage } from '@amalice/shared'
+import {
+  GenerateLandingPageSchema,
+  ImproveLandingPageDescriptionSchema,
+  RegenerateLandingPageSectionSchema,
+  UpdateLandingPageSchema,
+  type PublicLandingPage
+} from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
 import { LandingPagesService } from './landing-pages.service'
@@ -14,6 +20,7 @@ import type { AuditActor } from '../common/audit.service'
 class GenerateLandingPageDto extends createZodDto(GenerateLandingPageSchema) {}
 class UpdateLandingPageDto extends createZodDto(UpdateLandingPageSchema) {}
 class RegenerateLandingPageSectionDto extends createZodDto(RegenerateLandingPageSectionSchema) {}
+class ImproveLandingPageDescriptionDto extends createZodDto(ImproveLandingPageDescriptionSchema) {}
 
 interface AuthedRequest extends Request {
   user: AdminJwtPayload
@@ -32,6 +39,19 @@ interface AuthedRequest extends Request {
 @Controller()
 export class LandingPagesController {
   constructor(private readonly landingPages: LandingPagesService) {}
+
+  // "Improve with AI" on the generation form's "description to generate
+  // from" field — not product-scoped (pure text in/out, no DB access), so
+  // it lives ahead of the product-scoped routes below and works before a
+  // landing page (or even this generation attempt) is ever created.
+  @Post('admin/landing-pages/improve-description')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager')
+  @Throttle({ default: { limit: 10, ttl: 5 * 60 * 1000 } })
+  improveDescription(@Body() body: ImproveLandingPageDescriptionDto) {
+    return this.landingPages.improveDescription(body)
+  }
 
   @Get('admin/products/:productId/landing-pages')
   @ApiBearerAuth()

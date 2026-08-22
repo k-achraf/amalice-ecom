@@ -13,6 +13,7 @@ import {
   UseGuards
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { Throttle } from '@nestjs/throttler'
 import {
   AdjustStockSchema,
   CreateProductSchema,
@@ -28,6 +29,7 @@ import {
   UpdateOrderCustomerInfoSchema,
   OrderState,
   ProductListQuerySchema,
+  GenerateProductContentSchema,
   type AdjustStock,
   type CreateProduct
 } from '@amalice/shared'
@@ -64,6 +66,7 @@ class UpdateOrderPriceDto extends createZodDto(UpdateOrderPriceSchema) {}
 class TransitionOrderDto extends createZodDto(TransitionOrderSchema) {}
 class UpdateOrderCustomerInfoDto extends createZodDto(UpdateOrderCustomerInfoSchema) {}
 class ProductListQueryDto extends createZodDto(ProductListQuerySchema) {}
+class GenerateProductContentDto extends createZodDto(GenerateProductContentSchema) {}
 
 interface AuthedRequest extends Request {
   user: AdminJwtPayload
@@ -240,6 +243,17 @@ export class AdminController {
   @Roles('SuperAdmin', 'OpsManager')
   updateProduct(@Param('id') id: string, @Body() body: Partial<CreateProductDto>, @Req() req: AuthedRequest) {
     return this.catalog.updateProduct(id, body as Partial<CreateProduct>, actorFrom(req))
+  }
+
+  // "Generate with AI" (product editor's Details/Content tabs) — a real,
+  // if free-tier, Gemini call, so throttled tighter than a normal PATCH.
+  // Returns a draft only; nothing is written until the admin saves it via
+  // updateProduct() above.
+  @Post('products/:id/generate-content')
+  @Roles('SuperAdmin', 'OpsManager')
+  @Throttle({ default: { limit: 10, ttl: 5 * 60 * 1000 } })
+  generateContent(@Param('id') id: string, @Body() body: GenerateProductContentDto, @Req() req: AuthedRequest) {
+    return this.productMgmt.generateContent(id, body, actorFrom(req))
   }
 
   @Post('products/:id/archive')

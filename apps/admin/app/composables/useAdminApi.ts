@@ -46,6 +46,20 @@ export function useAdminApi() {
 // spreading ofetch types into Nuxt's UseFetchOptions, which don't line up.
 // The same 401 handler applies: an expired session during a GET read logs the
 // user out and bounces to /login just like a mutation would.
+//
+// deep: true — Nuxt 4 changed useFetch/useAsyncData's default to `deep:
+// false` (a shallowRef), but every page built on this composable edits the
+// fetched object in place via plain v-model bindings and array push/splice
+// (a product's price, an order's notes, a nested faqs/keyBenefits list, a
+// stock quantity, ...) and expects that to just re-render, the same way it
+// always did under Nuxt 3's deep-by-default behavior. Left shallow, a
+// mutation still lands on the real object (so, confusingly, a subsequent
+// Save/PATCH sends the right value) but the DOM doesn't update until
+// something unrelated forces a re-render — e.g. the price input visually
+// reverting after blur, or a newly-added FAQ row not appearing until you
+// switch tabs and back. `deep: true` restores normal reactivity for
+// everything built on this composable instead of requiring every mutation
+// site to remember a manual `triggerRef()`.
 export function useAdminFetch<T>(url: string, opts?: { query?: Record<string, unknown>; key?: string }) {
   const config = useRuntimeConfig()
   const auth = useAuthStore()
@@ -54,6 +68,7 @@ export function useAdminFetch<T>(url: string, opts?: { query?: Record<string, un
     baseURL: config.public.apiBase,
     key: opts?.key,
     query: opts?.query,
+    deep: true,
     onRequest({ options }) {
       const token = auth.token
       if (token) {

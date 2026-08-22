@@ -51,6 +51,16 @@ const dirty = computed(() => !!settings.value && (
 ))
 
 async function apply() {
+  // Not :disabled on the button — abandonedCartDelaySeconds is bound via
+  // UInputNumber (Reka UI's NumberField), which only commits its typed
+  // value to v-model on blur/Enter, not on every keystroke. A
+  // disabled-until-dirty button stays disabled through the first click
+  // right after editing just that field (the click's mousedown blurs the
+  // input and commits it, but the click itself never reaches this handler
+  // because the button was still disabled at that instant) — the user has
+  // to click twice. Guarding here instead means the button is always
+  // clickable and this runs with whatever every input already committed by
+  // the time of the click.
   if (!dirty.value) return
   saving.value = true
   try {
@@ -550,7 +560,7 @@ const showFieldModalBool = computed({
           <p class="text-sm" :class="dirty ? 'text-highlighted' : 'text-muted'">
             {{ dirty ? 'Unsaved changes — the storefront updates on the next visitor load.' : 'All changes saved.' }}
           </p>
-          <UButton :loading="saving" :disabled="!dirty" color="primary" icon="i-lucide-check" @click="apply">Apply changes</UButton>
+          <UButton :loading="saving" color="primary" icon="i-lucide-check" @click="apply">Apply changes</UButton>
         </div>
       </div>
     </template>

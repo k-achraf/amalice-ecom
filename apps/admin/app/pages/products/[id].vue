@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AdminProductDetail, Category, ProductLandingPage } from '@amalice/shared'
+import type { AdminProductDetail, Category, ProductLandingPage, GeneratedProductContent } from '@amalice/shared'
 import { offerTotalQuantity, offerPriceCents } from '@amalice/shared'
 
 // Full product editor — tabbed sections for Details, Variants, Images, Inventory.
@@ -117,42 +117,31 @@ async function toggleRequireOfferSelection(value: boolean) {
 // sections rather than core product fields.
 const savingContent = ref(false)
 
-// useAdminFetch's `product` is a shallowRef (Nuxt 4's useAsyncData default is
-// `deep: false`) — push/splice on a nested array mutate it in place but
-// never notify Vue, so the v-for list and the "N items" v-if silently never
-// re-render. triggerRef is the standard fix: keep the cheap in-place
-// mutation, then force a re-evaluation of everything depending on `product`.
 function addBenefit() {
   if (!product.value) return
   product.value.keyBenefits.push('')
-  triggerRef(product)
 }
 function removeBenefit(index: number) {
   if (!product.value) return
   product.value.keyBenefits.splice(index, 1)
-  triggerRef(product)
 }
 
 function addFaq() {
   if (!product.value) return
   product.value.faqs.push({ question: '', answer: '' })
-  triggerRef(product)
 }
 function removeFaq(index: number) {
   if (!product.value) return
   product.value.faqs.splice(index, 1)
-  triggerRef(product)
 }
 
 function addSpecification() {
   if (!product.value) return
   product.value.specifications.push({ label: '', value: '' })
-  triggerRef(product)
 }
 function removeSpecification(index: number) {
   if (!product.value) return
   product.value.specifications.splice(index, 1)
-  triggerRef(product)
 }
 
 async function saveContent() {
@@ -177,6 +166,67 @@ async function saveContent() {
   } finally {
     savingContent.value = false
   }
+}
+
+// ---- "Generate with AI" (Details tab) ----
+// Paste a raw, messy content dump — title/description/specs/FAQ all mixed
+// together, any language — plus optionally a few of the product's own
+// photos, and a free Gemini call (see apps/api/src/landing-pages/
+// gemini.service.ts's draftProductContent) drafts a polished, conversion-
+// focused name/description/keyBenefits/faqs/specifications set. Never
+// writes to the product directly: the draft is shown for review, and
+// "Apply" only fills the in-memory `product` fields (across the Details and
+// Content tabs) — the admin still hits those tabs' own Save buttons to
+// actually persist, same as if they'd typed it by hand.
+const aiRawContent = ref('')
+const aiInstructions = ref('')
+const aiSourceImages = ref<string[]>([])
+const generatingContent = ref(false)
+const aiDraft = ref<GeneratedProductContent | null>(null)
+
+function toggleAiSourceImage(url: string) {
+  const idx = aiSourceImages.value.indexOf(url)
+  if (idx === -1) aiSourceImages.value.push(url)
+  else aiSourceImages.value.splice(idx, 1)
+}
+
+async function generateProductContent() {
+  if (!aiRawContent.value.trim()) {
+    toast.add({ title: 'Paste some raw content first', color: 'warning' })
+    return
+  }
+  generatingContent.value = true
+  try {
+    aiDraft.value = await api<GeneratedProductContent>(`/admin/products/${id}/generate-content`, {
+      method: 'POST',
+      body: {
+        rawContent: aiRawContent.value,
+        sourceImageUrls: aiSourceImages.value,
+        instructions: aiInstructions.value.trim() || undefined
+      }
+    })
+    toast.add({ title: 'Draft ready — review below before applying', color: 'success' })
+  } catch (err) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: 'Failed to generate content', description: data?.message, color: 'error' })
+  } finally {
+    generatingContent.value = false
+  }
+}
+
+function applyGeneratedContent() {
+  if (!product.value || !aiDraft.value) return
+  product.value.name = aiDraft.value.name
+  product.value.description = aiDraft.value.description
+  product.value.keyBenefits = [...aiDraft.value.keyBenefits]
+  product.value.faqs = aiDraft.value.faqs.map((f) => ({ ...f }))
+  product.value.specifications = aiDraft.value.specifications.map((s) => ({ ...s }))
+  aiDraft.value = null
+  toast.add({ title: 'Applied to the form below — click Save on the Details and Content tabs to publish', color: 'success' })
+}
+
+function discardGeneratedContent() {
+  aiDraft.value = null
 }
 
 // ---- Variants tab ----
@@ -468,7 +518,19 @@ const adjustNote = ref('')
 const savingAdjust = ref(false)
 
 async function saveAdjust() {
-  if (adjustDelta.value === 0) return
+  // Not :disabled on the button — UInputNumber (Reka UI's NumberField) only
+  // commits its typed value to v-model on blur/Enter, not on every
+  // keystroke, so a disabled-until-nonzero button stays disabled through
+  // the first click after typing (that click's mousedown does blur the
+  // input and commit the value, but the click itself never reaches this
+  // handler because the button was still disabled at that instant) — the
+  // user has to click twice. Guarding here instead means the button is
+  // always clickable and this runs with whatever the input already
+  // committed by the time of the click.
+  if (adjustDelta.value === 0) {
+    toast.add({ title: 'Enter a non-zero change first', color: 'warning' })
+    return
+  }
   savingAdjust.value = true
   try {
     await api(`/admin/products/${id}/stock`, { method: 'POST', body: { delta: adjustDelta.value, reason: adjustReason.value, note: adjustNote.value || undefined } })
@@ -507,6 +569,7 @@ const landingPages = ref<ProductLandingPage[]>([])
 const generatingLandingPage = ref(false)
 const selectedSourceImages = ref<string[]>([])
 const landingPageDescription = ref('')
+const improvingLandingPageDescription = ref(false)
 const landingPageInstructions = ref('')
 const landingPageName = ref('')
 const sectionCount = ref(5)
@@ -579,11 +642,62 @@ onMounted(async () => {
 })
 onUnmounted(() => stopLandingPagePolling())
 
-// Prefill the generation description from the product's own description,
-// once, the first time it becomes available — still freely editable after.
+// Strips HTML tags down to plain text (client-only — admin is an SPA, no
+// SSR to worry about) for folding the rich-text product description into
+// the landing page's own plain-text generation source below.
+function htmlToPlainText(html: string): string {
+  if (!html) return ''
+  const div = document.createElement('div')
+  div.innerHTML = html
+  return (div.textContent ?? div.innerText ?? '').trim()
+}
+
+// The landing page's "description to generate from" is deliberately its
+// OWN text, separate from Product.description — composed once from
+// everything already on the product (description + key benefits +
+// specifications + FAQ, as much detail as possible) so copy drafting has
+// rich material to pull from, then freely editable/improvable from there
+// without ever writing back to the product itself.
+function composeLandingPageDescription(p: AdminProductDetail): string {
+  const parts: string[] = []
+  const plainDescription = htmlToPlainText(p.description ?? '')
+  if (plainDescription) parts.push(plainDescription)
+  if (p.keyBenefits.length) parts.push(`Key benefits:\n${p.keyBenefits.map((b) => `- ${b}`).join('\n')}`)
+  if (p.specifications.length) parts.push(`Specifications:\n${p.specifications.map((s) => `- ${s.label}: ${s.value}`).join('\n')}`)
+  if (p.faqs.length) parts.push(`FAQ:\n${p.faqs.map((f) => `Q: ${f.question}\nA: ${f.answer}`).join('\n')}`)
+  return parts.join('\n\n')
+}
+
+// Prefill the generation description from the product's own content, once,
+// the first time it becomes available — still freely editable after, and
+// never written back to the product (see composeLandingPageDescription).
 watch(product, (p) => {
-  if (p && !landingPageDescription.value) landingPageDescription.value = (p.description as string) ?? ''
+  if (p && !landingPageDescription.value) landingPageDescription.value = composeLandingPageDescription(p)
 }, { immediate: true })
+
+// "Improve with AI" — a pure text-in/text-out pass on this local field
+// only (see the API's improveDescription/GeminiService.
+// improveLandingPageDescription): expands/clarifies the composed text
+// without shortening it, using the same free Gemini text model as the rest
+// of this tab. Never touches Product.description/keyBenefits/faqs/
+// specifications — those aren't even sent, only this textarea's content.
+async function improveLandingPageDescription() {
+  if (!landingPageDescription.value.trim()) return
+  improvingLandingPageDescription.value = true
+  try {
+    const { text } = await api<{ text: string }>('/admin/landing-pages/improve-description', {
+      method: 'POST',
+      body: { text: landingPageDescription.value, productName: product.value?.name, instructions: landingPageInstructions.value.trim() || undefined }
+    })
+    landingPageDescription.value = text
+    toast.add({ title: 'Description improved', color: 'success' })
+  } catch (err) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: 'Failed to improve description', description: data?.message, color: 'error' })
+  } finally {
+    improvingLandingPageDescription.value = false
+  }
+}
 
 function toggleSourceImage(url: string) {
   const idx = selectedSourceImages.value.indexOf(url)
@@ -906,41 +1020,127 @@ async function deleteUpsell(upsellId: string) {
         />
 
         <!-- Details Tab -->
-        <div v-show="activeTab === 'details'" class="admin-kpi-card space-y-5 p-6">
-          <UFormField label="Name"><UInput v-model="product.name" class="w-full" /></UFormField>
-          <UFormField label="Slug"><UInput v-model="product.slug" class="w-full" /></UFormField>
-          <UFormField label="Description">
-            <RichTextEditor v-model="product.description" />
-          </UFormField>
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <UFormField label="Category">
-              <USelect
-                v-model="product.categoryId"
-                :items="[{ label: 'None', value: null }, ...(categories ?? []).map((c) => ({ label: c.name, value: c.id }))]"
-                class="w-full"
-              />
-            </UFormField>
-            <UFormField label="Price (DZD)"><UInputNumber v-model="productPriceDzd" :min="0" class="w-full" /></UFormField>
-          </div>
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <UFormField label="Low-stock threshold"><UInputNumber v-model="product.lowStockThreshold" class="w-full" /></UFormField>
-            <div class="flex items-end gap-4 pb-1">
-              <UCheckbox v-model="product.featured" label="Featured" />
-              <UCheckbox v-model="product.bestSeller" label="Best seller" />
-            </div>
-          </div>
-          <div class="admin-kpi-card flex items-center justify-between gap-3 p-4">
-            <div class="min-w-0">
-              <p class="text-sm font-medium text-highlighted">Visible on storefront</p>
-              <p class="text-xs text-muted">
-                Off hides this product from catalog, search, home sections, and other products' "related" — but its own product page
-                and any AI landing pages keep working for anyone with the direct link. Use this for ad-only funnel products.
+        <div v-show="activeTab === 'details'" class="space-y-5">
+          <!-- Generate with AI — see the script section above generateProductContent
+               for the full contract. Draft only: nothing here is saved until
+               "Apply to form" is clicked and then the Save button below it. -->
+          <div class="admin-kpi-card space-y-4 p-6">
+            <div>
+              <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
+                <UIcon name="i-lucide-wand-2" class="size-4 text-primary" /> Generate with AI
+              </h3>
+              <p class="text-sm text-muted">
+                Paste everything you have about this product — title, description, specs, FAQ, all mixed together,
+                any language — and optionally pick a few photos below. A free AI model drafts a short,
+                conversion-focused name, description, key benefits, FAQ, and specifications from it.
               </p>
             </div>
-            <USwitch :model-value="product.visible" :loading="savingVisible" @update:model-value="toggleVisible($event as boolean)" />
+
+            <UFormField label="Raw content">
+              <UTextarea v-model="aiRawContent" placeholder="Paste everything you have about this product here…" :rows="6" class="w-full" />
+            </UFormField>
+
+            <UFormField v-if="product.images.length" label="Source photos (optional)">
+              <div class="grid grid-cols-4 gap-2 sm:grid-cols-6">
+                <button
+                  v-for="img in product.images"
+                  :key="img.id"
+                  type="button"
+                  class="relative aspect-square overflow-hidden rounded-md border-2 transition-colors"
+                  :class="aiSourceImages.includes(img.url) ? 'border-primary' : 'border-[var(--color-admin-border)]'"
+                  @click="toggleAiSourceImage(img.url)"
+                >
+                  <img :src="resolveImgUrl(img.url)" :alt="img.altText ?? ''" class="size-full object-cover" />
+                  <div v-if="aiSourceImages.includes(img.url)" class="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-primary text-white">
+                    <UIcon name="i-lucide-check" class="size-3" />
+                  </div>
+                </button>
+              </div>
+            </UFormField>
+
+            <UFormField label="Additional instructions (optional)">
+              <UTextarea v-model="aiInstructions" placeholder="e.g. target a younger audience, emphasize the 2-year warranty…" :rows="2" class="w-full" />
+            </UFormField>
+
+            <UButton :loading="generatingContent" :disabled="!aiRawContent.trim()" icon="i-lucide-sparkles" color="primary" @click="generateProductContent">
+              Generate
+            </UButton>
+
+            <div v-if="aiDraft" class="space-y-3 rounded-lg border border-[var(--color-admin-border)] p-4">
+              <div class="flex items-center justify-between gap-2">
+                <h4 class="text-sm font-medium text-highlighted">Draft</h4>
+                <div class="flex gap-2">
+                  <UButton size="xs" variant="ghost" color="neutral" label="Discard" @click="discardGeneratedContent" />
+                  <UButton size="xs" variant="solid" color="primary" icon="i-lucide-check" label="Apply to form" @click="applyGeneratedContent" />
+                </div>
+              </div>
+              <div>
+                <p class="text-xs font-bold uppercase text-muted">Name</p>
+                <p class="text-sm text-highlighted">{{ aiDraft.name }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-bold uppercase text-muted">Description</p>
+                <p class="whitespace-pre-line text-sm text-highlighted">{{ aiDraft.description }}</p>
+              </div>
+              <div v-if="aiDraft.keyBenefits.length">
+                <p class="text-xs font-bold uppercase text-muted">Key benefits</p>
+                <ul class="list-inside list-disc text-sm text-highlighted">
+                  <li v-for="(b, i) in aiDraft.keyBenefits" :key="i">{{ b }}</li>
+                </ul>
+              </div>
+              <div v-if="aiDraft.faqs.length" class="space-y-1.5">
+                <p class="text-xs font-bold uppercase text-muted">FAQ</p>
+                <div v-for="(f, i) in aiDraft.faqs" :key="i" class="text-sm">
+                  <p class="font-medium text-highlighted">{{ f.question }}</p>
+                  <p class="text-muted">{{ f.answer }}</p>
+                </div>
+              </div>
+              <div v-if="aiDraft.specifications.length" class="space-y-1">
+                <p class="text-xs font-bold uppercase text-muted">Specifications</p>
+                <div v-for="(s, i) in aiDraft.specifications" :key="i" class="flex justify-between gap-3 text-sm">
+                  <span class="text-muted">{{ s.label }}</span>
+                  <span class="font-medium text-highlighted">{{ s.value }}</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="flex justify-end">
-            <UButton :loading="savingDetails" icon="i-lucide-save" color="primary" @click="saveDetails">Save details</UButton>
+
+          <div class="admin-kpi-card space-y-5 p-6">
+            <UFormField label="Name"><UInput v-model="product.name" class="w-full" /></UFormField>
+            <UFormField label="Slug"><UInput v-model="product.slug" class="w-full" /></UFormField>
+            <UFormField label="Description">
+              <RichTextEditor v-model="product.description" />
+            </UFormField>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <UFormField label="Category">
+                <USelect
+                  v-model="product.categoryId"
+                  :items="[{ label: 'None', value: null }, ...(categories ?? []).map((c) => ({ label: c.name, value: c.id }))]"
+                  class="w-full"
+                />
+              </UFormField>
+              <UFormField label="Price (DZD)"><UInputNumber v-model="productPriceDzd" :min="0" class="w-full" /></UFormField>
+            </div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <UFormField label="Low-stock threshold"><UInputNumber v-model="product.lowStockThreshold" class="w-full" /></UFormField>
+              <div class="flex items-end gap-4 pb-1">
+                <UCheckbox v-model="product.featured" label="Featured" />
+                <UCheckbox v-model="product.bestSeller" label="Best seller" />
+              </div>
+            </div>
+            <div class="admin-kpi-card flex items-center justify-between gap-3 p-4">
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-highlighted">Visible on storefront</p>
+                <p class="text-xs text-muted">
+                  Off hides this product from catalog, search, home sections, and other products' "related" — but its own product page
+                  and any AI landing pages keep working for anyone with the direct link. Use this for ad-only funnel products.
+                </p>
+              </div>
+              <USwitch :model-value="product.visible" :loading="savingVisible" @update:model-value="toggleVisible($event as boolean)" />
+            </div>
+            <div class="flex justify-end">
+              <UButton :loading="savingDetails" icon="i-lucide-save" color="primary" @click="saveDetails">Save details</UButton>
+            </div>
           </div>
         </div>
 
@@ -1199,7 +1399,74 @@ async function deleteUpsell(upsellId: string) {
               </p>
 
               <template v-if="expandedLandingPageId === lp.id">
-                <div v-if="lp.sections.length" class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <!-- Gemini composes the whole page in one image — there's no
+                     separate per-section image to preview, only the copy.
+                     "Regenerate"/"Edit" here edit that one section directly
+                     within the final image (see the API's editLandingPageImage). -->
+                <div v-if="lp.sections.length && lp.imageProvider === 'Gemini'" class="space-y-2">
+                  <div v-for="section in lp.sections" :key="section.id" class="space-y-1.5 rounded-md border border-[var(--color-admin-border)] p-2.5">
+                    <div class="flex items-start justify-between gap-2">
+                      <p class="min-w-0 flex-1 text-xs font-medium text-highlighted">
+                        <span class="uppercase text-muted">{{ section.role }}</span>
+                        <template v-if="section.headline"> — {{ section.headline }}</template>
+                        <span v-if="section.body" class="block text-muted">{{ section.body }}</span>
+                      </p>
+                      <UIcon
+                        v-if="section.status === 'generating' || section.status === 'failed'"
+                        :name="section.status === 'failed' ? 'i-lucide-circle-x' : 'i-lucide-loader-circle'"
+                        class="size-4 shrink-0 text-muted"
+                        :class="section.status === 'generating' && 'animate-spin'"
+                      />
+                    </div>
+                    <div class="flex gap-1">
+                      <UButton
+                        size="xs"
+                        variant="soft"
+                        color="neutral"
+                        icon="i-lucide-refresh-cw"
+                        block
+                        class="flex-1"
+                        :disabled="section.status === 'generating'"
+                        @click="regenerateSection(lp.id, section.id)"
+                      >
+                        Regenerate
+                      </UButton>
+                      <UButton
+                        size="xs"
+                        variant="soft"
+                        color="neutral"
+                        icon="i-lucide-pencil"
+                        title="Edit with instructions"
+                        :disabled="section.status === 'generating'"
+                        @click="toggleSectionEdit(section.id)"
+                      />
+                    </div>
+                    <div v-if="sectionEditOpenFor.has(section.id)" class="space-y-1.5">
+                      <UTextarea
+                        v-model="sectionEditInstructions[section.id]"
+                        placeholder="e.g. make the background blue, remove the price tag…"
+                        :rows="2"
+                        class="w-full text-xs"
+                      />
+                      <UButton
+                        size="xs"
+                        variant="solid"
+                        color="primary"
+                        icon="i-lucide-wand-2"
+                        block
+                        :disabled="section.status === 'generating' || !sectionEditInstructions[section.id]?.trim()"
+                        @click="regenerateSection(lp.id, section.id)"
+                      >
+                        {{ lp.finalImageUrl ? 'Edit this section' : 'Generate with instructions' }}
+                      </UButton>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Pollinations has no photo-editing ability, so each
+                     section really is its own separately generated image —
+                     unchanged, per-section thumbnail grid. -->
+                <div v-else-if="lp.sections.length" class="grid grid-cols-2 gap-3 sm:grid-cols-3">
                   <div v-for="section in lp.sections" :key="section.id" class="space-y-1.5 rounded-md border border-[var(--color-admin-border)] p-2">
                     <button
                       type="button"
@@ -1282,9 +1549,10 @@ async function deleteUpsell(upsellId: string) {
               </h3>
               <p class="text-sm text-muted">
                 Turns this product's photos and description into a long-scroll marketing image — a hero section, a
-                few feature highlights, and a call-to-action, each generated with its own text and effects, then
-                combined into one image. Publishes at its own URL, separate from the normal product page above —
-                generate as many as you like (different angles for different ad campaigns).
+                few feature highlights, and a call-to-action. Gemini composes the entire page in a single generation
+                using your real photos; Pollinations (free) generates each section separately and stitches them
+                together. Publishes at its own URL, separate from the normal product page above — generate as many
+                as you like (different angles for different ad campaigns).
               </p>
             </div>
 
@@ -1292,8 +1560,23 @@ async function deleteUpsell(upsellId: string) {
               <UInput v-model="landingPageName" placeholder="Landing Page" class="w-full" />
             </UFormField>
 
-            <UFormField label="Description to generate from" help="Prefilled from the product description — edit for punchier landing-page copy before generating.">
-              <UTextarea v-model="landingPageDescription" class="w-full" :rows="4" />
+            <UFormField
+              label="Description to generate from"
+              help="Its own text, separate from the product's description — prefilled from the product's description, key benefits, specifications, and FAQ combined, so there's as much detail as possible to draft from. Editing or improving it here never changes the product itself."
+            >
+              <UTextarea v-model="landingPageDescription" class="w-full" :rows="6" />
+              <UButton
+                class="mt-2"
+                size="xs"
+                variant="soft"
+                color="neutral"
+                icon="i-lucide-wand-2"
+                :loading="improvingLandingPageDescription"
+                :disabled="!landingPageDescription.trim()"
+                @click="improveLandingPageDescription"
+              >
+                Improve with AI
+              </UButton>
             </UFormField>
 
             <UFormField label="Additional instructions (optional)" help="Art-direction or copy steer on top of the description — e.g. “target a younger audience”, “use a beach background”, “emphasize the 2-year warranty”.">
@@ -1542,7 +1825,7 @@ async function deleteUpsell(upsellId: string) {
             </div>
             <p class="mt-3 text-sm text-muted">New stock: <span class="tabular font-medium">{{ product.stockQuantity + adjustDelta }}</span></p>
             <div class="mt-4 flex justify-end">
-              <UButton :loading="savingAdjust" :disabled="adjustDelta === 0" color="primary" @click="saveAdjust">Save adjustment</UButton>
+              <UButton :loading="savingAdjust" color="primary" @click="saveAdjust">Save adjustment</UButton>
             </div>
           </div>
         </div>

@@ -60,14 +60,18 @@ export type ProductLandingPage = z.infer<typeof ProductLandingPageSchema>
 // Admin request — generate a NEW landing page for a product (a create, not
 // an upsert — a product can have several). sourceImageUrls are a subset of
 // the product's own ProductImage.url values (validated server-side against
-// the product's actual gallery, not arbitrary URLs) — description is
-// prefilled from Product.description in the admin UI but editable before
-// generating. name defaults to "Landing Page"; the URL number is always
+// the product's actual gallery, not arbitrary URLs) — description is its
+// OWN text, never Product.description itself: the admin UI composes it from
+// the product's description + key benefits + specifications + FAQ combined
+// (as much detail as possible), optionally expanded further via "Improve
+// with AI" (ImproveLandingPageDescriptionSchema below), so the cap here has
+// to comfortably fit that combined/expanded text, not just a plain
+// description. name defaults to "Landing Page"; the URL number is always
 // auto-assigned by the server (see landing-pages.service.ts's `nextNumber`),
 // never admin-supplied.
 export const GenerateLandingPageSchema = z.object({
   sourceImageUrls: z.array(z.string()).min(1).max(10),
-  description: z.string().trim().min(1).max(5000),
+  description: z.string().trim().min(1).max(20000),
   sectionCount: z.number().int().min(3).max(7).default(5),
   imageProvider: LandingPageImageProviderSchema.default('Gemini'),
   name: z.string().trim().min(1).max(100).optional(),
@@ -83,11 +87,33 @@ export type GenerateLandingPage = z.infer<typeof GenerateLandingPageSchema>
 // the background blue", "remove the price tag". When the section already
 // has a generated image, the image provider treats this as an EDIT of that
 // existing image rather than a from-scratch regeneration (see
-// gemini.service.ts's generateSectionImage `editImage` param).
+// gemini.service.ts's editLandingPageImage).
 export const RegenerateLandingPageSectionSchema = z.object({
   instructions: z.string().trim().max(1000).optional()
 })
 export type RegenerateLandingPageSection = z.infer<typeof RegenerateLandingPageSectionSchema>
+
+// "Improve with AI" on the generation form's "description to generate from"
+// field — a pure text-in/text-out pass (see gemini.service.ts's
+// improveLandingPageDescription) that never touches Product.description or
+// any other product content. `text` is admin-composed source material (the
+// admin UI seeds it from the product's description + specifications + FAQ +
+// key benefits, then lets the admin edit freely before/after improving) —
+// this schema and its endpoint don't read the product at all, so there's
+// nothing here that COULD write back to it. No landing page needs to exist
+// yet either — this runs during the compose step, before "Generate landing
+// page" is ever clicked.
+export const ImproveLandingPageDescriptionSchema = z.object({
+  text: z.string().trim().min(1).max(20000),
+  productName: z.string().trim().max(200).optional(),
+  instructions: z.string().trim().max(1000).optional()
+})
+export type ImproveLandingPageDescription = z.infer<typeof ImproveLandingPageDescriptionSchema>
+
+export const ImprovedLandingPageDescriptionSchema = z.object({
+  text: z.string().min(1)
+})
+export type ImprovedLandingPageDescription = z.infer<typeof ImprovedLandingPageDescriptionSchema>
 
 // Rename and/or toggle whether this specific landing page is publicly
 // reachable at its URL — both optional, send whichever changed.

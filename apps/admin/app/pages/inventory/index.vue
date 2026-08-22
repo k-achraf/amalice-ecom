@@ -91,7 +91,20 @@ const showAdjust = computed({
 })
 
 async function saveAdjust() {
-  if (!adjusting.value || adjustDelta.value === 0) return
+  if (!adjusting.value) return
+  // Not :disabled on the button — UInputNumber (Reka UI's NumberField) only
+  // commits its typed value to v-model on blur/Enter, not on every
+  // keystroke, so a disabled-until-nonzero button stays disabled through
+  // the first click after typing (that click's mousedown does blur the
+  // input and commit the value, but the click itself never reaches this
+  // handler because the button was still disabled at that instant) — the
+  // user has to click twice. Guarding here instead means the button is
+  // always clickable and this runs with whatever the input already
+  // committed by the time of the click.
+  if (adjustDelta.value === 0) {
+    toast.add({ title: 'Enter a non-zero change first', color: 'warning' })
+    return
+  }
   savingAdjust.value = true
   try {
     await api(`/admin/products/${adjusting.value.id}/stock`, {
@@ -266,7 +279,7 @@ async function onPreviewToggle(p: Product, open: boolean) {
             <p class="text-sm">New stock: <span class="tabular font-medium">{{ adjusting.stockQuantity + adjustDelta }}</span></p>
             <div class="flex justify-end gap-2">
               <UButton color="neutral" variant="ghost" label="Cancel" @click="adjusting = null" />
-              <UButton :loading="savingAdjust" :disabled="adjustDelta === 0" label="Save" color="primary" @click="saveAdjust" />
+              <UButton :loading="savingAdjust" label="Save" color="primary" @click="saveAdjust" />
             </div>
           </div>
         </template>

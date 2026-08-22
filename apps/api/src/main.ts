@@ -26,7 +26,7 @@ async function bootstrap() {
   // normal console/PM2 output).
   app.useLogger(app.get(PersistentLogger))
   app.enableCors({
-    origin: ['https://amalice.shop', 'https://www.amalice.shop', 'https://admin.amalice.shop'],
+    origin: ['https://amalice.shop', 'https://www.amalice.shop', 'https://admin.amalice.shop', 'http://localhost:3001'],
     credentials: true
   })
 

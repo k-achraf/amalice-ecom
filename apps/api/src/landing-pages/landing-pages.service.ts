@@ -5,6 +5,8 @@ import { randomUUID } from 'node:crypto'
 import {
   LandingPageSectionSchema,
   type GenerateLandingPage,
+  type ImproveLandingPageDescription,
+  type ImprovedLandingPageDescription,
   type LandingPageSection,
   type ProductLandingPage,
   type PublicLandingPage,
@@ -13,6 +15,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service'
 import { Prisma } from '../generated/prisma/client'
 import { AuditService, type AuditActor } from '../common/audit.service'
+import { GeminiService } from './gemini.service'
 
 // Spreads the store owner's selected product photos across sections — each
 // section gets only 1 or 2 of them, never the whole set. Previously every
@@ -48,8 +51,20 @@ export class LandingPagesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
-    @InjectQueue('landing-pages') private readonly queue: Queue
+    @InjectQueue('landing-pages') private readonly queue: Queue,
+    private readonly gemini: GeminiService
   ) {}
+
+  // "Improve with AI" on the generation form's "description to generate
+  // from" field — pure text in/out (see GeminiService.
+  // improveLandingPageDescription), no Prisma read/write at all. No landing
+  // page needs to exist yet: this runs during the compose step, before
+  // "Generate landing page" is clicked, and never touches Product.
+  // description or any other product content.
+  async improveDescription(input: ImproveLandingPageDescription): Promise<ImprovedLandingPageDescription> {
+    const text = await this.gemini.improveLandingPageDescription(input)
+    return { text }
+  }
 
   private toView(row: {
     id: string

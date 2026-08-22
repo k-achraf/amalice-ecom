@@ -1,22 +1,27 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
-import type {
-  AdminProductDetail,
-  CreateProductImage,
-  CreateProductVariant,
-  UpdateProductImage,
-  UpdateProductVariant,
-  CreateAttribute,
-  CreateAttributeOption,
-  CreateProductOffer,
-  UpdateProductOffer,
-  CreateProductUpsell,
-  UpdateProductUpsell,
-  ProductFaq,
-  ProductSpecification
+import { BadGatewayException, BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import {
+  GeneratedProductContentSchema,
+  type AdminProductDetail,
+  type CreateProductImage,
+  type CreateProductVariant,
+  type UpdateProductImage,
+  type UpdateProductVariant,
+  type CreateAttribute,
+  type CreateAttributeOption,
+  type CreateProductOffer,
+  type UpdateProductOffer,
+  type CreateProductUpsell,
+  type UpdateProductUpsell,
+  type ProductFaq,
+  type ProductSpecification,
+  type GenerateProductContent,
+  type GeneratedProductContent
 } from '@amalice/shared'
 import { Prisma } from '../generated/prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
+import { GeminiService } from '../landing-pages/gemini.service'
+import { fetchImageAsInline } from '../landing-pages/landing-page-storage.util'
 
 // Full product management — variant/image/attribute CRUD for the admin editor.
 // Split from AdminCatalogService (which owns the flat product fields + stock)
@@ -25,7 +30,8 @@ import { AuditService, type AuditActor } from '../common/audit.service'
 export class AdminProductManagementService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly audit: AuditService
+    private readonly audit: AuditService,
+    private readonly gemini: GeminiService
   ) {}
 
   // ---- Full product detail for the editor ----
@@ -110,6 +116,47 @@ export class AdminProductManagementService {
         updatedAt: o.updatedAt.toISOString()
       }))
     }
+  }
+
+  // "Generate with AI" — the admin pastes a raw, messy content dump (title/
+  // description/specs/FAQ all mixed together, any language) and optionally
+  // picks a few of the product's own photos; Gemini's free text model
+  // (GeminiService.draftProductContent) turns that into a polished,
+  // conversion-focused draft. This never writes to the product — the admin
+  // reviews the draft in the UI and saves it (or edits first) through the
+  // normal PATCH endpoint (updateProduct/saveContent), same as anything
+  // else typed into those tabs.
+  async generateContent(productId: string, input: GenerateProductContent, actor: AuditActor): Promise<GeneratedProductContent> {
+    const product = await this.prisma.product.findUnique({ where: { id: productId }, include: { images: true } })
+    if (!product) throw new NotFoundException('Product not found')
+
+    const validUrls = new Set(product.images.map((i) => i.url))
+    const invalid = input.sourceImageUrls.filter((u) => !validUrls.has(u))
+    if (invalid.length > 0) {
+      throw new BadRequestException(`These images don't belong to this product: ${invalid.join(', ')}`)
+    }
+
+    const sourceImages = await Promise.all(input.sourceImageUrls.map((url) => fetchImageAsInline(url)))
+    const draft = await this.gemini.draftProductContent({
+      rawContent: input.rawContent,
+      sourceImages,
+      instructions: input.instructions
+    })
+
+    const parsed = GeneratedProductContentSchema.safeParse(draft)
+    if (!parsed.success) {
+      throw new BadGatewayException('The AI returned content in an unexpected format — try again.')
+    }
+
+    await this.audit.log({
+      actor,
+      action: 'Update',
+      entity: 'Product',
+      entityId: productId,
+      metadata: { action: 'generate-content', sourceImageCount: input.sourceImageUrls.length }
+    })
+
+    return parsed.data
   }
 
   // ---- Variant CRUD ----
