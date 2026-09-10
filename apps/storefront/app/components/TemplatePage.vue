@@ -73,6 +73,15 @@ const OVERRIDES: Record<string, Record<string, Component>> = {
     forge: lazy(() => import('./forge/ForgeCatalogPage.vue')),
     impulse: lazy(() => import('./impulse/ImpulseCatalogPage.vue'))
   },
+  // quartz is deliberately scoped to ProductDetail only (plus
+  // TemplateSection's LandingPageLeadCard/LeadFormFields/Button) — it's a
+  // single-product COD order-page template, not a full browsing storefront.
+  // Every other page (Catalog, Cart, Checkout, Collection, Deals, Wishlist,
+  // NewArrivals, Confirmation) intentionally has no quartz entry and falls
+  // back to the bare minimal page below — this is a supported, existing
+  // pattern (see Confirmation, which only impulse overrides), not an
+  // oversight. Don't "complete" quartz by adding entries to the other page
+  // maps without deliberately deciding to expand its scope.
   ProductDetail: {
     editorial: lazy(() => import('./editorial/EditorialProductDetailPage.vue')),
     boutique: lazy(() => import('./boutique/BoutiqueProductDetailPage.vue')),
@@ -87,7 +96,8 @@ const OVERRIDES: Record<string, Record<string, Component>> = {
     lumiere: lazy(() => import('./lumiere/LumiereProductDetailPage.vue')),
     trove: lazy(() => import('./trove/TroveProductDetailPage.vue')),
     forge: lazy(() => import('./forge/ForgeProductDetailPage.vue')),
-    impulse: lazy(() => import('./impulse/ImpulseProductDetailPage.vue'))
+    impulse: lazy(() => import('./impulse/ImpulseProductDetailPage.vue')),
+    quartz: lazy(() => import('./quartz/QuartzProductDetailPage.vue'))
   },
   Cart: {
     editorial: lazy(() => import('./editorial/EditorialCartPage.vue')),

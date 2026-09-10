@@ -1,0 +1,198 @@
+/*
+ * Quartz template — a lean, mobile-first single-product COD order page,
+ * scoped to .tpl-quartz. Built with plain Tailwind (no @nuxt/ui component
+ * library at all), same approach as Impulse/Atelier/Nova — every
+ * interactive element (components/quartz/ui/*) is hand-built, so there is
+ * nothing to re-skin via Nuxt UI's --ui-* tokens here.
+ *
+ * Origin: a close, deliberate recreation of a proven high-converting
+ * Shopify single-product COD order page (image → color pills → order form
+ * with wilaya/commune/delivery-type → an itemized product/delivery/total
+ * price table → buy button) — see the `price-table` and `ship-option`
+ * classes below, which exist specifically to reproduce that layout. Unlike
+ * Impulse (a long persuasion-sequence funnel with countdowns/tickers/
+ * scarcity), Quartz stays a short, single scroll: this is intentional, not
+ * an unfinished funnel — match the reference page's brevity, don't pad it
+ * out with Impulse's mechanics.
+ *
+ * Palette: warm beige/cream surface with a deep espresso ink and a single
+ * brass/gold accent — quiet luxury for jewelry, watches, and accessories,
+ * distinct from Atelier's cooler rose-gold-on-velvet system (Atelier is a
+ * full browsing storefront; Quartz is an ads-funnel order page only).
+ *
+ * NOTE (lesson from Nova/Atelier's own build): no top-level @theme block in
+ * an app-level css:[] entry — every token here is a plain property scoped
+ * to .tpl-quartz, and any color consumed as a named Tailwind utility
+ * (bg-primary-*, text-neutral-*, etc.) gets its --ui-color-* twin, since
+ * Tailwind's generated utilities compile straight through to
+ * --ui-color-primary-* / --ui-color-neutral-*, bypassing a
+ * --color-primary-*-only override entirely.
+ */
+
+.tpl-quartz {
+  /* Brass/gold — the one accent. 500 is the CTA/hairline-border tone. */
+  --color-primary-50: #fbf6ec;
+  --color-primary-100: #f5e9d0;
+  --color-primary-200: #ecd6a8;
+  --color-primary-300: #ddbb75;
+  --color-primary-400: #c99f4c;
+  --color-primary-500: #b3853a;
+  --color-primary-600: #93692c;
+  --color-primary-700: #745123;
+  --color-primary-800: #573d1c;
+  --color-primary-900: #3d2a14;
+  --color-primary-950: #24170b;
+
+  /* Warm beige-to-espresso neutral ramp — the shopping-surface scale. */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #faf6ef;
+  --color-neutral-100: #f3ead9;
+  --color-neutral-200: #e6d6bd;
+  --color-neutral-300: #d3ba95;
+  --color-neutral-400: #b8996f;
+  --color-neutral-500: #8f7350;
+  --color-neutral-600: #6e5a3f;
+  --color-neutral-700: #52422f;
+  --color-neutral-800: #392d20;
+  --color-neutral-900: #241c14;
+  --color-neutral-950: #140f0a;
+
+  /* CRITICAL (lesson from Nova/Atelier): Tailwind's @theme default inline
+     (packages/ui/main.css) compiles bg-primary-600/text-neutral-100/etc.
+     straight to var(--ui-color-primary-600) — overriding --color-primary-*
+     alone never reaches the generated utility classes. Every named utility
+     Quartz's own components use needs the --ui-color-* twin too. */
+  --ui-color-primary-50: #fbf6ec;
+  --ui-color-primary-100: #f5e9d0;
+  --ui-color-primary-200: #ecd6a8;
+  --ui-color-primary-300: #ddbb75;
+  --ui-color-primary-400: #c99f4c;
+  --ui-color-primary-500: #b3853a;
+  --ui-color-primary-600: #93692c;
+  --ui-color-primary-700: #745123;
+  --ui-color-primary-800: #573d1c;
+  --ui-color-primary-900: #3d2a14;
+  --ui-color-primary-950: #24170b;
+  --ui-color-neutral-0: #ffffff;
+  --ui-color-neutral-50: #faf6ef;
+  --ui-color-neutral-100: #f3ead9;
+  --ui-color-neutral-200: #e6d6bd;
+  --ui-color-neutral-300: #d3ba95;
+  --ui-color-neutral-400: #b8996f;
+  --ui-color-neutral-500: #8f7350;
+  --ui-color-neutral-600: #6e5a3f;
+  --ui-color-neutral-700: #52422f;
+  --ui-color-neutral-800: #392d20;
+  --ui-color-neutral-900: #241c14;
+  --ui-color-neutral-950: #140f0a;
+
+  /* Page-level tokens (arbitrary-value only, e.g. bg-[var(--color-quartz-cream)]) */
+  --color-quartz-cream: #faf6ef;
+  --color-quartz-ink: #241c14;
+  --color-quartz-gold-soft: #f5e9d0;
+  --color-quartz-green: #2f6b4f;
+  --color-quartz-green-soft: #e2efe6;
+  --color-quartz-red: #a13d3d;
+
+  /* Warm brass-tinted soft shadow — the "catching the light" moment, softer
+     and more restrained than Impulse's orange CTA glow. */
+  --shadow-quartz-sm: 0 4px 16px -6px rgba(36, 28, 20, 0.14);
+  --shadow-quartz-md: 0 12px 28px -10px rgba(36, 28, 20, 0.18);
+  --shadow-quartz-cta: 0 8px 22px -6px rgba(179, 133, 58, 0.45);
+
+  --font-quartz-display: 'Marcellus', ui-serif, Georgia, 'Times New Roman', serif;
+}
+
+/* Display type — a restrained high-contrast serif for headings/prices only;
+   body copy stays sans (Cairo, per rtl.css) for legibility on small phones. */
+.tpl-quartz h1,
+.tpl-quartz h2,
+.tpl-quartz .font-display {
+  font-family: var(--font-quartz-display);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Order card — the recurring white panel (gallery mat, order form, price
+   table): soft radius, hairline gold border, warm shadow. No hover lift —
+   these aren't clickable chrome, the CTA is the only thing that moves. */
+.tpl-quartz .quartz-card {
+  background: #fff;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-quartz-sm);
+}
+
+/* Itemized price table — recreates the reference page's product-price /
+   delivery-price / total rows exactly: plain label/value rows separated by
+   hairlines, the final row promoted to the total (bold, gold-tinted). */
+.tpl-quartz .price-table {
+  border-radius: 0.875rem;
+  overflow: hidden;
+  border: 1px solid var(--color-neutral-200);
+}
+.tpl-quartz .price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 1rem;
+  font-size: 0.8125rem;
+  background: var(--color-neutral-50);
+}
+.tpl-quartz .price-row + .price-row {
+  border-top: 1px solid var(--color-neutral-200);
+}
+.tpl-quartz .price-row.total {
+  background: var(--color-quartz-gold-soft);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: var(--color-primary-800);
+}
+
+/* Delivery-method option — mirrors the reference page's home/office radio
+   rows, price aligned to the end. */
+.tpl-quartz .ship-option {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  border: 1.5px solid var(--color-neutral-200);
+  border-radius: 0.875rem;
+  padding: 0.75rem 1rem;
+  text-align: start;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.tpl-quartz .ship-option.selected {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-50);
+}
+
+/* A single slow gold sheen sweep on the primary CTA — the luxury-restrained
+   equivalent of Impulse's heartbeat pulse. One sweep every few seconds, no
+   scaling/shadow-pulsing (that reads cheap on a jewelry/watch offer). */
+@keyframes quartz-cta-sheen {
+  0% { transform: translateX(-130%) skewX(-18deg); }
+  22% { transform: translateX(230%) skewX(-18deg); }
+  100% { transform: translateX(230%) skewX(-18deg); }
+}
+.tpl-quartz .cta-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.tpl-quartz .cta-sheen::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 35%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  animation: quartz-cta-sheen 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tpl-quartz .cta-sheen::after {
+    animation: none;
+  }
+}
