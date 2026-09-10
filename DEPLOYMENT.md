@@ -76,6 +76,18 @@ echo '/swapfile none swap sw 0 0' >> /etc/fstab
 See step 5 for the other half of this (`--concurrency=1` on `turbo run
 build`, so the two Nuxt builds never run at the same time either).
 
+**Don't "fix" an OOM-kill by raising `NODE_OPTIONS=--max-old-space-size`**
+past the box's physical RAM (e.g. `--max-old-space-size=8192` on a 2 GB
+VPS). That flag only caps V8's *JS heap* — it doesn't reserve real memory —
+so a value bigger than what's physically available just tells V8 it's safe
+to keep growing instead of garbage-collecting sooner, which makes the
+Linux OOM-killer strike *harder*, not less. If `--concurrency=1` plus the
+swap file above still gets a build `Killed` (exit 137), that means even a
+single Nuxt build's peak RSS exceeds RAM+swap combined — verify swap is
+actually active first (`free -h` / `swapon --show`), then either build on
+a bigger machine and ship the `.output/` folders to the VPS (scp/rsync)
+instead of building on it, or add more swap.
+
 ### Node, pnpm, PM2
 
 The repo pins `node "^22.13.0 || ^24.11.0 || >=26.0.0"` and
