@@ -103,7 +103,8 @@ const OVERRIDES: Record<string, Record<string, Component>> = {
     lumiere: lazy(() => import('./lumiere/LumiereLeadFormFields.vue')),
     trove: lazy(() => import('./trove/TroveLeadFormFields.vue')),
     forge: lazy(() => import('./forge/ForgeLeadFormFields.vue')),
-    impulse: lazy(() => import('./impulse/ImpulseLeadFormFields.vue'))
+    impulse: lazy(() => import('./impulse/ImpulseLeadFormFields.vue')),
+    quartz: lazy(() => import('./quartz/QuartzLeadFormFields.vue'))
   },
   // Every template's own submit/CTA button — used by the AI landing-page
   // funnel's "Order now" action so it's not just the form fields that match
@@ -128,7 +129,8 @@ const OVERRIDES: Record<string, Record<string, Component>> = {
     lumiere: lazy(() => import('./lumiere/ui/LumiereButton.vue')),
     trove: lazy(() => import('./trove/ui/TroveButton.vue')),
     forge: lazy(() => import('./forge/ui/ForgeButton.vue')),
-    impulse: lazy(() => import('./impulse/ui/ImpulseButton.vue'))
+    impulse: lazy(() => import('./impulse/ui/ImpulseButton.vue')),
+    quartz: lazy(() => import('./quartz/ui/QuartzButton.vue'))
   },
   // The AI landing-page funnel's entire lead-capture block (price + form +
   // CTA), for templates that need more than "swap the form fields and
@@ -141,7 +143,8 @@ const OVERRIDES: Record<string, Record<string, Component>> = {
   // plain generic shell rather than a bespoke recreation of that template's
   // PDP layout.
   LandingPageLeadCard: {
-    impulse: lazy(() => import('./impulse/ImpulseLandingPageLeadCard.vue'))
+    impulse: lazy(() => import('./impulse/ImpulseLandingPageLeadCard.vue')),
+    quartz: lazy(() => import('./quartz/QuartzLandingPageLeadCard.vue'))
   }
 }
 

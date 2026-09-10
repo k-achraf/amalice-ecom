@@ -30,7 +30,8 @@ const TEMPLATE_PREFIX: Record<StoreTemplate, string> = {
   lumiere: 'Lumiere',
   trove: 'Trove',
   forge: 'Forge',
-  impulse: 'Impulse'
+  impulse: 'Impulse',
+  quartz: 'Quartz'
 }
 
 export function useTemplateComponent() {
