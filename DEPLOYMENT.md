@@ -57,6 +57,25 @@ apt update && apt upgrade -y
 apt install -y curl git build-essential ufw nginx
 ```
 
+### Swap (required on a 2 GB box)
+
+A Nuxt/Vite production build can peak past 1 GB RSS by itself, and Postgres
++ Redis + PM2's three running apps are already using a chunk of the box's
+RAM before you ever run a build — with no swap, the kernel OOM-killer kills
+the build outright (`Killed`, exit code 137) instead of just slowing down.
+Add swap once, up front:
+
+```bash
+fallocate -l 2G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+echo '/swapfile none swap sw 0 0' >> /etc/fstab
+```
+
+See step 5 for the other half of this (`--concurrency=1` on `turbo run
+build`, so the two Nuxt builds never run at the same time either).
+
 ### Node, pnpm, PM2
 
 The repo pins `node "^22.13.0 || ^24.11.0 || >=26.0.0"` and
@@ -161,7 +180,7 @@ EOF
 ```bash
 cd /home/amalice/app
 pnpm install --frozen-lockfile
-pnpm turbo run build
+pnpm turbo run build --concurrency=1
 ```
 
 `turbo run build` builds `packages/shared`/`packages/ui` first (dependency
@@ -172,6 +191,16 @@ order), then all three apps:
 
 **This step is required before anything can start** — PM2 runs the built
 output (`dist/main.js`, `.output/server/index.mjs`), not source files.
+
+**`--concurrency=1` is required on a 2 GB VPS, not optional.** `admin` and
+`storefront` have no dependency on each other, so Turborepo's default
+scheduler runs their two Nuxt/Vite builds in parallel — each one alone can
+peak past 1 GB RSS during the Vite client build, so running them
+concurrently reliably OOM-kills one of them (`Killed` / exit code 137 in
+the log, not a code error) on a box with only 2 GB total. Forcing
+`--concurrency=1` serializes every task in the build graph so only one
+Nuxt build ever runs at a time. If you're on a box with 4 GB+ RAM you can
+drop the flag and let the two builds overlap.
 
 ---
 
@@ -449,7 +478,7 @@ then `pm2 restart amalice-api`).
 cd /home/amalice/app
 git pull
 pnpm install --frozen-lockfile
-pnpm turbo run build
+pnpm turbo run build --concurrency=1
 cd apps/api && pnpm exec prisma migrate deploy && cd ../..
 pm2 reload ecosystem.config.cjs
 ```
