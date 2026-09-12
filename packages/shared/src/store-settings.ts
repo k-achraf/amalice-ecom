@@ -151,7 +151,12 @@ export type LeadFormField = NonNullable<StoreSettings['leadFormConfig']>[0]
 // render cascading dropdowns backed by GET /wilayas + GET /communes?wilayaId=
 // (real Algeria data) instead of the generic admin-typed `options` list.
 export const DEFAULT_LEAD_FORM_FIELDS: LeadFormField[] = [
-  { id: 'name', key: 'name', label: 'Full name', type: 'text', placeholder: 'Your name', required: true, enabled: true, isCore: true },
+  // required: false — the full name is asked for but not gating checkout;
+  // call-center confirmation collects/corrects it by phone anyway, and
+  // dropping this requirement removes one avoidable field-validation stop
+  // between "ready to buy" and a placed order. Admins can still make it
+  // required again per-store from the lead form field builder.
+  { id: 'name', key: 'name', label: 'Full name', type: 'text', placeholder: 'Your name', required: false, enabled: true, isCore: true },
   { id: 'phone', key: 'phone', label: 'Phone', type: 'tel', placeholder: '+213...', required: true, enabled: true, isCore: true },
   { id: 'wilaya', key: 'wilaya', label: 'Wilaya', type: 'select', placeholder: 'Select wilaya', required: true, enabled: true, isCore: true, halfWidth: true },
   { id: 'commune', key: 'commune', label: 'Commune', type: 'select', placeholder: 'Select commune', required: true, enabled: true, isCore: true, halfWidth: true }

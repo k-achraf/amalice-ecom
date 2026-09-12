@@ -57,7 +57,14 @@ export default defineNuxtConfig({
     // is what fixes Chrome's "preloaded but not used within a few seconds"
     // warning: preload: true (below) was preloading every subset of every
     // weight unconditionally, most of which no page on this site ever uses.
-    families: [{ name: 'Cairo', provider: 'google', subsets: ['arabic', 'latin'] }],
+    // weights: without this, @nuxt/fonts fetches Google's full default
+    // weight ladder (100-900, 9 weights) × 2 subsets = ~18 font files for a
+    // single family. Grepping every template's Tailwind font-weight
+    // utilities (`font-*`) across app/ shows only 300/400/500/600/700/900
+    // are ever actually used (no font-thin/extralight/extrabold anywhere) —
+    // restricting to that set cuts roughly a third of the font requests on
+    // every page, on every template, with zero visual change.
+    families: [{ name: 'Cairo', provider: 'google', subsets: ['arabic', 'latin'], weights: ['300', '400', '500', '600', '700', '900'] }],
     // PERFORMANCE: @nuxt/fonts only auto-preloads a @font-face subset when it
     // has NO unicodeRange — Cairo (Latin + Arabic coverage) is served as
     // multiple Google-Fonts unicode-range subsets, so every one of them was

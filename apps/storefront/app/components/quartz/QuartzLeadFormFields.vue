@@ -56,6 +56,16 @@ watch(selectedWilaya, async (wilaya, previous) => {
   if (props.data.commune && !communes.value.some((c) => c.name === props.data.commune)) {
     props.data.commune = ''
   }
+  // Default to home delivery once a wilaya resolves — Quartz-specific:
+  // most orders are home delivery, so pre-selecting it removes a tap
+  // between picking a wilaya and reaching the buy button, instead of
+  // leaving the customer looking at two unselected delivery options.
+  // Falls back to desk delivery if home isn't offered for this wilaya.
+  if (wilaya.homeDeliveryEnabled) {
+    selectShipping('Home', wilaya.homeDeliveryPriceCents ?? 0)
+  } else if (wilaya.deskDeliveryEnabled) {
+    selectShipping('Desk', wilaya.deskDeliveryPriceCents ?? 0)
+  }
 }, { immediate: true })
 
 function selectShipping(type: 'Home' | 'Desk', priceCents: number) {
