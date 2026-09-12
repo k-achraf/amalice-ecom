@@ -68,7 +68,11 @@ watchEffect(() => {
 
 const quantity = ref(1)
 const added = ref(false)
-const selectedVariantId = ref<string | null>(null)
+// Default to the first variant rather than forcing the customer to pick one
+// before they can order — fewer required taps before the buy button is
+// live. `product` is already resolved here (the `useApiFetch` above is
+// awaited), so this is the initial value, not a later reactive update.
+const selectedVariantId = ref<string | null>(product.value?.variants[0]?.id ?? null)
 const activeImageIndex = ref(0)
 const selectedOfferId = ref<string | null>(null)
 

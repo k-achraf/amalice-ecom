@@ -72,7 +72,10 @@ if (import.meta.client) {
 // pickable pill buttons, offer cards set the quantity and lock in bundle
 // pricing. requireOfferSelection auto-selects the first offer so the form
 // always starts in a buyable state for fixed-lot products.
-const selectedVariantId = ref<string | null>(null)
+// Default to the first variant rather than forcing the customer to pick one
+// before they can order — `page` is already resolved above (the
+// `useApiFetch` is awaited), so this is the initial value.
+const selectedVariantId = ref<string | null>(page.product.variants[0]?.id ?? null)
 const selectedOfferId = ref<string | null>(null)
 const quantity = ref(1)
 
