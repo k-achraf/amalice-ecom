@@ -34,7 +34,7 @@ Validated via Zod at boot (`validateEnv`) — an invalid/missing required var cr
 
 ## CORS
 
-Hardcoded in `src/main.ts` (`app.enableCors`), not env-driven — currently `amalice.shop` / `www.amalice.shop` / `admin.amalice.shop`. If you add a new storefront/admin domain (staging, a new tenant, etc.), it has to be added here explicitly or requests will fail with an opaque CORS error, not a helpful one.
+Hardcoded in `src/main.ts` (`app.enableCors`) — `amalice.shop` / `www.amalice.shop` / `admin.amalice.shop` always, plus `localhost:3000`/`localhost:3001` (storefront/admin dev servers) whenever `NODE_ENV !== 'production'`. If you add a new storefront/admin domain (staging, a new tenant, etc.), it has to be added here explicitly or requests will fail with an opaque CORS error, not a helpful one. Only client-side (browser) fetches go through this at all — SSR calls (Nuxt server-to-server) are unaffected, which is why a CORS gap here only ever shows up on client-only calls (login, wilaya/commune pickers, etc.), never on a page that renders fully server-side.
 
 ## Uploads
 

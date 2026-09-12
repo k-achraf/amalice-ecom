@@ -32,10 +32,18 @@ const stateOptions = [
 
 const search = ref((route.query.search as string) ?? '')
 const stateFilter = ref((route.query.state as string) ?? 'all')
+// Archived orders are excluded by default (see AdminOrdersService.list's
+// `archived` param) — this toggles into "browse archived orders only" mode,
+// same binary as the existing abandoned-carts page's own filter pattern.
+const showArchived = ref(route.query.archived === 'only')
 
 const { data, pending } = await useAdminFetch<OrderListResponse>('/admin/orders', {
   key: 'admin-orders',
-  query: { page: route.query.page ?? '1', pageSize: route.query.pageSize ?? '20' }
+  query: {
+    page: route.query.page ?? '1',
+    pageSize: route.query.pageSize ?? '20',
+    ...(route.query.archived === 'only' && { archived: 'only' })
+  }
 })
 
 // useAdminFetch is keyed without reactive query (its option surface is narrow
@@ -52,11 +60,18 @@ async function loadWithFilters() {
   const q: Record<string, string> = { page: String(currentPage.value), pageSize: String(currentPageSize.value) }
   if (stateFilter.value !== 'all') q.state = route.query.state as string
   if (route.query.search) q.search = route.query.search as string
+  if (route.query.archived === 'only') q.archived = 'only'
   data.value = await api<OrderListResponse>('/admin/orders', { query: q })
 }
 
 function applyFilters() {
   router.push({ query: { ...route.query, search: search.value || undefined, state: stateFilter.value !== 'all' ? stateFilter.value : undefined, page: 1 } }).then(() => loadWithFilters())
+}
+
+async function toggleArchivedView() {
+  showArchived.value = !showArchived.value
+  await router.push({ query: { ...route.query, archived: showArchived.value ? 'only' : undefined, page: 1 } })
+  await loadWithFilters()
 }
 
 async function goToPage(p: number) {
@@ -86,6 +101,21 @@ async function advance(orderId: string, currentState: OrderState) {
   transitioning.value = null
 }
 
+// Soft-hide (see Order.archived's Prisma comment) — same reversible
+// single-click toggle as the order detail page's own Archive/Unarchive
+// button, just from the row directly.
+const archiving = ref<string | null>(null)
+
+async function toggleArchive(orderId: string, currentlyArchived: boolean) {
+  archiving.value = orderId
+  await run(() => api(`/admin/orders/${orderId}/${currentlyArchived ? 'unarchive' : 'archive'}`, { method: 'POST' }), {
+    success: currentlyArchived ? 'Order restored from the archive' : 'Order archived',
+    errorFallback: 'Could not update the order'
+  })
+  await loadWithFilters()
+  archiving.value = null
+}
+
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
@@ -108,6 +138,14 @@ function fmtDate(iso: string) {
           <UInput v-model="search" placeholder="Order ID, phone, or name…" icon="i-lucide-search" @keydown.enter="applyFilters" />
           <USelect v-model="stateFilter" :items="stateOptions" class="w-44" @update:model-value="applyFilters" />
           <UButton color="neutral" variant="outline" icon="i-lucide-search" @click="applyFilters">Filter</UButton>
+          <UButton
+            :color="showArchived ? 'primary' : 'neutral'"
+            :variant="showArchived ? 'subtle' : 'outline'"
+            icon="i-lucide-archive"
+            @click="toggleArchivedView"
+          >
+            {{ showArchived ? 'Showing archived' : 'Show archived' }}
+          </UButton>
         </div>
 
         <!-- Stripe-style table -->
@@ -168,6 +206,16 @@ function fmtDate(iso: string) {
                       :loading="transitioning === order.id"
                       :label="`→ ${VALID_TRANSITIONS[order.state][0]}`"
                       @click="advance(order.id, order.state)"
+                    />
+                    <UButton
+                      :icon="order.archived ? 'i-lucide-archive-restore' : 'i-lucide-archive'"
+                      size="xs"
+                      variant="ghost"
+                      color="neutral"
+                      :title="order.archived ? 'Unarchive' : 'Archive'"
+                      :aria-label="order.archived ? 'Unarchive' : 'Archive'"
+                      :loading="archiving === order.id"
+                      @click="toggleArchive(order.id, order.archived)"
                     />
                   </td>
                 </tr>

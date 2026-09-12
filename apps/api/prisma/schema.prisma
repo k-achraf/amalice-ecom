@@ -495,6 +495,17 @@ model Order {
   duplicateOfOrderId   String?               @map("duplicate_of_order_id")
   duplicateOfOrder     Order?                @relation("OrderDuplicate", fields: [duplicateOfOrderId], references: [id], onDelete: SetNull)
   duplicateOrders      Order[]               @relation("OrderDuplicate")
+  // Soft-hide, not delete — an order is referenced by OrderItem, Shipment,
+  // CashReconciliation/LedgerEntry, and AuditLog, so hard-deleting one would
+  // either cascade-destroy real financial/reconciliation history or dangle
+  // those references. "Archived" just means AdminOrdersService.list() (and
+  // every page built on it — Orders, Call Center, Fulfillment, Shipping —
+  // see that method's own comment) excludes it by default; passing
+  // `archived=only` still lists archived orders for anyone who needs to
+  // find one again. archivedAt is separate from updatedAt so "when was this
+  // archived" survives any later edit made while un-archived again.
+  archived             Boolean               @default(false)
+  archivedAt           DateTime?             @map("archived_at")
   items                OrderItem[]
   shipment             Shipment?
   cashReconciliation   CashReconciliation?
@@ -509,6 +520,7 @@ model Order {
   @@index([state])
   @@index([duplicateOfOrderId])
   @@index([shippingCompanyId])
+  @@index([archived])
   @@map("orders")
 }
 

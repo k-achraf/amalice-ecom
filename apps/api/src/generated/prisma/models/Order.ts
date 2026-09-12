@@ -51,6 +51,8 @@ export type OrderMinAggregateOutputType = {
   postponedUntil: Date | null
   isDuplicate: boolean | null
   duplicateOfOrderId: string | null
+  archived: boolean | null
+  archivedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -70,6 +72,8 @@ export type OrderMaxAggregateOutputType = {
   postponedUntil: Date | null
   isDuplicate: boolean | null
   duplicateOfOrderId: string | null
+  archived: boolean | null
+  archivedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -89,6 +93,8 @@ export type OrderCountAggregateOutputType = {
   postponedUntil: number
   isDuplicate: number
   duplicateOfOrderId: number
+  archived: number
+  archivedAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -120,6 +126,8 @@ export type OrderMinAggregateInputType = {
   postponedUntil?: true
   isDuplicate?: true
   duplicateOfOrderId?: true
+  archived?: true
+  archivedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -139,6 +147,8 @@ export type OrderMaxAggregateInputType = {
   postponedUntil?: true
   isDuplicate?: true
   duplicateOfOrderId?: true
+  archived?: true
+  archivedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -158,6 +168,8 @@ export type OrderCountAggregateInputType = {
   postponedUntil?: true
   isDuplicate?: true
   duplicateOfOrderId?: true
+  archived?: true
+  archivedAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -264,6 +276,8 @@ export type OrderGroupByOutputType = {
   postponedUntil: Date | null
   isDuplicate: boolean
   duplicateOfOrderId: string | null
+  archived: boolean
+  archivedAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: OrderCountAggregateOutputType | null
@@ -306,6 +320,8 @@ export type OrderWhereInput = {
   postponedUntil?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   isDuplicate?: Prisma.BoolFilter<"Order"> | boolean
   duplicateOfOrderId?: Prisma.StringNullableFilter<"Order"> | string | null
+  archived?: Prisma.BoolFilter<"Order"> | boolean
+  archivedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
@@ -337,6 +353,8 @@ export type OrderOrderByWithRelationInput = {
   postponedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
   isDuplicate?: Prisma.SortOrder
   duplicateOfOrderId?: Prisma.SortOrderInput | Prisma.SortOrder
+  archived?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   customer?: Prisma.CustomerOrderByWithRelationInput
@@ -371,6 +389,8 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   postponedUntil?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   isDuplicate?: Prisma.BoolFilter<"Order"> | boolean
   duplicateOfOrderId?: Prisma.StringNullableFilter<"Order"> | string | null
+  archived?: Prisma.BoolFilter<"Order"> | boolean
+  archivedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
@@ -402,6 +422,8 @@ export type OrderOrderByWithAggregationInput = {
   postponedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
   isDuplicate?: Prisma.SortOrder
   duplicateOfOrderId?: Prisma.SortOrderInput | Prisma.SortOrder
+  archived?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.OrderCountOrderByAggregateInput
@@ -429,6 +451,8 @@ export type OrderScalarWhereWithAggregatesInput = {
   postponedUntil?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
   isDuplicate?: Prisma.BoolWithAggregatesFilter<"Order"> | boolean
   duplicateOfOrderId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  archived?: Prisma.BoolWithAggregatesFilter<"Order"> | boolean
+  archivedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
 }
@@ -444,6 +468,8 @@ export type OrderCreateInput = {
   notes?: string | null
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -475,6 +501,8 @@ export type OrderUncheckedCreateInput = {
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
   duplicateOfOrderId?: string | null
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -498,6 +526,8 @@ export type OrderUpdateInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -529,6 +559,8 @@ export type OrderUncheckedUpdateInput = {
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -556,6 +588,8 @@ export type OrderCreateManyInput = {
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
   duplicateOfOrderId?: string | null
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -571,6 +605,8 @@ export type OrderUpdateManyMutationInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -590,6 +626,8 @@ export type OrderUncheckedUpdateManyInput = {
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -624,6 +662,8 @@ export type OrderCountOrderByAggregateInput = {
   postponedUntil?: Prisma.SortOrder
   isDuplicate?: Prisma.SortOrder
   duplicateOfOrderId?: Prisma.SortOrder
+  archived?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -648,6 +688,8 @@ export type OrderMaxOrderByAggregateInput = {
   postponedUntil?: Prisma.SortOrder
   isDuplicate?: Prisma.SortOrder
   duplicateOfOrderId?: Prisma.SortOrder
+  archived?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -667,6 +709,8 @@ export type OrderMinOrderByAggregateInput = {
   postponedUntil?: Prisma.SortOrder
   isDuplicate?: Prisma.SortOrder
   duplicateOfOrderId?: Prisma.SortOrder
+  archived?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -996,6 +1040,8 @@ export type OrderCreateWithoutCustomerInput = {
   notes?: string | null
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
@@ -1025,6 +1071,8 @@ export type OrderUncheckedCreateWithoutCustomerInput = {
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
   duplicateOfOrderId?: string | null
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -1081,6 +1129,8 @@ export type OrderScalarWhereInput = {
   postponedUntil?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   isDuplicate?: Prisma.BoolFilter<"Order"> | boolean
   duplicateOfOrderId?: Prisma.StringNullableFilter<"Order"> | string | null
+  archived?: Prisma.BoolFilter<"Order"> | boolean
+  archivedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
 }
@@ -1096,6 +1146,8 @@ export type OrderCreateWithoutAddressInput = {
   notes?: string | null
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -1125,6 +1177,8 @@ export type OrderUncheckedCreateWithoutAddressInput = {
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
   duplicateOfOrderId?: string | null
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -1174,6 +1228,8 @@ export type OrderCreateWithoutDuplicateOrdersInput = {
   notes?: string | null
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -1204,6 +1260,8 @@ export type OrderUncheckedCreateWithoutDuplicateOrdersInput = {
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
   duplicateOfOrderId?: string | null
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
@@ -1231,6 +1289,8 @@ export type OrderCreateWithoutDuplicateOfOrderInput = {
   notes?: string | null
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -1260,6 +1320,8 @@ export type OrderUncheckedCreateWithoutDuplicateOfOrderInput = {
   notes?: string | null
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -1304,6 +1366,8 @@ export type OrderUpdateWithoutDuplicateOrdersInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -1334,6 +1398,8 @@ export type OrderUncheckedUpdateWithoutDuplicateOrdersInput = {
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
@@ -1372,6 +1438,8 @@ export type OrderCreateWithoutItemsInput = {
   notes?: string | null
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -1402,6 +1470,8 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
   duplicateOfOrderId?: string | null
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -1440,6 +1510,8 @@ export type OrderUpdateWithoutItemsInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -1470,6 +1542,8 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -1492,6 +1566,8 @@ export type OrderCreateWithoutShipmentInput = {
   notes?: string | null
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -1522,6 +1598,8 @@ export type OrderUncheckedCreateWithoutShipmentInput = {
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
   duplicateOfOrderId?: string | null
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -1560,6 +1638,8 @@ export type OrderUpdateWithoutShipmentInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -1590,6 +1670,8 @@ export type OrderUncheckedUpdateWithoutShipmentInput = {
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -1612,6 +1694,8 @@ export type OrderCreateWithoutCashReconciliationInput = {
   notes?: string | null
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -1642,6 +1726,8 @@ export type OrderUncheckedCreateWithoutCashReconciliationInput = {
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
   duplicateOfOrderId?: string | null
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -1680,6 +1766,8 @@ export type OrderUpdateWithoutCashReconciliationInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -1710,6 +1798,8 @@ export type OrderUncheckedUpdateWithoutCashReconciliationInput = {
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -1732,6 +1822,8 @@ export type OrderCreateWithoutLedgerEntriesInput = {
   notes?: string | null
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -1762,6 +1854,8 @@ export type OrderUncheckedCreateWithoutLedgerEntriesInput = {
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
   duplicateOfOrderId?: string | null
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -1800,6 +1894,8 @@ export type OrderUpdateWithoutLedgerEntriesInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -1830,6 +1926,8 @@ export type OrderUncheckedUpdateWithoutLedgerEntriesInput = {
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -1852,6 +1950,8 @@ export type OrderCreateWithoutNotificationsInput = {
   notes?: string | null
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -1882,6 +1982,8 @@ export type OrderUncheckedCreateWithoutNotificationsInput = {
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
   duplicateOfOrderId?: string | null
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -1920,6 +2022,8 @@ export type OrderUpdateWithoutNotificationsInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -1950,6 +2054,8 @@ export type OrderUncheckedUpdateWithoutNotificationsInput = {
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -1972,6 +2078,8 @@ export type OrderCreateWithoutGoogleSheetRowsInput = {
   notes?: string | null
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -2002,6 +2110,8 @@ export type OrderUncheckedCreateWithoutGoogleSheetRowsInput = {
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
   duplicateOfOrderId?: string | null
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -2040,6 +2150,8 @@ export type OrderUpdateWithoutGoogleSheetRowsInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -2070,6 +2182,8 @@ export type OrderUncheckedUpdateWithoutGoogleSheetRowsInput = {
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -2092,6 +2206,8 @@ export type OrderCreateWithoutShippingCompanyInput = {
   notes?: string | null
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -2121,6 +2237,8 @@ export type OrderUncheckedCreateWithoutShippingCompanyInput = {
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
   duplicateOfOrderId?: string | null
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -2170,6 +2288,8 @@ export type OrderCreateWithoutCourierWebhookEventsInput = {
   notes?: string | null
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -2200,6 +2320,8 @@ export type OrderUncheckedCreateWithoutCourierWebhookEventsInput = {
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
   duplicateOfOrderId?: string | null
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -2238,6 +2360,8 @@ export type OrderUpdateWithoutCourierWebhookEventsInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -2268,6 +2392,8 @@ export type OrderUncheckedUpdateWithoutCourierWebhookEventsInput = {
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -2293,6 +2419,8 @@ export type OrderCreateManyCustomerInput = {
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
   duplicateOfOrderId?: string | null
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -2308,6 +2436,8 @@ export type OrderUpdateWithoutCustomerInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
@@ -2337,6 +2467,8 @@ export type OrderUncheckedUpdateWithoutCustomerInput = {
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -2363,6 +2495,8 @@ export type OrderUncheckedUpdateManyWithoutCustomerInput = {
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -2381,6 +2515,8 @@ export type OrderCreateManyAddressInput = {
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
   duplicateOfOrderId?: string | null
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -2396,6 +2532,8 @@ export type OrderUpdateWithoutAddressInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -2425,6 +2563,8 @@ export type OrderUncheckedUpdateWithoutAddressInput = {
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -2451,6 +2591,8 @@ export type OrderUncheckedUpdateManyWithoutAddressInput = {
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -2469,6 +2611,8 @@ export type OrderCreateManyDuplicateOfOrderInput = {
   notes?: string | null
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -2484,6 +2628,8 @@ export type OrderUpdateWithoutDuplicateOfOrderInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -2513,6 +2659,8 @@ export type OrderUncheckedUpdateWithoutDuplicateOfOrderInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -2539,6 +2687,8 @@ export type OrderUncheckedUpdateManyWithoutDuplicateOfOrderInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -2557,6 +2707,8 @@ export type OrderCreateManyShippingCompanyInput = {
   postponedUntil?: Date | string | null
   isDuplicate?: boolean
   duplicateOfOrderId?: string | null
+  archived?: boolean
+  archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -2572,6 +2724,8 @@ export type OrderUpdateWithoutShippingCompanyInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -2601,6 +2755,8 @@ export type OrderUncheckedUpdateWithoutShippingCompanyInput = {
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -2627,6 +2783,8 @@ export type OrderUncheckedUpdateManyWithoutShippingCompanyInput = {
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -2722,6 +2880,8 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   postponedUntil?: boolean
   isDuplicate?: boolean
   duplicateOfOrderId?: boolean
+  archived?: boolean
+  archivedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -2754,6 +2914,8 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   postponedUntil?: boolean
   isDuplicate?: boolean
   duplicateOfOrderId?: boolean
+  archived?: boolean
+  archivedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -2777,6 +2939,8 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   postponedUntil?: boolean
   isDuplicate?: boolean
   duplicateOfOrderId?: boolean
+  archived?: boolean
+  archivedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -2800,11 +2964,13 @@ export type OrderSelectScalar = {
   postponedUntil?: boolean
   isDuplicate?: boolean
   duplicateOfOrderId?: boolean
+  archived?: boolean
+  archivedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "addressId" | "state" | "totalCents" | "shippingType" | "shippingPriceCents" | "isAbandoned" | "fulfillmentMethod" | "shippingCompanyId" | "notes" | "postponedUntil" | "isDuplicate" | "duplicateOfOrderId" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "addressId" | "state" | "totalCents" | "shippingType" | "shippingPriceCents" | "isAbandoned" | "fulfillmentMethod" | "shippingCompanyId" | "notes" | "postponedUntil" | "isDuplicate" | "duplicateOfOrderId" | "archived" | "archivedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
   address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
@@ -2864,6 +3030,8 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     postponedUntil: Date | null
     isDuplicate: boolean
     duplicateOfOrderId: string | null
+    archived: boolean
+    archivedAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["order"]>
@@ -3315,6 +3483,8 @@ export interface OrderFieldRefs {
   readonly postponedUntil: Prisma.FieldRef<"Order", 'DateTime'>
   readonly isDuplicate: Prisma.FieldRef<"Order", 'Boolean'>
   readonly duplicateOfOrderId: Prisma.FieldRef<"Order", 'String'>
+  readonly archived: Prisma.FieldRef<"Order", 'Boolean'>
+  readonly archivedAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Order", 'DateTime'>
 }

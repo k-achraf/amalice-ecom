@@ -104,11 +104,21 @@
      every column past the fold instead of letting the table scroll, so half
      of every data table was permanently invisible with no way to reach it.
      overflow-x: auto turns the whole card into its own horizontal scroll
-     region (overflow-y stays clipped so rounded corners still work); the
-     table itself gets a min-width below so columns keep their designed
-     width instead of being squeezed unreadably narrow first. */
+     region; the table itself gets a min-width below so columns keep their
+     designed width instead of being squeezed unreadably narrow first.
+     overflow-y was `hidden` here too, on the theory that only horizontal
+     clipping needed fixing and vertical overflow would be handled by
+     scrolling the page — but this card's rendered height is NOT always
+     driven purely by its own content (confirmed live: clientHeight 587px
+     vs scrollHeight 1636px on a 32-row table), so `hidden` silently ate
+     every row past that point with literally no way to reach them, not
+     even a scrollbar. `auto` is what actually fixes it — CSS overflow-x
+     already forces overflow-y to compute as `auto` instead of `visible`
+     once it's anything but `visible` itself, so this isn't creating a new
+     scroll region that wasn't already implied, just making the region
+     that already existed reachable. */
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 /* Cells default to no-wrap so the table grows to its natural content width

@@ -29,6 +29,23 @@ async function transition(to: OrderState, postponedUntil?: string) {
   transitioning.value = null
 }
 
+// Soft-hide (see Order.archived's Prisma comment) — reversible, never
+// touches `state`. Kept as a single toggle button rather than a
+// confirmation modal: unarchiving is one click away if this was a mistake.
+const archiving = ref(false)
+
+async function toggleArchive() {
+  if (!order.value) return
+  archiving.value = true
+  const nowArchived = order.value.archived
+  await run(() => api(`/admin/orders/${id}/${nowArchived ? 'unarchive' : 'archive'}`, { method: 'POST' }), {
+    success: nowArchived ? 'Order restored from the archive' : 'Order archived — hidden from Orders/Call Center/Fulfillment/Shipping',
+    errorFallback: 'Could not update the order'
+  })
+  await refresh()
+  archiving.value = false
+}
+
 // Postpone requires a follow-up date/time (server rejects a bare
 // `{to: 'Postponed'}` — see TransitionOrderSchema's refine in packages/shared).
 // 'Postponed' is a reachable next state from PendingCallCenter (see
@@ -390,6 +407,18 @@ async function submitAddItem() {
           <UButton icon="i-lucide-arrow-left" color="neutral" variant="ghost" to="/orders" />
           <UDashboardSidebarCollapse />
         </template>
+        <template v-if="order" #right>
+          <UButton
+            :icon="order.archived ? 'i-lucide-archive-restore' : 'i-lucide-archive'"
+            size="sm"
+            color="neutral"
+            variant="outline"
+            :loading="archiving"
+            @click="toggleArchive"
+          >
+            {{ order.archived ? 'Unarchive' : 'Archive' }}
+          </UButton>
+        </template>
       </UDashboardNavbar>
     </template>
 
@@ -399,6 +428,13 @@ async function submitAddItem() {
       <div v-else-if="order" class="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <!-- Main column: items + status actions -->
         <div class="space-y-6 lg:col-span-2">
+          <div v-if="order.archived" class="admin-kpi-card flex items-center gap-3 border-l-4 border-l-neutral-400 p-4">
+            <UIcon name="i-lucide-archive" class="size-5 shrink-0 text-muted" />
+            <p class="text-sm text-muted">
+              This order is archived — hidden from Orders, Call Center, Fulfillment, and Shipping. Click "Unarchive" above to restore it.
+            </p>
+          </div>
+
           <div v-if="order.isDuplicate" class="admin-kpi-card flex items-center gap-3 border-l-4 border-l-red-500 p-4">
             <UIcon name="i-lucide-copy-x" class="size-5 shrink-0 text-red-500" />
             <p class="text-sm">
