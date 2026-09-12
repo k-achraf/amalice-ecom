@@ -123,7 +123,8 @@ export class AdminController {
     @Query('to') toIso: string | undefined,
     @Query('page') page: string = '1',
     @Query('pageSize') pageSize: string = '20',
-    @Query('abandoned') abandoned: 'only' | 'exclude' | undefined
+    @Query('abandoned') abandoned: 'only' | 'exclude' | undefined,
+    @Query('archived') archived: 'only' | 'exclude' | undefined
   ) {
     return this.orders.list({
       state,
@@ -133,7 +134,8 @@ export class AdminController {
       to: toIso ? new Date(toIso) : undefined,
       page: Number(page),
       pageSize: Number(pageSize),
-      abandoned
+      abandoned,
+      archived
     })
   }
 
@@ -161,6 +163,22 @@ export class AdminController {
   @Roles('SuperAdmin', 'OpsManager', 'Finance', 'Support', 'CallCenterAgent')
   orderDetail(@Param('id') id: string) {
     return this.orders.findOne(id)
+  }
+
+  // Soft-hide (see Order.archived's Prisma comment) — scoped tighter than
+  // most order actions (no Support/CallCenterAgent) since this changes
+  // which orders the whole team sees by default, not just this one order's
+  // own state.
+  @Post('orders/:id/archive')
+  @Roles('SuperAdmin', 'OpsManager')
+  archiveOrder(@Param('id') id: string, @Req() req: AuthedRequest) {
+    return this.orders.archiveOrder(id, actorFrom(req))
+  }
+
+  @Post('orders/:id/unarchive')
+  @Roles('SuperAdmin', 'OpsManager')
+  unarchiveOrder(@Param('id') id: string, @Req() req: AuthedRequest) {
+    return this.orders.unarchiveOrder(id, actorFrom(req))
   }
 
   // Support/CallCenterAgent included alongside SuperAdmin/OpsManager:

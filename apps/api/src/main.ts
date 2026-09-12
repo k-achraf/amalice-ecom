@@ -41,8 +41,21 @@ async function bootstrap() {
   // ServerLog for the admin dashboard's Server Logs page, on top of the
   // normal console/PM2 output).
   app.useLogger(app.get(PersistentLogger))
+  // Production origins are the only ones ever allowed once deployed. In any
+  // other NODE_ENV (local dev, this API run via `pnpm dev`), also allow the
+  // two local Nuxt dev servers (storefront :3000, admin :3001) — without
+  // this, every client-side (browser) fetch from a locally-run admin/
+  // storefront to a locally-run API fails with an opaque CORS error (this
+  // was a real, confirmed-live bug: admin login, and the storefront's
+  // wilaya/commune fetches, both silently fail in local dev with no useful
+  // error beyond `net::ERR_FAILED` in the network tab). SSR calls (Nuxt
+  // server-to-server) were never affected — CORS only applies to browser
+  // fetches — which is why this went unnoticed for pages that render fully
+  // server-side.
   app.enableCors({
-    origin: ['https://amalice.shop', 'https://www.amalice.shop', 'https://admin.amalice.shop'],
+    origin: process.env.NODE_ENV === 'production'
+      ? ['https://amalice.shop', 'https://www.amalice.shop', 'https://admin.amalice.shop']
+      : ['https://amalice.shop', 'https://www.amalice.shop', 'https://admin.amalice.shop', 'http://localhost:3000', 'http://localhost:3001'],
     credentials: true
   })
 

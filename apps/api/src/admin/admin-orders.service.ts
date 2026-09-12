@@ -92,9 +92,16 @@ export class AdminOrdersService {
     // Order.isAbandoned's Prisma comment) so they don't pollute the real
     // queue — only the dedicated Abandoned Carts page passes 'only'.
     abandoned?: 'only' | 'exclude'
+    // Same pattern as `abandoned` above: every existing caller omits this,
+    // which excludes archived orders (see Order.archived's Prisma comment)
+    // from every order-listing page by default — pass 'only' to browse
+    // archived orders instead (there is no "all regardless of archived
+    // status" mode, matching `abandoned`'s own binary).
+    archived?: 'only' | 'exclude'
   }) {
     const where: Prisma.OrderWhereInput = {
       isAbandoned: args.abandoned === 'only',
+      archived: args.archived === 'only',
       ...(args.state && { state: args.state }),
       ...(args.courierId && { shipment: { courierId: args.courierId } }),
       ...((args.from || args.to) && {
@@ -196,6 +203,7 @@ export class AdminOrdersService {
 
     const rows = await this.prisma.order.findMany({
       where: {
+        archived: false,
         OR: [
           { state: 'PendingCallCenter' },
           { state: 'CallCenterNoAnswer', updatedAt: { lte: noAnswerCutoff } },
@@ -279,6 +287,30 @@ export class AdminOrdersService {
     })
     if (!order) throw new NotFoundException('Order not found')
     return withDerivedStates({ ...order, items: order.items.map(toLineItem), shippingCompanyName: order.shippingCompany?.name ?? null })
+  }
+
+  // Soft-hide an order out of every default order-listing view (Orders,
+  // Call Center, Fulfillment, Shipping, Drop Queue — see Order.archived's
+  // Prisma comment and list()/dropQueue()'s own where clauses). Never a
+  // hard delete: reconciliation/audit history must not dangle, and this
+  // stays fully reversible via unarchive() below. Does not touch `state` —
+  // archiving is orthogonal to the order's actual fulfillment status
+  // (a Cancelled, Delivered, or still-Pending order can equally be
+  // archived, e.g. to clear old test/junk orders out of daily view).
+  async archiveOrder(id: string, actor: AuditActor) {
+    const order = await this.prisma.order.findUnique({ where: { id } })
+    if (!order) throw new NotFoundException('Order not found')
+    await this.prisma.order.update({ where: { id }, data: { archived: true, archivedAt: new Date() } })
+    await this.audit.log({ actor, action: 'Update', entity: 'Order', entityId: id, metadata: { archived: true } })
+    return { id, archived: true }
+  }
+
+  async unarchiveOrder(id: string, actor: AuditActor) {
+    const order = await this.prisma.order.findUnique({ where: { id } })
+    if (!order) throw new NotFoundException('Order not found')
+    await this.prisma.order.update({ where: { id }, data: { archived: false, archivedAt: null } })
+    await this.audit.log({ actor, action: 'Update', entity: 'Order', entityId: id, metadata: { archived: false } })
+    return { id, archived: false }
   }
 
   // ADM-05 — manual state transition. Re-validates against the state machine

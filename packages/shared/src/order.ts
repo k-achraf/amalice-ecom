@@ -524,6 +524,10 @@ export interface AdminOrderListItem {
   // reached. Null for legacy Postponed orders from before this field
   // existed, or for any order not currently Postponed.
   postponedUntil: string | null
+  // See Order.archived's Prisma comment — always false unless the list was
+  // explicitly queried with `archived=only`.
+  archived: boolean
+  archivedAt: string | null
 }
 
 export interface OrderListResponse {
@@ -566,6 +570,9 @@ export interface AdminOrderDetail {
   isDuplicate: boolean
   duplicateOfOrderId: string | null
   postponedUntil: string | null
+  // See Order.archived's Prisma comment.
+  archived: boolean
+  archivedAt: string | null
 }
 
 // Call-center notes — free text, not part of the order-state machine.

@@ -319,6 +319,8 @@ export const OrderScalarFieldEnum = {
   postponedUntil: 'postponedUntil',
   isDuplicate: 'isDuplicate',
   duplicateOfOrderId: 'duplicateOfOrderId',
+  archived: 'archived',
+  archivedAt: 'archivedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
