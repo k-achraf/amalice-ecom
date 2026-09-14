@@ -85,7 +85,18 @@ const galleryImages = computed(() => {
 
 const selectedVariant = computed(() => product.value?.variants.find((v) => v.id === selectedVariantId.value) ?? null)
 const effectivePriceCents = computed(() => selectedVariant.value?.priceCents ?? product.value?.priceCents ?? 0)
-const effectiveStock = computed(() => selectedVariant.value?.stockQuantity ?? product.value?.stockQuantity ?? 0)
+const rawStock = computed(() => selectedVariant.value?.stockQuantity ?? product.value?.stockQuantity ?? 0)
+// Stock is deliberately never a reason to stop selling on the storefront —
+// this store keeps accepting orders on a product even at (or below) zero
+// recorded stock (apps/api's orders.service.ts mirrors this: no
+// stock-sufficiency check blocks order creation, only decrements, allowed
+// to go negative as a backorder signal for ops). A real reading of 0 here
+// is treated as "plenty available" rather than surfaced to the customer, so
+// every template's "out of stock" badge/scarcity messaging naturally stays
+// hidden and the quantity stepper/CTA are never blocked by it — all of
+// them just read effectiveStock/inStock, not the raw number. Admins still
+// see the real, unmodified stock count in the admin's Inventory page.
+const effectiveStock = computed(() => (rawStock.value > 0 ? rawStock.value : 9999))
 const inStock = computed(() => effectiveStock.value > 0)
 
 // ViewContent (both pixels) — Meta/TikTok's standard "product/landing page

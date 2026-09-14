@@ -281,34 +281,31 @@ export class OrdersService {
     return new Map(variants.map((v) => [v.id, v]))
   }
 
-  // Per-item stock check — variant stock is authoritative when the item has
-  // one (see ProductVariant's Prisma comment), otherwise the base product's.
-  private checkStock(item: CheckoutItem, product: Product, variantById: Map<string, ProductVariant>): void {
-    const variant = item.variantId ? variantById.get(item.variantId) : undefined
-    const available = variant?.stockQuantity ?? product.stockQuantity
-    if (available < item.quantity) {
-      throw new ConflictException(`Insufficient stock for "${product.name}"`)
-    }
-  }
+  // Stock is deliberately NEVER a reason to reject an order — this store
+  // keeps selling and accepting orders on a product even at (or below) zero
+  // recorded stock, rather than blocking checkout. There is intentionally no
+  // pre-decrement "is there enough stock" check here; see decrementStock
+  // below for the other half of this (unconditional decrement, no floor).
 
-  // Atomic conditional decrement — the WHERE clause makes the update itself
-  // the concurrency check (see createOrder's original comment on this
-  // pattern). Decrements the variant's own stock when the item has one,
-  // otherwise the base product's — mirrors checkStock above.
+  // Decrements the variant's own stock when the item has one, otherwise the
+  // base product's — no stock-sufficiency gate (see the note above), so this
+  // always succeeds and stock is allowed to go negative, which then reads as
+  // a backorder signal for ops rather than a blocked sale. Still verifies
+  // the row actually exists (a bogus id is a real error, unlike low stock).
   private async decrementStock(tx: Prisma.TransactionClient, item: CheckoutItem, variantById: Map<string, ProductVariant>): Promise<void> {
     if (item.variantId && variantById.has(item.variantId)) {
       const result = await tx.productVariant.updateMany({
-        where: { id: item.variantId, stockQuantity: { gte: item.quantity } },
+        where: { id: item.variantId },
         data: { stockQuantity: { decrement: item.quantity } }
       })
-      if (result.count === 0) throw new ConflictException(`Insufficient stock for a product in this order`)
+      if (result.count === 0) throw new NotFoundException(`Variant ${item.variantId} not found`)
       return
     }
     const result = await tx.product.updateMany({
-      where: { id: item.productId, stockQuantity: { gte: item.quantity } },
+      where: { id: item.productId },
       data: { stockQuantity: { decrement: item.quantity } }
     })
-    if (result.count === 0) throw new ConflictException(`Insufficient stock for a product in this order`)
+    if (result.count === 0) throw new NotFoundException(`Product ${item.productId} not found`)
   }
 
   // Prices delivery server-side from WilayaShippingRate — never trusts a
@@ -351,9 +348,7 @@ export class OrdersService {
     const variantById = await this.loadVariants(checkout.items)
 
     for (const item of checkout.items) {
-      const product = productById.get(item.productId)
-      if (!product) throw new NotFoundException(`Product ${item.productId} not found`)
-      this.checkStock(item, product, variantById)
+      if (!productById.has(item.productId)) throw new NotFoundException(`Product ${item.productId} not found`)
     }
 
     const { pricedItems, totalCents: itemsTotalCents } = await this.priceCheckoutItems(checkout.items, productById, variantById)
@@ -437,9 +432,7 @@ export class OrdersService {
     const variantById = await this.loadVariants(lead.items)
 
     for (const item of lead.items) {
-      const product = productById.get(item.productId)
-      if (!product) throw new NotFoundException(`Product ${item.productId} not found`)
-      this.checkStock(item, product, variantById)
+      if (!productById.has(item.productId)) throw new NotFoundException(`Product ${item.productId} not found`)
     }
 
     const { pricedItems, totalCents: itemsTotalCents } = await this.priceCheckoutItems(lead.items, productById, variantById)
