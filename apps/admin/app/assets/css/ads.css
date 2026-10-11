@@ -101,6 +101,14 @@
   outline: 2px solid var(--ads-focus);
   outline-offset: 2px;
 }
+/* Text fields draw their own focus state (border + halo, see leezil.css), not an outline. */
+.ads-root .input-wrap :focus-visible,
+.ads-root .input-wrap:focus-visible,
+.ads-root .search :focus-visible,
+.ads-root input:focus-visible,
+.ads-root textarea:focus-visible {
+  outline: 0;
+}
 .ads-tabular {
   font-variant-numeric: tabular-nums;
 }
