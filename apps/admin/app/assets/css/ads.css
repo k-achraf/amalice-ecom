@@ -1,0 +1,120 @@
+/*
+ * Atlassian-style design tokens for the admin (replaces the DS-09 Polaris×Stripe
+ * layer as pages migrate off @nuxt/ui). Semantic CSS vars live on :root/.dark;
+ * `@theme inline` exposes them as Tailwind utilities (bg-ads-surface,
+ * text-ads-subtle, border-ads-border, ...). Admin-only — never imported by the
+ * storefront.
+ *
+ * Imports tailwindcss itself so `@theme` here generates utilities in this
+ * compilation (Tailwind v4 compiles each CSS entry separately). During the
+ * migration the shared layer's main.css also imports it, so utilities are
+ * emitted twice; that duplication disappears once @nuxt/ui is removed.
+ */
+@import "tailwindcss";
+
+:root {
+  --ads-canvas: #f7f8f9;
+  --ads-surface: #ffffff;
+  --ads-sunken: #f1f2f4;
+  --ads-hover: #f1f2f4;
+  --ads-pressed: #dcdfe4;
+  --ads-selected: #e9f2ff;
+  --ads-selected-hover: #cfe1fd;
+
+  --ads-text: #172b4d;
+  --ads-subtle: #44546f;
+  --ads-subtlest: #626f86;
+  --ads-disabled: #8590a2;
+
+  --ads-border: #dcdfe4;
+  --ads-border-input: #8590a2;
+  --ads-focus: #388bff;
+
+  --ads-primary: #0c66e4;
+  --ads-primary-hover: #0055cc;
+  --ads-primary-pressed: #09326c;
+  --ads-danger: #c9372c;
+  --ads-danger-hover: #ae2e24;
+  --ads-danger-pressed: #5d1f1a;
+
+  --ads-nav: #f7f8f9;
+  --ads-overlay: rgb(9 30 66 / 0.54);
+  --ads-shadow-raised: 0 1px 1px rgb(9 30 66 / 0.25), 0 0 1px rgb(9 30 66 / 0.31);
+  --ads-shadow-overlay: 0 8px 12px rgb(9 30 66 / 0.15), 0 0 1px rgb(9 30 66 / 0.31);
+}
+
+.dark {
+  --ads-canvas: #1d2125;
+  --ads-surface: #22272b;
+  --ads-sunken: #161a1d;
+  --ads-hover: #2c333a;
+  --ads-pressed: #38414a;
+  --ads-selected: #1c2b41;
+  --ads-selected-hover: #09326c;
+
+  --ads-text: #dee4ea;
+  --ads-subtle: #b6c2cf;
+  --ads-subtlest: #9fadbc;
+  --ads-disabled: #738496;
+
+  --ads-border: #38414a;
+  --ads-border-input: #738496;
+  --ads-focus: #85b8ff;
+
+  --ads-primary: #579dff;
+  --ads-primary-hover: #85b8ff;
+  --ads-primary-pressed: #cce0ff;
+  --ads-danger: #f87168;
+  --ads-danger-hover: #ff9c8f;
+  --ads-danger-pressed: #ffd5d2;
+
+  --ads-nav: #1d2125;
+  --ads-overlay: rgb(0 0 0 / 0.6);
+  --ads-shadow-raised: 0 1px 1px rgb(3 4 4 / 0.5), 0 0 1px rgb(3 4 4 / 0.5);
+  --ads-shadow-overlay: 0 8px 12px rgb(3 4 4 / 0.36), 0 0 1px rgb(3 4 4 / 0.5);
+}
+
+@theme inline {
+  --color-ads-canvas: var(--ads-canvas);
+  --color-ads-surface: var(--ads-surface);
+  --color-ads-sunken: var(--ads-sunken);
+  --color-ads-hover: var(--ads-hover);
+  --color-ads-pressed: var(--ads-pressed);
+  --color-ads-selected: var(--ads-selected);
+  --color-ads-selected-hover: var(--ads-selected-hover);
+  --color-ads-text: var(--ads-text);
+  --color-ads-subtle: var(--ads-subtle);
+  --color-ads-subtlest: var(--ads-subtlest);
+  --color-ads-disabled: var(--ads-disabled);
+  --color-ads-border: var(--ads-border);
+  --color-ads-input: var(--ads-border-input);
+  --color-ads-focus: var(--ads-focus);
+  --color-ads-primary: var(--ads-primary);
+  --color-ads-primary-hover: var(--ads-primary-hover);
+  --color-ads-primary-pressed: var(--ads-primary-pressed);
+  --color-ads-danger: var(--ads-danger);
+  --color-ads-danger-hover: var(--ads-danger-hover);
+  --color-ads-danger-pressed: var(--ads-danger-pressed);
+  --color-ads-nav: var(--ads-nav);
+  --color-ads-overlay: var(--ads-overlay);
+  --shadow-ads-raised: var(--ads-shadow-raised);
+  --shadow-ads-overlay: var(--ads-shadow-overlay);
+  --radius-ads: 3px;
+  --radius-ads-lg: 8px;
+}
+
+/* Every migrated page sits inside .ads-root so these base rules never reach
+   pages still on @nuxt/ui. */
+.ads-root {
+  background: var(--ads-canvas);
+  color: var(--ads-text);
+  font-size: 14px;
+  line-height: 20px;
+}
+.ads-root :focus-visible {
+  outline: 2px solid var(--ads-focus);
+  outline-offset: 2px;
+}
+.ads-tabular {
+  font-variant-numeric: tabular-nums;
+}

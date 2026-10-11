@@ -4,7 +4,7 @@ export default defineNuxtConfig({
   // admin.css is the DS-09 Polaris×Stripe override layer — imported AFTER the
   // shared layer's main.css (pulled in transitively via `extends`) so it wins
   // on equal specificity. Admin-scoped only; the storefront doesn't import it.
-  css: ['~/assets/css/admin.css'],
+  css: ['~/assets/css/admin.css', '~/assets/css/ads.css'],
   ssr: false,
   compatibilityDate: '2026-07-17',
   devServer: { port: 3001 },
