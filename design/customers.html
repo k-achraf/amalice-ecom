@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Customers — Leezil Admin</title>
+  <link rel="icon" href="assets/img/leezil-icon-teal.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+<div class="app" data-page="customers">
+  <main class="main">
+
+    <header class="page-head">
+      <div class="title">
+        <p>People who ordered from Leezil</p>
+        <h1>Customers</h1>
+      </div>
+      <label class="search"><svg data-icon="search"></svg><span class="sr">Search customers</span><input type="search" id="customers-search" placeholder="Name, phone or wilaya"></label>
+      <button class="btn hide-sm" type="button"><svg data-icon="download"></svg>Export</button>
+    </header>
+
+    <section class="kpis" aria-label="Customer figures">
+      <div class="kpi"><span class="label">Total customers</span><span class="value">2,148</span><span class="meta">From 48 wilayas</span></div>
+      <div class="kpi"><span class="label">New this month</span><span class="value">184</span><span class="meta">+11% vs September</span></div>
+      <div class="kpi"><span class="label">Repeat customers</span><span class="value">31%</span><span class="meta">Ordered 2 times or more</span></div>
+      <div class="kpi dark"><span class="label">Average lifetime value</span><span class="value">5,820 <small>DA</small></span><span class="meta" style="color:#C9A35E;opacity:1">VIP customers: 14,900 DA</span></div>
+    </section>
+
+    <div class="row">
+      <section class="card wide" aria-label="Customer list" style="padding-top:12px;padding-bottom:12px">
+        <div class="table-wrap">
+          <table style="min-width:640px">
+            <thead><tr><th>Customer</th><th>Wilaya</th><th class="num">Orders</th><th class="num">Total spent</th><th>Last order</th><th>Segment</th></tr></thead>
+            <tbody id="customers-body"></tbody>
+          </table>
+        </div>
+      </section>
+      <aside class="card narrow" id="customer-panel" aria-label="Selected customer" aria-live="polite" style="gap:18px"></aside>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

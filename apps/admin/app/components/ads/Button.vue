@@ -1,45 +1,13 @@
 <script setup lang="ts">
-import { cva } from 'class-variance-authority'
 import { LoaderCircle } from 'lucide-vue-next'
 import type { ClassValue } from 'clsx'
 import { cn } from '~/lib/cn'
 
-const buttonVariants = cva(
-  'inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-ads font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0',
-  {
-    variants: {
-      appearance: {
-        default: 'bg-ads-hover text-ads-text hover:bg-ads-pressed',
-        primary: 'bg-ads-primary text-white hover:bg-ads-primary-hover active:bg-ads-primary-pressed dark:text-[#161a1d]',
-        soft: 'bg-ads-selected text-ads-primary hover:bg-ads-selected-hover',
-        subtle: 'bg-transparent text-ads-subtle hover:bg-ads-hover active:bg-ads-pressed',
-        outline: 'border border-ads-input bg-transparent text-ads-text hover:bg-ads-hover',
-        'outline-danger': 'border border-ads-danger bg-transparent text-ads-danger hover:bg-ads-hover',
-        link: 'bg-transparent text-ads-primary underline-offset-2 hover:underline',
-        danger: 'bg-ads-danger text-white hover:bg-ads-danger-hover active:bg-ads-danger-pressed dark:text-[#161a1d]',
-        'soft-danger': 'bg-[#ffecee] text-ads-danger hover:bg-[#ffd5d2] dark:bg-[#42221f] dark:hover:bg-[#5d1f1a]'
-      },
-      size: {
-        sm: 'h-6 px-2 text-xs',
-        md: 'h-8 px-3 text-sm',
-        lg: 'h-10 px-4 text-sm'
-      },
-      square: { true: 'px-0', false: '' }
-    },
-    compoundVariants: [
-      { square: true, size: 'sm', class: 'w-6' },
-      { square: true, size: 'md', class: 'w-8' },
-      { square: true, size: 'lg', class: 'w-10' }
-    ],
-    defaultVariants: { appearance: 'default', size: 'md', square: false }
-  }
-)
-
 type Appearance = 'default' | 'primary' | 'soft' | 'subtle' | 'outline' | 'outline-danger' | 'link' | 'danger' | 'soft-danger'
 
-// Accepts both the native `appearance` prop and the Nuxt-UI-style
-// `color`/`variant`/`size`/`label`/`icon` props the pre-redesign templates use,
-// so migrated pages keep reading the same.
+// Renders the Leezil `.btn` family (see assets/css/leezil.css). Accepts both the
+// native `appearance` prop and the older `color`/`variant`/`size`/`label`/`icon`
+// props the page templates use.
 const props = withDefaults(defineProps<{
   appearance?: Appearance
   color?: string
@@ -71,8 +39,12 @@ const resolved = computed<Appearance>(() => {
     default: return danger ? 'danger' : props.color === 'neutral' ? 'default' : 'primary'
   }
 })
-const size = computed<'sm' | 'md' | 'lg'>(() => (props.size === 'xs' || props.size === '2xs' || props.size === 'sm' ? 'sm' : props.size === 'lg' || props.size === 'xl' ? 'lg' : 'md'))
-const classes = computed(() => cn(buttonVariants({ appearance: resolved.value, size: size.value, square: props.square }), props.block && 'w-full', props.class))
+const MAP: Record<Appearance, string> = {
+  default: '', outline: '', primary: 'btn-primary', soft: 'btn-soft', subtle: 'btn-ghost', link: 'btn-link',
+  danger: 'btn-danger', 'outline-danger': 'btn-outline-danger', 'soft-danger': 'btn-soft-danger'
+}
+const small = computed(() => ['xs', '2xs', 'sm'].includes(props.size ?? ''))
+const classes = computed(() => cn('btn', MAP[resolved.value], small.value && 'btn-sm', props.square && 'btn-square', props.block && 'btn-block', props.class))
 </script>
 
 <template>

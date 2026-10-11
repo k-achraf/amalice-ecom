@@ -125,7 +125,7 @@ const columns: ColumnDef<Order>[] = [
 ]
 
 const rowSelection = ref<RowSelectionState>({})
-const columnVisibility = ref<VisibilityState>({})
+const columnVisibility = ref<VisibilityState>({ date: false })
 
 const table = useVueTable({
   get data() { return data.value?.items ?? [] },
@@ -165,129 +165,122 @@ async function bulkArchive() {
 </script>
 
 <template>
-  <AdsPage title="Orders" description="Every order across the call-center, fulfillment and delivery pipeline." wide>
-    <div class="space-y-4">
-      <!-- Filter bar -->
-      <div class="flex flex-wrap items-center gap-2">
-        <AdsInput v-model="search" placeholder="Order ID, phone, or name" class="w-72" @keydown.enter="applyFilters">
-          <template #icon><Search /></template>
-        </AdsInput>
-        <AdsSelect v-model="stateFilter" :options="stateOptions" class="w-48" @update:model-value="applyFilters" />
-        <AdsButton appearance="outline" @click="applyFilters">Filter</AdsButton>
-        <AdsButton :appearance="showArchived ? 'primary' : 'subtle'" @click="toggleArchivedView">
-          <Archive /> {{ showArchived ? 'Showing archived' : 'Show archived' }}
-        </AdsButton>
+  <AdsPage title="Orders" :description="`${data?.total ?? 0} orders ${showArchived ? 'in the archive' : 'in the pipeline'}`">
+    <template #actions>
+      <AdsButton appearance="default" class="hide-sm" @click="toggleArchivedView">
+        <Archive /> {{ showArchived ? 'Showing archived' : 'Show archived' }}
+      </AdsButton>
+      <DropdownMenuRoot>
+        <DropdownMenuTrigger as-child>
+          <AdsButton appearance="default" class="hide-sm"><Columns3 /> Columns</AdsButton>
+        </DropdownMenuTrigger>
+        <DropdownMenuPortal>
+          <DropdownMenuContent align="end" :side-offset="6" class="panel z-50" style="min-width: 200px">
+            <DropdownMenuLabel class="menu-label">Visible columns</DropdownMenuLabel>
+            <DropdownMenuCheckboxItem
+              v-for="col in table.getAllLeafColumns().filter((c) => c.getCanHide())"
+              :key="col.id"
+              :model-value="col.getIsVisible()"
+              class="menu-item"
+              style="padding-inline-start: 34px"
+              @select.prevent
+              @update:model-value="(v: boolean) => col.toggleVisibility(v)"
+            >
+              <DropdownMenuItemIndicator class="absolute inline-flex" style="inset-inline-start: 10px"><Check class="i" style="width: 16px; height: 16px" /></DropdownMenuItemIndicator>
+              {{ col.columnDef.header }}
+            </DropdownMenuCheckboxItem>
+          </DropdownMenuContent>
+        </DropdownMenuPortal>
+      </DropdownMenuRoot>
+    </template>
 
-        <DropdownMenuRoot>
-          <DropdownMenuTrigger as-child>
-            <AdsButton appearance="subtle" class="ms-auto"><Columns3 /> Columns</AdsButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuPortal>
-            <DropdownMenuContent align="end" :side-offset="4" class="ads-root z-50 min-w-48 rounded-ads-lg border border-ads-border bg-ads-surface p-1 shadow-ads-overlay">
-              <DropdownMenuLabel class="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-ads-subtlest">Visible columns</DropdownMenuLabel>
-              <DropdownMenuCheckboxItem
-                v-for="col in table.getAllLeafColumns().filter((c) => c.getCanHide())"
-                :key="col.id"
-                :model-value="col.getIsVisible()"
-                class="relative flex h-8 cursor-default items-center rounded-ads ps-8 pe-3 text-sm text-ads-text outline-none data-[highlighted]:bg-ads-hover"
-                @select.prevent
-                @update:model-value="(v: boolean) => col.toggleVisibility(v)"
-              >
-                <DropdownMenuItemIndicator class="absolute start-2.5 inline-flex"><Check class="size-3.5 text-ads-primary" /></DropdownMenuItemIndicator>
-                {{ col.columnDef.header }}
-              </DropdownMenuCheckboxItem>
-            </DropdownMenuContent>
-          </DropdownMenuPortal>
-        </DropdownMenuRoot>
+    <section class="card" aria-label="Orders list" style="padding-bottom: 16px">
+      <div class="card-head">
+        <AdsSelect v-model="stateFilter" :options="stateOptions" class="w-56" @update:model-value="applyFilters" />
+        <label class="search soft" style="margin-inline-start: auto">
+          <Search class="i" /><span class="sr">Search orders</span>
+          <input v-model="search" type="search" placeholder="Order #, name or phone" @keydown.enter="applyFilters">
+        </label>
+        <AdsButton appearance="default" size="sm" @click="applyFilters">Filter</AdsButton>
       </div>
 
       <!-- Bulk action bar -->
-      <div v-if="selectedIds.length" class="flex items-center gap-3 rounded-ads-lg border border-ads-primary bg-ads-selected px-4 py-2">
-        <span class="text-sm font-medium text-ads-text">{{ selectedIds.length }} selected</span>
-        <AdsButton size="sm" appearance="outline" :loading="bulkBusy" @click="bulkArchive">
+      <div v-if="selectedIds.length" class="notice" style="align-items: center">
+        <span class="strong">{{ selectedIds.length }} selected</span>
+        <AdsButton appearance="default" size="sm" :loading="bulkBusy" @click="bulkArchive">
           <component :is="showArchived ? ArchiveRestore : Archive" /> {{ showArchived ? 'Unarchive' : 'Archive' }}
         </AdsButton>
-        <AdsButton size="sm" appearance="subtle" class="ms-auto" @click="rowSelection = {}">Clear</AdsButton>
+        <AdsButton size="sm" appearance="subtle" style="margin-inline-start: auto" @click="rowSelection = {}">Clear</AdsButton>
       </div>
 
-      <!-- Table -->
-      <div class="overflow-x-auto rounded-ads-lg border border-ads-border bg-ads-surface">
-        <table class="w-full min-w-[960px] border-collapse text-sm">
+      <div class="table-wrap">
+        <table style="min-width: 900px">
           <thead>
-            <tr class="border-b-2 border-ads-border">
-              <th v-for="header in table.getFlatHeaders()" :key="header.id" class="h-10 whitespace-nowrap px-3 text-start text-xs font-semibold text-ads-subtle" :class="{ 'w-10': header.id === 'select', 'text-end': header.id === 'cod' || header.id === 'actions' }">
-                <AdsCheckbox v-if="header.id === 'select'" :model-value="allChecked" aria-label="Select all orders on this page" @update:model-value="(v) => table.toggleAllRowsSelected(v === true)" />
+            <tr>
+              <th v-for="header in table.getFlatHeaders()" :key="header.id" :style="header.id === 'select' ? 'width: 28px' : undefined" :class="{ num: header.id === 'cod' }">
+                <input v-if="header.id === 'select'" type="checkbox" aria-label="Select all orders on this page" :checked="table.getIsAllRowsSelected()" :indeterminate.prop="table.getIsSomeRowsSelected()" @change="table.toggleAllRowsSelected(($event.target as HTMLInputElement).checked)">
+                <span v-else-if="header.id === 'actions'" class="sr">Actions</span>
                 <template v-else>{{ header.column.columnDef.header }}</template>
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-if="pending">
-              <td :colspan="visibleColumnCount" class="px-3 py-14 text-center text-ads-subtlest">Loading…</td>
-            </tr>
-            <tr v-else-if="!data?.items.length">
-              <td :colspan="visibleColumnCount" class="px-3 py-14 text-center">
-                <p class="font-medium text-ads-text">No orders found</p>
-                <p class="mt-1 text-ads-subtlest">Try a different search or clear the state filter.</p>
-              </td>
-            </tr>
+            <tr v-if="pending"><td :colspan="visibleColumnCount" class="empty">Loading…</td></tr>
+            <tr v-else-if="!data?.items.length"><td :colspan="visibleColumnCount" class="empty">No orders match this filter.</td></tr>
             <template v-else>
-              <tr
-                v-for="row in table.getRowModel().rows"
-                :key="row.id"
-                class="cursor-pointer border-b border-ads-border last:border-b-0 hover:bg-ads-hover"
-                :class="{ 'bg-ads-selected hover:bg-ads-selected-hover': row.getIsSelected() }"
-                @click="navigateTo(`/orders/${row.original.id}`)"
-              >
-                <td v-for="cell in row.getVisibleCells()" :key="cell.id" class="px-3 py-2.5 align-middle" :class="{ 'whitespace-nowrap': cell.column.id !== 'products' && cell.column.id !== 'status', 'text-end': cell.column.id === 'cod' || cell.column.id === 'actions' }" @click="cell.column.id === 'select' || cell.column.id === 'products' || cell.column.id === 'actions' ? $event.stopPropagation() : undefined">
-                  <AdsCheckbox v-if="cell.column.id === 'select'" :model-value="row.getIsSelected()" :aria-label="`Select order ${row.original.id.slice(0, 8)}`" @update:model-value="(v) => row.toggleSelected(v === true)" />
+              <tr v-for="row in table.getRowModel().rows" :key="row.id" :class="{ selected: row.getIsSelected() }" style="cursor: pointer" @click="navigateTo(`/orders/${row.original.id}`)">
+                <td v-for="cell in row.getVisibleCells()" :key="cell.id" :class="{ num: cell.column.id === 'cod' || cell.column.id === 'actions' }" :style="cell.column.id === 'products' || cell.column.id === 'status' ? undefined : 'white-space: nowrap'" @click="['select', 'products', 'actions'].includes(cell.column.id) ? $event.stopPropagation() : undefined">
+                  <input v-if="cell.column.id === 'select'" type="checkbox" :aria-label="`Select order ${row.original.id.slice(0, 8)}`" :checked="row.getIsSelected()" @change="row.toggleSelected(($event.target as HTMLInputElement).checked)">
 
-                  <NuxtLink v-else-if="cell.column.id === 'order'" :to="`/orders/${row.original.id}`" class="ads-tabular font-medium text-ads-primary hover:underline" @click.stop>
-                    {{ row.original.id.slice(0, 8) }}
-                  </NuxtLink>
+                  <span v-else-if="cell.column.id === 'order'">
+                    <NuxtLink :to="`/orders/${row.original.id}`" class="strong" style="text-decoration: none; color: var(--pine)" @click.stop>#{{ row.original.id.slice(0, 8) }}</NuxtLink>
+                    <span class="sub">{{ fmtDate(row.original.createdAt) }}</span>
+                  </span>
 
-                  <OrderLineItemsInline v-else-if="cell.column.id === 'products'" :items="row.original.items" compact class="max-w-64" />
+                  <OrderLineItemsInline v-else-if="cell.column.id === 'products'" :items="row.original.items" compact style="max-width: 256px" />
 
                   <template v-else-if="cell.column.id === 'customer'">
-                    <div class="flex items-center gap-1.5">
-                      <span class="font-medium text-ads-text">{{ row.original.customer.name ?? '—' }}</span>
-                      <StickyNote v-if="row.original.notes" class="size-3.5 shrink-0 text-ads-subtlest" :title="row.original.notes" />
-                    </div>
-                    <div class="ads-tabular text-xs text-ads-subtlest">{{ row.original.customer.phone }}</div>
+                    {{ row.original.customer.name ?? '—' }}
+                    <StickyNote v-if="row.original.notes" class="i" style="width: 14px; height: 14px; display: inline; vertical-align: -2px; color: var(--text-2)" :title="row.original.notes" />
+                    <span class="sub">{{ row.original.customer.phone }}</span>
                   </template>
 
-                  <span v-else-if="cell.column.id === 'wilaya'" class="text-ads-subtle">{{ row.original.address.region }}</span>
+                  <template v-else-if="cell.column.id === 'wilaya'">{{ row.original.address.region }}</template>
 
-                  <div v-else-if="cell.column.id === 'status'" class="flex flex-wrap items-center gap-1">
+                  <div v-else-if="cell.column.id === 'status'" style="display: flex; flex-wrap: wrap; gap: 4px">
                     <AdsOrderStatus :state="CALL_CENTER_STATE_TO_ORDER_STATE[row.original.callCenterState]" />
                     <AdsOrderStatus v-if="row.original.shippingState" :state="SHIPPING_STATE_TO_ORDER_STATE[row.original.shippingState]" />
-                    <AdsLozenge v-if="row.original.isDuplicate" appearance="red" bold title="Same customer + product within the last 2 days">Duplicate?</AdsLozenge>
+                    <span v-if="row.original.isDuplicate" class="pill solid-danger" title="Same customer + product within the last 2 days">Duplicate?</span>
                   </div>
 
-                  <span v-else-if="cell.column.id === 'cod'" class="ads-tabular font-medium text-ads-text"><PriceDisplay :amount-cents="row.original.totalCents" /></span>
+                  <template v-else-if="cell.column.id === 'cod'">
+                    <span class="strong"><AdsPrice :amount-cents="row.original.totalCents" /></span>
+                    <span class="sub">Cash on delivery</span>
+                  </template>
 
-                  <span v-else-if="cell.column.id === 'date'" class="text-ads-subtle">{{ fmtDate(row.original.createdAt) }}</span>
+                  <template v-else-if="cell.column.id === 'date'">{{ fmtDate(row.original.createdAt) }}</template>
 
-                  <div v-else-if="cell.column.id === 'actions'" class="flex items-center justify-end gap-1">
-                    <AdsButton
+                  <div v-else-if="cell.column.id === 'actions'" style="display: inline-flex; align-items: center; gap: 4px">
+                    <AdsButton appearance="default"
                       v-if="VALID_TRANSITIONS[row.original.state]?.length && row.original.state !== 'Cancelled'"
                       size="sm"
+                      style="max-width: 200px"
+                      :title="`Move to: ${ORDER_STATE_LABELS[VALID_TRANSITIONS[row.original.state]![0] as OrderState] ?? VALID_TRANSITIONS[row.original.state]![0]}`"
                       :loading="transitioning === row.original.id"
                       @click="advance(row.original.id, row.original.state)"
                     >
-                      <ArrowRight /> {{ ORDER_STATE_LABELS[VALID_TRANSITIONS[row.original.state]![0] as OrderState] ?? VALID_TRANSITIONS[row.original.state]![0] }}
+                      <ArrowRight /><span class="truncate">{{ ORDER_STATE_LABELS[VALID_TRANSITIONS[row.original.state]![0] as OrderState] ?? VALID_TRANSITIONS[row.original.state]![0] }}</span>
                     </AdsButton>
-                    <AdsButton
-                      appearance="subtle"
-                      size="sm"
-                      square
+                    <button
+                      class="row-btn"
+                      type="button"
                       :title="row.original.archived ? 'Unarchive' : 'Archive'"
                       :aria-label="row.original.archived ? 'Unarchive' : 'Archive'"
-                      :loading="archiving === row.original.id"
+                      :disabled="archiving === row.original.id"
                       @click="toggleArchive(row.original.id, row.original.archived)"
                     >
-                      <component :is="row.original.archived ? ArchiveRestore : Archive" />
-                    </AdsButton>
+                      <component :is="row.original.archived ? ArchiveRestore : Archive" class="i" style="width: 18px; height: 18px" />
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -304,6 +297,6 @@ async function bulkArchive() {
         @update:page="goToPage"
         @update:page-size="changePageSize"
       />
-    </div>
+    </section>
   </AdsPage>
 </template>

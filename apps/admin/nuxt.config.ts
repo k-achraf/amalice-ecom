@@ -4,11 +4,10 @@ export default defineNuxtConfig({
   // The admin no longer extends packages/ui (that layer is Nuxt UI-based and
   // storefront-only now). Design tokens live in ads.css; components in
   // app/components/ads.
-  modules: ['@pinia/nuxt', '@nuxtjs/color-mode'],
+  modules: ['@pinia/nuxt'],
   css: ['~/assets/css/ads.css'],
-  colorMode: { preference: 'system', fallback: 'light', storageKey: 'amalice-color-mode', classSuffix: '' },
-  // Fonts are self-hosted via @fontsource-variable packages imported in ads.css
-  // (no font module: @nuxt/fonts' dev handler 500s on stale font URLs).
+  // Outfit is self-hosted via @fontsource-variable/outfit (imported in ads.css);
+  // no font module: @nuxt/fonts' dev handler 500s on stale font URLs.
   ssr: false,
   // SPA shell paints a spinner instead of a blank white page while the bundle loads.
   spaLoadingTemplate: true,
@@ -47,8 +46,9 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'en' },
-      titleTemplate: '%s · Amalice Admin',
-      title: 'Amalice Admin'
+      link: [{ rel: 'icon', href: '/img/leezil-icon-teal.svg', type: 'image/svg+xml' }],
+      titleTemplate: '%s — Leezil Admin',
+      title: 'Leezil Admin'
     }
   }
 })

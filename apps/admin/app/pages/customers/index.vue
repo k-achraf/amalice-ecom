@@ -46,6 +46,10 @@ async function goToPage(p: number) {
   await load()
 }
 
+function initials(name: string | null) {
+  return (name ?? '?').split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()
+}
+
 async function changePageSize(size: number) {
   await router.push({ query: { ...route.query, pageSize: size, page: 1 } })
   await load()
@@ -53,40 +57,44 @@ async function changePageSize(size: number) {
 </script>
 
 <template>
-  <AdsPage title="Customers" wide>
-  <div class="space-y-4">
-    <AdsInput v-model="search" placeholder="Search by name or phone…" icon="i-lucide-search" @keydown.enter="applySearch" />
-    <div class="admin-table-wrap">
-      <table class="admin-table w-full text-sm">
-        <thead>
-          <tr>
-            <th class="px-4 py-2.5 text-left">Customer</th>
-            <th class="px-4 py-2.5 text-left">Phone</th>
-            <th class="px-4 py-2.5 text-right">Orders</th>
-            <th class="px-4 py-2.5 text-right">Total value</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="pending"><td colspan="4" class="px-4 py-12 text-center text-muted">Loading…</td></tr>
-          <tr v-else-if="!data?.items.length"><td colspan="4" class="px-4 py-12 text-center text-muted">No customers found.</td></tr>
-          <tr v-for="c in data?.items" :key="c.id" class="cursor-pointer" @click="navigateTo(`/customers/${c.id}`)">
-            <td class="px-4 py-3 font-medium text-highlighted">{{ c.name ?? '—' }}</td>
-            <td class="tabular px-4 py-3 text-muted">{{ c.phone }}</td>
-            <td class="tabular px-4 py-3 text-right">{{ c.orderCount }}</td>
-            <td class="tabular px-4 py-3 text-right"><AdsPrice :amount-cents="c.totalValueCents" /></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+  <AdsPage title="Customers" description="People who ordered from the store">
+    <template #actions>
+      <AdsSearch v-model="search" placeholder="Name or phone" label="Search customers" @keydown.enter="applySearch" />
+    </template>
 
-    <AdsPagination
-      :total="data?.total ?? 0"
-      :page="currentPage"
-      :page-size="currentPageSize"
-      item-label="customers"
-      @update:page="goToPage"
-      @update:page-size="changePageSize"
-    />
-  </div>
-</AdsPage>
+    <section class="kpis" aria-label="Customer figures">
+      <AdsKpiCard label="Total customers" :value="(data?.total ?? 0).toLocaleString('en-US')" meta="Matching this search" />
+    </section>
+
+    <section class="card" aria-label="Customer list" style="padding-top: 12px; padding-bottom: 12px">
+      <div class="table-wrap">
+        <table style="min-width: 640px">
+          <thead><tr><th>Customer</th><th>Phone</th><th class="num">Orders</th><th class="num">Total spent</th></tr></thead>
+          <tbody>
+            <tr v-if="pending"><td colspan="4" class="empty">Loading…</td></tr>
+            <tr v-else-if="!data?.items.length"><td colspan="4" class="empty">No customers found.</td></tr>
+            <tr v-for="c in data?.items" :key="c.id" style="cursor: pointer" @click="navigateTo(`/customers/${c.id}`)">
+              <td>
+                <NuxtLink :to="`/customers/${c.id}`" class="cust-btn" style="text-decoration: none; color: var(--pine)" @click.stop>
+                  <span class="initials">{{ initials(c.name) }}</span>
+                  <span class="strong">{{ c.name ?? '—' }}</span>
+                </NuxtLink>
+              </td>
+              <td>{{ c.phone }}</td>
+              <td class="num">{{ c.orderCount }}</td>
+              <td class="num strong"><AdsPrice :amount-cents="c.totalValueCents" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <AdsPagination
+        :total="data?.total ?? 0"
+        :page="currentPage"
+        :page-size="currentPageSize"
+        item-label="customers"
+        @update:page="goToPage"
+        @update:page-size="changePageSize"
+      />
+    </section>
+  </AdsPage>
 </template>

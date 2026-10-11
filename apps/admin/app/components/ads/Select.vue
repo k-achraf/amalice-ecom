@@ -9,7 +9,7 @@ export interface AdsSelectOption { label: string; value: Primitive }
 // reka-ui Select speaks non-empty strings. Callers pass string|number|null values
 // and get the same value back: options are matched by a string key, and
 // null/undefined/'' values (e.g. a "None" option) map to a sentinel key.
-// `items` is an alias of `options` (Nuxt UI naming) and may be plain strings/numbers;
+// `items` is an alias of `options` and may be plain strings/numbers;
 // `multiple` makes the model an array.
 const props = defineProps<{
   modelValue?: any
@@ -38,7 +38,7 @@ const list = computed<AdsSelectOption[]>(() =>
 
 const rootValue = computed(() => {
   if (props.multiple) return ((props.modelValue ?? []) as Primitive[]).map(keyOf)
-  // No matching option → undefined so the placeholder shows.
+  // No matching option -> undefined so the placeholder shows.
   const k = keyOf(props.modelValue)
   return list.value.some((o) => keyOf(o.value) === k) ? k : undefined
 })
@@ -63,22 +63,18 @@ function onChange(v: unknown) {
 <template>
   <SelectRoot :model-value="rootValue as any" :multiple="multiple" :disabled="disabled" @update:model-value="onChange">
     <SelectTrigger
-      :class="cn('inline-flex h-8 w-full items-center justify-between gap-2 rounded-ads border border-ads-input bg-ads-surface px-2 text-start text-sm text-ads-text hover:bg-ads-hover disabled:cursor-not-allowed disabled:bg-ads-sunken disabled:text-ads-disabled data-[placeholder]:text-ads-subtlest', props.class)"
+      :class="cn('input-wrap cursor-pointer justify-between text-start text-sm', disabled && 'is-disabled', props.class)"
+      style="font: 400 14px var(--font); color: var(--pine)"
     >
-      <span v-if="multiple" class="truncate" :class="{ 'text-ads-subtlest': !multiLabel }">{{ multiLabel || placeholder }}</span>
+      <span v-if="multiple" class="truncate" :class="{ muted: !multiLabel }">{{ multiLabel || placeholder }}</span>
       <SelectValue v-else :placeholder="placeholder" class="truncate" />
-      <ChevronDown class="size-4 shrink-0 text-ads-subtlest" />
+      <ChevronDown class="i ms-auto" style="width: 18px; height: 18px; color: var(--text-2)" />
     </SelectTrigger>
     <SelectPortal>
-      <SelectContent position="popper" :side-offset="4" class="ads-root z-[60] max-h-72 min-w-(--reka-select-trigger-width) overflow-hidden rounded-ads-lg border border-ads-border bg-ads-surface shadow-ads-overlay">
-        <SelectViewport class="p-1">
-          <SelectItem
-            v-for="o in list"
-            :key="keyOf(o.value)"
-            :value="keyOf(o.value)"
-            class="relative flex h-8 cursor-default select-none items-center rounded-ads ps-7 pe-2 text-sm text-ads-text outline-none data-[highlighted]:bg-ads-hover data-[state=checked]:bg-ads-selected data-[state=checked]:text-ads-primary"
-          >
-            <SelectItemIndicator class="absolute start-2 inline-flex"><Check class="size-3.5" /></SelectItemIndicator>
+      <SelectContent position="popper" :side-offset="6" class="panel z-[60] max-h-72 min-w-(--reka-select-trigger-width) overflow-hidden">
+        <SelectViewport>
+          <SelectItem v-for="o in list" :key="keyOf(o.value)" :value="keyOf(o.value)" class="menu-item" style="padding-inline-start: 34px">
+            <SelectItemIndicator class="absolute inline-flex" style="inset-inline-start: 10px"><Check class="i" style="width: 16px; height: 16px" /></SelectItemIndicator>
             <SelectItemText>{{ o.label }}</SelectItemText>
           </SelectItem>
         </SelectViewport>

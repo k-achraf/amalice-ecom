@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Products &amp; stock — Leezil Admin</title>
+  <link rel="icon" href="assets/img/leezil-icon-teal.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+<div class="app" data-page="products">
+  <main class="main">
+
+    <header class="page-head">
+      <div class="title">
+        <p>Catalogue and inventory</p>
+        <h1>Products &amp; stock</h1>
+      </div>
+      <button class="btn hide-sm" type="button"><svg data-icon="upload"></svg>Import</button>
+      <button class="btn btn-primary" type="button"><svg data-icon="plus"></svg>Add product</button>
+    </header>
+
+    <section class="kpis" aria-label="Inventory summary">
+      <div class="kpi"><span class="label">Active products</span><span class="value">86</span><span class="meta">Across 8 categories</span></div>
+      <div class="kpi"><span class="label">Units in stock</span><span class="value">1,927</span><span class="meta">Stock value 6,840,000 DA</span></div>
+      <div class="kpi warn"><span class="label">Low stock</span><span class="value">5</span><span class="meta">Fewer than 10 units left</span></div>
+      <div class="kpi danger"><span class="label">Out of stock</span><span class="value">2</span><span class="meta">Hidden from the store</span></div>
+    </section>
+
+    <section class="card" aria-label="Product list">
+      <div class="card-head">
+        <div class="chips" id="cat-tabs" role="tablist" aria-label="Filter by category"></div>
+        <label class="search soft"><svg data-icon="search"></svg><span class="sr">Search products</span><input type="search" id="products-search" placeholder="Name or SKU"></label>
+      </div>
+      <div class="table-wrap">
+        <table style="min-width:860px">
+          <thead><tr><th>Product</th><th>Category</th><th class="num">Price</th><th>Stock</th><th class="num">Sold (30d)</th><th>Status</th><th><span class="sr">Actions</span></th></tr></thead>
+          <tbody id="products-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

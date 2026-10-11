@@ -1,19 +1,18 @@
 <script setup lang="ts">
-// Standard page frame for migrated pages: title row (+ optional breadcrumb and
-// action slot) above a centered content column.
+// The design's page frame: `.page-head` (subtitle `p` above a 36px h1, actions on
+// the right) followed by the page content. The surrounding `.main` supplies the
+// padding and the 24px gap between sections.
 defineProps<{ title: string; description?: string; wide?: boolean }>()
 </script>
 
 <template>
-  <div class="mx-auto w-full px-4 py-6 sm:px-8" :class="wide ? 'max-w-[1600px]' : 'max-w-7xl'">
-    <slot name="breadcrumb" />
-    <header class="mb-5 flex flex-wrap items-start justify-between gap-3">
-      <div class="min-w-0">
-        <h1 class="truncate text-2xl font-semibold leading-8 text-ads-text">{{ title }}</h1>
-        <p v-if="description" class="mt-0.5 text-sm text-ads-subtle">{{ description }}</p>
-      </div>
-      <div v-if="$slots.actions" class="flex flex-wrap items-center gap-2"><slot name="actions" /></div>
-    </header>
-    <slot />
-  </div>
+  <slot name="breadcrumb" />
+  <header class="page-head">
+    <div class="title">
+      <p v-if="description">{{ description }}</p>
+      <h1>{{ title }}</h1>
+    </div>
+    <slot name="actions" />
+  </header>
+  <slot />
 </template>

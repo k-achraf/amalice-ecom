@@ -3,11 +3,10 @@ import { X } from 'lucide-vue-next'
 import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle, DialogDescription, DialogClose } from 'reka-ui'
 import { cn } from '~/lib/cn'
 
-// Generic modal with the Nuxt UI `UModal` surface the existing pages use:
+// Generic modal with the `UModal`-style surface the existing pages use:
 //  - `#content` slot: caller supplies the whole panel body (typically a p-6 div);
 //  - or `title` / `description` + default/`#body` slot + `#footer` slot.
-// `ui.content` adds classes to the panel (e.g. a wider max-w). Use AdsDialog for
-// new code that wants the standard header/footer chrome.
+// `ui.content` adds classes to the panel (e.g. a wider max-w).
 const open = defineModel<boolean>('open', { default: false })
 defineProps<{ title?: string; description?: string; ui?: { content?: string } }>()
 </script>
@@ -15,23 +14,20 @@ defineProps<{ title?: string; description?: string; ui?: { content?: string } }>
 <template>
   <DialogRoot v-model:open="open">
     <DialogPortal>
-      <DialogOverlay class="fixed inset-0 z-50 bg-ads-overlay" />
-      <DialogContent
-        :class="cn('ads-root fixed start-1/2 top-1/2 z-50 flex max-h-[88vh] w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col overflow-y-auto rounded-ads-lg bg-ads-surface shadow-ads-overlay rtl:translate-x-1/2', ui?.content)"
-        @open-auto-focus.prevent
-      >
+      <DialogOverlay class="modal-overlay" />
+      <DialogContent :class="cn('modal', ui?.content)" @open-auto-focus.prevent>
         <DialogTitle class="sr-only">{{ title ?? 'Dialog' }}</DialogTitle>
         <DialogDescription class="sr-only">{{ description ?? title ?? 'Dialog' }}</DialogDescription>
         <slot name="content">
-          <header v-if="title || description" class="flex items-start justify-between gap-4 px-6 pt-5 pb-3">
-            <div class="min-w-0">
-              <h2 v-if="title" class="text-xl font-medium leading-7 text-ads-text">{{ title }}</h2>
-              <p v-if="description" class="mt-1 text-sm text-ads-subtle">{{ description }}</p>
+          <header v-if="title || description" class="modal-head">
+            <div style="flex-grow: 1; min-width: 0">
+              <h2 v-if="title" style="font-size: 20px">{{ title }}</h2>
+              <p v-if="description" class="muted" style="margin: 4px 0 0">{{ description }}</p>
             </div>
-            <DialogClose as-child><AdsButton appearance="subtle" square aria-label="Close"><X /></AdsButton></DialogClose>
+            <DialogClose as-child><AdsButton appearance="subtle" square size="sm" aria-label="Close"><X /></AdsButton></DialogClose>
           </header>
-          <div class="space-y-4 px-6 py-3"><slot name="body"><slot /></slot></div>
-          <footer v-if="$slots.footer" class="flex justify-end gap-2 px-6 pt-2 pb-5"><slot name="footer" /></footer>
+          <div class="modal-body"><slot name="body"><slot /></slot></div>
+          <footer v-if="$slots.footer" class="modal-foot"><slot name="footer" /></footer>
         </slot>
       </DialogContent>
     </DialogPortal>

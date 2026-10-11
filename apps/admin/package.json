@@ -11,9 +11,7 @@
   },
   "dependencies": {
     "@amalice/shared": "workspace:*",
-    "@fontsource-variable/inter": "^5.3.0",
-    "@fontsource-variable/jetbrains-mono": "^5.3.0",
-    "@nuxtjs/color-mode": "^4.0.1",
+    "@fontsource-variable/outfit": "^5.3.0",
     "@pinia/nuxt": "1.0.1",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/vue-table": "^8.21.3",
@@ -25,7 +23,6 @@
     "@tiptap/starter-kit": "^3.28.0",
     "@tiptap/vue-3": "^3.28.0",
     "@vueuse/core": "^15.0.0",
-    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^1.0.0",
     "pinia": "4.0.2",

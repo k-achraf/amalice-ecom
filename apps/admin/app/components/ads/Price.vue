@@ -1,11 +1,13 @@
 <script setup lang="ts">
-// Cents-based (integer), never floats — avoids float rounding bugs in money
-// math; aligned with the Order schema in packages/shared.
+// Cents-based (integer), never floats, aligned with the Order schema in
+// packages/shared. Displayed the design's way: "4,900 DA" (no symbol, decimals
+// only when the amount has them).
 const props = withDefaults(defineProps<{ amountCents: number; currency?: string }>(), { currency: 'DZD' })
 
-const formatted = computed(() =>
-  new Intl.NumberFormat(undefined, { style: 'currency', currency: props.currency }).format(props.amountCents / 100)
-)
+const formatted = computed(() => {
+  const n = (props.amountCents / 100).toLocaleString('en-US', { maximumFractionDigits: 2 })
+  return `${n} ${props.currency === 'DZD' ? 'DA' : props.currency}`
+})
 </script>
 
 <template>

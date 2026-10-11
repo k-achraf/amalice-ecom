@@ -35,28 +35,28 @@ async function onSubmit() {
 </script>
 
 <template>
-  <div class="admin-surface ads-root flex min-h-screen items-center justify-center p-6">
-    <div class="admin-kpi-card w-full max-w-sm space-y-6 p-8">
-      <div class="space-y-1 text-center">
-        <div class="mx-auto mb-2 flex size-10 items-center justify-center rounded-md bg-primary text-white">
-          <AdsIcon name="i-lucide-package" class="size-5" />
+  <div class="ads-root" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px">
+    <div style="width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 24px; align-items: stretch">
+      <img src="/img/leezil-icon-teal.svg" alt="Leezil" style="width: 56px; align-self: center">
+      <section class="card" style="padding: 32px; gap: 24px">
+        <div style="text-align: center">
+          <h1 style="font-size: 28px; letter-spacing: -0.01em">Leezil Admin</h1>
+          <p class="muted" style="margin: 6px 0 0; font-size: 14px">Sign in to the operations dashboard</p>
         </div>
-        <h1 class="text-xl font-semibold text-highlighted">Amalice Admin</h1>
-        <p class="text-sm text-muted">Sign in to the operations dashboard</p>
-      </div>
 
-      <form class="space-y-4" @submit.prevent="onSubmit">
-        <AdsField label="Email">
-          <AdsInput v-model="email" type="email" autocomplete="username" class="w-full" required />
-        </AdsField>
-        <AdsField label="Password">
-          <AdsInput v-model="password" type="password" autocomplete="current-password" class="w-full" required />
-        </AdsField>
+        <form style="display: flex; flex-direction: column; gap: 16px" @submit.prevent="onSubmit">
+          <AdsField label="Email">
+            <AdsInput v-model="email" type="email" autocomplete="username" required />
+          </AdsField>
+          <AdsField label="Password">
+            <AdsInput v-model="password" type="password" autocomplete="current-password" required />
+          </AdsField>
 
-        <p v-if="error" class="text-sm text-error">{{ error }}</p>
+          <p v-if="error" style="margin: 0; font-size: 13px; color: var(--danger-fg)">{{ error }}</p>
 
-        <AdsButton type="submit" block :loading="loading">Sign in</AdsButton>
-      </form>
+          <AdsButton appearance="primary" type="submit" block :loading="loading">Sign in</AdsButton>
+        </form>
+      </section>
     </div>
   </div>
 </template>

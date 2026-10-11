@@ -3,10 +3,10 @@ defineProps<{ icon?: string; title: string; description?: string }>()
 </script>
 
 <template>
-  <div class="flex flex-col items-center gap-2 rounded-ads-lg border border-dashed border-ads-border py-12 text-center">
-    <AdsIcon :name="icon ?? 'i-lucide-inbox'" class="size-8 text-ads-subtlest" />
-    <p class="font-medium text-ads-text">{{ title }}</p>
-    <p v-if="description" class="max-w-md text-sm text-ads-subtle">{{ description }}</p>
+  <div class="empty flex flex-col items-center gap-2" style="padding: 48px 8px">
+    <AdsIcon :name="icon ?? 'i-lucide-inbox'" style="width: 32px; height: 32px; color: var(--sage)" />
+    <p class="strong" style="margin: 0; color: var(--pine)">{{ title }}</p>
+    <p v-if="description" class="muted" style="margin: 0; max-width: 420px">{{ description }}</p>
     <slot />
   </div>
 </template>

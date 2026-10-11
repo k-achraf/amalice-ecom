@@ -439,7 +439,7 @@ async function submitAddItem() {
           <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
               <p class="text-xs font-semibold text-ads-subtle">Total due (COD)</p>
-              <PriceDisplay :amount-cents="order.totalCents" class="ads-tabular text-2xl font-semibold text-ads-text" />
+              <AdsPrice :amount-cents="order.totalCents" class="ads-tabular text-2xl font-semibold text-ads-text" />
             </div>
             <div class="flex flex-wrap items-center gap-1.5">
               <AdsOrderStatus :state="CALL_CENTER_STATE_TO_ORDER_STATE[order.callCenterState]" />
@@ -460,9 +460,9 @@ async function submitAddItem() {
                   <AdsLozenge v-if="item.offerId" appearance="green">Offer</AdsLozenge>
                 </div>
                 <p v-if="item.variantLabel" class="text-xs text-ads-subtlest">{{ item.variantLabel }}</p>
-                <p class="text-xs text-ads-subtlest">Qty {{ item.quantity }} × <PriceDisplay :amount-cents="item.unitPriceCents" /></p>
+                <p class="text-xs text-ads-subtlest">Qty {{ item.quantity }} × <AdsPrice :amount-cents="item.unitPriceCents" /></p>
               </div>
-              <PriceDisplay :amount-cents="item.lineTotalCents" class="ads-tabular shrink-0 font-medium text-ads-text" />
+              <AdsPrice :amount-cents="item.lineTotalCents" class="ads-tabular shrink-0 font-medium text-ads-text" />
             </li>
           </ul>
 
@@ -471,15 +471,15 @@ async function submitAddItem() {
           <dl class="mt-3 space-y-1.5 text-sm">
             <div class="flex items-center justify-between">
               <dt class="text-ads-subtle">Items subtotal</dt>
-              <dd><PriceDisplay :amount-cents="itemsSubtotalCents" class="ads-tabular" /></dd>
+              <dd><AdsPrice :amount-cents="itemsSubtotalCents" class="ads-tabular" /></dd>
             </div>
             <div class="flex items-center justify-between">
               <dt class="text-ads-subtle">Shipping<template v-if="order.shippingType"> — {{ shippingTypeLabel[order.shippingType] }}</template></dt>
-              <dd><PriceDisplay :amount-cents="order.shippingPriceCents" class="ads-tabular" /></dd>
+              <dd><AdsPrice :amount-cents="order.shippingPriceCents" class="ads-tabular" /></dd>
             </div>
             <div class="flex items-center justify-between border-t border-ads-border pt-2 text-base font-semibold text-ads-text">
               <dt>Total due (COD)</dt>
-              <dd><PriceDisplay :amount-cents="order.totalCents" class="ads-tabular" /></dd>
+              <dd><AdsPrice :amount-cents="order.totalCents" class="ads-tabular" /></dd>
             </div>
           </dl>
 
@@ -600,7 +600,7 @@ async function submitAddItem() {
             <div class="flex items-center justify-between"><dt class="text-ads-subtle">Wilaya</dt><dd class="text-ads-text">{{ order.address.region || '-' }}</dd></div>
             <div class="flex items-center justify-between"><dt class="text-ads-subtle">City / commune</dt><dd class="text-ads-text">{{ order.address.city || '-' }}</dd></div>
             <div class="flex items-center justify-between"><dt class="text-ads-subtle">Shipping method</dt><dd class="text-ads-text">{{ shippingTypeLabel[order.shippingType] }}</dd></div>
-            <div class="flex items-center justify-between"><dt class="text-ads-subtle">Shipping price</dt><dd><PriceDisplay :amount-cents="order.shippingPriceCents" class="ads-tabular" /></dd></div>
+            <div class="flex items-center justify-between"><dt class="text-ads-subtle">Shipping price</dt><dd><AdsPrice :amount-cents="order.shippingPriceCents" class="ads-tabular" /></dd></div>
           </dl>
         </AdsCard>
 
@@ -608,9 +608,9 @@ async function submitAddItem() {
           <p class="text-sm text-ads-subtle">Created {{ fmtDateTime(order.createdAt) }}</p>
           <p class="text-sm text-ads-subtle">Last update {{ fmtDateTime(order.updatedAt) }}</p>
           <dl v-if="order.cashReconciliation" class="mt-3 space-y-1.5 border-t border-ads-border pt-3 text-sm">
-            <div class="flex items-center justify-between"><dt class="text-ads-subtle">Expected cash</dt><dd><PriceDisplay :amount-cents="order.cashReconciliation.expectedCents" class="ads-tabular" /></dd></div>
-            <div v-if="order.cashReconciliation.collectedCents != null" class="flex items-center justify-between text-[#216e4e] dark:text-[#7ee2b8]">
-              <dt>Collected</dt><dd><PriceDisplay :amount-cents="order.cashReconciliation.collectedCents" class="ads-tabular" /></dd>
+            <div class="flex items-center justify-between"><dt class="text-ads-subtle">Expected cash</dt><dd><AdsPrice :amount-cents="order.cashReconciliation.expectedCents" class="ads-tabular" /></dd></div>
+            <div v-if="order.cashReconciliation.collectedCents != null" class="flex items-center justify-between text-teal">
+              <dt>Collected</dt><dd><AdsPrice :amount-cents="order.cashReconciliation.collectedCents" class="ads-tabular" /></dd>
             </div>
             <p v-else class="text-ads-subtlest">Not yet reconciled</p>
           </dl>

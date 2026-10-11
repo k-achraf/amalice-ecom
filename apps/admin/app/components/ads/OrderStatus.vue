@@ -1,29 +1,29 @@
 <script setup lang="ts">
 import { ORDER_STATE_LABELS, type OrderState } from '@amalice/shared'
 
-type Appearance = 'neutral' | 'blue' | 'green' | 'red' | 'yellow' | 'orange' | 'purple' | 'teal' | 'magenta' | 'lime'
+type Appearance = 'neutral' | 'blue' | 'green' | 'red' | 'yellow' | 'orange'
 
-// Atlassian lozenges are semantic, not one-hue-per-state: the colour tells you
-// the stage (waiting / in motion / done / problem), the label tells you which.
+// Mapped onto the design's five order pills: new (warn), confirmed (ok),
+// shipping (mist), delivered (teal), returned (danger).
 const STATE: Record<OrderState, { appearance: Appearance; bold?: boolean }> = {
   PendingCallCenter: { appearance: 'yellow' },
   CallCenterNoAnswer: { appearance: 'orange' },
-  WrongNumber: { appearance: 'magenta' },
-  Postponed: { appearance: 'purple' },
+  WrongNumber: { appearance: 'red' },
+  Postponed: { appearance: 'orange' },
   Cancelled: { appearance: 'red' },
-  Confirmed: { appearance: 'blue' },
-  OnHold: { appearance: 'neutral' },
-  Packed: { appearance: 'teal' },
-  HandedToCourier: { appearance: 'teal', bold: true },
-  OutForDelivery: { appearance: 'blue', bold: true },
+  Confirmed: { appearance: 'green' },
+  OnHold: { appearance: 'orange' },
+  Packed: { appearance: 'blue' },
+  HandedToCourier: { appearance: 'blue' },
+  OutForDelivery: { appearance: 'blue' },
   DeliveryFailed: { appearance: 'red', bold: true },
-  Delivered: { appearance: 'green' },
-  ReturnedToOrigin: { appearance: 'orange', bold: true },
+  Delivered: { appearance: 'green', bold: true },
+  ReturnedToOrigin: { appearance: 'red' },
   Restocked: { appearance: 'neutral' },
-  CashCollected: { appearance: 'lime' },
-  Reconciled: { appearance: 'green' },
+  CashCollected: { appearance: 'green', bold: true },
+  Reconciled: { appearance: 'green', bold: true },
   Settled: { appearance: 'green', bold: true },
-  CancelledShipping: { appearance: 'red', bold: true }
+  CancelledShipping: { appearance: 'red' }
 }
 
 const props = defineProps<{ state: OrderState }>()
