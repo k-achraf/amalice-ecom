@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import type { AnalyticsOverview, DashboardStats } from '@amalice/shared'
 
 useHead({ title: 'Dashboard' })
@@ -52,152 +53,142 @@ function greeting() {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Dashboard">
-        <template #leading>
-          <UDashboardSidebarCollapse />
-        </template>
-      </UDashboardNavbar>
-    </template>
+  <AdsPage title="Dashboard" wide>
+  <div v-if="stats" class="space-y-8">
+    <!-- Welcome hero band -->
+    <div class="admin-hero-band flex flex-col gap-1 p-6">
+      <p class="text-sm font-medium text-primary">{{ greeting() }}, {{ auth.user?.email?.split('@')[0] }}</p>
+      <h1 class="text-xl font-semibold text-highlighted">
+        {{ isWarehouse ? "Here's today's inventory picture." : "Here's what's happening across your store." }}
+      </h1>
+    </div>
 
-    <template #body>
-      <div v-if="stats" class="space-y-8">
-        <!-- Welcome hero band -->
-        <div class="admin-hero-band flex flex-col gap-1 p-6">
-          <p class="text-sm font-medium text-primary">{{ greeting() }}, {{ auth.user?.email?.split('@')[0] }}</p>
-          <h1 class="text-xl font-semibold text-highlighted">
-            {{ isWarehouse ? "Here's today's inventory picture." : "Here's what's happening across your store." }}
-          </h1>
+    <section>
+      <h2 class="mb-4 text-sm font-medium text-muted">
+        {{ isWarehouse ? 'Inventory overview' : 'Operations overview' }}
+      </h2>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <template v-if="isWarehouse">
+          <NuxtLink to="/inventory">
+            <AdsKpiCard label="Low-stock products" :value="stats.lowStockCount" icon="i-lucide-alert-triangle" color="error" />
+          </NuxtLink>
+        </template>
+        <template v-else>
+          <AdsKpiCard label="Orders today" :value="stats.ordersToday" icon="i-lucide-package" color="primary" />
+          <AdsKpiCard
+            label="COD pending"
+            :value="formatDzd(stats.codAmountPendingCents)"
+            icon="i-lucide-banknote"
+            color="warning"
+          />
+          <AdsKpiCard
+            label="COD collected"
+            :value="formatDzd(stats.codAmountCollectedCents)"
+            icon="i-lucide-circle-dollar-sign"
+            color="success"
+          />
+          <AdsKpiCard label="Deliveries today" :value="stats.deliveriesToday" icon="i-lucide-truck" color="info" />
+        </template>
+      </div>
+    </section>
+
+    <section v-if="!isWarehouse">
+      <h2 class="mb-4 text-sm font-medium text-muted">Needs attention</h2>
+      <div class="admin-kpi-card divide-y divide-[var(--color-admin-border)]">
+        <NuxtLink
+          to="/call-center"
+          class="group flex items-center justify-between p-4 transition-colors hover:bg-[var(--color-admin-row-hover)]"
+        >
+          <span class="flex items-center gap-3">
+            <span class="admin-icon-chip admin-icon-chip-warning"><AdsIcon name="i-lucide-phone-call" class="size-4" /></span>
+            <span class="font-medium text-highlighted">Awaiting confirmation call</span>
+          </span>
+          <span class="flex items-center gap-2">
+            <AdsBadge color="warning" variant="subtle">{{ stats.pendingCallCenterCount ?? 0 }}</AdsBadge>
+            <AdsIcon name="i-lucide-chevron-right" class="size-4 text-muted opacity-0 transition-opacity group-hover:opacity-100" />
+          </span>
+        </NuxtLink>
+        <NuxtLink
+          to="/fulfillment"
+          class="group flex items-center justify-between p-4 transition-colors hover:bg-[var(--color-admin-row-hover)]"
+        >
+          <span class="flex items-center gap-3">
+            <span class="admin-icon-chip admin-icon-chip-info"><AdsIcon name="i-lucide-package-check" class="size-4" /></span>
+            <span class="font-medium text-highlighted">Confirmed — ready to pack</span>
+          </span>
+          <span class="flex items-center gap-2">
+            <AdsBadge color="info" variant="subtle">{{ stats.confirmedCount }}</AdsBadge>
+            <AdsIcon name="i-lucide-chevron-right" class="size-4 text-muted opacity-0 transition-opacity group-hover:opacity-100" />
+          </span>
+        </NuxtLink>
+        <NuxtLink
+          to="/inventory"
+          class="group flex items-center justify-between p-4 transition-colors hover:bg-[var(--color-admin-row-hover)]"
+        >
+          <span class="flex items-center gap-3">
+            <span class="admin-icon-chip admin-icon-chip-error"><AdsIcon name="i-lucide-alert-triangle" class="size-4" /></span>
+            <span class="font-medium text-highlighted">Low-stock products</span>
+          </span>
+          <span class="flex items-center gap-2">
+            <AdsBadge color="error" variant="subtle">{{ stats.lowStockCount }}</AdsBadge>
+            <AdsIcon name="i-lucide-chevron-right" class="size-4 text-muted opacity-0 transition-opacity group-hover:opacity-100" />
+          </span>
+        </NuxtLink>
+      </div>
+    </section>
+
+    <section v-if="!isWarehouse" class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <AdsKpiCard label="RTO rate (30d)" :value="rtoRate" icon="i-lucide-rotate-ccw" color="warning" />
+      <AdsKpiCard label="Packed (awaiting dispatch)" :value="stats.packedCount" icon="i-lucide-box" color="info" />
+      <AdsKpiCard label="Orders (30d)" :value="stats.totalOrders30d" icon="i-lucide-calendar" color="neutral" />
+    </section>
+
+    <!-- Storefront traffic — first-party view-tracking, not third-party
+         pixel data (see packages/shared/src/analytics.ts). -->
+    <section>
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-sm font-medium text-muted">Storefront traffic</h2>
+        <div class="flex gap-1">
+          <AdsButton
+            v-for="opt in [{ label: '24h', days: 1 }, { label: '7d', days: 7 }, { label: '30d', days: 30 }]"
+            :key="opt.days"
+            size="xs"
+            :variant="analyticsDays === opt.days ? 'solid' : 'ghost'"
+            :color="analyticsDays === opt.days ? 'primary' : 'neutral'"
+            :loading="loadingAnalytics && analyticsDays === opt.days"
+            :label="opt.label"
+            @click="setAnalyticsDays(opt.days)"
+          />
+        </div>
+      </div>
+      <div v-if="analyticsPending && !analytics" class="py-12 text-center text-muted">Loading traffic…</div>
+      <template v-else-if="analytics">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <AdsKpiCard label="Total views" :value="analytics.totalViews" icon="i-lucide-eye" color="primary" />
+          <AdsKpiCard label="Unique visitors" :value="analytics.uniqueVisitors" icon="i-lucide-users" color="info" />
+          <AdsKpiCard label="Product views" :value="analytics.productViews" icon="i-lucide-package" color="success" />
+          <AdsKpiCard label="Landing page views" :value="analytics.landingPageViews" icon="i-lucide-rocket" color="warning" />
         </div>
 
-        <section>
-          <h2 class="mb-4 text-sm font-medium text-muted">
-            {{ isWarehouse ? 'Inventory overview' : 'Operations overview' }}
-          </h2>
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <template v-if="isWarehouse">
-              <NuxtLink to="/inventory">
-                <KpiCard label="Low-stock products" :value="stats.lowStockCount" icon="i-lucide-alert-triangle" color="error" />
-              </NuxtLink>
-            </template>
-            <template v-else>
-              <KpiCard label="Orders today" :value="stats.ordersToday" icon="i-lucide-package" color="primary" />
-              <KpiCard
-                label="COD pending"
-                :value="formatDzd(stats.codAmountPendingCents)"
-                icon="i-lucide-banknote"
-                color="warning"
-              />
-              <KpiCard
-                label="COD collected"
-                :value="formatDzd(stats.codAmountCollectedCents)"
-                icon="i-lucide-circle-dollar-sign"
-                color="success"
-              />
-              <KpiCard label="Deliveries today" :value="stats.deliveriesToday" icon="i-lucide-truck" color="info" />
-            </template>
-          </div>
-        </section>
-
-        <section v-if="!isWarehouse">
-          <h2 class="mb-4 text-sm font-medium text-muted">Needs attention</h2>
-          <div class="admin-kpi-card divide-y divide-[var(--color-admin-border)]">
-            <NuxtLink
-              to="/call-center"
-              class="group flex items-center justify-between p-4 transition-colors hover:bg-[var(--color-admin-row-hover)]"
-            >
-              <span class="flex items-center gap-3">
-                <span class="admin-icon-chip admin-icon-chip-warning"><UIcon name="i-lucide-phone-call" class="size-4" /></span>
-                <span class="font-medium text-highlighted">Awaiting confirmation call</span>
-              </span>
-              <span class="flex items-center gap-2">
-                <UBadge color="warning" variant="subtle">{{ stats.pendingCallCenterCount ?? 0 }}</UBadge>
-                <UIcon name="i-lucide-chevron-right" class="size-4 text-muted opacity-0 transition-opacity group-hover:opacity-100" />
-              </span>
-            </NuxtLink>
-            <NuxtLink
-              to="/fulfillment"
-              class="group flex items-center justify-between p-4 transition-colors hover:bg-[var(--color-admin-row-hover)]"
-            >
-              <span class="flex items-center gap-3">
-                <span class="admin-icon-chip admin-icon-chip-info"><UIcon name="i-lucide-package-check" class="size-4" /></span>
-                <span class="font-medium text-highlighted">Confirmed — ready to pack</span>
-              </span>
-              <span class="flex items-center gap-2">
-                <UBadge color="info" variant="subtle">{{ stats.confirmedCount }}</UBadge>
-                <UIcon name="i-lucide-chevron-right" class="size-4 text-muted opacity-0 transition-opacity group-hover:opacity-100" />
-              </span>
-            </NuxtLink>
-            <NuxtLink
-              to="/inventory"
-              class="group flex items-center justify-between p-4 transition-colors hover:bg-[var(--color-admin-row-hover)]"
-            >
-              <span class="flex items-center gap-3">
-                <span class="admin-icon-chip admin-icon-chip-error"><UIcon name="i-lucide-alert-triangle" class="size-4" /></span>
-                <span class="font-medium text-highlighted">Low-stock products</span>
-              </span>
-              <span class="flex items-center gap-2">
-                <UBadge color="error" variant="subtle">{{ stats.lowStockCount }}</UBadge>
-                <UIcon name="i-lucide-chevron-right" class="size-4 text-muted opacity-0 transition-opacity group-hover:opacity-100" />
-              </span>
-            </NuxtLink>
-          </div>
-        </section>
-
-        <section v-if="!isWarehouse" class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <KpiCard label="RTO rate (30d)" :value="rtoRate" icon="i-lucide-rotate-ccw" color="warning" />
-          <KpiCard label="Packed (awaiting dispatch)" :value="stats.packedCount" icon="i-lucide-box" color="info" />
-          <KpiCard label="Orders (30d)" :value="stats.totalOrders30d" icon="i-lucide-calendar" color="neutral" />
-        </section>
-
-        <!-- Storefront traffic — first-party view-tracking, not third-party
-             pixel data (see packages/shared/src/analytics.ts). -->
-        <section>
-          <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-sm font-medium text-muted">Storefront traffic</h2>
-            <div class="flex gap-1">
-              <UButton
-                v-for="opt in [{ label: '24h', days: 1 }, { label: '7d', days: 7 }, { label: '30d', days: 30 }]"
-                :key="opt.days"
-                size="xs"
-                :variant="analyticsDays === opt.days ? 'solid' : 'ghost'"
-                :color="analyticsDays === opt.days ? 'primary' : 'neutral'"
-                :loading="loadingAnalytics && analyticsDays === opt.days"
-                :label="opt.label"
-                @click="setAnalyticsDays(opt.days)"
-              />
+        <div v-if="analytics.topProducts.length || analytics.topLandingPages.length" class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div v-if="analytics.topProducts.length" class="admin-kpi-card divide-y divide-[var(--color-admin-border)]">
+            <p class="p-4 pb-2 text-xs font-medium uppercase tracking-wide text-muted">Top viewed products</p>
+            <div v-for="p in analytics.topProducts" :key="p.id" class="flex items-center justify-between px-4 py-2.5">
+              <span class="truncate text-sm text-highlighted">{{ p.name ?? 'Deleted product' }}</span>
+              <AdsBadge color="neutral" variant="subtle">{{ p.views }}</AdsBadge>
             </div>
           </div>
-          <div v-if="analyticsPending && !analytics" class="py-12 text-center text-muted">Loading traffic…</div>
-          <template v-else-if="analytics">
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <KpiCard label="Total views" :value="analytics.totalViews" icon="i-lucide-eye" color="primary" />
-              <KpiCard label="Unique visitors" :value="analytics.uniqueVisitors" icon="i-lucide-users" color="info" />
-              <KpiCard label="Product views" :value="analytics.productViews" icon="i-lucide-package" color="success" />
-              <KpiCard label="Landing page views" :value="analytics.landingPageViews" icon="i-lucide-rocket" color="warning" />
+          <div v-if="analytics.topLandingPages.length" class="admin-kpi-card divide-y divide-[var(--color-admin-border)]">
+            <p class="p-4 pb-2 text-xs font-medium uppercase tracking-wide text-muted">Top viewed landing pages</p>
+            <div v-for="lp in analytics.topLandingPages" :key="lp.id" class="flex items-center justify-between px-4 py-2.5">
+              <span class="truncate text-sm text-highlighted">{{ lp.name ?? 'Deleted landing page' }}<span v-if="lp.subtitle" class="text-muted"> — {{ lp.subtitle }}</span></span>
+              <AdsBadge color="neutral" variant="subtle">{{ lp.views }}</AdsBadge>
             </div>
-
-            <div v-if="analytics.topProducts.length || analytics.topLandingPages.length" class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div v-if="analytics.topProducts.length" class="admin-kpi-card divide-y divide-[var(--color-admin-border)]">
-                <p class="p-4 pb-2 text-xs font-medium uppercase tracking-wide text-muted">Top viewed products</p>
-                <div v-for="p in analytics.topProducts" :key="p.id" class="flex items-center justify-between px-4 py-2.5">
-                  <span class="truncate text-sm text-highlighted">{{ p.name ?? 'Deleted product' }}</span>
-                  <UBadge color="neutral" variant="subtle">{{ p.views }}</UBadge>
-                </div>
-              </div>
-              <div v-if="analytics.topLandingPages.length" class="admin-kpi-card divide-y divide-[var(--color-admin-border)]">
-                <p class="p-4 pb-2 text-xs font-medium uppercase tracking-wide text-muted">Top viewed landing pages</p>
-                <div v-for="lp in analytics.topLandingPages" :key="lp.id" class="flex items-center justify-between px-4 py-2.5">
-                  <span class="truncate text-sm text-highlighted">{{ lp.name ?? 'Deleted landing page' }}<span v-if="lp.subtitle" class="text-muted"> — {{ lp.subtitle }}</span></span>
-                  <UBadge color="neutral" variant="subtle">{{ lp.views }}</UBadge>
-                </div>
-              </div>
-            </div>
-          </template>
-        </section>
-      </div>
-      <div v-else class="py-24 text-center text-muted">Loading dashboard…</div>
-    </template>
-  </UDashboardPanel>
+          </div>
+        </div>
+      </template>
+    </section>
+  </div>
+  <div v-else class="py-24 text-center text-muted">Loading dashboard…</div>
+</AdsPage>
 </template>

@@ -70,65 +70,58 @@ function fmtDate(iso: string) {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Abandoned Carts">
-        <template #leading><UDashboardSidebarCollapse /></template>
-      </UDashboardNavbar>
-    </template>
-    <template #body>
-      <div v-if="pending" class="admin-kpi-card px-4 py-12 text-center text-muted">Loading…</div>
-      <EmptyState
-        v-else-if="!activeItems.length"
-        icon="i-lucide-shopping-cart"
-        title="No abandoned carts"
-        description="Every lead-form visitor who typed a phone number has either finished checking out or already been contacted."
-      />
-      <div v-else class="space-y-3">
-        <p class="mb-1 text-sm text-muted">{{ activeItems.length }} customer{{ activeItems.length === 1 ? '' : 's' }} started checking out but never submitted — reach out before the lead goes cold.</p>
-        <div v-for="o in activeItems" :key="o.id" class="admin-kpi-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div class="min-w-0 flex-1">
-            <div class="flex flex-wrap items-center gap-2">
-              <NuxtLink :to="`/orders/${o.id}`" class="tabular font-medium text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink>
-              <UBadge color="warning" variant="subtle">Abandoned</UBadge>
-              <StatusBadge :state="o.state" />
-              <span class="text-sm text-muted">{{ fmtDate(o.createdAt) }}</span>
-            </div>
-            <div class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <span class="font-medium text-highlighted">{{ o.customer.name || 'No name given' }}</span>
-              <a v-if="o.customer.phone" :href="`tel:${o.customer.phone}`" class="tabular flex items-center gap-1 text-sm text-primary hover:underline">
-                <UIcon name="i-lucide-phone" class="size-3.5" />{{ o.customer.phone }}
-              </a>
-            </div>
-            <p class="mt-1 text-sm text-muted">
-              <span v-for="(item, idx) in o.items" :key="item.id">{{ item.product.name }}{{ idx < o.items.length - 1 ? ', ' : '' }}</span>
-            </p>
-          </div>
-          <div class="flex shrink-0 flex-wrap gap-2">
-            <UButton icon="i-lucide-check" size="sm" color="primary" :loading="acting === `${o.id}:Confirmed`" label="Confirm" @click="act(o.id, 'Confirmed')" />
-            <UButton icon="i-lucide-phone-missed" size="sm" color="warning" variant="outline" :loading="acting === `${o.id}:CallCenterNoAnswer`" label="No answer" @click="act(o.id, 'CallCenterNoAnswer')" />
-            <UButton icon="i-lucide-phone-off" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:WrongNumber`" label="Wrong number" @click="act(o.id, 'WrongNumber')" />
-            <UButton icon="i-lucide-calendar-clock" size="sm" color="warning" variant="outline" :loading="acting === `${o.id}:Postponed`" label="Postpone" @click="openPostpone(o.id)" />
-            <UButton icon="i-lucide-x" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:Cancelled`" label="Cancel" @click="act(o.id, 'Cancelled')" />
-          </div>
+  <AdsPage title="Abandoned Carts" wide>
+  <div v-if="pending" class="admin-kpi-card px-4 py-12 text-center text-muted">Loading…</div>
+  <AdsEmptyState
+    v-else-if="!activeItems.length"
+    icon="i-lucide-shopping-cart"
+    title="No abandoned carts"
+    description="Every lead-form visitor who typed a phone number has either finished checking out or already been contacted."
+  />
+  <div v-else class="space-y-3">
+    <p class="mb-1 text-sm text-muted">{{ activeItems.length }} customer{{ activeItems.length === 1 ? '' : 's' }} started checking out but never submitted — reach out before the lead goes cold.</p>
+    <div v-for="o in activeItems" :key="o.id" class="admin-kpi-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div class="min-w-0 flex-1">
+        <div class="flex flex-wrap items-center gap-2">
+          <NuxtLink :to="`/orders/${o.id}`" class="tabular font-medium text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink>
+          <AdsBadge color="warning" variant="subtle">Abandoned</AdsBadge>
+          <AdsOrderStatus :state="o.state" />
+          <span class="text-sm text-muted">{{ fmtDate(o.createdAt) }}</span>
         </div>
+        <div class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <span class="font-medium text-highlighted">{{ o.customer.name || 'No name given' }}</span>
+          <a v-if="o.customer.phone" :href="`tel:${o.customer.phone}`" class="tabular flex items-center gap-1 text-sm text-primary hover:underline">
+            <AdsIcon name="i-lucide-phone" class="size-3.5" />{{ o.customer.phone }}
+          </a>
+        </div>
+        <p class="mt-1 text-sm text-muted">
+          <span v-for="(item, idx) in o.items" :key="item.id">{{ item.product.name }}{{ idx < o.items.length - 1 ? ', ' : '' }}</span>
+        </p>
       </div>
-    </template>
-  </UDashboardPanel>
+      <div class="flex shrink-0 flex-wrap gap-2">
+        <AdsButton icon="i-lucide-check" size="sm" color="primary" :loading="acting === `${o.id}:Confirmed`" label="Confirm" @click="act(o.id, 'Confirmed')" />
+        <AdsButton icon="i-lucide-phone-missed" size="sm" color="warning" variant="outline" :loading="acting === `${o.id}:CallCenterNoAnswer`" label="No answer" @click="act(o.id, 'CallCenterNoAnswer')" />
+        <AdsButton icon="i-lucide-phone-off" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:WrongNumber`" label="Wrong number" @click="act(o.id, 'WrongNumber')" />
+        <AdsButton icon="i-lucide-calendar-clock" size="sm" color="warning" variant="outline" :loading="acting === `${o.id}:Postponed`" label="Postpone" @click="openPostpone(o.id)" />
+        <AdsButton icon="i-lucide-x" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:Cancelled`" label="Cancel" @click="act(o.id, 'Cancelled')" />
+      </div>
+    </div>
+  </div>
+</AdsPage>
 
-  <UModal v-model:open="postponeModalOpen">
+  <AdsModal v-model:open="postponeModalOpen">
     <template #content>
       <div class="space-y-4 p-6">
         <h3 class="text-lg font-semibold">Postpone — pick a follow-up date</h3>
         <p class="text-sm text-muted">The order stays out of the follow-up queue until this date/time is reached.</p>
-        <UFormField label="Follow up at">
-          <UInput v-model="postponeDate" type="datetime-local" class="w-full" />
-        </UFormField>
+        <AdsField label="Follow up at">
+          <AdsInput v-model="postponeDate" type="datetime-local" class="w-full" />
+        </AdsField>
         <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="ghost" @click="postponeModalOpen = false">Cancel</UButton>
-          <UButton :disabled="!postponeDate" color="primary" icon="i-lucide-check" @click="confirmPostpone">Postpone</UButton>
+          <AdsButton color="neutral" variant="ghost" @click="postponeModalOpen = false">Cancel</AdsButton>
+          <AdsButton :disabled="!postponeDate" color="primary" icon="i-lucide-check" @click="confirmPostpone">Postpone</AdsButton>
         </div>
       </div>
     </template>
-  </UModal>
+  </AdsModal>
 </template>

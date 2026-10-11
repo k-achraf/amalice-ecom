@@ -233,7 +233,7 @@ const toolbarGroups = computed<ToolbarButton[][]>(() => {
     <div v-if="editor" class="mb-2 flex flex-wrap items-center gap-1 border-b border-default pb-2">
       <template v-for="(group, gi) in toolbarGroups" :key="gi">
         <div class="flex items-center gap-0.5">
-          <UButton
+          <AdsButton
             v-for="btn in group"
             :key="btn.title"
             :icon="btn.icon"
@@ -248,7 +248,7 @@ const toolbarGroups = computed<ToolbarButton[][]>(() => {
         </div>
         <div v-if="gi < toolbarGroups.length - 1" class="mx-1 h-5 w-px bg-[var(--color-admin-border)]" />
       </template>
-      <UButton
+      <AdsButton
         icon="i-lucide-image"
         color="neutral"
         variant="ghost"
@@ -257,7 +257,7 @@ const toolbarGroups = computed<ToolbarButton[][]>(() => {
         title="Insert image"
         @click="imageInput?.click()"
       />
-      <UButton
+      <AdsButton
         icon="i-lucide-video"
         color="neutral"
         variant="ghost"

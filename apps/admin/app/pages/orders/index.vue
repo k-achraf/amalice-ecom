@@ -5,7 +5,7 @@ import { Search, Archive, ArchiveRestore, StickyNote, Columns3, ArrowRight, Chec
 import { DropdownMenuRoot, DropdownMenuTrigger, DropdownMenuPortal, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuItemIndicator, DropdownMenuLabel } from 'reka-ui'
 import { VALID_TRANSITIONS } from '~/composables/order-transitions'
 
-definePageMeta({ layout: 'ads' })
+
 useHead({ title: 'Orders' })
 
 type Order = OrderListResponse['items'][number]

@@ -370,246 +370,238 @@ const tierLabel: Record<string, string> = {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Drop Queue">
-        <template #leading><UDashboardSidebarCollapse /></template>
-        <template #trailing>
-          <UBadge color="neutral" variant="subtle">{{ queue.length }} left</UBadge>
-        </template>
-        <template #right>
-          <UButton to="/call-center" icon="i-lucide-list" size="sm" color="neutral" variant="outline" aria-label="Back to queues">
-            <span class="hidden sm:inline">Back to queues</span>
-          </UButton>
-          <UButton icon="i-lucide-refresh-cw" size="sm" color="neutral" variant="outline" :loading="loadingQueue" aria-label="Refresh queue" @click="refreshQueue">
-            <span class="hidden sm:inline">Refresh queue</span>
-          </UButton>
-        </template>
-      </UDashboardNavbar>
-    </template>
+  <AdsPage title="Drop Queue" wide>
+  <template #actions>
+    <AdsBadge color="neutral" variant="subtle">{{ queue.length }} left</AdsBadge>
 
-    <template #body>
-      <!-- w-full + min-w-0 are both load-bearing here, not decorative:
-           this div is a flex item of DashboardPanel's body slot (flex
-           flex-col). `mx-auto` sets auto margins on the cross axis, which
-           per the flexbox spec DISABLES align-items:stretch for this item —
-           so instead of being sized to the container's width, it falls back
-           to shrink-to-fit sizing off its own content, and a long customer
-           name/address/product name pushes it past the viewport. It was
-           rendering ~500px wide inside a 375px viewport, silently clipped
-           (no scrollbar — content just invisible) rather than wrapping.
-           `w-full` gives it an explicit width so stretch no longer needs to
-           apply; `min-w-0` is the belt-and-suspenders fix for the same
-           default-min-width:auto issue on any nested flex/grid descendant. -->
-      <div class="mx-auto w-full min-w-0 max-w-2xl space-y-5">
-        <!-- Today's real stats (whole team, from AuditLog) + this session's
-             own actions layered on top optimistically — see the `stats`
-             comment in the script. -->
-        <p class="text-xs text-muted">Today</p>
-        <div class="grid grid-cols-3 gap-3 sm:grid-cols-6">
-          <div class="admin-kpi-card p-3 text-center">
-            <p class="tabular text-xl font-semibold text-highlighted">{{ callsHandled }}</p>
-            <p class="text-xs text-muted">Handled</p>
-          </div>
-          <div class="admin-kpi-card p-3 text-center">
-            <p class="tabular text-xl font-semibold text-success">{{ stats.Confirmed }}</p>
-            <p class="text-xs text-muted">Confirmed</p>
-          </div>
-          <div class="admin-kpi-card p-3 text-center">
-            <p class="tabular text-xl font-semibold text-warning">{{ stats.CallCenterNoAnswer }}</p>
-            <p class="text-xs text-muted">No answer</p>
-          </div>
-          <div class="admin-kpi-card p-3 text-center">
-            <p class="tabular text-xl font-semibold text-error">{{ stats.WrongNumber }}</p>
-            <p class="text-xs text-muted">Wrong #</p>
-          </div>
-          <div class="admin-kpi-card p-3 text-center">
-            <p class="tabular text-xl font-semibold text-highlighted">{{ stats.Postponed }}</p>
-            <p class="text-xs text-muted">Postponed</p>
-          </div>
-          <div class="admin-kpi-card p-3 text-center">
-            <p class="tabular text-xl font-semibold text-muted">{{ stats.skipped }}</p>
-            <p class="text-xs text-muted">Skipped</p>
-          </div>
-        </div>
 
-        <!-- Queue composition -->
-        <div class="flex flex-wrap items-center gap-2 text-xs text-muted">
-          <span>Remaining:</span>
-          <UBadge color="primary" variant="subtle">{{ composition.PendingCallCenter }} new</UBadge>
-          <UBadge color="warning" variant="subtle">{{ composition.CallCenterNoAnswer }} retry</UBadge>
-          <UBadge color="neutral" variant="subtle">{{ composition.Postponed }} postponed</UBadge>
-          <UBadge color="error" variant="subtle">{{ composition.WrongNumber }} wrong #</UBadge>
-          <UBadge color="neutral" variant="outline" title="Customer never finished submitting — lowest priority, but confirming one converts it to a normal order.">{{ composition.Abandoned }} abandoned</UBadge>
-        </div>
-
-        <!-- Focus card -->
-        <EmptyState
-          v-if="!current"
-          icon="i-lucide-party-popper"
-          title="Queue cleared"
-          description="Every order in the drop queue has been handled. Nice work."
-        />
-        <div v-else class="admin-kpi-card space-y-4 p-4 sm:p-6">
-          <div v-if="current.isDuplicate" class="flex items-center gap-2 rounded-md bg-error/10 px-3 py-2 text-sm text-error">
-            <UIcon name="i-lucide-alert-triangle" class="size-4 shrink-0" />
-            Possible duplicate — same customer + product within the last 2 days.
-          </div>
-
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div class="min-w-0">
-              <div class="flex flex-wrap items-center gap-2">
-                <NuxtLink :to="`/orders/${current.id}`" class="tabular font-medium text-primary hover:underline">{{ current.id.slice(0, 8) }}</NuxtLink>
-                <UBadge color="neutral" variant="subtle" size="sm">{{ tierLabel[current.state] }}</UBadge>
-                <UBadge v-if="current.isAbandoned" color="neutral" variant="outline" size="sm" title="Customer never finished submitting — lowest priority in this queue, but confirming it converts it to a normal order.">Abandoned cart</UBadge>
-                <UBadge :color="ageColor(current.createdAt)" variant="subtle" size="sm">waiting {{ ageLabel(current.createdAt) }}</UBadge>
-              </div>
-              <p class="mt-1 text-lg font-semibold text-highlighted">{{ current.customer.name ?? 'No name given' }}</p>
-              <!-- href keeps the full E.164 number (dialable regardless of
-                   device locale); the visible text is the local 0xxxxxxxxx
-                   form every agent expects, whatever format it was captured
-                   in (+213/213/0/bare 9-digit) — see formatPhoneLocal. -->
-              <a :href="`tel:${current.customer.phone}`" class="tabular mt-0.5 flex items-center gap-1.5 text-lg text-primary hover:underline">
-                <UIcon name="i-lucide-phone-call" class="size-4 shrink-0" />{{ formatPhoneLocal(current.customer.phone) }}
-              </a>
-              <p class="mt-1 text-sm text-muted">
-                {{ addressLine(current) }}
-                <UButton icon="i-lucide-pencil" size="xs" variant="link" color="neutral" label="Edit" @click="openCustomerEditor" />
-              </p>
-            </div>
-            <div class="flex shrink-0 items-center justify-between gap-3 sm:flex-col sm:items-end sm:justify-start sm:text-right">
-              <PriceDisplay :amount-cents="current.totalCents" class="tabular text-xl font-semibold text-highlighted" />
-              <UButton icon="i-lucide-pencil" size="xs" variant="link" color="neutral" label="Edit price" @click="openPriceEditor" />
-            </div>
-          </div>
-
-          <OrderLineItemsInline :items="current.items" />
-
-          <div v-if="current.notes" class="flex items-start gap-1.5 rounded-md bg-elevated px-3 py-2 text-sm text-muted">
-            <UIcon name="i-lucide-sticky-note" class="mt-0.5 size-3.5 shrink-0" />{{ current.notes }}
-          </div>
-
-          <!-- Actions — primary (Confirm) gets its own full-width row so the
-               hierarchy reads clearly on a phone instead of 6 equal-weight
-               buttons in a cramped grid; secondary outcomes and utility
-               actions (note/skip) are their own smaller groups below. Numeric
-               "(1)"/"(2)" keyboard hints live only in the legend text below,
-               not baked into each label — those hints are meaningless on a
-               phone with no physical keyboard and were what made the 2-col
-               mobile grid overflow ("Wrong number (3)" etc. never fit). -->
-          <UButton icon="i-lucide-check" color="primary" size="lg" block :loading="acting" label="Confirm order" @click="act('Confirmed')" />
-          <div class="grid grid-cols-2 gap-2">
-            <UButton icon="i-lucide-phone-missed" color="warning" variant="outline" :loading="acting" label="No answer" @click="act('CallCenterNoAnswer')" />
-            <UButton icon="i-lucide-phone-off" color="error" variant="outline" :loading="acting" label="Wrong number" @click="act('WrongNumber')" />
-            <UButton icon="i-lucide-calendar-clock" color="warning" variant="outline" :loading="acting" label="Postpone" @click="openPostpone" />
-            <UButton icon="i-lucide-x" color="error" variant="outline" :loading="acting" label="Cancel" @click="act('Cancelled')" />
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <UButton icon="i-lucide-sticky-note" color="neutral" variant="ghost" :label="current.notes ? 'Edit note' : 'Add note'" @click="openNotes" />
-            <UButton icon="i-lucide-skip-forward" color="neutral" variant="soft" label="Skip for now" @click="skip" />
-          </div>
-        </div>
-
-        <!-- Keyboard shortcuts only mean anything with a physical keyboard —
-             hidden on mobile instead of a legend nobody on a phone can use. -->
-        <p class="hidden text-center text-xs text-muted sm:block">Keyboard: 1 confirm · 2 no answer · 3 wrong number · 4 postpone · 5 cancel · S skip · N note</p>
+    <AdsButton to="/call-center" icon="i-lucide-list" size="sm" color="neutral" variant="outline" aria-label="Back to queues">
+      <span class="hidden sm:inline">Back to queues</span>
+    </AdsButton>
+    <AdsButton icon="i-lucide-refresh-cw" size="sm" color="neutral" variant="outline" :loading="loadingQueue" aria-label="Refresh queue" @click="refreshQueue">
+      <span class="hidden sm:inline">Refresh queue</span>
+    </AdsButton>
+  </template>
+  <!-- w-full + min-w-0 are both load-bearing here, not decorative:
+       this div is a flex item of DashboardPanel's body slot (flex
+       flex-col). `mx-auto` sets auto margins on the cross axis, which
+       per the flexbox spec DISABLES align-items:stretch for this item —
+       so instead of being sized to the container's width, it falls back
+       to shrink-to-fit sizing off its own content, and a long customer
+       name/address/product name pushes it past the viewport. It was
+       rendering ~500px wide inside a 375px viewport, silently clipped
+       (no scrollbar — content just invisible) rather than wrapping.
+       `w-full` gives it an explicit width so stretch no longer needs to
+       apply; `min-w-0` is the belt-and-suspenders fix for the same
+       default-min-width:auto issue on any nested flex/grid descendant. -->
+  <div class="mx-auto w-full min-w-0 max-w-2xl space-y-5">
+    <!-- Today's real stats (whole team, from AuditLog) + this session's
+         own actions layered on top optimistically — see the `stats`
+         comment in the script. -->
+    <p class="text-xs text-muted">Today</p>
+    <div class="grid grid-cols-3 gap-3 sm:grid-cols-6">
+      <div class="admin-kpi-card p-3 text-center">
+        <p class="tabular text-xl font-semibold text-highlighted">{{ callsHandled }}</p>
+        <p class="text-xs text-muted">Handled</p>
       </div>
-    </template>
-  </UDashboardPanel>
+      <div class="admin-kpi-card p-3 text-center">
+        <p class="tabular text-xl font-semibold text-success">{{ stats.Confirmed }}</p>
+        <p class="text-xs text-muted">Confirmed</p>
+      </div>
+      <div class="admin-kpi-card p-3 text-center">
+        <p class="tabular text-xl font-semibold text-warning">{{ stats.CallCenterNoAnswer }}</p>
+        <p class="text-xs text-muted">No answer</p>
+      </div>
+      <div class="admin-kpi-card p-3 text-center">
+        <p class="tabular text-xl font-semibold text-error">{{ stats.WrongNumber }}</p>
+        <p class="text-xs text-muted">Wrong #</p>
+      </div>
+      <div class="admin-kpi-card p-3 text-center">
+        <p class="tabular text-xl font-semibold text-highlighted">{{ stats.Postponed }}</p>
+        <p class="text-xs text-muted">Postponed</p>
+      </div>
+      <div class="admin-kpi-card p-3 text-center">
+        <p class="tabular text-xl font-semibold text-muted">{{ stats.skipped }}</p>
+        <p class="text-xs text-muted">Skipped</p>
+      </div>
+    </div>
 
-  <UModal v-model:open="notesModalOpen">
+    <!-- Queue composition -->
+    <div class="flex flex-wrap items-center gap-2 text-xs text-muted">
+      <span>Remaining:</span>
+      <AdsBadge color="primary" variant="subtle">{{ composition.PendingCallCenter }} new</AdsBadge>
+      <AdsBadge color="warning" variant="subtle">{{ composition.CallCenterNoAnswer }} retry</AdsBadge>
+      <AdsBadge color="neutral" variant="subtle">{{ composition.Postponed }} postponed</AdsBadge>
+      <AdsBadge color="error" variant="subtle">{{ composition.WrongNumber }} wrong #</AdsBadge>
+      <AdsBadge color="neutral" variant="outline" title="Customer never finished submitting — lowest priority, but confirming one converts it to a normal order.">{{ composition.Abandoned }} abandoned</AdsBadge>
+    </div>
+
+    <!-- Focus card -->
+    <AdsEmptyState
+      v-if="!current"
+      icon="i-lucide-party-popper"
+      title="Queue cleared"
+      description="Every order in the drop queue has been handled. Nice work."
+    />
+    <div v-else class="admin-kpi-card space-y-4 p-4 sm:p-6">
+      <div v-if="current.isDuplicate" class="flex items-center gap-2 rounded-md bg-error/10 px-3 py-2 text-sm text-error">
+        <AdsIcon name="i-lucide-alert-triangle" class="size-4 shrink-0" />
+        Possible duplicate — same customer + product within the last 2 days.
+      </div>
+
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-2">
+            <NuxtLink :to="`/orders/${current.id}`" class="tabular font-medium text-primary hover:underline">{{ current.id.slice(0, 8) }}</NuxtLink>
+            <AdsBadge color="neutral" variant="subtle" size="sm">{{ tierLabel[current.state] }}</AdsBadge>
+            <AdsBadge v-if="current.isAbandoned" color="neutral" variant="outline" size="sm" title="Customer never finished submitting — lowest priority in this queue, but confirming it converts it to a normal order.">Abandoned cart</AdsBadge>
+            <AdsBadge :color="ageColor(current.createdAt)" variant="subtle" size="sm">waiting {{ ageLabel(current.createdAt) }}</AdsBadge>
+          </div>
+          <p class="mt-1 text-lg font-semibold text-highlighted">{{ current.customer.name ?? 'No name given' }}</p>
+          <!-- href keeps the full E.164 number (dialable regardless of
+               device locale); the visible text is the local 0xxxxxxxxx
+               form every agent expects, whatever format it was captured
+               in (+213/213/0/bare 9-digit) — see formatPhoneLocal. -->
+          <a :href="`tel:${current.customer.phone}`" class="tabular mt-0.5 flex items-center gap-1.5 text-lg text-primary hover:underline">
+            <AdsIcon name="i-lucide-phone-call" class="size-4 shrink-0" />{{ formatPhoneLocal(current.customer.phone) }}
+          </a>
+          <p class="mt-1 text-sm text-muted">
+            {{ addressLine(current) }}
+            <AdsButton icon="i-lucide-pencil" size="xs" variant="link" color="neutral" label="Edit" @click="openCustomerEditor" />
+          </p>
+        </div>
+        <div class="flex shrink-0 items-center justify-between gap-3 sm:flex-col sm:items-end sm:justify-start sm:text-right">
+          <AdsPrice :amount-cents="current.totalCents" class="tabular text-xl font-semibold text-highlighted" />
+          <AdsButton icon="i-lucide-pencil" size="xs" variant="link" color="neutral" label="Edit price" @click="openPriceEditor" />
+        </div>
+      </div>
+
+      <OrderLineItemsInline :items="current.items" />
+
+      <div v-if="current.notes" class="flex items-start gap-1.5 rounded-md bg-elevated px-3 py-2 text-sm text-muted">
+        <AdsIcon name="i-lucide-sticky-note" class="mt-0.5 size-3.5 shrink-0" />{{ current.notes }}
+      </div>
+
+      <!-- Actions — primary (Confirm) gets its own full-width row so the
+           hierarchy reads clearly on a phone instead of 6 equal-weight
+           buttons in a cramped grid; secondary outcomes and utility
+           actions (note/skip) are their own smaller groups below. Numeric
+           "(1)"/"(2)" keyboard hints live only in the legend text below,
+           not baked into each label — those hints are meaningless on a
+           phone with no physical keyboard and were what made the 2-col
+           mobile grid overflow ("Wrong number (3)" etc. never fit). -->
+      <AdsButton icon="i-lucide-check" color="primary" size="lg" block :loading="acting" label="Confirm order" @click="act('Confirmed')" />
+      <div class="grid grid-cols-2 gap-2">
+        <AdsButton icon="i-lucide-phone-missed" color="warning" variant="outline" :loading="acting" label="No answer" @click="act('CallCenterNoAnswer')" />
+        <AdsButton icon="i-lucide-phone-off" color="error" variant="outline" :loading="acting" label="Wrong number" @click="act('WrongNumber')" />
+        <AdsButton icon="i-lucide-calendar-clock" color="warning" variant="outline" :loading="acting" label="Postpone" @click="openPostpone" />
+        <AdsButton icon="i-lucide-x" color="error" variant="outline" :loading="acting" label="Cancel" @click="act('Cancelled')" />
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <AdsButton icon="i-lucide-sticky-note" color="neutral" variant="ghost" :label="current.notes ? 'Edit note' : 'Add note'" @click="openNotes" />
+        <AdsButton icon="i-lucide-skip-forward" color="neutral" variant="soft" label="Skip for now" @click="skip" />
+      </div>
+    </div>
+
+    <!-- Keyboard shortcuts only mean anything with a physical keyboard —
+         hidden on mobile instead of a legend nobody on a phone can use. -->
+    <p class="hidden text-center text-xs text-muted sm:block">Keyboard: 1 confirm · 2 no answer · 3 wrong number · 4 postpone · 5 cancel · S skip · N note</p>
+  </div>
+</AdsPage>
+
+  <AdsModal v-model:open="notesModalOpen">
     <template #content>
       <div class="space-y-4 p-6">
         <h3 class="text-lg font-semibold">Call-center note</h3>
-        <UTextarea v-model="notesText" :rows="5" placeholder="Notes for this order…" class="w-full" autofocus />
+        <AdsTextarea v-model="notesText" :rows="5" placeholder="Notes for this order…" class="w-full" autofocus />
         <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="ghost" @click="notesModalOpen = false">Cancel</UButton>
-          <UButton :loading="savingNotes" color="primary" icon="i-lucide-check" @click="saveNotes">Save</UButton>
+          <AdsButton color="neutral" variant="ghost" @click="notesModalOpen = false">Cancel</AdsButton>
+          <AdsButton :loading="savingNotes" color="primary" icon="i-lucide-check" @click="saveNotes">Save</AdsButton>
         </div>
       </div>
     </template>
-  </UModal>
+  </AdsModal>
 
-  <UModal v-model:open="priceModalOpen">
+  <AdsModal v-model:open="priceModalOpen">
     <template #content>
       <div class="space-y-4 p-6">
         <h3 class="text-lg font-semibold">Edit price / shipping fee</h3>
-        <UFormField label="Shipping fee (DZD)">
-          <UInputNumber v-model="editShippingDzd" :min="0" class="w-full" />
-        </UFormField>
-        <UFormField label="Total due — COD (DZD)" help="Overrides the total directly; the items subtotal itself isn't editable here.">
-          <UInputNumber v-model="editTotalDzd" :min="0" class="w-full" />
-        </UFormField>
+        <AdsField label="Shipping fee (DZD)">
+          <AdsNumberInput v-model="editShippingDzd" :min="0" class="w-full" />
+        </AdsField>
+        <AdsField label="Total due — COD (DZD)" help="Overrides the total directly; the items subtotal itself isn't editable here.">
+          <AdsNumberInput v-model="editTotalDzd" :min="0" class="w-full" />
+        </AdsField>
         <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="ghost" @click="priceModalOpen = false">Cancel</UButton>
-          <UButton :loading="savingPrice" color="primary" icon="i-lucide-check" @click="savePrice">Save</UButton>
+          <AdsButton color="neutral" variant="ghost" @click="priceModalOpen = false">Cancel</AdsButton>
+          <AdsButton :loading="savingPrice" color="primary" icon="i-lucide-check" @click="savePrice">Save</AdsButton>
         </div>
       </div>
     </template>
-  </UModal>
+  </AdsModal>
 
-  <UModal v-model:open="postponeModalOpen">
+  <AdsModal v-model:open="postponeModalOpen">
     <template #content>
       <div class="space-y-4 p-6">
         <h3 class="text-lg font-semibold">Postpone — pick a follow-up date</h3>
         <p class="text-sm text-muted">The order stays out of the Drop Queue until this date/time is reached.</p>
-        <UFormField label="Follow up at">
-          <UInput v-model="postponeDate" type="datetime-local" class="w-full" />
-        </UFormField>
+        <AdsField label="Follow up at">
+          <AdsInput v-model="postponeDate" type="datetime-local" class="w-full" />
+        </AdsField>
         <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="ghost" @click="postponeModalOpen = false">Cancel</UButton>
-          <UButton :disabled="!postponeDate" :loading="acting" color="primary" icon="i-lucide-check" @click="confirmPostpone">Postpone</UButton>
+          <AdsButton color="neutral" variant="ghost" @click="postponeModalOpen = false">Cancel</AdsButton>
+          <AdsButton :disabled="!postponeDate" :loading="acting" color="primary" icon="i-lucide-check" @click="confirmPostpone">Postpone</AdsButton>
         </div>
       </div>
     </template>
-  </UModal>
+  </AdsModal>
 
-  <UModal v-model:open="customerModalOpen">
+  <AdsModal v-model:open="customerModalOpen">
     <template #content>
       <div class="space-y-4 p-6">
         <h3 class="text-lg font-semibold">Edit customer / delivery info</h3>
         <div class="grid grid-cols-2 gap-3">
-          <UFormField label="Name">
-            <UInput v-model="editCustomerName" class="w-full" />
-          </UFormField>
-          <UFormField label="Phone">
-            <UInput v-model="editCustomerPhone" class="w-full" />
-          </UFormField>
+          <AdsField label="Name">
+            <AdsInput v-model="editCustomerName" class="w-full" />
+          </AdsField>
+          <AdsField label="Phone">
+            <AdsInput v-model="editCustomerPhone" class="w-full" />
+          </AdsField>
         </div>
         <div class="grid grid-cols-2 gap-3">
-          <UFormField label="Wilaya">
-            <USelectMenu
+          <AdsField label="Wilaya">
+            <AdsSelect
               v-model="editWilayaId"
               :items="wilayaOptions.map(w => ({ label: w.name, value: w.id }))"
               value-key="value"
               class="w-full"
             />
-          </UFormField>
-          <UFormField label="Commune">
-            <USelectMenu
+          </AdsField>
+          <AdsField label="Commune">
+            <AdsSelect
               v-model="editCommuneName"
               :items="communeOptions.map(c => ({ label: c.name, value: c.name }))"
               value-key="value"
               :disabled="!editWilayaId"
               class="w-full"
             />
-          </UFormField>
+          </AdsField>
         </div>
-        <UFormField label="Address line">
-          <UInput v-model="editAddressLine1" class="w-full" />
-        </UFormField>
-        <UFormField label="Shipping method">
-          <URadioGroup
+        <AdsField label="Address line">
+          <AdsInput v-model="editAddressLine1" class="w-full" />
+        </AdsField>
+        <AdsField label="Shipping method">
+          <AdsRadioGroup
             v-model="editShippingType"
             orientation="horizontal"
             :items="[{ label: 'Home delivery', value: 'Home' }, { label: 'Desk pickup', value: 'Desk' }]"
           />
-        </UFormField>
+        </AdsField>
         <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="ghost" @click="customerModalOpen = false">Cancel</UButton>
-          <UButton :loading="savingCustomer" color="primary" icon="i-lucide-check" @click="saveCustomer">Save</UButton>
+          <AdsButton color="neutral" variant="ghost" @click="customerModalOpen = false">Cancel</AdsButton>
+          <AdsButton :loading="savingCustomer" color="primary" icon="i-lucide-check" @click="saveCustomer">Save</AdsButton>
         </div>
       </div>
     </template>
-  </UModal>
+  </AdsModal>
 </template>

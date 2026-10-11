@@ -1,10 +1,15 @@
+import tailwindcss from '@tailwindcss/vite'
+
 export default defineNuxtConfig({
-  extends: ['../../packages/ui'],
-  modules: ['@pinia/nuxt'],
-  // admin.css is the DS-09 Polaris×Stripe override layer — imported AFTER the
-  // shared layer's main.css (pulled in transitively via `extends`) so it wins
-  // on equal specificity. Admin-scoped only; the storefront doesn't import it.
-  css: ['~/assets/css/admin.css', '~/assets/css/ads.css'],
+  // The admin no longer extends packages/ui (that layer is Nuxt UI-based and
+  // storefront-only now). Design tokens live in ads.css; components in
+  // app/components/ads.
+  modules: ['@pinia/nuxt', '@nuxt/fonts', '@nuxtjs/color-mode'],
+  css: ['~/assets/css/ads.css'],
+  colorMode: { preference: 'system', fallback: 'light', storageKey: 'amalice-color-mode', classSuffix: '' },
+  // provider: 'bunny' — @nuxt/fonts' bundled Google Fonts metadata for Inter 404s
+  // at build time; Bunny Fonts mirrors the same catalog (same family/weights).
+  fonts: { families: [{ name: 'Inter', provider: 'bunny' }, { name: 'JetBrains Mono', provider: 'bunny' }] },
   ssr: false,
   compatibilityDate: '2026-07-17',
   devServer: { port: 3001 },
@@ -16,6 +21,7 @@ export default defineNuxtConfig({
   // surface as odd module-identity mismatches on first visit. Pre-bundling
   // them here keeps everything in one pass.
   vite: {
+    plugins: [tailwindcss()],
     optimizeDeps: {
       include: ['@tiptap/core', '@tiptap/vue-3', '@tiptap/starter-kit', '@tiptap/extension-image', '@tiptap/extension-link']
     }
@@ -37,6 +43,7 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
+      htmlAttrs: { lang: 'en' },
       titleTemplate: '%s · Amalice Admin',
       title: 'Amalice Admin'
     }

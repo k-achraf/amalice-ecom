@@ -5,12 +5,14 @@
  * text-ads-subtle, border-ads-border, ...). Admin-only — never imported by the
  * storefront.
  *
- * Imports tailwindcss itself so `@theme` here generates utilities in this
- * compilation (Tailwind v4 compiles each CSS entry separately). During the
- * migration the shared layer's main.css also imports it, so utilities are
- * emitted twice; that duplication disappears once @nuxt/ui is removed.
+ * This is the admin's single Tailwind entry (v4 compiles per CSS entry).
  */
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
 
 :root {
   --ads-canvas: #f7f8f9;
@@ -37,6 +39,8 @@
   --ads-danger-hover: #ae2e24;
   --ads-danger-pressed: #5d1f1a;
 
+  --ads-success: #1f845a;
+  --ads-warning: #946f00;
   --ads-nav: #f7f8f9;
   --ads-overlay: rgb(9 30 66 / 0.54);
   --ads-shadow-raised: 0 1px 1px rgb(9 30 66 / 0.25), 0 0 1px rgb(9 30 66 / 0.31);
@@ -68,6 +72,8 @@
   --ads-danger-hover: #ff9c8f;
   --ads-danger-pressed: #ffd5d2;
 
+  --ads-success: #4bce97;
+  --ads-warning: #f5cd47;
   --ads-nav: #1d2125;
   --ads-overlay: rgb(0 0 0 / 0.6);
   --ads-shadow-raised: 0 1px 1px rgb(3 4 4 / 0.5), 0 0 1px rgb(3 4 4 / 0.5);
@@ -99,12 +105,22 @@
   --color-ads-overlay: var(--ads-overlay);
   --shadow-ads-raised: var(--ads-shadow-raised);
   --shadow-ads-overlay: var(--ads-shadow-overlay);
+  /* Legacy semantic names still used by page templates (text-muted, bg-elevated, ...). */
+  --color-muted: var(--ads-subtlest);
+  --color-toned: var(--ads-subtle);
+  --color-highlighted: var(--ads-text);
+  --color-elevated: var(--ads-hover);
+  --color-primary: var(--ads-primary);
+  --color-secondary: var(--ads-subtle);
+  --color-error: var(--ads-danger);
+  --color-success: var(--ads-success);
+  --color-warning: var(--ads-warning);
+  --color-info: var(--ads-primary);
   --radius-ads: 3px;
   --radius-ads-lg: 8px;
 }
 
-/* Every migrated page sits inside .ads-root so these base rules never reach
-   pages still on @nuxt/ui. */
+/* The layout root and portaled overlays carry .ads-root. */
 .ads-root {
   background: var(--ads-canvas);
   color: var(--ads-text);
@@ -117,4 +133,86 @@
 }
 .ads-tabular {
   font-variant-numeric: tabular-nums;
+}
+
+@utility border-default { border-color: var(--ads-border); }
+@utility divide-default { & > :not(:last-child) { border-color: var(--ads-border); } }
+@utility tabular { font-variant-numeric: tabular-nums; }
+
+/* ---- Compatibility layer for the pre-redesign `admin-*` classes/vars. ----
+   Page templates reference these; they now resolve to Atlassian tokens. */
+:root {
+  --color-admin-bg: var(--ads-canvas);
+  --color-admin-surface: var(--ads-surface);
+  --color-admin-surface-tint: var(--ads-sunken);
+  --color-admin-border: var(--ads-border);
+  --color-admin-border-strong: var(--ads-border-input);
+  --color-admin-row-hover: var(--ads-hover);
+  --color-admin-row-selected: var(--ads-selected);
+  --color-admin-text-secondary: var(--ads-subtle);
+  --radius-admin: 8px;
+  --shadow-admin-md: var(--ads-shadow-raised);
+}
+.admin-kpi-card {
+  background-color: var(--ads-surface);
+  border: 1px solid var(--ads-border);
+  border-radius: 8px;
+}
+a.admin-kpi-card:hover,
+.admin-kpi-card.is-interactive:hover {
+  border-color: var(--ads-border-input);
+}
+.admin-table-wrap {
+  background-color: var(--ads-surface);
+  border: 1px solid var(--ads-border);
+  border-radius: 8px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.admin-table th,
+.admin-table td { white-space: nowrap; }
+.admin-table thead th {
+  background-color: var(--ads-surface);
+  color: var(--ads-subtle);
+  font-size: 12px;
+  font-weight: 600;
+  border-bottom: 2px solid var(--ads-border);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.admin-table tbody td {
+  border-bottom: 1px solid var(--ads-border);
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.admin-table tbody tr:last-child td { border-bottom: none; }
+.admin-table tbody tr:hover td { background-color: var(--ads-hover); }
+.admin-icon-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.admin-icon-chip-primary,
+.admin-icon-chip-info { background: var(--ads-selected); color: var(--ads-primary); }
+.admin-icon-chip-success { background: #dcfff1; color: #216e4e; }
+.admin-icon-chip-warning { background: #fff7d6; color: #7f5f01; }
+.admin-icon-chip-error { background: #ffecee; color: #ae2e24; }
+.admin-icon-chip-neutral { background: var(--ads-hover); color: var(--ads-subtle); }
+.dark .admin-icon-chip-success { background: #1c3329; color: #7ee2b8; }
+.dark .admin-icon-chip-warning { background: #3d2e00; color: #f5cd47; }
+.dark .admin-icon-chip-error { background: #42221f; color: #ff9c8f; }
+.admin-hero-band {
+  background: var(--ads-selected);
+  border-radius: 8px;
+  border: 1px solid var(--ads-border);
+}
+.admin-surface {
+  background-color: var(--ads-canvas);
+  color: var(--ads-text);
+  min-height: 100vh;
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import type { Product, ProductListResponse, ProductLandingPage } from '@amalice/shared'
 
 useHead({ title: 'Products' })
@@ -152,138 +153,130 @@ async function onPreviewToggle(p: Product, open: boolean) {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Products">
-        <template #leading><UDashboardSidebarCollapse /></template>
-        <template #right>
-          <!-- Label hides below `sm` — the navbar's right slot never shrinks
-               (Nuxt UI's own DashboardNavbar theme), so a full-label button
-               here is what pushed off-screen on a phone; icon-only still has
-               an accessible name via aria-label. -->
-          <UButton icon="i-lucide-plus" size="sm" aria-label="New product" @click="openCreate">
-            <span class="hidden sm:inline">New product</span>
-          </UButton>
-        </template>
-      </UDashboardNavbar>
-    </template>
+  <AdsPage title="Products" wide>
+  <template #actions>
+    <!-- Label hides below `sm` — the navbar's right slot never shrinks
+         (Nuxt UI's own DashboardNavbar theme), so a full-label button
+         here is what pushed off-screen on a phone; icon-only still has
+         an accessible name via aria-label. -->
+    <AdsButton icon="i-lucide-plus" size="sm" aria-label="New product" @click="openCreate">
+      <span class="hidden sm:inline">New product</span>
+    </AdsButton>
+  </template>
+  <div class="admin-table-wrap">
+    <table class="admin-table w-full text-sm">
+      <thead>
+        <tr>
+          <th class="px-4 py-2.5 text-left">Product</th>
+          <th class="px-4 py-2.5 text-left">Category</th>
+          <th class="px-4 py-2.5 text-right">Price</th>
+          <th class="px-4 py-2.5 text-right">Stock</th>
+          <th class="px-4 py-2.5 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-if="pending"><td colspan="5" class="px-4 py-12 text-center text-muted">Loading…</td></tr>
+        <tr v-else-if="!rows.length"><td colspan="5" class="px-4 py-12 text-center text-muted">No products yet. Click "New product" to create one.</td></tr>
+        <template v-else>
+          <tr v-for="p in rows" :key="p.id" class="cursor-pointer hover:bg-[var(--color-admin-row-hover)]" @click="router.push(`/products/${p.id}`)">
+            <td class="px-4 py-3 font-medium text-highlighted">
+              <div class="flex items-center gap-1.5">
+                <NuxtLink :to="`/products/${p.id}`" class="hover:underline" @click.stop>{{ p.name }}</NuxtLink>
+                <AdsBadge v-if="!p.visible" size="xs" color="neutral" variant="subtle" title="Hidden from catalog/search/home — still reachable via direct link">Hidden</AdsBadge>
+              </div>
+            </td>
+            <td class="px-4 py-3 text-muted">{{ p.category ?? '—' }}</td>
+            <td class="tabular px-4 py-3 text-right"><AdsPrice :amount-cents="p.priceCents" /></td>
+            <td class="tabular px-4 py-3 text-right">
+              <AdsBadge :color="stockState(p) === 'out' ? 'error' : stockState(p) === 'low' ? 'warning' : 'success'" variant="subtle">{{ p.stockQuantity }}</AdsBadge>
+            </td>
+            <td class="px-4 py-3 text-right" @click.stop>
+              <AdsPopover :open="previewOpenId === p.id" @update:open="(v: boolean) => onPreviewToggle(p, v)">
+                <AdsButton icon="i-lucide-eye" size="xs" variant="ghost" color="neutral" label="Preview" />
+                <template #content>
+                  <div class="w-72 space-y-1 p-3">
+                    <p class="px-1 text-xs font-medium uppercase text-muted">Preview</p>
+                    <a :href="productPageUrl(p)" target="_blank" rel="noopener" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-[var(--color-admin-row-hover)]">
+                      <AdsIcon name="i-lucide-package" class="size-4 shrink-0 text-muted" />
+                      <span class="flex-1 truncate">Product page</span>
+                      <AdsIcon name="i-lucide-external-link" class="size-3.5 shrink-0 text-muted" />
+                    </a>
 
-    <template #body>
-      <div class="admin-table-wrap">
-        <table class="admin-table w-full text-sm">
-          <thead>
-            <tr>
-              <th class="px-4 py-2.5 text-left">Product</th>
-              <th class="px-4 py-2.5 text-left">Category</th>
-              <th class="px-4 py-2.5 text-right">Price</th>
-              <th class="px-4 py-2.5 text-right">Stock</th>
-              <th class="px-4 py-2.5 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="pending"><td colspan="5" class="px-4 py-12 text-center text-muted">Loading…</td></tr>
-            <tr v-else-if="!rows.length"><td colspan="5" class="px-4 py-12 text-center text-muted">No products yet. Click "New product" to create one.</td></tr>
-            <template v-else>
-              <tr v-for="p in rows" :key="p.id" class="cursor-pointer hover:bg-[var(--color-admin-row-hover)]" @click="router.push(`/products/${p.id}`)">
-                <td class="px-4 py-3 font-medium text-highlighted">
-                  <div class="flex items-center gap-1.5">
-                    <NuxtLink :to="`/products/${p.id}`" class="hover:underline" @click.stop>{{ p.name }}</NuxtLink>
-                    <UBadge v-if="!p.visible" size="xs" color="neutral" variant="subtle" title="Hidden from catalog/search/home — still reachable via direct link">Hidden</UBadge>
-                  </div>
-                </td>
-                <td class="px-4 py-3 text-muted">{{ p.category ?? '—' }}</td>
-                <td class="tabular px-4 py-3 text-right"><PriceDisplay :amount-cents="p.priceCents" /></td>
-                <td class="tabular px-4 py-3 text-right">
-                  <UBadge :color="stockState(p) === 'out' ? 'error' : stockState(p) === 'low' ? 'warning' : 'success'" variant="subtle">{{ p.stockQuantity }}</UBadge>
-                </td>
-                <td class="px-4 py-3 text-right" @click.stop>
-                  <UPopover :open="previewOpenId === p.id" @update:open="(v: boolean) => onPreviewToggle(p, v)">
-                    <UButton icon="i-lucide-eye" size="xs" variant="ghost" color="neutral" label="Preview" />
-                    <template #content>
-                      <div class="w-72 space-y-1 p-3">
-                        <p class="px-1 text-xs font-medium uppercase text-muted">Preview</p>
-                        <a :href="productPageUrl(p)" target="_blank" rel="noopener" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-[var(--color-admin-row-hover)]">
-                          <UIcon name="i-lucide-package" class="size-4 shrink-0 text-muted" />
-                          <span class="flex-1 truncate">Product page</span>
-                          <UIcon name="i-lucide-external-link" class="size-3.5 shrink-0 text-muted" />
-                        </a>
-
-                        <div v-if="previewLandingPages[p.id] === 'loading'" class="px-2 py-3 text-center text-xs text-muted">Loading…</div>
-                        <div v-else-if="previewLandingPages[p.id] === 'error'" class="px-2 py-3 text-center text-xs text-error">Failed to load landing pages</div>
-                        <template v-else-if="Array.isArray(previewLandingPages[p.id]) && (previewLandingPages[p.id] as ProductLandingPage[]).length">
-                          <p class="mt-2 px-1 text-xs font-medium uppercase text-muted">Landing pages</p>
-                          <a
-                            v-for="lp in previewLandingPages[p.id] as ProductLandingPage[]"
-                            :key="lp.id"
-                            :href="landingPageUrl(p, lp)"
-                            target="_blank"
-                            rel="noopener"
-                            class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-[var(--color-admin-row-hover)]"
-                          >
-                            <UIcon name="i-lucide-image" class="size-4 shrink-0 text-muted" />
-                            <span class="flex-1 truncate">{{ lp.name }}</span>
-                            <UBadge v-if="lp.status !== 'Completed' || !lp.enabled" size="xs" color="neutral" variant="subtle">
-                              {{ lp.status !== 'Completed' ? lp.status : 'Hidden' }}
-                            </UBadge>
-                            <UIcon name="i-lucide-external-link" class="size-3.5 shrink-0 text-muted" />
-                          </a>
-                        </template>
-                        <p v-else class="px-2 py-3 text-center text-xs text-muted">No landing pages yet</p>
-                      </div>
+                    <div v-if="previewLandingPages[p.id] === 'loading'" class="px-2 py-3 text-center text-xs text-muted">Loading…</div>
+                    <div v-else-if="previewLandingPages[p.id] === 'error'" class="px-2 py-3 text-center text-xs text-error">Failed to load landing pages</div>
+                    <template v-else-if="Array.isArray(previewLandingPages[p.id]) && (previewLandingPages[p.id] as ProductLandingPage[]).length">
+                      <p class="mt-2 px-1 text-xs font-medium uppercase text-muted">Landing pages</p>
+                      <a
+                        v-for="lp in previewLandingPages[p.id] as ProductLandingPage[]"
+                        :key="lp.id"
+                        :href="landingPageUrl(p, lp)"
+                        target="_blank"
+                        rel="noopener"
+                        class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-[var(--color-admin-row-hover)]"
+                      >
+                        <AdsIcon name="i-lucide-image" class="size-4 shrink-0 text-muted" />
+                        <span class="flex-1 truncate">{{ lp.name }}</span>
+                        <AdsBadge v-if="lp.status !== 'Completed' || !lp.enabled" size="xs" color="neutral" variant="subtle">
+                          {{ lp.status !== 'Completed' ? lp.status : 'Hidden' }}
+                        </AdsBadge>
+                        <AdsIcon name="i-lucide-external-link" class="size-3.5 shrink-0 text-muted" />
+                      </a>
                     </template>
-                  </UPopover>
-                  <UButton icon="i-lucide-pencil" size="xs" variant="ghost" color="neutral" label="Edit" :to="`/products/${p.id}`" />
-                  <UButton icon="i-lucide-plus-minus" size="xs" variant="ghost" color="neutral" label="Stock" @click="openAdjust(p)" />
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
+                    <p v-else class="px-2 py-3 text-center text-xs text-muted">No landing pages yet</p>
+                  </div>
+                </template>
+              </AdsPopover>
+              <AdsButton icon="i-lucide-pencil" size="xs" variant="ghost" color="neutral" label="Edit" :to="`/products/${p.id}`" />
+              <AdsButton icon="i-lucide-plus-minus" size="xs" variant="ghost" color="neutral" label="Stock" @click="openAdjust(p)" />
+            </td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </div>
+
+  <AdsPagination
+    class="mt-3"
+    :total="products?.total ?? 0"
+    :page="currentPage"
+    :page-size="currentPageSize"
+    item-label="products"
+    @update:page="goToPage"
+    @update:page-size="changePageSize"
+  />
+
+  <!-- Quick-create modal -->
+  <AdsModal v-model:open="showCreate">
+    <template #content>
+      <div class="space-y-4 p-6">
+        <h3 class="text-lg font-semibold">New product</h3>
+        <p class="text-sm text-muted">Create a product, then edit its details, variants, and images in the full editor.</p>
+        <AdsField label="Name"><AdsInput v-model="newName" placeholder="e.g. Cotton T-Shirt" class="w-full" @update:model-value="onNameInput" /></AdsField>
+        <AdsField label="Slug"><AdsInput v-model="newSlug" placeholder="cotton-t-shirt" class="w-full" /></AdsField>
+        <div class="flex justify-end gap-2">
+          <AdsButton color="neutral" variant="ghost" label="Cancel" @click="showCreate = false" />
+          <AdsButton :loading="creating" :disabled="!newName || !newSlug" label="Create & edit" color="primary" @click="createProduct" />
+        </div>
       </div>
-
-      <AdminPagination
-        class="mt-3"
-        :total="products?.total ?? 0"
-        :page="currentPage"
-        :page-size="currentPageSize"
-        item-label="products"
-        @update:page="goToPage"
-        @update:page-size="changePageSize"
-      />
-
-      <!-- Quick-create modal -->
-      <UModal v-model:open="showCreate">
-        <template #content>
-          <div class="space-y-4 p-6">
-            <h3 class="text-lg font-semibold">New product</h3>
-            <p class="text-sm text-muted">Create a product, then edit its details, variants, and images in the full editor.</p>
-            <UFormField label="Name"><UInput v-model="newName" placeholder="e.g. Cotton T-Shirt" class="w-full" @update:model-value="onNameInput" /></UFormField>
-            <UFormField label="Slug"><UInput v-model="newSlug" placeholder="cotton-t-shirt" class="w-full" /></UFormField>
-            <div class="flex justify-end gap-2">
-              <UButton color="neutral" variant="ghost" label="Cancel" @click="showCreate = false" />
-              <UButton :loading="creating" :disabled="!newName || !newSlug" label="Create & edit" color="primary" @click="createProduct" />
-            </div>
-          </div>
-        </template>
-      </UModal>
-
-      <!-- Stock adjustment modal (kept inline for convenience) -->
-      <UModal v-model:open="showAdjust">
-        <template #content>
-          <div v-if="adjusting" class="space-y-4 p-6">
-            <h3 class="text-lg font-semibold">Adjust stock — {{ adjusting.name }}</h3>
-            <p class="text-sm text-muted">Current: <span class="tabular font-medium">{{ adjusting.stockQuantity }}</span></p>
-            <UFormField label="Change (negative for stock-out)"><UInputNumber v-model="adjustDelta" class="w-full" /></UFormField>
-            <UFormField label="Reason"><USelect v-model="adjustReason" :items="['Restock', 'Correction', 'Damage', 'Sale', 'Return']" class="w-full" /></UFormField>
-            <UFormField label="Note (optional)"><UInput v-model="adjustNote" class="w-full" /></UFormField>
-            <p class="text-sm">New stock: <span class="tabular font-medium">{{ adjusting.stockQuantity + adjustDelta }}</span></p>
-            <div class="flex justify-end gap-2">
-              <UButton color="neutral" variant="ghost" label="Cancel" @click="adjusting = null" />
-              <UButton :loading="savingAdjust" label="Save" color="primary" @click="saveAdjust" />
-            </div>
-          </div>
-        </template>
-      </UModal>
     </template>
-  </UDashboardPanel>
+  </AdsModal>
+
+  <!-- Stock adjustment modal (kept inline for convenience) -->
+  <AdsModal v-model:open="showAdjust">
+    <template #content>
+      <div v-if="adjusting" class="space-y-4 p-6">
+        <h3 class="text-lg font-semibold">Adjust stock — {{ adjusting.name }}</h3>
+        <p class="text-sm text-muted">Current: <span class="tabular font-medium">{{ adjusting.stockQuantity }}</span></p>
+        <AdsField label="Change (negative for stock-out)"><AdsNumberInput v-model="adjustDelta" class="w-full" /></AdsField>
+        <AdsField label="Reason"><AdsSelect v-model="adjustReason" :items="['Restock', 'Correction', 'Damage', 'Sale', 'Return']" class="w-full" /></AdsField>
+        <AdsField label="Note (optional)"><AdsInput v-model="adjustNote" class="w-full" /></AdsField>
+        <p class="text-sm">New stock: <span class="tabular font-medium">{{ adjusting.stockQuantity + adjustDelta }}</span></p>
+        <div class="flex justify-end gap-2">
+          <AdsButton color="neutral" variant="ghost" label="Cancel" @click="adjusting = null" />
+          <AdsButton :loading="savingAdjust" label="Save" color="primary" @click="saveAdjust" />
+        </div>
+      </div>
+    </template>
+  </AdsModal>
+</AdsPage>
 </template>

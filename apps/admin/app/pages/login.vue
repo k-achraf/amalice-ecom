@@ -35,27 +35,27 @@ async function onSubmit() {
 </script>
 
 <template>
-  <div class="admin-surface flex min-h-screen items-center justify-center p-6">
+  <div class="admin-surface ads-root flex min-h-screen items-center justify-center p-6">
     <div class="admin-kpi-card w-full max-w-sm space-y-6 p-8">
       <div class="space-y-1 text-center">
         <div class="mx-auto mb-2 flex size-10 items-center justify-center rounded-md bg-primary text-white">
-          <UIcon name="i-lucide-package" class="size-5" />
+          <AdsIcon name="i-lucide-package" class="size-5" />
         </div>
         <h1 class="text-xl font-semibold text-highlighted">Amalice Admin</h1>
         <p class="text-sm text-muted">Sign in to the operations dashboard</p>
       </div>
 
       <form class="space-y-4" @submit.prevent="onSubmit">
-        <UFormField label="Email">
-          <UInput v-model="email" type="email" autocomplete="username" class="w-full" required />
-        </UFormField>
-        <UFormField label="Password">
-          <UInput v-model="password" type="password" autocomplete="current-password" class="w-full" required />
-        </UFormField>
+        <AdsField label="Email">
+          <AdsInput v-model="email" type="email" autocomplete="username" class="w-full" required />
+        </AdsField>
+        <AdsField label="Password">
+          <AdsInput v-model="password" type="password" autocomplete="current-password" class="w-full" required />
+        </AdsField>
 
         <p v-if="error" class="text-sm text-error">{{ error }}</p>
 
-        <UButton type="submit" block :loading="loading">Sign in</UButton>
+        <AdsButton type="submit" block :loading="loading">Sign in</AdsButton>
       </form>
     </div>
   </div>

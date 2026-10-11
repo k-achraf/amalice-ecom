@@ -4,7 +4,7 @@ import { VALID_TRANSITIONS } from '~/composables/order-transitions'
 import { toast } from 'vue-sonner'
 import { Archive, ArchiveRestore, ArrowLeft, FileDown, PackageCheck, PackageX, Pencil, Plus, StickyNote, Truck, User, X } from 'lucide-vue-next'
 
-definePageMeta({ layout: 'ads' })
+
 
 // Orders states that can still take an added item — mirrors
 // OrderItemsService.canAddOrderItems server-side (kept in sync by hand

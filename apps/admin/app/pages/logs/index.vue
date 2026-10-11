@@ -87,78 +87,71 @@ function toggleExpanded(id: string) {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Server Logs">
-        <template #leading><UDashboardSidebarCollapse /></template>
-        <template #right>
-          <UButton icon="i-lucide-refresh-cw" size="sm" variant="outline" color="neutral" :loading="loading" @click="manualRefresh" />
-        </template>
-      </UDashboardNavbar>
-    </template>
-    <template #body>
-      <div class="space-y-4">
-        <p class="text-xs text-muted">
-          Every warning/error the API logged, across all services — separate from
-          <NuxtLink to="/audit-log" class="text-primary underline">Audit Log</NuxtLink> (business events, not errors).
-        </p>
+  <AdsPage title="Server Logs" wide>
+  <template #actions>
+    <AdsButton icon="i-lucide-refresh-cw" size="sm" variant="outline" color="neutral" :loading="loading" @click="manualRefresh" />
+  </template>
+  <div class="space-y-4">
+    <p class="text-xs text-muted">
+      Every warning/error the API logged, across all services — separate from
+      <NuxtLink to="/audit-log" class="text-primary underline">Audit Log</NuxtLink> (business events, not errors).
+    </p>
 
-        <div class="flex flex-wrap items-center gap-3">
-          <span class="text-sm text-muted">Level:</span>
-          <USelect :model-value="level" :items="levelOptions" class="w-40" @update:model-value="(v) => applyLevel(v as string)" />
-          <UInput v-model="search" icon="i-lucide-search" placeholder="Search message or context…" class="w-72" @keyup.enter="applySearch" />
-          <UButton size="sm" variant="outline" color="neutral" :loading="loading" @click="applySearch">Search</UButton>
-        </div>
+    <div class="flex flex-wrap items-center gap-3">
+      <span class="text-sm text-muted">Level:</span>
+      <AdsSelect :model-value="level" :items="levelOptions" class="w-40" @update:model-value="(v) => applyLevel(v as string)" />
+      <AdsInput v-model="search" icon="i-lucide-search" placeholder="Search message or context…" class="w-72" @keyup.enter="applySearch" />
+      <AdsButton size="sm" variant="outline" color="neutral" :loading="loading" @click="applySearch">Search</AdsButton>
+    </div>
 
-        <div class="admin-table-wrap">
-          <table class="admin-table w-full text-sm">
-            <thead>
-              <tr>
-                <th class="px-4 py-2.5 text-left">When</th>
-                <th class="px-4 py-2.5 text-left">Level</th>
-                <th class="px-4 py-2.5 text-left">Context</th>
-                <th class="px-4 py-2.5 text-left">Message</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="pending"><td colspan="4" class="px-4 py-12 text-center text-muted">Loading…</td></tr>
-              <tr v-else-if="!data?.items.length"><td colspan="4" class="px-4 py-12 text-center text-muted">No log entries match this filter.</td></tr>
-              <template v-for="entry in data?.items" :key="entry.id">
-                <tr
-                  :class="entry.trace ? 'cursor-pointer' : ''"
-                  @click="entry.trace && toggleExpanded(entry.id)"
-                >
-                  <td class="px-4 py-3 whitespace-nowrap text-muted">{{ fmtDateTime(entry.createdAt) }}</td>
-                  <td class="px-4 py-3">
-                    <UBadge :color="entry.level === 'Error' ? 'error' : 'warning'" variant="subtle">{{ entry.level }}</UBadge>
-                  </td>
-                  <td class="px-4 py-3 text-highlighted">{{ entry.context ?? '—' }}</td>
-                  <td class="max-w-md whitespace-normal px-4 py-3 text-muted">
-                    <div class="flex items-start gap-1.5">
-                      <UIcon v-if="entry.trace" :name="expandedId === entry.id ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'" class="mt-0.5 size-3.5 shrink-0" />
-                      <span>{{ entry.message }}</span>
-                    </div>
-                  </td>
-                </tr>
-                <tr v-if="entry.trace && expandedId === entry.id">
-                  <td colspan="4" class="bg-[var(--color-admin-surface-tint)] px-4 py-3">
-                    <pre class="max-h-64 overflow-auto whitespace-pre-wrap font-mono text-xs text-muted">{{ entry.trace }}</pre>
-                  </td>
-                </tr>
-              </template>
-            </tbody>
-          </table>
-        </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table w-full text-sm">
+        <thead>
+          <tr>
+            <th class="px-4 py-2.5 text-left">When</th>
+            <th class="px-4 py-2.5 text-left">Level</th>
+            <th class="px-4 py-2.5 text-left">Context</th>
+            <th class="px-4 py-2.5 text-left">Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-if="pending"><td colspan="4" class="px-4 py-12 text-center text-muted">Loading…</td></tr>
+          <tr v-else-if="!data?.items.length"><td colspan="4" class="px-4 py-12 text-center text-muted">No log entries match this filter.</td></tr>
+          <template v-for="entry in data?.items" :key="entry.id">
+            <tr
+              :class="entry.trace ? 'cursor-pointer' : ''"
+              @click="entry.trace && toggleExpanded(entry.id)"
+            >
+              <td class="px-4 py-3 whitespace-nowrap text-muted">{{ fmtDateTime(entry.createdAt) }}</td>
+              <td class="px-4 py-3">
+                <AdsBadge :color="entry.level === 'Error' ? 'error' : 'warning'" variant="subtle">{{ entry.level }}</AdsBadge>
+              </td>
+              <td class="px-4 py-3 text-highlighted">{{ entry.context ?? '—' }}</td>
+              <td class="max-w-md whitespace-normal px-4 py-3 text-muted">
+                <div class="flex items-start gap-1.5">
+                  <AdsIcon v-if="entry.trace" :name="expandedId === entry.id ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'" class="mt-0.5 size-3.5 shrink-0" />
+                  <span>{{ entry.message }}</span>
+                </div>
+              </td>
+            </tr>
+            <tr v-if="entry.trace && expandedId === entry.id">
+              <td colspan="4" class="bg-[var(--color-admin-surface-tint)] px-4 py-3">
+                <pre class="max-h-64 overflow-auto whitespace-pre-wrap font-mono text-xs text-muted">{{ entry.trace }}</pre>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
 
-        <AdminPagination
-          :total="data?.total ?? 0"
-          :page="currentPage"
-          :page-size="currentPageSize"
-          item-label="log entries"
-          @update:page="goToPage"
-          @update:page-size="changePageSize"
-        />
-      </div>
-    </template>
-  </UDashboardPanel>
+    <AdsPagination
+      :total="data?.total ?? 0"
+      :page="currentPage"
+      :page-size="currentPageSize"
+      item-label="log entries"
+      @update:page="goToPage"
+      @update:page-size="changePageSize"
+    />
+  </div>
+</AdsPage>
 </template>

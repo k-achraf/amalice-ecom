@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import type { WilayaShippingRate } from '@amalice/shared'
 
 // Per-wilaya delivery pricing — home delivery and desk (courier office
@@ -95,100 +96,90 @@ async function save() {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Shipping rates">
-        <template #leading>
-          <UDashboardSidebarCollapse />
-        </template>
-        <template #right>
-          <UButton :loading="saving" icon="i-lucide-save" @click="save">Save changes</UButton>
-        </template>
-      </UDashboardNavbar>
-    </template>
+  <AdsPage title="Shipping rates" wide>
+  <template #actions>
+    <AdsButton :loading="saving" icon="i-lucide-save" @click="save">Save changes</AdsButton>
+  </template>
+  <div v-if="pending" class="py-24 text-center text-muted">Loading…</div>
+  <div v-else class="max-w-4xl space-y-6">
+    <div class="admin-kpi-card space-y-1 p-6">
+      <h2 class="font-medium text-highlighted">Home &amp; desk delivery, per wilaya</h2>
+      <p class="text-sm text-muted">
+        Each wilaya's home delivery (to the door) and desk delivery (courier office pickup) can be priced and
+        enabled independently — leave both off to make a wilaya unavailable for delivery entirely.
+        <span class="font-medium text-highlighted">{{ enabledCount }} of {{ rows.length }}</span> wilayas currently have at least one option enabled.
+      </p>
+    </div>
 
-    <template #body>
-      <div v-if="pending" class="py-24 text-center text-muted">Loading…</div>
-      <div v-else class="max-w-4xl space-y-6">
-        <div class="admin-kpi-card space-y-1 p-6">
-          <h2 class="font-medium text-highlighted">Home &amp; desk delivery, per wilaya</h2>
-          <p class="text-sm text-muted">
-            Each wilaya's home delivery (to the door) and desk delivery (courier office pickup) can be priced and
-            enabled independently — leave both off to make a wilaya unavailable for delivery entirely.
-            <span class="font-medium text-highlighted">{{ enabledCount }} of {{ rows.length }}</span> wilayas currently have at least one option enabled.
-          </p>
-        </div>
-
-        <div class="admin-kpi-card space-y-3 p-6">
-          <h3 class="text-sm font-medium text-muted">Quick fill</h3>
-          <div class="flex flex-wrap items-end gap-3">
-            <UFormField label="Home delivery price (DZD)">
-              <UInputNumber v-model="bulkHomePriceDzd" :min="0" class="w-40" />
-            </UFormField>
-            <UButton variant="outline" color="neutral" @click="applyHomeToEnabled">Apply to enabled rows</UButton>
-            <UFormField label="Desk delivery price (DZD)">
-              <UInputNumber v-model="bulkDeskPriceDzd" :min="0" class="w-40" />
-            </UFormField>
-            <UButton variant="outline" color="neutral" @click="applyDeskToEnabled">Apply to enabled rows</UButton>
-          </div>
-          <p class="text-xs text-muted">Toggle a wilaya's delivery type on below first, then use quick fill to price every enabled row at once.</p>
-        </div>
-
-        <div class="admin-kpi-card space-y-3 p-6">
-          <h3 class="text-sm font-medium text-muted">Bulk enable / disable</h3>
-          <div class="flex flex-wrap gap-3">
-            <UButton variant="outline" color="neutral" icon="i-lucide-check-check" @click="setAllEnabled('home', true)">Enable home delivery — all wilayas</UButton>
-            <UButton variant="outline" color="neutral" icon="i-lucide-x" @click="setAllEnabled('home', false)">Disable home delivery — all wilayas</UButton>
-            <UButton variant="outline" color="neutral" icon="i-lucide-check-check" @click="setAllEnabled('desk', true)">Enable desk delivery — all wilayas</UButton>
-            <UButton variant="outline" color="neutral" icon="i-lucide-x" @click="setAllEnabled('desk', false)">Disable desk delivery — all wilayas</UButton>
-          </div>
-        </div>
-
-        <div class="admin-kpi-card overflow-hidden">
-          <table class="w-full text-sm">
-            <thead class="border-b border-[var(--color-admin-border)] text-left text-xs uppercase tracking-wide text-muted">
-              <tr>
-                <th class="px-4 py-3 font-medium">Wilaya</th>
-                <th class="px-4 py-3 font-medium">Home delivery</th>
-                <th class="px-4 py-3 font-medium">Desk delivery</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-[var(--color-admin-border)]">
-              <tr v-for="row in rows" :key="row.wilayaId">
-                <td class="px-4 py-2.5 font-medium text-highlighted">{{ row.wilayaName }}</td>
-                <td class="px-4 py-2.5">
-                  <div class="flex items-center gap-2">
-                    <USwitch v-model="row.homeDeliveryEnabled" />
-                    <UInputNumber
-                      :model-value="row.homeDeliveryPriceCents == null ? null : row.homeDeliveryPriceCents / 100"
-                      :min="0"
-                      :disabled="!row.homeDeliveryEnabled"
-                      size="sm"
-                      class="w-32"
-                      placeholder="DZD"
-                      @update:model-value="(v) => (row.homeDeliveryPriceCents = v == null ? null : Math.round(Number(v) * 100))"
-                    />
-                  </div>
-                </td>
-                <td class="px-4 py-2.5">
-                  <div class="flex items-center gap-2">
-                    <USwitch v-model="row.deskDeliveryEnabled" />
-                    <UInputNumber
-                      :model-value="row.deskDeliveryPriceCents == null ? null : row.deskDeliveryPriceCents / 100"
-                      :min="0"
-                      :disabled="!row.deskDeliveryEnabled"
-                      size="sm"
-                      class="w-32"
-                      placeholder="DZD"
-                      @update:model-value="(v) => (row.deskDeliveryPriceCents = v == null ? null : Math.round(Number(v) * 100))"
-                    />
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+    <div class="admin-kpi-card space-y-3 p-6">
+      <h3 class="text-sm font-medium text-muted">Quick fill</h3>
+      <div class="flex flex-wrap items-end gap-3">
+        <AdsField label="Home delivery price (DZD)">
+          <AdsNumberInput v-model="bulkHomePriceDzd" :min="0" class="w-40" />
+        </AdsField>
+        <AdsButton variant="outline" color="neutral" @click="applyHomeToEnabled">Apply to enabled rows</AdsButton>
+        <AdsField label="Desk delivery price (DZD)">
+          <AdsNumberInput v-model="bulkDeskPriceDzd" :min="0" class="w-40" />
+        </AdsField>
+        <AdsButton variant="outline" color="neutral" @click="applyDeskToEnabled">Apply to enabled rows</AdsButton>
       </div>
-    </template>
-  </UDashboardPanel>
+      <p class="text-xs text-muted">Toggle a wilaya's delivery type on below first, then use quick fill to price every enabled row at once.</p>
+    </div>
+
+    <div class="admin-kpi-card space-y-3 p-6">
+      <h3 class="text-sm font-medium text-muted">Bulk enable / disable</h3>
+      <div class="flex flex-wrap gap-3">
+        <AdsButton variant="outline" color="neutral" icon="i-lucide-check-check" @click="setAllEnabled('home', true)">Enable home delivery — all wilayas</AdsButton>
+        <AdsButton variant="outline" color="neutral" icon="i-lucide-x" @click="setAllEnabled('home', false)">Disable home delivery — all wilayas</AdsButton>
+        <AdsButton variant="outline" color="neutral" icon="i-lucide-check-check" @click="setAllEnabled('desk', true)">Enable desk delivery — all wilayas</AdsButton>
+        <AdsButton variant="outline" color="neutral" icon="i-lucide-x" @click="setAllEnabled('desk', false)">Disable desk delivery — all wilayas</AdsButton>
+      </div>
+    </div>
+
+    <div class="admin-kpi-card overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="border-b border-[var(--color-admin-border)] text-left text-xs uppercase tracking-wide text-muted">
+          <tr>
+            <th class="px-4 py-3 font-medium">Wilaya</th>
+            <th class="px-4 py-3 font-medium">Home delivery</th>
+            <th class="px-4 py-3 font-medium">Desk delivery</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[var(--color-admin-border)]">
+          <tr v-for="row in rows" :key="row.wilayaId">
+            <td class="px-4 py-2.5 font-medium text-highlighted">{{ row.wilayaName }}</td>
+            <td class="px-4 py-2.5">
+              <div class="flex items-center gap-2">
+                <AdsSwitch v-model="row.homeDeliveryEnabled" />
+                <AdsNumberInput
+                  :model-value="row.homeDeliveryPriceCents == null ? null : row.homeDeliveryPriceCents / 100"
+                  :min="0"
+                  :disabled="!row.homeDeliveryEnabled"
+                  size="sm"
+                  class="w-32"
+                  placeholder="DZD"
+                  @update:model-value="(v) => (row.homeDeliveryPriceCents = v == null ? null : Math.round(Number(v) * 100))"
+                />
+              </div>
+            </td>
+            <td class="px-4 py-2.5">
+              <div class="flex items-center gap-2">
+                <AdsSwitch v-model="row.deskDeliveryEnabled" />
+                <AdsNumberInput
+                  :model-value="row.deskDeliveryPriceCents == null ? null : row.deskDeliveryPriceCents / 100"
+                  :min="0"
+                  :disabled="!row.deskDeliveryEnabled"
+                  size="sm"
+                  class="w-32"
+                  placeholder="DZD"
+                  @update:model-value="(v) => (row.deskDeliveryPriceCents = v == null ? null : Math.round(Number(v) * 100))"
+                />
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</AdsPage>
 </template>

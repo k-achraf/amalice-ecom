@@ -66,7 +66,7 @@ const detailOpen = computed({
         v-else
         :class="['flex shrink-0 items-center justify-center rounded-md bg-elevated text-muted', compact ? 'size-7' : 'size-9']"
       >
-        <UIcon name="i-lucide-image-off" class="size-3.5" />
+        <AdsIcon name="i-lucide-image-off" class="size-3.5" />
       </div>
 
       <div class="min-w-0 leading-tight">
@@ -80,7 +80,7 @@ const detailOpen = computed({
   </div>
 
   <!-- Product detail modal -->
-  <UModal v-model:open="detailOpen">
+  <AdsModal v-model:open="detailOpen">
     <template #content>
       <div v-if="detailItem" class="space-y-4 p-6">
         <div>
@@ -99,7 +99,7 @@ const detailOpen = computed({
           >
         </div>
         <div v-else class="flex aspect-video items-center justify-center rounded-md bg-elevated text-muted">
-          <UIcon name="i-lucide-image-off" class="size-6" />
+          <AdsIcon name="i-lucide-image-off" class="size-6" />
         </div>
 
         <div class="grid grid-cols-2 gap-3 text-sm">
@@ -109,22 +109,22 @@ const detailOpen = computed({
           </div>
           <div>
             <p class="text-muted">Unit price</p>
-            <PriceDisplay :amount-cents="detailItem.unitPriceCents" class="tabular font-medium text-highlighted" />
+            <AdsPrice :amount-cents="detailItem.unitPriceCents" class="tabular font-medium text-highlighted" />
           </div>
           <div>
             <p class="text-muted">Line total</p>
-            <PriceDisplay :amount-cents="detailItem.lineTotalCents" class="tabular font-medium text-highlighted" />
+            <AdsPrice :amount-cents="detailItem.lineTotalCents" class="tabular font-medium text-highlighted" />
           </div>
           <div class="flex items-center gap-1.5">
-            <UBadge v-if="detailItem.isUpsell" size="sm" color="primary" variant="subtle">Upsell</UBadge>
-            <UBadge v-if="detailItem.offerId" size="sm" color="success" variant="subtle">Offer</UBadge>
+            <AdsBadge v-if="detailItem.isUpsell" size="sm" color="primary" variant="subtle">Upsell</AdsBadge>
+            <AdsBadge v-if="detailItem.offerId" size="sm" color="success" variant="subtle">Offer</AdsBadge>
           </div>
         </div>
 
         <div class="flex justify-end">
-          <UButton color="neutral" variant="ghost" label="Close" @click="detailOpen = false" />
+          <AdsButton color="neutral" variant="ghost" label="Close" @click="detailOpen = false" />
         </div>
       </div>
     </template>
-  </UModal>
+  </AdsModal>
 </template>

@@ -1,25 +1,26 @@
 # apps/admin
 
-Nuxt 4 **SPA** (`ssr: false` — this is a back-office tool, not a public page; no SEO/SSR need). Polaris×Stripe hybrid theme (DS-09), built on top of `packages/ui`'s shared Nuxt UI v4 layer.
+Nuxt 4 **SPA** (`ssr: false` — this is a back-office tool, not a public page; no SEO/SSR need). Atlassian-style design system, hand-owned components (see *UI stack* below).
 
 ## Structure
 
 - `app/pages/` — one directory per feature area: `orders`, `products`, `inventory`, `shipping`, `fulfillment`, `call-center`, `reconciliation`, `customers`, `sourcing`, `apps` (integrations), `abandoned-carts`, `audit-log`, `server-performance`, `settings`, `users`.
 - `app/stores/auth.ts` — Pinia store holding the JWT session + role.
 - `app/middleware/auth.global.ts` — global route guard; only `/login` is public. Per-page role gating via `definePageMeta({ middleware: 'role', requiredRole })`. **This is UX only** — the server (`JwtAuthGuard`/`RolesGuard` in `apps/api`) is the real enforcement boundary; never treat this middleware as the security control.
-- `app/tiptap/` — rich-text editor (product descriptions, landing pages) built directly on Tiptap primitives, not `@nuxt/ui`'s `<UEditor>`.
-- `app/assets/css/admin.css` — the DS-09 Polaris×Stripe override layer, imported *after* the shared layer's tokens so it wins on equal specificity. Admin-only — the storefront never imports this.
-- `app.config.ts` — per-app Nuxt UI component defaults (e.g. tighter button density). Keep additions here minimal and driven by an actual page's need, not speculative.
+- `app/tiptap/` — rich-text editor (product descriptions, landing pages) built directly on Tiptap primitives.
+- `app/assets/css/ads.css` — design tokens + Tailwind entry (admin-only).
 
-## Redesign in progress (Atlassian-style, no UI framework)
+## UI stack (Atlassian-style, no UI framework)
 
-The admin is migrating off `@nuxt/ui` to hand-owned components: Tailwind v4 + Reka UI primitives + TanStack Table + vue-sonner + lucide-vue-next.
+The admin does **not** use `@nuxt/ui` or extend `packages/ui` (that layer is storefront-only). It is Tailwind v4 (`@tailwindcss/vite` in `nuxt.config.ts`) + Reka UI primitives + TanStack Table + vue-sonner + lucide-vue-next.
 
-- Tokens: `app/assets/css/ads.css` (`bg-ads-surface`, `text-ads-subtle`, `border-ads-border`, ... — light + `.dark`).
-- Components: `app/components/ads/` → auto-imported as `<AdsButton>`, `<AdsDialog>`, `<AdsSelect>`, `<AdsOrderStatus>`, etc. Portaled content (dialogs, menus) must carry the `ads-root` class so tokens apply.
-- Layout: migrated pages set `definePageMeta({ layout: 'ads' })` and wrap content in `<AdsPage>`. Unmigrated pages still use `layouts/default.vue` + `UDashboardPanel`.
-- Migrated: `/orders`, `/orders/[id]`. Everything else is still Nuxt UI; migrate page by page, then drop `@nuxt/ui` and the `@amalice/ui` layer from this app.
-- Toasts go through `useApiAction` → vue-sonner (the `<Toaster>` lives in `app.vue`).
+- Tokens: `app/assets/css/ads.css` — semantic CSS vars (light + `.dark`) exposed as `bg-ads-surface`, `text-ads-subtle`, `border-ads-border`, … It also keeps a small compat layer for older class names (`text-muted`, `text-highlighted`, `admin-kpi-card`, `admin-table`, `tabular`, …) so templates written before the redesign still resolve.
+- Components: `app/components/ads/` → auto-imported as `<AdsButton>`, `<AdsField>`, `<AdsInput>`, `<AdsSelect>`, `<AdsModal>`/`<AdsDialog>`, `<AdsBadge>`/`<AdsLozenge>`, `<AdsOrderStatus>`, `<AdsPagination>`, `<AdsKpiCard>`, … Several accept the old Nuxt UI-style props (`color`/`variant`/`label`/`icon`, `items`) on purpose.
+- Portaled content (dialogs, selects, menus) must carry the `ads-root` class so tokens apply outside the layout root.
+- Icons: `<AdsIcon name="i-lucide-x" />` resolves against the generated map in `app/lib/icons.ts` — add the icon there (import from `lucide-vue-next`) when you use a new name.
+- Layout: `layouts/default.vue` (top bar + grouped sidebar). Pages wrap content in `<AdsPage title="…">` with optional `#actions` / `#breadcrumb` slots.
+- Toasts: `useToast().add({ title, color })` (adapter in `composables/useToast.ts`) or `toast` from `vue-sonner`; the `<Toaster>` lives in `app.vue`.
+- `useAdminApi()` is deliberately typed as a plain `(url, opts) => Promise<T>` client — inferring full `$fetch` overloads against Nuxt's route types overflows TypeScript's stack.
 
 ## Auth
 
@@ -36,7 +37,7 @@ pnpm --filter admin typecheck
 
 ## Conventions
 
-- Zero `@nuxt/ui` components with hand-rolled Tailwind competing for the same job — use the shared component if one exists in `packages/ui`, extend it via `app.config.ts` before reaching for a one-off.
+- Reuse an `Ads*` component before hand-rolling markup; extend the component (or add one in `components/ads/`) rather than repeating long class strings in pages.
 - New Tiptap extensions: add the package to `vite.optimizeDeps.include` in `nuxt.config.ts` too, or the first visit to that route triggers a mid-session Vite re-optimization (surfaces as odd module-identity bugs, not a clean error).
 - Role gates belong on the page (`definePageMeta`), not scattered `if (auth.role !== ...)` checks inside component bodies — keep the single middleware as the one place route-level access is decided.
-- See the `stripe-polaris-admin-theme` skill (`.agents/skills/`) before changing tokens/chrome — it encodes the re-theme's specific values and page conventions.
+- The `stripe-polaris-admin-theme` skill in `.agents/skills/` describes the retired Stripe theme and is obsolete for the admin.
