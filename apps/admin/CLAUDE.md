@@ -11,6 +11,16 @@ Nuxt 4 **SPA** (`ssr: false` — this is a back-office tool, not a public page; 
 - `app/assets/css/admin.css` — the DS-09 Polaris×Stripe override layer, imported *after* the shared layer's tokens so it wins on equal specificity. Admin-only — the storefront never imports this.
 - `app.config.ts` — per-app Nuxt UI component defaults (e.g. tighter button density). Keep additions here minimal and driven by an actual page's need, not speculative.
 
+## Redesign in progress (Atlassian-style, no UI framework)
+
+The admin is migrating off `@nuxt/ui` to hand-owned components: Tailwind v4 + Reka UI primitives + TanStack Table + vue-sonner + lucide-vue-next.
+
+- Tokens: `app/assets/css/ads.css` (`bg-ads-surface`, `text-ads-subtle`, `border-ads-border`, ... — light + `.dark`).
+- Components: `app/components/ads/` → auto-imported as `<AdsButton>`, `<AdsDialog>`, `<AdsSelect>`, `<AdsOrderStatus>`, etc. Portaled content (dialogs, menus) must carry the `ads-root` class so tokens apply.
+- Layout: migrated pages set `definePageMeta({ layout: 'ads' })` and wrap content in `<AdsPage>`. Unmigrated pages still use `layouts/default.vue` + `UDashboardPanel`.
+- Migrated: `/orders`, `/orders/[id]`. Everything else is still Nuxt UI; migrate page by page, then drop `@nuxt/ui` and the `@amalice/ui` layer from this app.
+- Toasts go through `useApiAction` → vue-sonner (the `<Toaster>` lives in `app.vue`).
+
 ## Auth
 
 JWT access token TTL is 12h (set in `apps/api`) — this SPA has no silent-refresh flow, so a 401 just clears the session and bounces to `/login`. If you build a refresh flow, that TTL choice should be revisited.
