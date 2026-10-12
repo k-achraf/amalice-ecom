@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shipping companies — Leezil Admin</title>
+  <link rel="icon" href="assets/img/leezil-icon-teal.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/pages/shipping-companies.js" defer></script>
+</head>
+<body>
+<div class="app" data-page="shipping-companies">
+  <main class="main">
+
+    <header class="page-head">
+      <div class="title">
+        <p>Connect delivery companies and choose who ships what</p>
+        <h1>Shipping companies</h1>
+      </div>
+      <a class="btn hide-sm" href="shipping-rates.html"><svg data-icon="rates"></svg>Shipping rates</a>
+    </header>
+
+    <section class="kpis" id="sc-kpis" aria-label="Shipping summary"></section>
+
+    <section aria-labelledby="con-h" class="stack">
+      <h2 id="con-h" style="font-size:16px">Connected</h2>
+      <div class="cards-grid" id="connected"></div>
+    </section>
+
+    <section aria-labelledby="av-h" class="stack">
+      <h2 id="av-h" style="font-size:16px">Available</h2>
+      <div class="cards-grid" id="available"></div>
+    </section>
+
+    <section class="card flush" aria-labelledby="ru-h">
+      <div class="card-head"><h2 id="ru-h">Automatic assignment</h2><span class="muted">Which company gets a confirmed order</span></div>
+      <div class="table-wrap">
+        <table style="min-width:620px">
+          <thead><tr><th style="padding-left:20px">Zone</th><th>Home delivery</th><th>Stop desk</th><th>Backup company</th></tr></thead>
+          <tbody id="rules-body"></tbody>
+        </table>
+      </div>
+      <div style="padding:14px 20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--line-soft)">
+        <label class="check grow"><input type="checkbox" checked id="auto-send"><span>Send orders to the company automatically when the call center confirms them<span class="sub">Otherwise you send them by hand from the Orders page.</span></span></label>
+        <button class="btn btn-primary" type="button" id="save-rules">Save assignment</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

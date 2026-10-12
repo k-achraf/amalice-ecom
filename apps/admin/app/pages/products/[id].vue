@@ -993,7 +993,7 @@ async function deleteUpsell(upsellId: string) {
 <template>
   <AdsPage :title="product?.name ?? 'Edit product'" wide>
   <template #breadcrumb>
-    <AdsButton icon="i-lucide-arrow-left" color="neutral" variant="ghost" to="/inventory" />
+    <NuxtLink to="/inventory">Products</NuxtLink><AdsIcon name="i-lucide-chevron-right" style="width: 14px; height: 14px" /><span>{{ product?.name ?? 'Edit product' }}</span>
   </template>
   <div v-if="pending" class="py-24 text-center text-muted">Loading…</div>
   <div v-else-if="!product" class="py-24 text-center text-muted">Product not found.</div>
@@ -1001,6 +1001,7 @@ async function deleteUpsell(upsellId: string) {
     <!-- Tabs -->
     <AdsTabs
       v-model="activeTab"
+      underline
       :items="[
         { label: 'Details', value: 'details', icon: 'i-lucide-file-text' },
         { label: 'Content', value: 'content', icon: 'i-lucide-layout-list' },

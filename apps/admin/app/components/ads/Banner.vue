@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { Info, TriangleAlert } from 'lucide-vue-next'
 
-// Inline notice: `info` (ok tint) or `warning` (danger tint).
-withDefaults(defineProps<{ tone?: 'info' | 'warning' }>(), { tone: 'info' })
+// The design's `.notice` (ok tint), `.warn` and `.danger` variants.
+withDefaults(defineProps<{ tone?: 'info' | 'warning' | 'danger' }>(), { tone: 'info' })
 </script>
 
 <template>
-  <div class="notice" :class="{ danger: tone === 'warning' }">
-    <TriangleAlert v-if="tone === 'warning'" class="i" style="width: 20px; height: 20px" />
-    <Info v-else class="i" style="width: 20px; height: 20px" />
-    <div class="min-w-0"><slot /></div>
+  <div class="notice" :class="{ warn: tone === 'warning', danger: tone === 'danger' }">
+    <TriangleAlert v-if="tone !== 'info'" class="i" />
+    <Info v-else class="i" />
+    <div class="grow"><slot /></div>
   </div>
 </template>

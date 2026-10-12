@@ -5,38 +5,51 @@ definePageMeta({ requiredRole: 'SuperAdmin' })
 useHead({ title: 'Apps' })
 
 const { data: apps, pending } = await useAdminFetch<AppInstallationView[]>('/admin/apps', { key: 'admin-apps' })
+
+// ---- Design chrome: tabs, category chips, search ----
+const view = ref<'all' | 'installed'>('all')
+const cat = ref('All')
+const search = ref('')
+const cats = computed(() => ['All', ...new Set((apps.value ?? []).map((a) => a.category))])
+const shown = computed(() => {
+  const q = search.value.trim().toLowerCase()
+  return (apps.value ?? []).filter((a) =>
+    (view.value === 'all' || a.enabled) && (cat.value === 'All' || a.category === cat.value) && (!q || `${a.name} ${a.description}`.toLowerCase().includes(q))
+  )
+})
+
 </script>
 
 <template>
-  <AdsPage title="Apps" wide>
-  <div v-if="pending" class="py-24 text-center text-muted">Loading…</div>
-  <div v-else class="max-w-5xl space-y-6">
-    <div>
-      <h2 class="text-lg font-semibold text-highlighted">Installed &amp; available apps</h2>
-      <p class="text-sm text-muted">Connect third-party tools to your storefront — analytics, marketing pixels, and more.</p>
-    </div>
+  <AdsPage title="Apps" description="Add tracking, messaging and sales tools to your store">
+    <template #actions>
+      <label class="search"><AdsIcon name="i-lucide-search" /><span class="sr">Search apps</span><input v-model="search" type="search" placeholder="Search apps"></label>
+    </template>
 
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-      <NuxtLink
-        v-for="app in apps"
-        :key="app.appId"
-        :to="`/apps/${app.appId}`"
-        class="admin-kpi-card group flex flex-col gap-4 p-5 text-left transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-admin-md)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-      >
-        <div class="flex items-start justify-between">
-          <div class="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <AdsIcon :name="app.icon" class="size-6" />
+    <div v-if="pending" class="empty">Loading…</div>
+    <template v-else>
+      <div class="tabs" role="tablist" aria-label="Apps view">
+        <button type="button" role="tab" :aria-selected="view === 'all'" @click="view = 'all'">All apps</button>
+        <button type="button" role="tab" :aria-selected="view === 'installed'" @click="view = 'installed'">Installed <span class="pill neutral" style="margin-left: 4px">{{ (apps ?? []).filter((a) => a.enabled).length }}</span></button>
+      </div>
+      <AdsTabs v-model="cat" :items="cats.map((c) => ({ label: c, value: c }))" />
+
+      <div class="cards-grid">
+        <p v-if="!shown.length" class="empty" style="grid-column: 1 / -1">No apps match your search.</p>
+        <article v-for="app in shown" :key="app.appId" class="app-card">
+          <div class="top">
+            <span class="app-logo" style="background: var(--teal); color: var(--ivory)" aria-hidden="true"><AdsIcon :name="app.icon" /></span>
+            <div class="grow"><h3>{{ app.name }}</h3><span class="by">{{ app.category }}</span></div>
+            <span v-if="app.enabled" class="pill installed">Connected</span>
+            <span v-else class="pill outline">{{ app.category }}</span>
           </div>
-          <AdsBadge v-if="app.enabled" color="success" variant="subtle" size="sm">Connected</AdsBadge>
-          <AdsBadge v-else color="neutral" variant="subtle" size="sm">Not connected</AdsBadge>
-        </div>
-        <div>
-          <h3 class="font-semibold text-highlighted">{{ app.name }}</h3>
-          <p class="mt-1 text-xs uppercase tracking-wide text-muted">{{ app.category }}</p>
-          <p class="mt-2 text-sm text-muted">{{ app.description }}</p>
-        </div>
-      </NuxtLink>
-    </div>
-  </div>
-</AdsPage>
+          <p>{{ app.description }}</p>
+          <div class="foot">
+            <span class="grow muted">{{ app.enabled ? 'On' : 'Not connected' }}</span>
+            <NuxtLink class="btn btn-sm" :class="{ 'btn-primary': !app.enabled }" :to="`/apps/${app.appId}`"><AdsIcon :name="app.enabled ? 'i-lucide-settings' : 'i-lucide-plus'" />{{ app.enabled ? 'Settings' : 'Connect' }}</NuxtLink>
+          </div>
+        </article>
+      </div>
+    </template>
+  </AdsPage>
 </template>

@@ -2,7 +2,7 @@
 
 import type { Product, ProductListResponse, ProductLandingPage } from '@amalice/shared'
 
-useHead({ title: 'Products & stock' })
+useHead({ title: 'Products' })
 
 const runtimeConfig = useRuntimeConfig()
 
@@ -153,29 +153,28 @@ async function onPreviewToggle(p: Product, open: boolean) {
 
 // ---- Design-style list chrome: stock filter chips + soft search (client-side
 // over the loaded page; the list endpoint has no search/filter params). ----
-const stockFilter = ref('all')
+const stockFilter = ref('')
+const catFilter = ref('All')
+const categories = computed(() => ['All', ...new Set(rows.value.map((p) => p.category).filter((c): c is string => !!c))])
 const search = ref('')
 const kpiLow = computed(() => rows.value.filter((p) => stockState(p) === 'low').length)
 const kpiOut = computed(() => rows.value.filter((p) => stockState(p) === 'out').length)
 const kpiUnits = computed(() => rows.value.reduce((n, p) => n + p.stockQuantity, 0))
-const stockTabs = computed(() => [
-  { label: 'All', value: 'all', count: rows.value.length },
-  { label: 'In stock', value: 'ok', count: rows.value.length - kpiLow.value - kpiOut.value },
-  { label: 'Low stock', value: 'low', count: kpiLow.value },
-  { label: 'Out of stock', value: 'out', count: kpiOut.value }
-])
 const visibleRows = computed(() => {
   const q = search.value.trim().toLowerCase()
-  return rows.value.filter((p) => (stockFilter.value === 'all' || stockState(p) === stockFilter.value) && (!q || `${p.name} ${p.slug}`.toLowerCase().includes(q)))
+  return rows.value.filter((p) => {
+    const okStatus = !stockFilter.value || (stockFilter.value === 'hidden' ? !p.visible : stockState(p) === stockFilter.value)
+    return (catFilter.value === 'All' || p.category === catFilter.value) && okStatus && (!q || `${p.name} ${p.slug}`.toLowerCase().includes(q))
+  })
 })
 const STOCK_PILL = { ok: { cls: 'instock', label: 'In stock', color: 'var(--teal)' }, low: { cls: 'low', label: 'Low stock', color: 'var(--brass)' }, out: { cls: 'out', label: 'Out of stock', color: 'var(--danger)' } } as const
 function stockPct(p: Product) { return p.stockQuantity ? Math.max(4, Math.min(100, Math.round((p.stockQuantity / 150) * 100))) : 0 }
 </script>
 
 <template>
-  <AdsPage title="Products & stock" description="Catalogue and inventory">
+  <AdsPage title="Products" description="Catalogue and inventory">
     <template #actions>
-      <AdsButton appearance="primary" icon="i-lucide-plus" aria-label="New product" @click="openCreate">New product</AdsButton>
+      <button class="btn btn-primary" type="button" @click="openCreate"><AdsIcon name="i-lucide-plus" />Add product</button>
     </template>
 
     <section class="kpis" aria-label="Inventory summary">
@@ -187,7 +186,14 @@ function stockPct(p: Product) { return p.stockQuantity ? Math.max(4, Math.min(10
 
     <section class="card" aria-label="Product list">
       <div class="card-head">
-        <AdsTabs v-model="stockFilter" :items="stockTabs" />
+        <AdsTabs v-model="catFilter" :items="categories.map((c) => ({ label: c, value: c }))" />
+        <select v-model="stockFilter" class="select sm" aria-label="Filter by status" style="width: auto">
+          <option value="">All statuses</option>
+          <option value="ok">In stock</option>
+          <option value="low">Low stock</option>
+          <option value="out">Out of stock</option>
+          <option value="hidden">Hidden from catalogue</option>
+        </select>
         <AdsSearch v-model="search" soft placeholder="Name or slug" label="Search products" />
       </div>
       <div class="table-wrap">
@@ -215,21 +221,21 @@ function stockPct(p: Product) { return p.stockQuantity ? Math.max(4, Math.min(10
                     <span>{{ p.stockQuantity }} units</span>
                   </div>
                 </td>
-                <td><span class="pill" :class="STOCK_PILL[stockState(p)].cls">{{ STOCK_PILL[stockState(p)].label }}</span></td>
+                <td><span v-if="!p.visible" class="pill draft">Hidden</span><span v-else class="pill" :class="STOCK_PILL[stockState(p)].cls">{{ STOCK_PILL[stockState(p)].label }}</span></td>
                 <td class="num" style="white-space: nowrap" @click.stop>
                   <AdsPopover :open="previewOpenId === p.id" @update:open="(v: boolean) => onPreviewToggle(p, v)">
-                    <AdsButton appearance="default" size="sm" label="Preview" icon="i-lucide-eye" />
+                    <button class="row-btn" type="button" aria-label="Preview" title="Preview"><AdsIcon name="i-lucide-eye" /></button>
                     <template #content>
                       <div style="width: 288px; display: flex; flex-direction: column; gap: 2px">
-                        <p class="menu-label">Preview</p>
-                        <a :href="productPageUrl(p)" target="_blank" rel="noopener" class="menu-item" style="text-decoration: none">
+                        <p class="muted" style="padding: 8px 12px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .14em; font-weight: 600">Preview</p>
+                        <a :href="productPageUrl(p)" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 12px; border-radius: var(--r); text-decoration: none; color: var(--pine)">
                           <AdsIcon name="i-lucide-package" /><span style="flex: 1" class="truncate">Product page</span><AdsIcon name="i-lucide-external-link" style="width: 16px; height: 16px" />
                         </a>
                         <div v-if="previewLandingPages[p.id] === 'loading'" class="empty" style="padding: 12px">Loading…</div>
                         <div v-else-if="previewLandingPages[p.id] === 'error'" class="empty" style="padding: 12px; color: var(--danger-fg)">Failed to load landing pages</div>
                         <template v-else-if="Array.isArray(previewLandingPages[p.id]) && (previewLandingPages[p.id] as ProductLandingPage[]).length">
-                          <p class="menu-label">Landing pages</p>
-                          <a v-for="lp in previewLandingPages[p.id] as ProductLandingPage[]" :key="lp.id" :href="landingPageUrl(p, lp)" target="_blank" rel="noopener" class="menu-item" style="text-decoration: none">
+                          <p class="muted" style="padding: 8px 12px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .14em; font-weight: 600">Landing pages</p>
+                          <a v-for="lp in previewLandingPages[p.id] as ProductLandingPage[]" :key="lp.id" :href="landingPageUrl(p, lp)" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 12px; border-radius: var(--r); text-decoration: none; color: var(--pine)">
                             <AdsIcon name="i-lucide-image" /><span style="flex: 1" class="truncate">{{ lp.name }}</span>
                             <span v-if="lp.status !== 'Completed' || !lp.enabled" class="pill newcust">{{ lp.status !== 'Completed' ? lp.status : 'Hidden' }}</span>
                             <AdsIcon name="i-lucide-external-link" style="width: 16px; height: 16px" />
@@ -239,8 +245,8 @@ function stockPct(p: Product) { return p.stockQuantity ? Math.max(4, Math.min(10
                       </div>
                     </template>
                   </AdsPopover>
-                  <AdsButton appearance="default" size="sm" label="Edit" :to="`/products/${p.id}`" />
-                  <AdsButton appearance="default" size="sm" label="Stock" @click="openAdjust(p)" />
+                  <NuxtLink class="row-btn" :to="`/products/${p.id}`" :aria-label="`Edit ${p.name}`" title="Edit"><AdsIcon name="i-lucide-pencil" /></NuxtLink>
+                  <button class="row-btn" type="button" :aria-label="`Adjust stock for ${p.name}`" title="Adjust stock" @click="openAdjust(p)"><AdsIcon name="i-lucide-boxes" /></button>
                 </td>
               </tr>
             </template>

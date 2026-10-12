@@ -1,6 +1,6 @@
 <script setup lang="ts">
-// The design's `.kpi`: label, big number, optional delta. `dark` is the teal hero tile;
-// warning/error map to the warn/danger tints. (No icon chip: the design has none.)
+// The design's `.kpi`: label, big number (+ small unit), optional meta line with a delta.
+// `dark` = teal hero tile; warning/error map to the warn/danger tints.
 const props = withDefaults(defineProps<{
   label: string
   value: string | number

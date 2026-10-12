@@ -1,16 +1,13 @@
 <script setup lang="ts">
-import { ChevronDown, Check } from 'lucide-vue-next'
-import { SelectRoot, SelectTrigger, SelectValue, SelectPortal, SelectContent, SelectViewport, SelectItem, SelectItemText, SelectItemIndicator } from 'reka-ui'
 import { cn } from '~/lib/cn'
 
 type Primitive = string | number | null | undefined
 export interface AdsSelectOption { label: string; value: Primitive }
 
-// reka-ui Select speaks non-empty strings. Callers pass string|number|null values
-// and get the same value back: options are matched by a string key, and
-// null/undefined/'' values (e.g. a "None" option) map to a sentinel key.
-// `items` is an alias of `options` and may be plain strings/numbers;
-// `multiple` makes the model an array.
+// The design's native `.select`. Option values keep their type (string | number | null):
+// options are rendered by index and mapped back, so a "None" option with `null` works.
+// `items` is an alias of `options` and may be plain strings/numbers. `multiple` renders a
+// checklist (model = array) since a native multi-select is unusable for this.
 const props = defineProps<{
   modelValue?: any
   options?: (AdsSelectOption | string | number)[]
@@ -25,9 +22,6 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ 'update:modelValue': [value: any] }>()
 
-const NONE = '__ads_none__'
-const keyOf = (v: Primitive) => (v == null || v === '' ? NONE : String(v))
-
 const list = computed<AdsSelectOption[]>(() =>
   (props.options ?? props.items ?? []).map((o) => {
     if (typeof o === 'string' || typeof o === 'number') return { label: String(o), value: o }
@@ -35,50 +29,30 @@ const list = computed<AdsSelectOption[]>(() =>
     return { label: String(rec[props.labelKey ?? 'label']), value: rec[props.valueKey ?? 'value'] }
   })
 )
+const same = (a: Primitive, b: Primitive) => (a == null || a === '') ? (b == null || b === '') : String(a) === String(b)
 
-const rootValue = computed(() => {
-  if (props.multiple) return ((props.modelValue ?? []) as Primitive[]).map(keyOf)
-  // No matching option -> undefined so the placeholder shows.
-  const k = keyOf(props.modelValue)
-  return list.value.some((o) => keyOf(o.value) === k) ? k : undefined
-})
-
-const multiLabel = computed(() =>
-  list.value.filter((o) => (rootValue.value as string[]).includes(keyOf(o.value))).map((o) => o.label).join(', ')
-)
-
-function valueFor(k: string) {
-  return list.value.find((o) => keyOf(o.value) === k)?.value
+const selectedIndex = computed(() => list.value.findIndex((o) => same(o.value, props.modelValue)))
+function onChange(e: Event) {
+  const i = Number((e.target as HTMLSelectElement).value)
+  if (i >= 0) emit('update:modelValue', list.value[i]!.value)
 }
 
-function onChange(v: unknown) {
-  if (props.multiple) emit('update:modelValue', (v as string[]).map(valueFor))
-  else {
-    const hit = list.value.find((o) => keyOf(o.value) === v)
-    if (hit) emit('update:modelValue', hit.value ?? (hit.value === undefined ? undefined : null))
-  }
+function isOn(v: Primitive) { return ((props.modelValue ?? []) as Primitive[]).some((x) => same(x, v)) }
+function toggle(v: Primitive, on: boolean) {
+  const cur = ((props.modelValue ?? []) as Primitive[]).filter((x) => !same(x, v))
+  emit('update:modelValue', on ? [...cur, v] : cur)
 }
 </script>
 
 <template>
-  <SelectRoot :model-value="rootValue as any" :multiple="multiple" :disabled="disabled" @update:model-value="onChange">
-    <SelectTrigger
-      :class="cn('input-wrap cursor-pointer justify-between text-start text-sm', disabled && 'is-disabled', props.class)"
-      style="font: 400 14px var(--font); color: var(--pine)"
-    >
-      <span v-if="multiple" class="truncate" :class="{ muted: !multiLabel }">{{ multiLabel || placeholder }}</span>
-      <SelectValue v-else :placeholder="placeholder" class="truncate" />
-      <ChevronDown class="i ms-auto" style="width: 18px; height: 18px; color: var(--text-2)" />
-    </SelectTrigger>
-    <SelectPortal>
-      <SelectContent position="popper" :side-offset="6" class="panel z-[60] max-h-72 min-w-(--reka-select-trigger-width) overflow-hidden">
-        <SelectViewport>
-          <SelectItem v-for="o in list" :key="keyOf(o.value)" :value="keyOf(o.value)" class="menu-item" style="padding-inline-start: 34px">
-            <SelectItemIndicator class="absolute inline-flex" style="inset-inline-start: 10px"><Check class="i" style="width: 16px; height: 16px" /></SelectItemIndicator>
-            <SelectItemText>{{ o.label }}</SelectItemText>
-          </SelectItem>
-        </SelectViewport>
-      </SelectContent>
-    </SelectPortal>
-  </SelectRoot>
+  <div v-if="multiple" class="stack" style="gap: 8px; max-height: 220px; overflow-y: auto; border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px">
+    <label v-for="o in list" :key="String(o.value)" class="check">
+      <input type="checkbox" :checked="isOn(o.value)" :disabled="disabled" @change="toggle(o.value, ($event.target as HTMLInputElement).checked)">{{ o.label }}
+    </label>
+    <span v-if="!list.length" class="muted">{{ placeholder }}</span>
+  </div>
+  <select v-else :class="cn('select', (size === 'sm' || size === 'xs') && 'sm', props.class)" :disabled="disabled" :value="selectedIndex" @change="onChange">
+    <option v-if="selectedIndex < 0" value="-1" disabled>{{ placeholder ?? 'Select…' }}</option>
+    <option v-for="(o, i) in list" :key="i" :value="i">{{ o.label }}</option>
+  </select>
 </template>

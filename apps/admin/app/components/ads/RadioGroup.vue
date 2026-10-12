@@ -5,10 +5,10 @@ const name = `ads-radio-${Math.random().toString(36).slice(2, 8)}`
 </script>
 
 <template>
-  <div class="flex flex-wrap gap-x-5 gap-y-2" :class="{ 'flex-col': orientation === 'vertical' }" role="radiogroup">
-    <label v-for="o in (options ?? items ?? [])" :key="o.value" class="flex cursor-pointer items-start gap-2 text-sm">
-      <input v-model="model" type="radio" :name="name" :value="o.value" class="mt-0.5" style="width: 18px; height: 18px; accent-color: var(--teal)">
-      <span>{{ o.label }}<span v-if="o.description" class="muted block">{{ o.description }}</span></span>
+  <div role="radiogroup" style="display: flex; flex-wrap: wrap; gap: 8px 20px" :style="orientation === 'vertical' ? 'flex-direction: column' : undefined">
+    <label v-for="o in (options ?? items ?? [])" :key="o.value" class="check">
+      <input v-model="model" type="radio" :name="name" :value="o.value">
+      <span>{{ o.label }}<span v-if="o.description" class="sub">{{ o.description }}</span></span>
     </label>
   </div>
 </template>

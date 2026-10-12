@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Search } from 'lucide-vue-next'
 
-// The design's `.search` pill (use `soft` inside cards).
+// The design's `.search` (use `soft` inside cards).
 defineOptions({ inheritAttrs: false })
 const model = defineModel<string>()
 defineProps<{ placeholder?: string; soft?: boolean; label?: string }>()

@@ -1,32 +1,34 @@
 <script setup lang="ts">
 import { CALL_CENTER_STATE_TO_ORDER_STATE, SHIPPING_STATE_TO_ORDER_STATE, ORDER_STATE_LABELS, type OrderState, type OrderListResponse } from '@amalice/shared'
-import { getCoreRowModel, useVueTable, type ColumnDef, type RowSelectionState, type VisibilityState } from '@tanstack/vue-table'
-import { Search, Archive, ArchiveRestore, StickyNote, Columns3, ArrowRight, Check } from 'lucide-vue-next'
-import { DropdownMenuRoot, DropdownMenuTrigger, DropdownMenuPortal, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuItemIndicator, DropdownMenuLabel } from 'reka-ui'
 import { VALID_TRANSITIONS } from '~/composables/order-transitions'
 
-
 useHead({ title: 'Orders' })
-
-type Order = OrderListResponse['items'][number]
 
 const route = useRoute()
 const router = useRouter()
 
-const ALL_STATES = [
-  'PendingCallCenter', 'CallCenterNoAnswer', 'WrongNumber', 'Postponed', 'Confirmed', 'OnHold', 'Packed', 'HandedToCourier',
-  'OutForDelivery', 'Delivered', 'CashCollected', 'Reconciled', 'Cancelled', 'DeliveryFailed', 'ReturnedToOrigin', 'Settled', 'CancelledShipping'
-] as OrderState[]
-
-const stateOptions = [
-  { label: 'All states', value: 'all' },
-  ...ALL_STATES.map((s) => ({ label: ORDER_STATE_LABELS[s], value: s }))
+// Filter chips = the pipeline stages staff work with daily (design: status tabs);
+// every other state is reachable from the "Other states" select.
+const CHIPS: { label: string; value: string }[] = [
+  { label: 'All', value: 'all' },
+  { label: 'New', value: 'PendingCallCenter' },
+  { label: 'Confirmed', value: 'Confirmed' },
+  { label: 'Packed', value: 'Packed' },
+  { label: 'Out for delivery', value: 'OutForDelivery' },
+  { label: 'Delivered', value: 'Delivered' },
+  { label: 'Cancelled', value: 'Cancelled' }
 ]
+const OTHER_STATES = [
+  'CallCenterNoAnswer', 'WrongNumber', 'Postponed', 'OnHold', 'HandedToCourier', 'CashCollected', 'Reconciled',
+  'DeliveryFailed', 'ReturnedToOrigin', 'Settled', 'CancelledShipping'
+] as OrderState[]
+const otherOptions = [{ label: 'Other states…', value: 'all' }, ...OTHER_STATES.map((s) => ({ label: ORDER_STATE_LABELS[s], value: s }))]
 
 const search = ref((route.query.search as string) ?? '')
-const stateFilter = ref<string | number>((route.query.state as string) ?? 'all')
-// Archived orders are excluded by default (see AdminOrdersService.list's
-// `archived` param) — this toggles into "browse archived orders only" mode.
+const stateFilter = ref((route.query.state as string) ?? 'all')
+const otherState = computed(() => (OTHER_STATES.includes(stateFilter.value as OrderState) ? stateFilter.value : 'all'))
+// Archived orders are excluded by default (see AdminOrdersService.list's `archived`
+// param); this toggles into "browse archived orders only" mode.
 const showArchived = ref(route.query.archived === 'only')
 
 const { data, pending } = await useAdminFetch<OrderListResponse>('/admin/orders', {
@@ -34,32 +36,34 @@ const { data, pending } = await useAdminFetch<OrderListResponse>('/admin/orders'
   query: {
     page: route.query.page ?? '1',
     pageSize: route.query.pageSize ?? '20',
+    ...(route.query.state && { state: route.query.state }),
+    ...(route.query.search && { search: route.query.search }),
     ...(route.query.archived === 'only' && { archived: 'only' })
   }
 })
 
-// useAdminFetch is keyed without reactive query (its option surface is narrow
-// by design). After filter/page/pageSize changes we re-fetch manually via the
-// api client — this IS the server-side pagination: every page or page-size
-// change hits the API again, never slices an already-fetched array client-side.
+// useAdminFetch is keyed without reactive query (its option surface is narrow by
+// design). After filter/page/pageSize changes we re-fetch via the api client: this
+// IS the server-side pagination, never a client-side slice.
 const api = useAdminApi()
 const { run } = useApiAction()
 const currentPage = computed(() => Number(route.query.page ?? 1))
 const currentPageSize = computed(() => Number(route.query.pageSize ?? 20))
+const selected = ref<Set<string>>(new Set())
 
 async function loadWithFilters() {
   const q: Record<string, string> = { page: String(currentPage.value), pageSize: String(currentPageSize.value) }
-  if (stateFilter.value !== 'all') q.state = route.query.state as string
+  if (route.query.state) q.state = route.query.state as string
   if (route.query.search) q.search = route.query.search as string
   if (route.query.archived === 'only') q.archived = 'only'
   data.value = await api<OrderListResponse>('/admin/orders', { query: q })
-  rowSelection.value = {}
+  selected.value = new Set()
 }
 
-function applyFilters() {
-  router
-    .push({ query: { ...route.query, search: search.value || undefined, state: stateFilter.value !== 'all' ? String(stateFilter.value) : undefined, page: 1 } })
-    .then(() => loadWithFilters())
+async function applyFilters(state = stateFilter.value) {
+  stateFilter.value = state
+  await router.push({ query: { ...route.query, search: search.value || undefined, state: state !== 'all' ? state : undefined, page: 1 } })
+  await loadWithFilters()
 }
 
 async function toggleArchivedView() {
@@ -78,8 +82,8 @@ async function changePageSize(size: number) {
   await loadWithFilters()
 }
 
-// Inline state transition (ADM-04): advance an order to its next valid state
-// without opening the detail page — the quick path ops staff use all day.
+// Inline state transition (ADM-04): advance an order to its next valid state without
+// opening the detail page, the quick path ops staff use all day.
 const transitioning = ref<string | null>(null)
 
 async function advance(orderId: string, currentState: OrderState) {
@@ -94,67 +98,12 @@ async function advance(orderId: string, currentState: OrderState) {
   transitioning.value = null
 }
 
-// Soft-hide (see Order.archived's Prisma comment) — reversible toggle.
-const archiving = ref<string | null>(null)
-
-async function toggleArchive(orderId: string, currentlyArchived: boolean) {
-  archiving.value = orderId
-  await run(() => api(`/admin/orders/${orderId}/${currentlyArchived ? 'unarchive' : 'archive'}`, { method: 'POST' }), {
-    success: currentlyArchived ? 'Order restored from the archive' : 'Order archived',
-    errorFallback: 'Could not update the order'
-  })
-  await loadWithFilters()
-  archiving.value = null
-}
-
-function fmtDate(iso: string) {
-  return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-}
-
-// ---- TanStack table: row selection + column visibility ----
-const columns: ColumnDef<Order>[] = [
-  { id: 'select', header: '', enableHiding: false },
-  { id: 'order', header: 'Order', enableHiding: false },
-  { id: 'products', header: 'Products' },
-  { id: 'customer', header: 'Customer' },
-  { id: 'wilaya', header: 'Wilaya' },
-  { id: 'status', header: 'Status' },
-  { id: 'cod', header: 'COD' },
-  { id: 'date', header: 'Date' },
-  { id: 'actions', header: '', enableHiding: false }
-]
-
-const rowSelection = ref<RowSelectionState>({})
-const columnVisibility = ref<VisibilityState>({ date: false })
-
-const table = useVueTable({
-  get data() { return data.value?.items ?? [] },
-  columns,
-  getRowId: (row) => row.id,
-  getCoreRowModel: getCoreRowModel(),
-  manualPagination: true,
-  enableRowSelection: true,
-  state: {
-    get rowSelection() { return rowSelection.value },
-    get columnVisibility() { return columnVisibility.value }
-  },
-  onRowSelectionChange: (u) => { rowSelection.value = typeof u === 'function' ? u(rowSelection.value) : u },
-  onColumnVisibilityChange: (u) => { columnVisibility.value = typeof u === 'function' ? u(columnVisibility.value) : u }
-})
-
-const selectedIds = computed(() => Object.keys(rowSelection.value).filter((id) => rowSelection.value[id]))
-const allChecked = computed<boolean | 'indeterminate'>(() =>
-  table.getIsAllRowsSelected() ? true : table.getIsSomeRowsSelected() ? 'indeterminate' : false
-)
-const visibleColumnCount = computed(() => table.getVisibleLeafColumns().length)
-
 const bulkBusy = ref(false)
 async function bulkArchive() {
   bulkBusy.value = true
-  const ids = [...selectedIds.value]
   const action = showArchived.value ? 'unarchive' : 'archive'
   let ok = 0
-  for (const id of ids) {
+  for (const id of selected.value) {
     const r = await run(() => api(`/admin/orders/${id}/${action}`, { method: 'POST' }), { errorFallback: `Could not ${action} order ${id.slice(0, 8)}` })
     if (r !== undefined) ok++
   }
@@ -162,141 +111,100 @@ async function bulkArchive() {
   await loadWithFilters()
   bulkBusy.value = false
 }
+
+const rows = computed(() => data.value?.items ?? [])
+const allChecked = computed(() => rows.value.length > 0 && rows.value.every((o) => selected.value.has(o.id)))
+function toggleAll(on: boolean) { selected.value = on ? new Set(rows.value.map((o) => o.id)) : new Set() }
+function toggleOne(id: string, on: boolean) {
+  const next = new Set(selected.value)
+  if (on) next.add(id)
+  else next.delete(id)
+  selected.value = next
+}
+
+function rowClick(e: MouseEvent, id: string) {
+  if (!(e.target as HTMLElement).closest('a, input, button')) navigateTo(`/orders/${id}`)
+}
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+}
+function itemsText(o: OrderListResponse['items'][number]) {
+  return o.items.map((it) => `${it.product.name}${it.quantity > 1 ? ` ×${it.quantity}` : ''}`).join(', ')
+}
+const deliveryLabel = (t: string | null) => (t === 'Home' ? 'Home' : t === 'Desk' ? 'Stop desk' : '')
+const carrier = (o: OrderListResponse['items'][number]) => o.shipment?.courier.name ?? o.shippingCompanyName ?? (o.fulfillmentMethod === 'Manual' ? 'Own driver' : '—')
 </script>
 
 <template>
-  <AdsPage title="Orders" :description="`${data?.total ?? 0} orders ${showArchived ? 'in the archive' : 'in the pipeline'}`">
+  <AdsPage title="Orders" :description="`${data?.total ?? 0} orders ${showArchived ? 'in the archive' : 'matching'}`">
     <template #actions>
-      <AdsButton appearance="default" class="hide-sm" @click="toggleArchivedView">
-        <Archive /> {{ showArchived ? 'Showing archived' : 'Show archived' }}
-      </AdsButton>
-      <DropdownMenuRoot>
-        <DropdownMenuTrigger as-child>
-          <AdsButton appearance="default" class="hide-sm"><Columns3 /> Columns</AdsButton>
-        </DropdownMenuTrigger>
-        <DropdownMenuPortal>
-          <DropdownMenuContent align="end" :side-offset="6" class="panel z-50" style="min-width: 200px">
-            <DropdownMenuLabel class="menu-label">Visible columns</DropdownMenuLabel>
-            <DropdownMenuCheckboxItem
-              v-for="col in table.getAllLeafColumns().filter((c) => c.getCanHide())"
-              :key="col.id"
-              :model-value="col.getIsVisible()"
-              class="menu-item"
-              style="padding-inline-start: 34px"
-              @select.prevent
-              @update:model-value="(v: boolean) => col.toggleVisibility(v)"
-            >
-              <DropdownMenuItemIndicator class="absolute inline-flex" style="inset-inline-start: 10px"><Check class="i" style="width: 16px; height: 16px" /></DropdownMenuItemIndicator>
-              {{ col.columnDef.header }}
-            </DropdownMenuCheckboxItem>
-          </DropdownMenuContent>
-        </DropdownMenuPortal>
-      </DropdownMenuRoot>
+      <button class="btn hide-sm" type="button" @click="toggleArchivedView"><AdsIcon name="i-lucide-archive" />{{ showArchived ? 'Showing archived' : 'Show archived' }}</button>
     </template>
 
     <section class="card" aria-label="Orders list" style="padding-bottom: 16px">
       <div class="card-head">
-        <AdsSelect v-model="stateFilter" :options="stateOptions" class="w-56" @update:model-value="applyFilters" />
-        <label class="search soft" style="margin-inline-start: auto">
-          <Search class="i" /><span class="sr">Search orders</span>
-          <input v-model="search" type="search" placeholder="Order #, name or phone" @keydown.enter="applyFilters">
+        <div class="chips" role="tablist" aria-label="Filter by status">
+          <button v-for="c in CHIPS" :key="c.value" class="chip-btn" type="button" role="tab" :aria-selected="stateFilter === c.value" @click="applyFilters(c.value)">{{ c.label }}</button>
+        </div>
+        <AdsSelect :model-value="otherState" :options="otherOptions" size="sm" style="width: 170px" @update:model-value="(v) => applyFilters(String(v))" />
+        <label class="search soft">
+          <AdsIcon name="i-lucide-search" /><span class="sr">Search orders</span>
+          <input v-model="search" type="search" placeholder="Order #, name or phone" @keydown.enter="applyFilters()">
         </label>
-        <AdsButton appearance="default" size="sm" @click="applyFilters">Filter</AdsButton>
       </div>
 
-      <!-- Bulk action bar -->
-      <div v-if="selectedIds.length" class="notice" style="align-items: center">
-        <span class="strong">{{ selectedIds.length }} selected</span>
-        <AdsButton appearance="default" size="sm" :loading="bulkBusy" @click="bulkArchive">
-          <component :is="showArchived ? ArchiveRestore : Archive" /> {{ showArchived ? 'Unarchive' : 'Archive' }}
-        </AdsButton>
-        <AdsButton size="sm" appearance="subtle" style="margin-inline-start: auto" @click="rowSelection = {}">Clear</AdsButton>
+      <div class="bulkbar" :class="{ on: selected.size > 0 }">
+        <span class="grow">{{ selected.size }} selected</span>
+        <button class="btn" type="button" :disabled="bulkBusy" @click="bulkArchive">{{ showArchived ? 'Unarchive' : 'Archive' }}</button>
+        <button class="btn" type="button" @click="selected = new Set()">Clear</button>
       </div>
 
       <div class="table-wrap">
-        <table style="min-width: 900px">
+        <table style="min-width: 940px">
           <thead>
             <tr>
-              <th v-for="header in table.getFlatHeaders()" :key="header.id" :style="header.id === 'select' ? 'width: 28px' : undefined" :class="{ num: header.id === 'cod' }">
-                <input v-if="header.id === 'select'" type="checkbox" aria-label="Select all orders on this page" :checked="table.getIsAllRowsSelected()" :indeterminate.prop="table.getIsSomeRowsSelected()" @change="table.toggleAllRowsSelected(($event.target as HTMLInputElement).checked)">
-                <span v-else-if="header.id === 'actions'" class="sr">Actions</span>
-                <template v-else>{{ header.column.columnDef.header }}</template>
-              </th>
+              <th style="width: 28px"><input type="checkbox" aria-label="Select all orders on this page" :checked="allChecked" @change="toggleAll(($event.target as HTMLInputElement).checked)"></th>
+              <th>Order</th><th>Customer</th><th>Wilaya</th><th>Carrier</th><th>Items</th><th class="num">Total</th><th>Status</th><th><span class="sr">Actions</span></th>
             </tr>
           </thead>
           <tbody>
-            <tr v-if="pending"><td :colspan="visibleColumnCount" class="empty">Loading…</td></tr>
-            <tr v-else-if="!data?.items.length"><td :colspan="visibleColumnCount" class="empty">No orders match this filter.</td></tr>
-            <template v-else>
-              <tr v-for="row in table.getRowModel().rows" :key="row.id" :class="{ selected: row.getIsSelected() }" style="cursor: pointer" @click="navigateTo(`/orders/${row.original.id}`)">
-                <td v-for="cell in row.getVisibleCells()" :key="cell.id" :class="{ num: cell.column.id === 'cod' || cell.column.id === 'actions' }" :style="cell.column.id === 'products' || cell.column.id === 'status' ? undefined : 'white-space: nowrap'" @click="['select', 'products', 'actions'].includes(cell.column.id) ? $event.stopPropagation() : undefined">
-                  <input v-if="cell.column.id === 'select'" type="checkbox" :aria-label="`Select order ${row.original.id.slice(0, 8)}`" :checked="row.getIsSelected()" @change="row.toggleSelected(($event.target as HTMLInputElement).checked)">
-
-                  <span v-else-if="cell.column.id === 'order'">
-                    <NuxtLink :to="`/orders/${row.original.id}`" class="strong" style="text-decoration: none; color: var(--pine)" @click.stop>#{{ row.original.id.slice(0, 8) }}</NuxtLink>
-                    <span class="sub">{{ fmtDate(row.original.createdAt) }}</span>
-                  </span>
-
-                  <OrderLineItemsInline v-else-if="cell.column.id === 'products'" :items="row.original.items" compact style="max-width: 256px" />
-
-                  <template v-else-if="cell.column.id === 'customer'">
-                    {{ row.original.customer.name ?? '—' }}
-                    <StickyNote v-if="row.original.notes" class="i" style="width: 14px; height: 14px; display: inline; vertical-align: -2px; color: var(--text-2)" :title="row.original.notes" />
-                    <span class="sub">{{ row.original.customer.phone }}</span>
-                  </template>
-
-                  <template v-else-if="cell.column.id === 'wilaya'">{{ row.original.address.region }}</template>
-
-                  <div v-else-if="cell.column.id === 'status'" style="display: flex; flex-wrap: wrap; gap: 4px">
-                    <AdsOrderStatus :state="CALL_CENTER_STATE_TO_ORDER_STATE[row.original.callCenterState]" />
-                    <AdsOrderStatus v-if="row.original.shippingState" :state="SHIPPING_STATE_TO_ORDER_STATE[row.original.shippingState]" />
-                    <span v-if="row.original.isDuplicate" class="pill solid-danger" title="Same customer + product within the last 2 days">Duplicate?</span>
-                  </div>
-
-                  <template v-else-if="cell.column.id === 'cod'">
-                    <span class="strong"><AdsPrice :amount-cents="row.original.totalCents" /></span>
-                    <span class="sub">Cash on delivery</span>
-                  </template>
-
-                  <template v-else-if="cell.column.id === 'date'">{{ fmtDate(row.original.createdAt) }}</template>
-
-                  <div v-else-if="cell.column.id === 'actions'" style="display: inline-flex; align-items: center; gap: 4px">
-                    <AdsButton appearance="default"
-                      v-if="VALID_TRANSITIONS[row.original.state]?.length && row.original.state !== 'Cancelled'"
-                      size="sm"
-                      style="max-width: 200px"
-                      :title="`Move to: ${ORDER_STATE_LABELS[VALID_TRANSITIONS[row.original.state]![0] as OrderState] ?? VALID_TRANSITIONS[row.original.state]![0]}`"
-                      :loading="transitioning === row.original.id"
-                      @click="advance(row.original.id, row.original.state)"
-                    >
-                      <ArrowRight /><span class="truncate">{{ ORDER_STATE_LABELS[VALID_TRANSITIONS[row.original.state]![0] as OrderState] ?? VALID_TRANSITIONS[row.original.state]![0] }}</span>
-                    </AdsButton>
-                    <button
-                      class="row-btn"
-                      type="button"
-                      :title="row.original.archived ? 'Unarchive' : 'Archive'"
-                      :aria-label="row.original.archived ? 'Unarchive' : 'Archive'"
-                      :disabled="archiving === row.original.id"
-                      @click="toggleArchive(row.original.id, row.original.archived)"
-                    >
-                      <component :is="row.original.archived ? ArchiveRestore : Archive" class="i" style="width: 18px; height: 18px" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </template>
+            <tr v-if="pending"><td colspan="9" class="empty">Loading…</td></tr>
+            <tr v-else-if="!rows.length"><td colspan="9" class="empty">No orders match this filter.</td></tr>
+            <tr v-for="o in rows" v-else :key="o.id" class="clickable" :class="{ selected: selected.has(o.id) }" @click="rowClick($event, o.id)">
+              <td><input type="checkbox" :aria-label="`Select order ${o.id.slice(0, 8)}`" :checked="selected.has(o.id)" @change="toggleOne(o.id, ($event.target as HTMLInputElement).checked)"></td>
+              <td><NuxtLink class="link-cell" :to="`/orders/${o.id}`">#{{ o.id.slice(0, 8) }}</NuxtLink><span class="sub">{{ fmtDate(o.createdAt) }}</span></td>
+              <td style="white-space: nowrap">{{ o.customer.name ?? '—' }}<AdsIcon v-if="o.notes" name="i-lucide-sticky-note" style="width: 14px; height: 14px; vertical-align: -2px; margin-left: 4px; color: var(--text-2)" :title="o.notes" /><span class="sub">{{ o.customer.phone }}</span></td>
+              <td style="white-space: nowrap">{{ o.address.region }}<span class="sub">{{ deliveryLabel(o.shippingType) }}</span></td>
+              <td style="white-space: nowrap">{{ carrier(o) }}</td>
+              <td class="muted" style="max-width: 240px">{{ itemsText(o) }}</td>
+              <td class="num"><span class="strong"><AdsPrice :amount-cents="o.totalCents" /></span><span class="sub">Cash on delivery</span></td>
+              <td>
+                <div style="display: flex; flex-wrap: wrap; gap: 4px">
+                  <AdsOrderStatus :state="CALL_CENTER_STATE_TO_ORDER_STATE[o.callCenterState]" />
+                  <AdsOrderStatus v-if="o.shippingState" :state="SHIPPING_STATE_TO_ORDER_STATE[o.shippingState]" />
+                  <span v-if="o.isDuplicate" class="pill returned" title="Same customer + product within the last 2 days">Duplicate?</span>
+                </div>
+              </td>
+              <td class="num" style="white-space: nowrap">
+                <button
+                  v-if="VALID_TRANSITIONS[o.state]?.length && o.state !== 'Cancelled'"
+                  class="btn btn-sm"
+                  type="button"
+                  style="max-width: 190px"
+                  :disabled="transitioning === o.id"
+                  :title="`Move to: ${ORDER_STATE_LABELS[VALID_TRANSITIONS[o.state]![0] as OrderState] ?? VALID_TRANSITIONS[o.state]![0]}`"
+                  @click="advance(o.id, o.state)"
+                >
+                  <AdsIcon name="i-lucide-arrow-right" style="width: 14px; height: 14px" /><span style="overflow: hidden; text-overflow: ellipsis">{{ ORDER_STATE_LABELS[VALID_TRANSITIONS[o.state]![0] as OrderState] ?? VALID_TRANSITIONS[o.state]![0] }}</span>
+                </button>
+                <NuxtLink class="row-btn" :to="`/orders/${o.id}`" :aria-label="`Open order ${o.id.slice(0, 8)}`"><AdsIcon name="i-lucide-chevron-right" /></NuxtLink>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
 
-      <AdsPagination
-        :total="data?.total ?? 0"
-        :page="currentPage"
-        :page-size="currentPageSize"
-        item-label="orders"
-        @update:page="goToPage"
-        @update:page-size="changePageSize"
-      />
+      <AdsPagination :total="data?.total ?? 0" :page="currentPage" :page-size="currentPageSize" item-label="orders" @update:page="goToPage" @update:page-size="changePageSize" />
     </section>
   </AdsPage>
 </template>

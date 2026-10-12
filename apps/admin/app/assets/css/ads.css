@@ -19,7 +19,7 @@
   --ads-canvas: var(--ivory);
   --ads-surface: var(--white);
   --ads-sunken: var(--ivory);
-  --ads-hover: #FAF8F2;
+  --ads-hover: var(--hover);
   --ads-pressed: var(--ivory);
   --ads-selected: var(--ivory);
   --ads-selected-hover: var(--mist);
@@ -87,8 +87,8 @@
   --color-success: var(--ads-success);
   --color-warning: var(--ads-warning);
   --color-info: var(--ads-primary);
-  --radius-ads: 12px;
-  --radius-ads-lg: 20px;
+  --radius-ads: 6px;
+  --radius-ads-lg: 8px;
 }
 
 /* The layout root and portaled overlays carry .ads-root. */
@@ -96,18 +96,6 @@
   background: var(--ads-canvas);
   color: var(--ads-text);
   line-height: normal;
-}
-.ads-root :focus-visible {
-  outline: 2px solid var(--ads-focus);
-  outline-offset: 2px;
-}
-/* Text fields draw their own focus state (border + halo, see leezil.css), not an outline. */
-.ads-root .input-wrap :focus-visible,
-.ads-root .input-wrap:focus-visible,
-.ads-root .search :focus-visible,
-.ads-root input:focus-visible,
-.ads-root textarea:focus-visible {
-  outline: 0;
 }
 .ads-tabular {
   font-variant-numeric: tabular-nums;
@@ -117,37 +105,34 @@
 @utility divide-default { & > :not(:last-child) { border-color: var(--line); } }
 @utility tabular { font-variant-numeric: tabular-nums; }
 
-/* ---- Compatibility layer: pre-redesign `admin-*` classes used by page templates,
-   now resolved to the Leezil card/table/chip styles. ---- */
+/* ---- Compatibility layer: older page templates still use these names. ---- */
 :root {
   --color-admin-bg: var(--ivory);
   --color-admin-surface: var(--white);
   --color-admin-surface-tint: var(--ivory);
   --color-admin-border: var(--line-soft);
   --color-admin-border-strong: var(--line);
-  --color-admin-row-hover: #FAF8F2;
+  --color-admin-row-hover: var(--hover);
   --color-admin-row-selected: var(--ivory);
   --color-admin-text-secondary: var(--text-2);
-  --radius-admin: 20px;
+  --radius-admin: 8px;
   --shadow-admin-md: none;
 }
 @layer components {
-  .admin-kpi-card { background: var(--white); border-radius: var(--radius); }
-  a.admin-kpi-card:hover, .admin-kpi-card.is-interactive:hover { background: #FAF8F2; }
-  .admin-table-wrap { background: var(--white); border-radius: var(--radius); padding: 8px 24px; overflow-x: auto; }
+  .admin-kpi-card { background: var(--white); border-radius: var(--r-lg); }
+  a.admin-kpi-card:hover, .admin-kpi-card.is-interactive:hover { background: var(--hover); }
+  .admin-table-wrap { background: var(--white); border-radius: var(--r-lg); padding: 8px 20px; overflow-x: auto; }
   .admin-table { width: 100%; }
   .admin-table th, .admin-table td { white-space: nowrap; }
-  .admin-table thead th {
-    text-align: left; color: var(--text-2); font-size: 12px; text-transform: uppercase;
-    letter-spacing: .08em; font-weight: 500; padding: 12px 8px; border-bottom: 1px solid var(--line-soft);
-  }
-  .admin-table tbody td { padding: 12px 8px; border-bottom: 1px solid var(--row-line); vertical-align: middle; }
-  .admin-table tbody tr:last-child td { border-bottom: 0; }
-  .admin-table tbody tr:hover td { background: #FAF8F2; }
-  .admin-icon-chip { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; background: var(--mist); color: var(--teal); }
+  .admin-icon-chip { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--r); flex-shrink: 0; background: var(--mist); color: var(--teal); }
   .admin-icon-chip-warning { background: var(--warn-bg); color: var(--warn-fg); }
   .admin-icon-chip-error { background: var(--danger-bg); color: var(--danger-fg); }
   .admin-icon-chip-success { background: var(--ok-bg); color: var(--teal); }
-  .admin-hero-band { background: var(--teal); color: var(--ivory); border-radius: var(--radius); }
+  .admin-hero-band { background: var(--teal); color: var(--ivory); border-radius: var(--r-lg); }
   .admin-surface { background: var(--ivory); color: var(--pine); min-height: 100vh; }
+}
+
+@layer components {
+  /* Underline tabs: the -1px active-border overlap otherwise creates a stray vertical scrollbar. */
+  .tabs { overflow-y: hidden; }
 }

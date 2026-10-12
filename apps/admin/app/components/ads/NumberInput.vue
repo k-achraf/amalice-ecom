@@ -3,7 +3,7 @@ import { cn } from '~/lib/cn'
 
 defineOptions({ inheritAttrs: false })
 
-// Numeric field whose model is `number | null` (empty input = null).
+// Numeric `.input` whose model is `number | null` (empty input = null).
 const model = defineModel<number | null | undefined>()
 const props = defineProps<{ min?: number; max?: number; step?: number; placeholder?: string; class?: string; disabled?: boolean; size?: string }>()
 
@@ -14,7 +14,5 @@ function onInput(e: Event) {
 </script>
 
 <template>
-  <div :class="cn('input-wrap', disabled && 'is-disabled', props.class)">
-    <input v-bind="$attrs" class="ads-tabular" type="number" inputmode="decimal" :value="model ?? ''" :min="min" :max="max" :step="step" :placeholder="placeholder" :disabled="disabled" @input="onInput">
-  </div>
+  <input v-bind="$attrs" :class="cn('input mono', (size === 'sm' || size === 'xs') && 'sm', props.class)" type="number" inputmode="decimal" :value="model ?? ''" :min="min" :max="max" :step="step" :placeholder="placeholder" :disabled="disabled" @input="onInput">
 </template>

@@ -620,13 +620,14 @@ async function deleteCompetitor(competitorId: string) {
 <template>
   <AdsPage :title="sourced?.name ?? 'Sourced product'" wide>
   <template #breadcrumb>
-    <AdsButton icon="i-lucide-arrow-left" color="neutral" variant="ghost" to="/sourcing" />
+    <NuxtLink to="/sourcing">Product sourcing</NuxtLink><AdsIcon name="i-lucide-chevron-right" style="width: 14px; height: 14px" /><span>{{ sourced?.name ?? 'Sourced product' }}</span>
   </template>
   <div v-if="pending" class="py-24 text-center text-muted">Loading…</div>
   <div v-else-if="!sourced" class="py-24 text-center text-muted">Sourced product not found.</div>
   <div v-else class="max-w-4xl space-y-6">
     <AdsTabs
       v-model="activeTab"
+      underline
       :items="[
         { label: 'View', value: 'view', icon: 'i-lucide-eye' },
         { label: 'Overview', value: 'overview', icon: 'i-lucide-file-text' },

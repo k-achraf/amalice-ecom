@@ -1,14 +1,15 @@
 <script setup lang="ts">
-// The design's `.card`: white, 20px radius, 24px padding, 16px gap.
-defineProps<{ title?: string }>()
+// The design's `.card` (+ `.card-head`). `flush` removes the padding (tables).
+defineProps<{ title?: string; sub?: string; flush?: boolean }>()
 </script>
 
 <template>
-  <section class="card">
+  <section class="card" :class="{ flush }">
     <div v-if="title || $slots.actions" class="card-head">
       <h2 v-if="title">{{ title }}</h2>
-      <div v-if="$slots.actions" class="flex items-center gap-2"><slot name="actions" /></div>
+      <slot name="actions" />
     </div>
+    <p v-if="sub" class="card-sub">{{ sub }}</p>
     <slot />
   </section>
 </template>

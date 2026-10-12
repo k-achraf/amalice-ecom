@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="assets/css/style.css">
   <script src="assets/js/data.js" defer></script>
   <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/pages/overview.js" defer></script>
 </head>
 <body>
 <div class="app" data-page="overview">
@@ -67,7 +68,7 @@
         <div class="card-head"><h2 id="st-h">Orders by status</h2><a href="orders.html">View all</a></div>
         <div class="stackbar" id="status-bar" aria-hidden="true"></div>
         <ul class="list" id="status-list"></ul>
-        <a href="orders.html" class="btn btn-primary" style="margin-top:auto">Confirm 12 new orders</a>
+        <a href="call-center.html" class="btn btn-primary" style="margin-top:auto" id="confirm-cta">Confirm new orders</a>
       </section>
     </div>
 
@@ -97,7 +98,7 @@
     </div>
 
     <section class="card" aria-labelledby="wl-h">
-      <div class="card-head"><h2 id="wl-h">Sales by wilaya</h2><span class="muted">Share of revenue · 48 wilayas reached</span></div>
+      <div class="card-head"><h2 id="wl-h">Sales by wilaya</h2><span class="muted">Share of revenue</span></div>
       <div class="bars" id="wilaya-bars"></div>
     </section>
 

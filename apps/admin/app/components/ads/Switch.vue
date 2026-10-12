@@ -1,16 +1,14 @@
 <script setup lang="ts">
-import { SwitchRoot } from 'reka-ui'
-
+// The design's rectangular `.switch`, optionally with a label / description beside it.
 const model = defineModel<boolean>({ default: false })
 defineProps<{ ariaLabel?: string; label?: string; description?: string; disabled?: boolean; loading?: boolean; class?: string }>()
 </script>
 
 <template>
-  <label class="inline-flex items-start gap-3" :class="$props.class">
-    <SwitchRoot v-model="model" class="switch" :aria-label="ariaLabel ?? label" :disabled="disabled || loading"><span /></SwitchRoot>
-    <span v-if="label || description" class="min-w-0">
-      <span v-if="label" class="block text-sm">{{ label }}</span>
-      <span v-if="description" class="muted block">{{ description }}</span>
+  <label class="check" :class="$props.class" style="align-items: center">
+    <span class="switch">
+      <input v-model="model" type="checkbox" :aria-label="ariaLabel ?? label" :disabled="disabled || loading"><span />
     </span>
+    <span v-if="label || description"><template v-if="label">{{ label }}</template><span v-if="description" class="sub">{{ description }}</span></span>
   </label>
 </template>

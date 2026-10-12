@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shipping rates — Leezil Admin</title>
+  <link rel="icon" href="assets/img/leezil-icon-teal.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/pages/shipping-rates.js" defer></script>
+</head>
+<body>
+<div class="app" data-page="shipping-rates">
+  <main class="main">
+
+    <header class="page-head">
+      <div class="title">
+        <p>What customers pay for delivery, by wilaya</p>
+        <h1>Shipping rates</h1>
+      </div>
+      <button class="btn hide-sm" type="button" id="import-rates"><svg data-icon="refresh"></svg>Copy from a shipping company</button>
+    </header>
+
+    <section class="kpis" id="zone-cards" aria-label="Zones"></section>
+
+    <form class="split" id="rates-form" novalidate>
+      <section class="card" aria-label="Rates by wilaya">
+        <div class="card-head">
+          <div class="chips" id="zone-tabs" role="tablist" aria-label="Filter by zone"></div>
+          <label class="search soft"><svg data-icon="search"></svg><span class="sr">Search wilaya</span><input type="search" id="w-search" placeholder="Wilaya or code"></label>
+        </div>
+        <div class="bulkbar" id="bulkbar">
+          <span id="bulk-count" class="grow">0 selected</span>
+          <label class="sr" for="bulk-home">Home price</label><input class="input sm" id="bulk-home" placeholder="Home DA" style="width:100px;background:transparent;color:var(--ivory);border-color:rgba(241,237,226,.3)">
+          <label class="sr" for="bulk-desk">Stop desk price</label><input class="input sm" id="bulk-desk" placeholder="Desk DA" style="width:100px;background:transparent;color:var(--ivory);border-color:rgba(241,237,226,.3)">
+          <button class="btn" type="button" id="bulk-apply">Apply</button>
+          <button class="btn" type="button" id="bulk-off">Disable</button>
+        </div>
+        <div class="table-wrap">
+          <table style="min-width:760px">
+            <thead><tr>
+              <th style="width:28px"><input type="checkbox" id="select-all" aria-label="Select all wilayas"></th>
+              <th>Wilaya</th><th>Zone</th><th>Home delivery</th><th>Stop desk</th><th>Delay</th><th>Active</th>
+            </tr></thead>
+            <tbody id="rates-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="stack">
+        <section class="card" aria-labelledby="fr-h">
+          <div class="card-head"><h2 id="fr-h">Free delivery</h2><label class="switch"><input type="checkbox" id="free-on" checked aria-label="Free delivery on"><span></span></label></div>
+          <div class="field"><label for="free-min">For orders above</label><div class="input-group"><input class="input" id="free-min" value="15000"><span class="addon">DA</span></div></div>
+          <div class="field"><label for="free-type">Applies to</label><select class="select" id="free-type"><option>Home and stop desk</option><option>Stop desk only</option></select></div>
+          <div class="field"><label for="free-zones">Zones</label><select class="select" id="free-zones"><option>All zones</option><option>Alger & surroundings and North</option><option>Everywhere except far south</option></select></div>
+        </section>
+
+        <section class="card" aria-labelledby="ru-h">
+          <div class="card-head"><h2 id="ru-h">Rules</h2></div>
+          <div class="field"><label for="kg">Extra per kg above 5 kg</label><div class="input-group"><input class="input" id="kg" value="50"><span class="addon">DA / kg</span></div></div>
+          <div class="field"><label for="ret">Return fee</label><div class="input-group"><input class="input" id="ret" value="200"><span class="addon">DA</span></div><span class="hint">What the shipping company charges you when a parcel comes back.</span></div>
+          <div class="setting"><div class="text"><b>Round prices to 50 DA</b></div><label class="switch"><input type="checkbox" checked aria-label="Round prices to 50 DA"><span></span></label></div>
+          <div class="setting"><div class="text"><b>Show delivery delay at checkout</b><span>e.g. “Delivered in 2–3 days”</span></div><label class="switch"><input type="checkbox" checked aria-label="Show delivery delay at checkout"><span></span></label></div>
+        </section>
+
+        <section class="card" aria-labelledby="pv-h">
+          <div class="card-head"><h2 id="pv-h">Check a price</h2></div>
+          <div class="grid-2">
+            <div class="field"><label for="pv-w">Wilaya</label><select class="select" id="pv-w"></select></div>
+            <div class="field"><label for="pv-t">Order total</label><div class="input-group"><input class="input" id="pv-t" value="4900"><span class="addon">DA</span></div></div>
+          </div>
+          <div class="totals" id="pv-out"></div>
+        </section>
+      </div>
+    </form>
+
+  </main>
+</div>
+</body>
+</html>

@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="assets/css/style.css">
   <script src="assets/js/data.js" defer></script>
   <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/pages/orders.js" defer></script>
 </head>
 <body>
 <div class="app" data-page="orders">
@@ -28,15 +29,16 @@
 
     <section class="card" aria-label="Orders list" style="padding-bottom:16px">
       <div class="card-head">
-        <div class="chips plain" id="order-tabs" role="tablist" aria-label="Filter by status"></div>
+        <div class="chips" id="order-tabs" role="tablist" aria-label="Filter by status"></div>
         <label class="search soft"><svg data-icon="search"></svg><span class="sr">Search orders</span><input type="search" id="orders-search" placeholder="Order #, name or phone"></label>
       </div>
+      <div class="bulkbar" id="bulkbar"><span id="bulk-count" class="grow">0 selected</span><button class="btn" type="button" data-bulk="Orders marked as confirmed">Mark confirmed</button><button class="btn" type="button" data-bulk="Orders sent to the shipping company">Send to shipping</button><button class="btn" type="button" data-bulk="Labels ready to print">Print labels</button></div>
       <div class="table-wrap">
         <table style="min-width:900px">
           <thead>
             <tr>
               <th style="width:28px"><input type="checkbox" id="select-all" aria-label="Select all orders"></th>
-              <th>Order</th><th>Customer</th><th>Wilaya</th><th>Delivery</th><th>Items</th><th class="num">Total</th><th>Status</th><th><span class="sr">Actions</span></th>
+              <th>Order</th><th>Customer</th><th>Wilaya</th><th>Carrier</th><th>Items</th><th class="num">Total</th><th>Status</th><th><span class="sr">Actions</span></th>
             </tr>
           </thead>
           <tbody id="orders-body"></tbody>

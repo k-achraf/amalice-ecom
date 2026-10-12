@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Users &amp; roles — Leezil Admin</title>
+  <link rel="icon" href="assets/img/leezil-icon-teal.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/pages/users.js" defer></script>
+</head>
+<body>
+<div class="app" data-page="users">
+  <main class="main">
+
+    <header class="page-head">
+      <div class="title">
+        <p>People who can sign in to this admin</p>
+        <h1>Users &amp; roles</h1>
+      </div>
+      <button class="btn btn-primary" type="button" id="invite-btn"><svg data-icon="plus"></svg>Invite user</button>
+    </header>
+
+    <div class="tabs" role="tablist" aria-label="Section">
+      <button type="button" role="tab" aria-selected="true" data-tab="users" id="tab-users">Users</button>
+      <button type="button" role="tab" aria-selected="false" data-tab="roles" id="tab-roles">Roles &amp; permissions</button>
+      <button type="button" role="tab" aria-selected="false" data-tab="security" id="tab-security">Security</button>
+    </div>
+
+    <section id="panel-users" role="tabpanel" aria-labelledby="tab-users" class="stack">
+      <section class="kpis" id="user-kpis" aria-label="Team summary"></section>
+      <section class="card" aria-label="Users">
+        <div class="card-head">
+          <div class="chips" id="role-filter" role="tablist" aria-label="Filter by role"></div>
+          <label class="search soft"><svg data-icon="search"></svg><span class="sr">Search users</span><input type="search" id="user-search" placeholder="Name or email"></label>
+        </div>
+        <div class="table-wrap">
+          <table style="min-width:780px">
+            <thead><tr><th>User</th><th>Role</th><th>Status</th><th>Two-step login</th><th>Last active</th><th><span class="sr">Actions</span></th></tr></thead>
+            <tbody id="user-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <section id="panel-roles" role="tabpanel" aria-labelledby="tab-roles" class="stack" hidden>
+      <div class="cards-grid" id="role-cards"></div>
+      <section class="card flush" aria-labelledby="pm-h">
+        <div class="card-head"><h2 id="pm-h">Permissions</h2><span class="muted">Click a cell to change it</span></div>
+        <div class="table-wrap">
+          <table class="perm" style="min-width:640px" id="perm-table"></table>
+        </div>
+      </section>
+    </section>
+
+    <section id="panel-security" role="tabpanel" aria-labelledby="tab-security" class="stack" hidden>
+      <section class="card" aria-labelledby="sec-h" style="max-width:760px">
+        <div class="card-head"><h2 id="sec-h">Sign-in security</h2></div>
+        <div>
+          <div class="setting"><div class="text"><b>Require two-step login for everyone</b><span>Users must add a code from an authenticator app.</span></div><label class="switch"><input type="checkbox" aria-label="Require two-step login"><span></span></label></div>
+          <div class="setting"><div class="text"><b>Hide full phone numbers from agents</b><span>Agents see the number only while calling.</span></div><label class="switch"><input type="checkbox" checked aria-label="Hide phone numbers from agents"><span></span></label></div>
+          <div class="setting"><div class="text"><b>Sign out after inactivity</b><span>Applies to all users.</span></div><select class="select" style="width:150px" aria-label="Inactivity timeout"><option>30 minutes</option><option selected>2 hours</option><option>8 hours</option><option>Never</option></select></div>
+          <div class="setting"><div class="text"><b>Allowed working hours for agents</b><span>Agents can't sign in outside these hours.</span></div><div style="display:flex;gap:6px;align-items:center"><input class="input sm" style="width:80px" value="08:00" aria-label="From"><span class="muted">to</span><input class="input sm" style="width:80px" value="21:00" aria-label="To"></div></div>
+        </div>
+      </section>
+      <section class="card" aria-labelledby="log-h" style="max-width:760px">
+        <div class="card-head"><h2 id="log-h">Recent activity</h2></div>
+        <ol class="timeline">
+          <li class="current"><span class="dot"></span><div><b>Meriem confirmed order #LZ-2479</b><span>Today 11:05 · Algiers · Chrome on Android</span></div></li>
+          <li class="done"><span class="dot"></span><div><b>Samir changed stock of Fast Charger 30W (8 → 3)</b><span>Today 09:12 · Blida · Chrome on Windows</span></div></li>
+          <li class="done"><span class="dot"></span><div><b>Achraf invited Yasmine Kherbouche as Store manager</b><span>Friday 18:40 · Algiers</span></div></li>
+          <li class="done"><span class="dot"></span><div><b>Farid Hamdi was suspended</b><span>21 Sep · by Achraf</span></div></li>
+        </ol>
+      </section>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

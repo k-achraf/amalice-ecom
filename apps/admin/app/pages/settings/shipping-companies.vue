@@ -206,21 +206,63 @@ async function applyToRates(provider: ShippingCompanyProvider) {
     applying[provider] = false
   }
 }
+
+// ---- Design cards + settings drawer: the full integration UI (token, webhook, tariffs, logs) lives in the drawer ----
+const activeProvider = ref<ShippingCompanyProvider | null>(null)
+const active = computed(() => (companies.value ?? []).find((c) => c.provider === activeProvider.value) ?? null)
+const activeList = computed(() => (active.value ? [active.value] : []))
+const drawerOpen = computed({ get: () => !!activeProvider.value, set: (v) => { if (!v) activeProvider.value = null } })
+const lastSync = computed(() => {
+  const d = (companies.value ?? []).map((c) => c.lastSyncedAt).filter(Boolean).sort().pop()
+  return d ? new Date(d as string).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'Never'
+})
+
 </script>
 
 <template>
-  <AdsPage title="Shipping companies" wide>
-  <div v-if="pending" class="py-24 text-center text-muted">Loading…</div>
-  <div v-else class="max-w-3xl space-y-6">
-    <div>
-      <h2 class="text-lg font-semibold text-highlighted">Courier integrations</h2>
-      <p class="text-sm text-muted">
-        Link a courier's API to pull its own per-wilaya delivery tariffs for reference, and apply them into
-        <NuxtLink to="/settings/shipping" class="text-primary underline">Shipping Rates</NuxtLink> with one click.
-      </p>
-    </div>
+  <AdsPage title="Shipping companies" description="Connect delivery companies and choose who ships what">
+    <template #actions>
+      <NuxtLink to="/settings/shipping" class="btn hide-sm"><AdsDesignIcon name="rates" />Shipping rates</NuxtLink>
+    </template>
 
-    <section v-for="company in companies" :key="company.provider" class="admin-kpi-card space-y-5 p-6">
+    <div v-if="pending" class="empty">Loading…</div>
+    <template v-else>
+      <section class="kpis" aria-label="Shipping summary">
+        <AdsKpiCard label="Connected" :value="(companies ?? []).filter((c) => c.isLinked).length" color="dark" :meta="`of ${(companies ?? []).length} companies`" />
+        <AdsKpiCard label="Default company" :value="(companies ?? []).find((c) => c.isDefault)?.name ?? '—'" meta="Used when nothing else is assigned" />
+        <AdsKpiCard label="Last tariff sync" :value="lastSync" meta="Prices are applied to Shipping rates on request" />
+      </section>
+
+      <section aria-labelledby="con-h" class="stack">
+        <h2 id="con-h" style="font-size: 16px">Companies</h2>
+        <div class="cards-grid">
+          <article v-for="c in companies" :key="c.provider" class="carrier" :class="{ 'is-default': c.isDefault }">
+            <div class="head">
+              <span class="app-logo" style="width: 40px; height: 40px" aria-hidden="true"><AdsIcon :name="iconByProvider[c.provider]" /></span>
+              <div class="grow"><h3 style="font-size: 15px">{{ c.name }}</h3><span class="muted">{{ c.baseUrl }}</span></div>
+              <span v-if="c.isDefault" class="pill solid">Default</span>
+              <span v-else-if="c.isLinked" class="pill connected">Connected</span>
+              <span v-else class="pill neutral">Not linked</span>
+            </div>
+            <div class="body">
+              <dl class="details" style="font-size: 13px">
+                <dt>API token</dt><dd>{{ c.hasApiToken ? 'Saved' : 'Not set' }}</dd>
+                <dt>Webhook</dt><dd>{{ c.webhookUrl ? (c.hasWebhookSecret ? 'Configured' : 'Secret missing') : 'Not available' }}</dd>
+                <dt>Tariffs</dt><dd>{{ c.lastSyncedAt ? `Synced ${new Date(c.lastSyncedAt).toLocaleDateString()}` : 'Never synced' }}</dd>
+              </dl>
+            </div>
+            <div class="foot">
+              <button class="btn btn-sm" :class="{ 'btn-primary': !c.isLinked }" type="button" @click="activeProvider = c.provider"><AdsIcon :name="c.isLinked ? 'i-lucide-settings' : 'i-lucide-link'" />{{ c.isLinked ? 'Settings' : 'Connect' }}</button>
+              <button v-if="c.isLinked && !c.isDefault" class="btn btn-sm btn-ghost" type="button" @click="setDefault(c.provider)">Make default</button>
+            </div>
+          </article>
+        </div>
+      </section>
+    </template>
+  </AdsPage>
+
+  <AdsDrawer v-model:open="drawerOpen" :title="active?.name ?? 'Shipping company'" wide>
+    <section v-for="company in activeList" :key="company.provider" class="stack" style="gap: 18px">
       <div class="flex items-start justify-between gap-4">
         <div class="flex items-start gap-4">
           <div class="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -478,6 +520,5 @@ async function applyToRates(provider: ShippingCompanyProvider) {
         </template>
       </div>
     </section>
-  </div>
-</AdsPage>
+  </AdsDrawer>
 </template>

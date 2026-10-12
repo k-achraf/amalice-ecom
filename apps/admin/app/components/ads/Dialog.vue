@@ -2,7 +2,7 @@
 import { X } from 'lucide-vue-next'
 import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle, DialogDescription, DialogClose } from 'reka-ui'
 
-// Standard modal: title row, body, right-aligned footer actions.
+// The design's `.modal`: head with title + close, body, right-aligned footer.
 const open = defineModel<boolean>('open', { default: false })
 withDefaults(defineProps<{ title: string; description?: string; width?: 'sm' | 'md' | 'lg' }>(), { width: 'md' })
 </script>
@@ -10,19 +10,18 @@ withDefaults(defineProps<{ title: string; description?: string; width?: 'sm' | '
 <template>
   <DialogRoot v-model:open="open">
     <DialogPortal>
-      <DialogOverlay class="modal-overlay" />
-      <DialogContent class="modal" :style="{ maxWidth: width === 'sm' ? '440px' : width === 'lg' ? '680px' : '540px' }">
-        <header class="modal-head">
-          <div style="flex-grow: 1; min-width: 0">
-            <DialogTitle as="h2" style="font-size: 20px">{{ title }}</DialogTitle>
-            <DialogDescription v-if="description" class="muted" style="margin: 4px 0 0">{{ description }}</DialogDescription>
-            <DialogDescription v-else class="sr-only">{{ title }}</DialogDescription>
-          </div>
-          <DialogClose as-child><AdsButton appearance="subtle" square size="sm" aria-label="Close"><X /></AdsButton></DialogClose>
-        </header>
-        <div class="modal-body"><slot /></div>
-        <footer v-if="$slots.footer" class="modal-foot"><slot name="footer" /></footer>
-        <div v-else style="height: 16px" />
+      <DialogOverlay class="overlay on" />
+      <DialogContent class="modal on" :style="{ width: width === 'sm' ? 'min(440px, calc(100vw - 32px))' : width === 'lg' ? 'min(720px, calc(100vw - 32px))' : undefined }">
+        <div class="modal-head">
+          <DialogTitle as="h2">{{ title }}</DialogTitle>
+          <DialogClose as-child><button class="icon-btn plain sm" type="button" aria-label="Close"><X class="i" /></button></DialogClose>
+        </div>
+        <div class="modal-body">
+          <DialogDescription v-if="description" as="p" class="muted">{{ description }}</DialogDescription>
+          <DialogDescription v-else class="sr">{{ title }}</DialogDescription>
+          <slot />
+        </div>
+        <div v-if="$slots.footer" class="modal-foot"><slot name="footer" /></div>
       </DialogContent>
     </DialogPortal>
   </DialogRoot>

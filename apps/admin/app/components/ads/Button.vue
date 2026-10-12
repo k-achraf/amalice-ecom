@@ -3,7 +3,7 @@ import { LoaderCircle } from 'lucide-vue-next'
 import type { ClassValue } from 'clsx'
 import { cn } from '~/lib/cn'
 
-type Appearance = 'default' | 'primary' | 'soft' | 'subtle' | 'outline' | 'outline-danger' | 'link' | 'danger' | 'soft-danger'
+type Appearance = 'brass' | 'default' | 'primary' | 'soft' | 'subtle' | 'outline' | 'outline-danger' | 'link' | 'danger' | 'soft-danger'
 
 // Renders the Leezil `.btn` family (see assets/css/leezil.css). Accepts both the
 // native `appearance` prop and the older `color`/`variant`/`size`/`label`/`icon`
@@ -39,12 +39,15 @@ const resolved = computed<Appearance>(() => {
     default: return danger ? 'danger' : props.color === 'neutral' ? 'default' : 'primary'
   }
 })
+// design/ has: .btn (default), -primary, -brass, -danger (white, danger text), -ghost.
 const MAP: Record<Appearance, string> = {
-  default: '', outline: '', primary: 'btn-primary', soft: 'btn-soft', subtle: 'btn-ghost', link: 'btn-link',
-  danger: 'btn-danger', 'outline-danger': 'btn-outline-danger', 'soft-danger': 'btn-soft-danger'
+  brass: 'btn-brass', default: '', outline: '', soft: '', primary: 'btn-primary', subtle: 'btn-ghost', link: 'btn-ghost',
+  danger: 'btn-danger', 'outline-danger': 'btn-danger', 'soft-danger': 'btn-danger'
 }
 const small = computed(() => ['xs', '2xs', 'sm'].includes(props.size ?? ''))
-const classes = computed(() => cn('btn', MAP[resolved.value], small.value && 'btn-sm', props.square && 'btn-square', props.block && 'btn-block', props.class))
+const classes = computed(() => props.square
+  ? cn('icon-btn', resolved.value === 'subtle' && 'plain', small.value && 'sm', props.class)
+  : cn('btn', MAP[resolved.value], small.value && 'btn-sm', props.block && 'btn-block', props.class))
 </script>
 
 <template>

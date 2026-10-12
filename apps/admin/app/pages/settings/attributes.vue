@@ -9,7 +9,7 @@
 //   Boolean     → Yes / No (only two options; rendered as toggle chips)
 //   Measurement → value + unit label (e.g. "500 g")
 definePageMeta({ requiredRole: 'SuperAdmin' })
-useHead({ title: 'Attributes' })
+useHead({ title: 'Attributes & options' })
 
 const api = useAdminApi()
 const toast = useToast()
@@ -108,133 +108,108 @@ const showCreateBool = computed({
   get: () => showCreate.value,
   set: (v) => { if (!v) showCreate.value = false }
 })
+
+// ---- Design two-pane layout: attribute list on the left, the selected one on the right ----
+const selectedId = ref<string | null>(null)
+const current = computed(() => attributes.value?.find((a) => a.id === selectedId.value) ?? attributes.value?.[0] ?? null)
+
 </script>
 
 <template>
-  <AdsPage title="Attributes" wide>
-  <template #actions>
-    <AdsButton icon="i-lucide-plus" size="sm" aria-label="New attribute" @click="showCreate = true">
-      <span class="hidden sm:inline">New attribute</span>
-    </AdsButton>
-  </template>
-  <div class="max-w-3xl space-y-5">
-    <p class="text-sm text-muted">
-      Attributes are store-wide definitions reused across products. Each type controls how options appear
-      in the variant selector on the storefront.
-    </p>
+  <AdsPage title="Attributes & options" description="Reusable variant options for your products">
+    <template #actions>
+      <button class="btn btn-primary" type="button" @click="showCreate = true"><AdsIcon name="i-lucide-plus" />New attribute</button>
+    </template>
 
-    <div v-if="attributes?.length" class="space-y-4">
-      <div v-for="attr in attributes" :key="attr.id" class="admin-kpi-card p-5">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <h3 class="text-base font-semibold text-highlighted">{{ attr.name }}</h3>
-            <AdsBadge size="sm" :color="(attr.type === 'Color' || attr.type === 'Swatch') ? 'primary' : 'neutral'" variant="subtle">
-              {{ typeLabel(attr.type) }}
-            </AdsBadge>
+    <AdsEmptyState v-if="!attributes?.length" icon="i-lucide-layers" title="No attributes yet" description="Create your first attribute (e.g. Color or Size) to start building product variants.">
+      <button class="btn btn-primary" type="button" style="margin-top: 8px" @click="showCreate = true"><AdsIcon name="i-lucide-plus" />New attribute</button>
+    </AdsEmptyState>
+
+    <div v-else class="split queue-left">
+      <section class="card flush" aria-labelledby="al-h">
+        <div class="card-head"><h2 id="al-h">Attributes <small>{{ attributes.length }}</small></h2></div>
+        <div class="attr-list">
+          <button v-for="a in attributes" :key="a.id" type="button" class="attr-item" :aria-current="a.id === current?.id" @click="selectedId = a.id">
+            <span class="thumb"><AdsIcon name="i-lucide-layers" /></span>
+            <span class="meta"><b>{{ a.name }}</b><span>{{ a.options.length }} options · {{ typeLabel(a.type) }}</span></span>
+            <span v-if="a.type === 'Color'" style="display: flex; gap: 2px">
+              <span v-for="o in a.options.slice(0, 4)" :key="o.id" class="sw" :style="{ background: o.colorHex ?? '#ccc', width: '12px', height: '12px', border: '1px solid rgba(14,41,40,.12)' }" />
+            </span>
+          </button>
+        </div>
+      </section>
+
+      <div v-if="current" class="stack">
+        <section class="card" aria-labelledby="ae-h">
+          <div class="card-head"><h2 id="ae-h">Attribute</h2><span class="muted">{{ typeLabel(current.type) }}</span></div>
+          <div class="grid-2">
+            <div class="field"><label class="label">Name</label><input class="input" :value="current.name" readonly><span class="hint">Shown to customers, e.g. "Color".</span></div>
+            <div class="field"><label class="label">How customers choose</label><input class="input" :value="`${typeLabel(current.type)}: ${typeHint(current.type)}`" readonly></div>
           </div>
-          <AdsButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" aria-label="Delete attribute" @click="deleteAttribute(attr.id, attr.name)" />
-        </div>
+        </section>
 
-        <!-- Options rendered per type -->
-        <div class="mt-3 flex flex-wrap gap-2">
-          <div
-            v-for="opt in attr.options"
-            :key="opt.id"
-            class="flex items-center gap-1.5 rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg)] px-2.5 py-1 text-sm"
-          >
-            <!-- Color: hex swatch -->
-            <span
-              v-if="attr.type === 'Color' && opt.colorHex"
-              class="size-4 rounded-full border border-[var(--color-admin-border)]"
-              :style="{ backgroundColor: opt.colorHex }"
-            />
-            <!-- Swatch: image thumbnail -->
-            <img
-              v-if="attr.type === 'Swatch' && opt.displayValue"
-              :src="opt.displayValue"
-              :alt="opt.value"
-              class="size-5 rounded object-cover"
-            />
-            <!-- Size: bold uppercase -->
-            <span v-if="attr.type === 'Size'" class="font-bold uppercase tabular">{{ opt.value }}</span>
-            <!-- Number: tabular -->
-            <span v-else-if="attr.type === 'Number'" class="tabular">{{ opt.value }}</span>
-            <!-- Boolean: icon -->
-            <AdsIcon v-else-if="attr.type === 'Boolean'" :name="opt.value === 'Yes' ? 'i-lucide-check' : 'i-lucide-x'" class="size-4" :class="opt.value === 'Yes' ? 'text-success' : 'text-muted'" />
-            <!-- Measurement: value + unit -->
-            <span v-else-if="attr.type === 'Measurement'">{{ opt.value }}<span v-if="opt.displayValue" class="text-muted"> {{ opt.displayValue }}</span></span>
-            <!-- Text (default) -->
-            <span v-else>{{ opt.value }}</span>
+        <section class="card" aria-labelledby="ao-h">
+          <div class="card-head"><h2 id="ao-h">Options</h2><span class="muted">{{ current.options.length }}</span></div>
+          <div>
+            <div v-for="opt in current.options" :key="opt.id" class="opt-row" style="grid-template-columns: 40px minmax(0, 1fr) auto">
+              <span v-if="current.type === 'Color' && opt.colorHex" class="sw" :style="{ background: opt.colorHex, width: '32px', height: '32px', border: '1px solid rgba(14,41,40,.15)' }" />
+              <img v-else-if="current.type === 'Swatch' && opt.displayValue" :src="opt.displayValue" :alt="opt.value" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover">
+              <span v-else class="noswatch" aria-hidden="true" />
+              <span :class="{ strong: current.type === 'Size' }">{{ opt.value }}<span v-if="current.type === 'Measurement' && opt.displayValue" class="muted"> {{ opt.displayValue }}</span></span>
+              <span class="muted mono" style="font-size: 12px">{{ opt.colorHex ?? '' }}</span>
+            </div>
+            <p v-if="!current.options.length" class="muted">No options yet. Add the first one below.</p>
           </div>
-          <span v-if="!attr.options.length" class="text-sm text-muted">No options yet.</span>
+
+          <div v-if="addingOptionTo === current.id" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+            <input v-model="optValue" class="input" style="max-width: 220px" :placeholder="current.type === 'Boolean' ? 'Yes or No' : current.type === 'Measurement' ? '500' : 'Option value'" @keydown.enter.prevent="addOption(current)">
+            <template v-if="current.type === 'Color'">
+              <input v-model="optColor" type="color" aria-label="Colour" style="width: 40px; height: 40px; border: 1px solid var(--line); border-radius: var(--r); padding: 2px; background: var(--white)">
+              <input v-model="optColor" class="input" style="max-width: 120px" placeholder="#dc2626">
+            </template>
+            <input v-if="current.type === 'Swatch'" v-model="optDisplay" class="input" style="max-width: 260px" placeholder="https://…/fabric.jpg">
+            <input v-if="current.type === 'Measurement'" v-model="optDisplay" class="input" style="max-width: 140px" placeholder="unit (g, m, ml…)">
+            <button class="btn btn-primary" type="button" @click="addOption(current)">Add</button>
+            <button class="btn btn-ghost" type="button" @click="addingOptionTo = null">Cancel</button>
+          </div>
+          <div v-else-if="current.type !== 'Boolean' || current.options.length < 2">
+            <button class="btn" type="button" @click="startAddOption(current.id)"><AdsIcon name="i-lucide-plus" />Add option</button>
+          </div>
+          <p v-else class="muted">Boolean attributes are limited to two options.</p>
+        </section>
+
+        <section class="card" aria-labelledby="pv-h">
+          <div class="card-head"><h2 id="pv-h">Preview on the product page</h2></div>
+          <div style="background: var(--ivory); border-radius: var(--r); padding: 16px">
+            <div style="font-size: 13px; font-weight: 500; margin-bottom: 8px">{{ current.name }}: <span class="muted">{{ current.options[0]?.value ?? '' }}</span></div>
+            <div v-if="current.type === 'Color'" style="display: flex; gap: 8px; flex-wrap: wrap">
+              <span v-for="(o, i) in current.options" :key="o.id" :title="o.value" :style="{ width: '32px', height: '32px', borderRadius: '4px', background: o.colorHex ?? '#ccc', border: '1px solid rgba(14,41,40,.15)', boxShadow: i === 0 ? '0 0 0 2px var(--ivory), 0 0 0 4px var(--teal)' : 'none' }" />
+            </div>
+            <select v-else-if="current.options.length > 6" class="select" style="max-width: 260px" aria-label="Preview dropdown"><option v-for="o in current.options" :key="o.id">{{ o.value }}</option></select>
+            <div v-else style="display: flex; gap: 8px; flex-wrap: wrap">
+              <span v-for="(o, i) in current.options" :key="o.id" :style="{ padding: '8px 14px', borderRadius: '4px', fontSize: '13px', border: '1px solid ' + (i === 0 ? 'var(--teal)' : 'var(--line)'), background: i === 0 ? 'var(--teal)' : 'var(--white)', color: i === 0 ? 'var(--ivory)' : 'inherit' }">{{ o.value }}<template v-if="o.displayValue && current.type === 'Measurement'"> {{ o.displayValue }}</template></span>
+            </div>
+          </div>
+        </section>
+
+        <div style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap">
+          <button class="btn btn-danger" type="button" @click="deleteAttribute(current.id, current.name)"><AdsIcon name="i-lucide-trash-2" />Delete attribute</button>
         </div>
-
-        <!-- Add option inline (fields depend on type) -->
-        <div v-if="addingOptionTo === attr.id" class="mt-3 flex flex-wrap items-center gap-2">
-          <AdsInput v-model="optValue" :placeholder="attr.type === 'Boolean' ? 'Yes or No' : attr.type === 'Measurement' ? '500' : 'Option value'" size="sm" class="w-36" @keydown.enter="addOption(attr)" />
-
-          <!-- Color: hex picker -->
-          <template v-if="attr.type === 'Color'">
-            <input v-model="optColor" type="color" class="size-7 cursor-pointer rounded border border-[var(--color-admin-border)]" />
-            <AdsInput v-model="optColor" placeholder="#dc2626" size="sm" class="w-24" />
-          </template>
-
-          <!-- Swatch: image URL -->
-          <AdsInput v-if="attr.type === 'Swatch'" v-model="optDisplay" placeholder="https://…/fabric.jpg" size="sm" class="w-48" />
-
-          <!-- Measurement: unit -->
-          <AdsInput v-if="attr.type === 'Measurement'" v-model="optDisplay" placeholder="unit (g, m, ml…)" size="sm" class="w-24" />
-
-          <AdsButton size="xs" color="primary" label="Add" @click="addOption(attr)" />
-          <AdsButton size="xs" color="neutral" variant="ghost" label="Cancel" @click="addingOptionTo = null" />
-        </div>
-        <AdsButton
-          v-else-if="attr.type !== 'Boolean' || attr.options.length < 2"
-          size="xs"
-          variant="outline"
-          color="neutral"
-          icon="i-lucide-plus"
-          label="Add option"
-          class="mt-3"
-          @click="startAddOption(attr.id)"
-        />
-        <p v-else class="mt-3 text-xs text-muted">Boolean attributes are limited to two options.</p>
       </div>
     </div>
+  </AdsPage>
 
-    <AdsEmptyState v-else icon="i-lucide-layers" title="No attributes yet" description="Create your first attribute (e.g. Color or Size) to start building product variants.">
-      <AdsButton class="mt-4" color="primary" icon="i-lucide-plus" label="New attribute" @click="showCreate = true" />
-    </AdsEmptyState>
-  </div>
-
-  <!-- Create attribute modal -->
-  <AdsModal v-model:open="showCreateBool">
-    <template #content>
-      <div class="w-full max-w-md space-y-4 p-6">
-        <h3 class="text-lg font-semibold">New attribute</h3>
-        <AdsField label="Name" hint="e.g. Color, Size, Material, With charger">
-          <AdsInput v-model="newName" placeholder="Color" class="w-full" />
-        </AdsField>
-        <AdsField label="Type" :hint="typeHint(newType)">
-          <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <button
-              v-for="t in TYPE_OPTIONS"
-              :key="t.value"
-              type="button"
-              class="rounded-lg border-2 px-3 py-2 text-left text-sm transition-colors"
-              :class="newType === t.value ? 'border-primary bg-primary/5 text-primary' : 'border-[var(--color-admin-border)] text-muted hover:border-primary/40'"
-              @click="newType = t.value"
-            >
-              <span class="font-medium">{{ t.label }}</span>
-            </button>
-          </div>
-        </AdsField>
-        <div class="flex justify-end gap-2">
-          <AdsButton color="neutral" variant="ghost" label="Cancel" @click="showCreate = false" />
-          <AdsButton :loading="creating" :disabled="!newName" label="Create" color="primary" @click="createAttribute" />
-        </div>
+  <AdsDialog v-model:open="showCreate" title="New attribute">
+    <AdsField label="Name" help="e.g. Color, Size, Material, With charger"><AdsInput v-model="newName" placeholder="Color" /></AdsField>
+    <div class="field">
+      <span class="label">How customers choose</span>
+      <div class="type-pick" role="radiogroup" aria-label="Attribute type">
+        <label v-for="t in TYPE_OPTIONS" :key="t.value"><input v-model="newType" type="radio" name="atype" :value="t.value"><b>{{ t.label }}</b><span>{{ t.hint }}</span></label>
       </div>
+    </div>
+    <template #footer>
+      <button class="btn" type="button" @click="showCreate = false">Cancel</button>
+      <button class="btn btn-primary" type="button" :disabled="!newName || creating" @click="createAttribute">Create</button>
     </template>
-  </AdsModal>
-</AdsPage>
+  </AdsDialog>
 </template>

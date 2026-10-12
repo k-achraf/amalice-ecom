@@ -67,61 +67,63 @@ async function confirmPostpone() {
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleString()
 }
+
+// ---- Design chrome: soft search, KPI figures ----
+const search = ref('')
+const visible = computed(() => {
+  const q = search.value.trim().toLowerCase()
+  return activeItems.value.filter((o) => !q || `${o.customer.name ?? ''} ${o.customer.phone}`.toLowerCase().includes(q))
+})
+const money = (cents: number) => Math.round(cents / 100).toLocaleString('en-US')
+const totalCents = computed(() => activeItems.value.reduce((n, o) => n + o.items.reduce((m, i) => m + i.lineTotalCents, 0), 0))
+
 </script>
 
 <template>
-  <AdsPage title="Abandoned Carts" wide>
-  <div v-if="pending" class="admin-kpi-card px-4 py-12 text-center text-muted">Loading…</div>
-  <AdsEmptyState
-    v-else-if="!activeItems.length"
-    icon="i-lucide-shopping-cart"
-    title="No abandoned carts"
-    description="Every lead-form visitor who typed a phone number has either finished checking out or already been contacted."
-  />
-  <div v-else class="space-y-3">
-    <p class="mb-1 text-sm text-muted">{{ activeItems.length }} customer{{ activeItems.length === 1 ? '' : 's' }} started checking out but never submitted — reach out before the lead goes cold.</p>
-    <div v-for="o in activeItems" :key="o.id" class="admin-kpi-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-      <div class="min-w-0 flex-1">
-        <div class="flex flex-wrap items-center gap-2">
-          <NuxtLink :to="`/orders/${o.id}`" class="tabular font-medium text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink>
-          <AdsBadge color="warning" variant="subtle">Abandoned</AdsBadge>
-          <AdsOrderStatus :state="o.state" />
-          <span class="text-sm text-muted">{{ fmtDate(o.createdAt) }}</span>
-        </div>
-        <div class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span class="font-medium text-highlighted">{{ o.customer.name || 'No name given' }}</span>
-          <a v-if="o.customer.phone" :href="`tel:${o.customer.phone}`" class="tabular flex items-center gap-1 text-sm text-primary hover:underline">
-            <AdsIcon name="i-lucide-phone" class="size-3.5" />{{ o.customer.phone }}
-          </a>
-        </div>
-        <p class="mt-1 text-sm text-muted">
-          <span v-for="(item, idx) in o.items" :key="item.id">{{ item.product.name }}{{ idx < o.items.length - 1 ? ', ' : '' }}</span>
-        </p>
-      </div>
-      <div class="flex shrink-0 flex-wrap gap-2">
-        <AdsButton icon="i-lucide-check" size="sm" color="primary" :loading="acting === `${o.id}:Confirmed`" label="Confirm" @click="act(o.id, 'Confirmed')" />
-        <AdsButton icon="i-lucide-phone-missed" size="sm" color="warning" variant="outline" :loading="acting === `${o.id}:CallCenterNoAnswer`" label="No answer" @click="act(o.id, 'CallCenterNoAnswer')" />
-        <AdsButton icon="i-lucide-phone-off" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:WrongNumber`" label="Wrong number" @click="act(o.id, 'WrongNumber')" />
-        <AdsButton icon="i-lucide-calendar-clock" size="sm" color="warning" variant="outline" :loading="acting === `${o.id}:Postponed`" label="Postpone" @click="openPostpone(o.id)" />
-        <AdsButton icon="i-lucide-x" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:Cancelled`" label="Cancel" @click="act(o.id, 'Cancelled')" />
-      </div>
-    </div>
-  </div>
-</AdsPage>
+  <AdsPage title="Abandoned carts" description="Visitors who started an order but didn't finish">
+    <section class="kpis" aria-label="Recovery figures">
+      <AdsKpiCard label="Abandoned carts" :value="activeItems.length" meta="Still worth a call" />
+      <AdsKpiCard label="Value left in carts" :value="money(totalCents)" unit="DA" meta="Without delivery" />
+      <AdsKpiCard label="With a phone number" :value="activeItems.filter((o) => o.customer.phone).length" color="dark" :meta="`of ${activeItems.length} carts`" />
+    </section>
 
-  <AdsModal v-model:open="postponeModalOpen">
-    <template #content>
-      <div class="space-y-4 p-6">
-        <h3 class="text-lg font-semibold">Postpone — pick a follow-up date</h3>
-        <p class="text-sm text-muted">The order stays out of the follow-up queue until this date/time is reached.</p>
-        <AdsField label="Follow up at">
-          <AdsInput v-model="postponeDate" type="datetime-local" class="w-full" />
-        </AdsField>
-        <div class="flex justify-end gap-2">
-          <AdsButton color="neutral" variant="ghost" @click="postponeModalOpen = false">Cancel</AdsButton>
-          <AdsButton :disabled="!postponeDate" color="primary" icon="i-lucide-check" @click="confirmPostpone">Postpone</AdsButton>
-        </div>
+    <section class="card" aria-label="Carts">
+      <div class="card-head">
+        <h2>Carts to follow up</h2>
+        <label class="search soft"><AdsIcon name="i-lucide-search" /><span class="sr">Search carts</span><input v-model="search" type="search" placeholder="Name or phone"></label>
       </div>
+      <div class="table-wrap">
+        <table style="min-width: 900px">
+          <thead><tr><th>Customer</th><th>Products</th><th class="num">Value</th><th>Left at</th><th>Status</th><th><span class="sr">Actions</span></th></tr></thead>
+          <tbody>
+            <tr v-if="pending"><td colspan="6" class="empty">Loading…</td></tr>
+            <tr v-else-if="!visible.length"><td colspan="6" class="empty">No abandoned carts. Every lead-form visitor who typed a phone number has either finished checking out or already been contacted.</td></tr>
+            <tr v-for="o in visible" v-else :key="o.id">
+              <td><span class="strong">{{ o.customer.name || 'No name given' }}</span><span class="sub">{{ o.customer.phone || 'No phone' }}<template v-if="o.address.region"> · {{ o.address.region }}</template></span></td>
+              <td class="muted" style="max-width: 220px">{{ o.items.map((i) => `${i.product.name}${i.quantity > 1 ? ` ×${i.quantity}` : ''}`).join(', ') }}</td>
+              <td class="num strong"><AdsPrice :amount-cents="o.items.reduce((n, i) => n + i.lineTotalCents, 0)" /></td>
+              <td>{{ fmtDate(o.createdAt) }}<span class="sub"><NuxtLink :to="`/orders/${o.id}`">#{{ o.id.slice(0, 8) }}</NuxtLink></span></td>
+              <td><AdsOrderStatus :state="o.state" /></td>
+              <td class="num" style="white-space: nowrap">
+                <a v-if="o.customer.phone" class="row-btn" :href="`tel:${o.customer.phone}`" :aria-label="`Call ${o.customer.name ?? o.customer.phone}`"><AdsIcon name="i-lucide-phone" /></a>
+                <button class="btn btn-sm btn-primary" type="button" :disabled="acting === `${o.id}:Confirmed`" @click="act(o.id, 'Confirmed')">Confirm</button>
+                <button class="btn btn-sm" type="button" :disabled="acting === `${o.id}:CallCenterNoAnswer`" @click="act(o.id, 'CallCenterNoAnswer')">No answer</button>
+                <button class="btn btn-sm" type="button" :disabled="acting === `${o.id}:Postponed`" @click="openPostpone(o.id)">Postpone</button>
+                <button class="btn btn-sm" type="button" :disabled="acting === `${o.id}:WrongNumber`" @click="act(o.id, 'WrongNumber')">Wrong number</button>
+                <button class="btn btn-sm btn-danger" type="button" :disabled="acting === `${o.id}:Cancelled`" @click="act(o.id, 'Cancelled')">Cancel</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </AdsPage>
+
+  <AdsDialog v-model:open="postponeModalOpen" title="Postpone: pick a follow-up date" description="The order stays out of the follow-up queue until this date/time is reached." width="sm">
+    <AdsField label="Follow up at"><AdsInput v-model="postponeDate" type="datetime-local" /></AdsField>
+    <template #footer>
+      <button class="btn" type="button" @click="postponeModalOpen = false">Cancel</button>
+      <button class="btn btn-primary" type="button" :disabled="!postponeDate" @click="confirmPostpone">Postpone</button>
     </template>
-  </AdsModal>
+  </AdsDialog>
 </template>

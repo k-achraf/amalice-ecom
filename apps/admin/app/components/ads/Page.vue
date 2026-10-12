@@ -1,16 +1,16 @@
 <script setup lang="ts">
-// The design's page frame: `.page-head` (subtitle `p` above a 36px h1, actions on
-// the right) followed by the page content. The surrounding `.main` supplies the
-// padding and the 24px gap between sections.
+// The design's page frame: optional `.crumbs`, then `.page-head` (small line above
+// the h1, actions on the right). `.main` supplies padding and the section gap.
+// `#breadcrumb` renders inside `.crumbs`; `#title-extra` sits next to the h1 (status pills).
 defineProps<{ title: string; description?: string; wide?: boolean }>()
 </script>
 
 <template>
-  <slot name="breadcrumb" />
-  <header class="page-head">
+  <header class="page-head" style="align-items: flex-start">
     <div class="title">
+      <div v-if="$slots.breadcrumb" class="crumbs"><slot name="breadcrumb" /></div>
       <p v-if="description">{{ description }}</p>
-      <h1>{{ title }}</h1>
+      <h1>{{ title }}<slot name="title-extra" /></h1>
     </div>
     <slot name="actions" />
   </header>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Call center — Leezil Admin</title>
+  <link rel="icon" href="assets/img/leezil-icon-teal.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/pages/call-center.js" defer></script>
+</head>
+<body>
+<div class="app" data-page="call-center">
+  <main class="main">
+
+    <header class="page-head">
+      <div class="title">
+        <p>Orders waiting for phone confirmation</p>
+        <h1>Call center</h1>
+      </div>
+      <select class="select hide-sm" aria-label="Agent" style="width:auto"><option>All agents</option><option>Meriem</option><option>Nassim</option></select>
+      <button class="btn" type="button" id="auto-next"><svg data-icon="zap"></svg>Start calling</button>
+    </header>
+
+    <section class="kpis" aria-label="Today" id="cc-kpis"></section>
+
+    <div class="split queue-left">
+      <section class="card flush" aria-labelledby="q-h">
+        <div class="card-head"><h2 id="q-h">Queue <small id="q-count"></small></h2></div>
+        <div style="padding:10px 12px;border-bottom:1px solid var(--line-soft)">
+          <div class="chips" id="q-tabs" role="tablist" aria-label="Filter queue"></div>
+        </div>
+        <div class="queue" id="queue" role="list"></div>
+      </section>
+
+      <section class="card" aria-label="Current call" id="workspace"></section>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>
