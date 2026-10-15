@@ -43,8 +43,8 @@ export default defineNuxtConfig({
       storefrontBase: 'https://amalice.shop',
       // Base URL of the standalone funnels site (apps/funnels), used to build the public link of a
       // funnel: <funnelsBase>/f/<slug>. Same build-time caveat as above; override with
-      // NUXT_PUBLIC_FUNNELS_BASE (local dev default: http://localhost:3002).
-      funnelsBase: 'http://localhost:3002'
+      // NUXT_PUBLIC_FUNNELS_BASE=http://localhost:3002 for local dev (see apps/admin/.env.example).
+      funnelsBase: 'https://leezil.com'
     }
   },
   app: {

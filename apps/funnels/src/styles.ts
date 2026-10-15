@@ -14,9 +14,8 @@ body{margin:0;background:#fff;color:var(--ink);font:400 15px/1.6 system-ui,-appl
 b,strong{font-weight:700}img{display:block;max-width:100%}h1,h2,h3,p,ul,ol,dl,dd,figure,fieldset,blockquote{margin:0}ul,ol{padding:0;list-style:none}fieldset{border:0;padding:0;min-width:0}
 button,input,select,textarea{font:inherit;color:inherit}[hidden]{display:none!important}
 svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
-.hd{display:flex;align-items:center;justify-content:center;height:48px;border-bottom:1px solid var(--line);font-size:15px;font-weight:700}
 .urg{display:flex;align-items:center;justify-content:center;min-height:36px;padding:6px var(--g);background:var(--a);color:var(--on);font-size:13px;font-weight:500;text-align:center}
-.wrap{max-width:560px;margin:0 auto}
+.wrap{max-width:560px;margin:0 auto;padding-bottom:24px}
 .top{display:grid}
 .gal{position:relative;min-width:0}
 .slides{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;background:var(--soft)}
@@ -85,8 +84,7 @@ summary::after{content:"";width:16px;height:16px;flex:none;background:url("data:
 details[open] summary::after{transform:rotate(180deg)}details p{padding-bottom:16px;font-size:14px;color:var(--ink2)}
 .det>.faqs{padding-bottom:8px}
 .long{width:100%;height:auto;padding:0!important;border-top:1px solid var(--line)}
-.ft{padding:24px var(--g) 32px;border-top:1px solid var(--line);font-size:13px;color:var(--ink3);text-align:center}
-body.hasbar .ft{padding-bottom:calc(88px + env(safe-area-inset-bottom))}
+body.hasbar .wrap{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 .bar{position:fixed;inset:auto 0 0 0;z-index:7;background:#fff;border-top:1px solid var(--line2);padding:12px var(--g) calc(12px + env(safe-area-inset-bottom))}
 .bi{display:flex;align-items:center;gap:16px;max-width:560px;margin:0 auto}
 .bi .t{display:grid;line-height:1.25}.bi .t small{font-size:12px;color:var(--ink2)}.bi .t b{font-size:16px;font-weight:700;white-space:nowrap}

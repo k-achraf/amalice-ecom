@@ -222,15 +222,9 @@ ${s.trustBadges ? `<ul class="trust"><li>${ico('truck')}${T.trust[0]}</li><li>${
       case 'specs':
         if (p.specifications.length) details.push(`<section><h2>${T.specs}</h2><dl class="specs">${p.specifications.slice(0, 12).map((x) => `<div><dt>${esc(x.label)}</dt><dd>${esc(x.value)}</dd></div>`).join('')}</dl></section>`)
         break
-      case 'howItWorks':
-        details.push(`<section><h2>${T.how}</h2><ol class="how">${T.howSteps.map((x, i) => `<li><b>${i + 1}</b><span>${x}</span></li>`).join('')}</ol></section>`)
-        break
       case 'testimonials':
         // Real, approved reviews only. With none, the section is simply omitted (never placeholder quotes).
         if (f.reviews.length) details.push(`<section><h2>${T.reviews}</h2><div class="rv">${f.reviews.map((r) => `<div><span class="st">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span><p>${esc(r.text)}</p>${r.author ? `<cite>${esc(r.author)}</cite>` : ''}</div>`).join('')}</div></section>`)
-        break
-      case 'guarantee':
-        details.push(`<section class="gt"><span>${ico('truck')}${T.trust[0]}</span><span>${ico('eye')}${T.trust[1]}</span><span>${ico('undo')}${T.trust[2]}</span></section>`)
         break
       case 'faq':
         if (p.faqs.length) details.push(`<section class="faqs"><h2>${T.questions}</h2>${p.faqs.slice(0, 8).map((q) => `<details><summary>${esc(q.question)}</summary><p>${esc(q.answer)}</p></details>`).join('')}</section>`)
@@ -290,10 +284,7 @@ ${s.trustBadges ? `<ul class="trust"><li>${ico('truck')}${T.trust[0]}</li><li>${
   // Always present (the visitor can always reach the order button), unless there is nothing left to sell.
   const hasBar = !soldOut
 
-  const header = `<header class="hd">${esc(f.storeName)}</header>`
-  const footer = `<footer class="ft"><bdi>© ${new Date().getFullYear()} ${esc(f.storeName)}</bdi></footer>`
-
-  return `<!doctype html><html lang="${T.lang}" dir="${T.dir}" style="${accentVars(accent.solid, accent.soft)}"><head>${head}</head><body class="${layout === 'split' ? 'split' : ''}${hasBar ? ' hasbar' : ''}">${SPRITE}<div id="m" data-screen="landing">${urgency}${header}<main class="wrap"><div class="top">${gallery}<div class="buy">${buy}</div></div><div class="det">${details.join('')}</div></main>${footer}</div>${after.map(offerScreen).join('')}${thanks}${
+  return `<!doctype html><html lang="${T.lang}" dir="${T.dir}" style="${accentVars(accent.solid, accent.soft)}"><head>${head}</head><body class="${layout === 'split' ? 'split' : ''}${hasBar ? ' hasbar' : ''}">${SPRITE}<div id="m" data-screen="landing">${urgency}<main class="wrap"><div class="top">${gallery}<div class="buy">${buy}</div></div><div class="det">${details.join('')}</div></main></div>${after.map(offerScreen).join('')}${thanks}${
     hasBar ? `<div class="bar" id="bar"><div class="bi"><div class="t"><small>${T.total}</small><b data-total>${formatDa(subtotal)}</b></div><button type="button" class="cta" id="bb"><span>${esc(s.ctaLabel)}</span></button></div></div>` : ''
   }<script type="application/json" id="fd">${escJson(fd)}</script><script>${CLIENT_JS}</script></body></html>`
 }

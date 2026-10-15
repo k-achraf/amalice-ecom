@@ -120,7 +120,6 @@ const plainDescription = computed(() => {
 
     <div class="scroller" :dir="T.dir" :lang="T.lang">
       <div v-if="settings.urgency" class="urg">{{ settings.urgencyText?.trim() || T.defaultUrgency }}</div>
-      <header class="hd">اسم المتجر</header>
 
       <main class="wrap">
         <div class="top">
@@ -219,20 +218,9 @@ const plainDescription = computed(() => {
               <p v-else class="ghost">{{ T.noteNoSpecs }}</p>
             </section>
 
-            <section v-else-if="type === 'howItWorks'">
-              <h2>{{ T.how }}</h2>
-              <ol class="how"><li v-for="(x, i) in T.howSteps" :key="i"><b>{{ i + 1 }}</b><span>{{ x }}</span></li></ol>
-            </section>
-
             <section v-else-if="type === 'testimonials'">
               <h2>{{ T.reviews }}</h2>
               <p class="ghost" dir="ltr">Shows the product’s real approved reviews on the live page. The section is left out when there are none.</p>
-            </section>
-
-            <section v-else-if="type === 'guarantee'" class="gt">
-              <span><AdsIcon name="i-lucide-truck" />{{ T.trust[0] }}</span>
-              <span><AdsIcon name="i-lucide-eye" />{{ T.trust[1] }}</span>
-              <span><AdsIcon name="i-lucide-arrow-left" />{{ T.trust[2] }}</span>
             </section>
 
             <section v-else-if="type === 'faq'" class="faqs">
@@ -246,7 +234,6 @@ const plainDescription = computed(() => {
         </div>
       </main>
 
-      <footer class="ft"><bdi>© 2026 اسم المتجر</bdi></footer>
 
       <!-- Pinned order bar: always present -->
       <div class="bar">
