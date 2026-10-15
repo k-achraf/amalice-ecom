@@ -29,7 +29,10 @@ const envSchema = z.object({
   // PRIVATE_KEY is `private_key` (keep its literal \n escapes as-is — the
   // client unescapes them at read time).
   GOOGLE_SHEETS_CLIENT_EMAIL: z.string().min(1).optional(),
-  GOOGLE_SHEETS_PRIVATE_KEY: z.string().min(1).optional()
+  GOOGLE_SHEETS_PRIVATE_KEY: z.string().min(1).optional(),
+  // Comma-separated extra browser origins allowed by CORS — the standalone funnels site
+  // (apps/funnels), e.g. https://offers.example.com. Read in main.ts.
+  CORS_EXTRA_ORIGINS: z.string().optional()
 })
 
 export type Env = z.infer<typeof envSchema>

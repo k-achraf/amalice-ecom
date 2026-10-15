@@ -5,7 +5,7 @@ import { z } from 'zod'
 // attribution; this is what actually powers the admin dashboard's traffic
 // numbers, since we can't query Meta/TikTok's own analytics for that). See
 // PageViewEvent's Prisma model comment for the full picture.
-export const PageViewTypeSchema = z.enum(['Home', 'Product', 'LandingPage', 'Other'])
+export const PageViewTypeSchema = z.enum(['Home', 'Product', 'LandingPage', 'Funnel', 'Other'])
 export type PageViewType = z.infer<typeof PageViewTypeSchema>
 
 // entityId is the product's or landing page's own id for those two types —

@@ -8,6 +8,7 @@ Cash-on-delivery (COD) storefront + back-office platform, primarily serving the 
 |---|---|---|
 | `apps/storefront` | Customer-facing site, SSR, 100% RTL/Arabic, 15 selectable visual templates | Nuxt 4 |
 | `apps/admin` | Back-office SPA — orders, catalog, shipping, call center, reconciliation, apps/integrations | Nuxt 4 + Tailwind v4, own components implementing `design/` (Leezil, no Nuxt UI) |
+| `apps/funnels` | Standalone funnel pages (landing + order form + upsells), own domain, fully separate from the storefront; zero-framework, built for speed | Node `http` + sharp |
 | `apps/api` | Backend API | NestJS 11 + Prisma 7 + Postgres |
 | `packages/ui` | Storefront design system (Nuxt UI v4 theme, tokens, `StatusBadge`/`PriceDisplay`/`EmptyState`) — no longer used by the admin | Nuxt module |
 | `packages/shared` | Shared Zod schemas + derived TS types — the single source of truth for shapes crossing the API boundary | TS lib |
@@ -37,6 +38,7 @@ Or run `./start.sh` (Linux/macOS, Git Bash on Windows) to do all of the above in
 
 Ports (fixed, don't collide):
 - Storefront — `http://localhost:3000`
+- Funnels — `http://localhost:3002` (standalone funnel pages, `apps/funnels`)
 - Admin — `http://localhost:3001`
 - API — `http://localhost:3333` (Swagger at `/docs`)
 

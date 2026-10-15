@@ -473,6 +473,21 @@ then `pm2 restart amalice-api`).
 
 ---
 
+## 12b. Funnels site (optional)
+
+`apps/funnels` serves the funnel pages from its own domain, separate from the storefront (no Nuxt: a tiny Node server).
+
+1. DNS: point e.g. `offers.yourdomain.com` at the VPS, and add it to the Nginx/SSL steps like the other sites (proxy to `127.0.0.1:3002`). Do **not** turn on Nginx gzip for this upstream: the app already sends Brotli/gzip.
+2. `apps/funnels/.env`: `PORT=3002`, `API_BASE=http://127.0.0.1:3333`, `PUBLIC_API_BASE=https://api.yourdomain.com`.
+3. `apps/api/.env`: `CORS_EXTRA_ORIGINS=https://offers.yourdomain.com` (then restart the API), so visitors' browsers may call it.
+4. `apps/admin/.env`: `NUXT_PUBLIC_FUNNELS_BASE=https://offers.yourdomain.com` (build-time, then rebuild the admin) so each funnel shows its real public link.
+5. Build and run: `pnpm --filter funnels build`, then add to `ecosystem.config.cjs`:
+   `{ name: 'amalice-funnels', cwd: './apps/funnels', script: 'dist/server.js', env: { NODE_ENV: 'production', PORT: 3002, ...loadEnvFile('apps/funnels/.env') } }`
+   and `pm2 start ecosystem.config.cjs --only amalice-funnels && pm2 save`.
+6. A funnel is only reachable once its status is **Live** in the admin: `https://offers.yourdomain.com/f/<slug>`.
+
+---
+
 ## 13. Smoke test
 
 - `https://yourdomain.com` — storefront loads, products render.

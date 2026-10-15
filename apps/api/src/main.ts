@@ -52,10 +52,19 @@ async function bootstrap() {
   // server-to-server) were never affected — CORS only applies to browser
   // fetches — which is why this went unnoticed for pages that render fully
   // server-side.
+  // CORS_EXTRA_ORIGINS: comma-separated origins for sites that call this API from the browser but are
+  // not hardcoded here — the standalone funnels site (apps/funnels, e.g. https://offers.example.com).
+  const extraOrigins = (process.env.CORS_EXTRA_ORIGINS ?? '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean)
   app.enableCors({
-    origin: process.env.NODE_ENV === 'production'
-      ? ['https://amalice.shop', 'https://www.amalice.shop', 'https://admin.amalice.shop']
-      : ['https://amalice.shop', 'https://www.amalice.shop', 'https://admin.amalice.shop', 'http://localhost:3000', 'http://localhost:3001'],
+    origin: [
+      ...(process.env.NODE_ENV === 'production'
+        ? ['https://amalice.shop', 'https://www.amalice.shop', 'https://admin.amalice.shop']
+        : ['https://amalice.shop', 'https://www.amalice.shop', 'https://admin.amalice.shop', 'http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002']),
+      ...extraOrigins
+    ],
     credentials: true
   })
 

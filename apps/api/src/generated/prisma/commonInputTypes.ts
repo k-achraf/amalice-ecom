@@ -742,6 +742,40 @@ export type EnumPageViewTypeWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumPageViewTypeFilter<$PrismaModel>
 }
 
+export type EnumFunnelStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.FunnelStatus | Prisma.EnumFunnelStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.FunnelStatus[] | Prisma.ListEnumFunnelStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FunnelStatus[] | Prisma.ListEnumFunnelStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFunnelStatusFilter<$PrismaModel> | $Enums.FunnelStatus
+}
+
+export type EnumFunnelStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FunnelStatus | Prisma.EnumFunnelStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.FunnelStatus[] | Prisma.ListEnumFunnelStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FunnelStatus[] | Prisma.ListEnumFunnelStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFunnelStatusWithAggregatesFilter<$PrismaModel> | $Enums.FunnelStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFunnelStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFunnelStatusFilter<$PrismaModel>
+}
+
+export type EnumFunnelStepTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.FunnelStepType | Prisma.EnumFunnelStepTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.FunnelStepType[] | Prisma.ListEnumFunnelStepTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FunnelStepType[] | Prisma.ListEnumFunnelStepTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFunnelStepTypeFilter<$PrismaModel> | $Enums.FunnelStepType
+}
+
+export type EnumFunnelStepTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FunnelStepType | Prisma.EnumFunnelStepTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.FunnelStepType[] | Prisma.ListEnumFunnelStepTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FunnelStepType[] | Prisma.ListEnumFunnelStepTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFunnelStepTypeWithAggregatesFilter<$PrismaModel> | $Enums.FunnelStepType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFunnelStepTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFunnelStepTypeFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -1427,6 +1461,40 @@ export type NestedEnumPageViewTypeWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumPageViewTypeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumPageViewTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumFunnelStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.FunnelStatus | Prisma.EnumFunnelStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.FunnelStatus[] | Prisma.ListEnumFunnelStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FunnelStatus[] | Prisma.ListEnumFunnelStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFunnelStatusFilter<$PrismaModel> | $Enums.FunnelStatus
+}
+
+export type NestedEnumFunnelStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FunnelStatus | Prisma.EnumFunnelStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.FunnelStatus[] | Prisma.ListEnumFunnelStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FunnelStatus[] | Prisma.ListEnumFunnelStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFunnelStatusWithAggregatesFilter<$PrismaModel> | $Enums.FunnelStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFunnelStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFunnelStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumFunnelStepTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.FunnelStepType | Prisma.EnumFunnelStepTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.FunnelStepType[] | Prisma.ListEnumFunnelStepTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FunnelStepType[] | Prisma.ListEnumFunnelStepTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFunnelStepTypeFilter<$PrismaModel> | $Enums.FunnelStepType
+}
+
+export type NestedEnumFunnelStepTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FunnelStepType | Prisma.EnumFunnelStepTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.FunnelStepType[] | Prisma.ListEnumFunnelStepTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FunnelStepType[] | Prisma.ListEnumFunnelStepTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFunnelStepTypeWithAggregatesFilter<$PrismaModel> | $Enums.FunnelStepType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFunnelStepTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFunnelStepTypeFilter<$PrismaModel>
 }
 
 

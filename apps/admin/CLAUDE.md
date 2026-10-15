@@ -4,7 +4,7 @@ Nuxt 4 **SPA** (`ssr: false` — this is a back-office tool, not a public page; 
 
 ## Structure
 
-- `app/pages/` — one directory per feature area: `orders`, `products`, `inventory`, `shipping`, `fulfillment`, `call-center`, `reconciliation`, `customers`, `sourcing`, `apps` (integrations), `abandoned-carts`, `audit-log`, `server-performance`, `settings`, `users`.
+- `app/pages/` — one directory per feature area: `orders`, `products`, `inventory`, `shipping`, `fulfillment`, `call-center`, `reconciliation`, `customers`, `funnels` (template picker on create, step editor, Landing-page tab with template gallery + live preview in `components/funnel/`), `sourcing`, `apps` (integrations), `abandoned-carts`, `audit-log`, `server-performance`, `settings`, `users`.
 - `app/stores/auth.ts` — Pinia store holding the JWT session + role.
 - `app/middleware/auth.global.ts` — global route guard; only `/login` is public. Per-page role gating via `definePageMeta({ middleware: 'role', requiredRole })`. **This is UX only** — the server (`JwtAuthGuard`/`RolesGuard` in `apps/api`) is the real enforcement boundary; never treat this middleware as the security control.
 - `app/tiptap/` — rich-text editor (product descriptions, landing pages) built directly on Tiptap primitives.
