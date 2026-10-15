@@ -622,9 +622,9 @@ async function deleteCompetitor(competitorId: string) {
   <template #breadcrumb>
     <NuxtLink to="/sourcing">Product sourcing</NuxtLink><AdsIcon name="i-lucide-chevron-right" style="width: 14px; height: 14px" /><span>{{ sourced?.name ?? 'Sourced product' }}</span>
   </template>
-  <div v-if="pending" class="py-24 text-center text-muted">Loading…</div>
-  <div v-else-if="!sourced" class="py-24 text-center text-muted">Sourced product not found.</div>
-  <div v-else class="max-w-4xl space-y-6">
+  <div v-if="pending" class="empty">Loading…</div>
+  <div v-else-if="!sourced" class="empty">Sourced product not found.</div>
+  <div v-else class="stack" style="max-width: 900px">
     <AdsTabs
       v-model="activeTab"
       underline
@@ -645,8 +645,8 @@ async function deleteCompetitor(competitorId: string) {
          clicking through 6 separate edit tabs. Every other tab stays
          the place to actually change something; this one is purely for
          looking. Each section links back to its edit tab via "Edit →". -->
-    <div v-show="activeTab === 'view'" class="space-y-5">
-      <div class="admin-kpi-card p-6">
+    <div v-show="activeTab === 'view'" class="stack">
+      <div class="card">
         <div class="flex flex-wrap items-start gap-5">
           <img v-if="sourced.imageUrl" :src="sourced.imageUrl" class="size-24 shrink-0 rounded-lg object-cover" />
           <div v-else class="flex size-24 shrink-0 items-center justify-center rounded-lg bg-[var(--color-admin-surface-tint)]"><AdsIcon name="i-lucide-package-search" class="size-8 text-muted" /></div>
@@ -661,16 +661,16 @@ async function deleteCompetitor(competitorId: string) {
               <NuxtLink v-if="sourced.linkedProduct" :to="`/products/${sourced.linkedProduct.id}`" class="text-primary hover:underline"><AdsIcon name="i-lucide-link" class="mr-1 inline size-3.5" />{{ sourced.linkedProduct.name }} (live)</NuxtLink>
             </div>
             <p v-if="sourced.notes" class="whitespace-pre-wrap text-sm text-muted">{{ sourced.notes }}</p>
-            <p class="text-xs text-muted">Added {{ new Date(sourced.createdAt).toLocaleDateString() }} · Updated {{ new Date(sourced.updatedAt).toLocaleDateString() }}</p>
+            <p class="muted">Added {{ new Date(sourced.createdAt).toLocaleDateString() }} · Updated {{ new Date(sourced.updatedAt).toLocaleDateString() }}</p>
           </div>
           <AdsButton icon="i-lucide-pencil" size="xs" variant="outline" color="neutral" label="Edit details" @click="activeTab = 'overview'" />
         </div>
       </div>
 
       <!-- Media -->
-      <div class="admin-kpi-card p-5">
-        <div class="mb-3 flex items-center justify-between">
-          <h3 class="text-sm font-medium text-muted">Media ({{ sourced.media.length }})</h3>
+      <div class="card">
+        <div class="card-head">
+          <h2>Media ({{ sourced.media.length }})</h2>
           <AdsButton size="xs" variant="link" color="neutral" trailing-icon="i-lucide-arrow-right" label="Edit" @click="activeTab = 'media'" />
         </div>
         <div v-if="sourced.media.length" class="grid grid-cols-3 gap-3 sm:grid-cols-5 md:grid-cols-6">
@@ -679,13 +679,13 @@ async function deleteCompetitor(competitorId: string) {
             <img v-else :src="resolveMediaUrl(m.url)" :alt="m.caption ?? ''" class="aspect-square size-full object-cover" />
           </div>
         </div>
-        <p v-else class="py-6 text-center text-sm text-muted">No media yet.</p>
+        <p v-else class="empty">No media yet.</p>
       </div>
 
       <!-- Links -->
-      <div class="admin-kpi-card p-5">
-        <div class="mb-3 flex items-center justify-between">
-          <h3 class="text-sm font-medium text-muted">Links ({{ sourced.links.length }})</h3>
+      <div class="card">
+        <div class="card-head">
+          <h2>Links ({{ sourced.links.length }})</h2>
           <AdsButton size="xs" variant="link" color="neutral" trailing-icon="i-lucide-arrow-right" label="Edit" @click="activeTab = 'media'" />
         </div>
         <div v-if="sourced.links.length" class="flex flex-wrap gap-2">
@@ -693,13 +693,13 @@ async function deleteCompetitor(competitorId: string) {
             <AdsBadge color="neutral" variant="subtle" size="sm">{{ l.label }}</AdsBadge>{{ l.url }}
           </a>
         </div>
-        <p v-else class="py-2 text-sm text-muted">No links yet.</p>
+        <p v-else class="muted">No links yet.</p>
       </div>
 
       <!-- Video Creatives -->
-      <div class="admin-kpi-card p-5">
-        <div class="mb-3 flex items-center justify-between">
-          <h3 class="text-sm font-medium text-muted">Video creatives ({{ sourced.videoCreatives.length }})</h3>
+      <div class="card">
+        <div class="card-head">
+          <h2>Video creatives ({{ sourced.videoCreatives.length }})</h2>
           <AdsButton size="xs" variant="link" color="neutral" trailing-icon="i-lucide-arrow-right" label="Edit" @click="activeTab = 'videoCreatives'" />
         </div>
         <div v-if="sourced.videoCreatives.length" class="space-y-3">
@@ -717,97 +717,97 @@ async function deleteCompetitor(competitorId: string) {
             </dl>
           </div>
         </div>
-        <p v-else class="py-2 text-sm text-muted">No video creatives yet.</p>
+        <p v-else class="muted">No video creatives yet.</p>
       </div>
 
       <!-- Competitors -->
-      <div class="admin-kpi-card p-5">
-        <div class="mb-3 flex items-center justify-between">
-          <h3 class="text-sm font-medium text-muted">Competitors ({{ sourced.competitors.length }})</h3>
+      <div class="card">
+        <div class="card-head">
+          <h2>Competitors ({{ sourced.competitors.length }})</h2>
           <AdsButton size="xs" variant="link" color="neutral" trailing-icon="i-lucide-arrow-right" label="Edit" @click="activeTab = 'competitors'" />
         </div>
-        <table v-if="sourced.competitors.length" class="admin-table w-full text-sm">
+        <div class="table-wrap" v-if="sourced.competitors.length"><table style="min-width: 520px">
           <thead>
             <tr>
-              <th class="px-3 py-2 text-left">Name</th>
-              <th class="px-3 py-2 text-left">Link</th>
-              <th class="px-3 py-2 text-right">Price</th>
-              <th class="px-3 py-2 text-left">Details</th>
+              <th>Name</th>
+              <th>Link</th>
+              <th class="num">Price</th>
+              <th>Details</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="c in sourced.competitors" :key="c.id">
-              <td class="px-3 py-2 font-medium text-highlighted">{{ c.name || '—' }}</td>
-              <td class="px-3 py-2"><a :href="c.url" target="_blank" rel="noopener noreferrer" class="truncate text-primary hover:underline">{{ c.url }}</a></td>
-              <td class="tabular px-3 py-2 text-right">{{ c.priceCents == null ? '—' : formatDzd(c.priceCents) }}</td>
+              <td class="strong">{{ c.name || '—' }}</td>
+              <td><a :href="c.url" target="_blank" rel="noopener noreferrer" class="truncate text-primary hover:underline">{{ c.url }}</a></td>
+              <td class="num">{{ c.priceCents == null ? '—' : formatDzd(c.priceCents) }}</td>
               <td class="max-w-64 truncate px-3 py-2 text-muted" :title="c.details ?? ''">{{ c.details || '—' }}</td>
             </tr>
           </tbody>
-        </table>
-        <p v-else class="py-2 text-sm text-muted">No competitors logged yet.</p>
+        </table></div>
+        <p v-else class="muted">No competitors logged yet.</p>
       </div>
 
       <!-- Ad Tests -->
-      <div class="admin-kpi-card p-5">
-        <div class="mb-3 flex items-center justify-between">
-          <h3 class="text-sm font-medium text-muted">Ad tests ({{ sourced.adTests.length }})</h3>
+      <div class="card">
+        <div class="card-head">
+          <h2>Ad tests ({{ sourced.adTests.length }})</h2>
           <AdsButton size="xs" variant="link" color="neutral" trailing-icon="i-lucide-arrow-right" label="Edit" @click="activeTab = 'adTests'" />
         </div>
-        <table v-if="sourced.adTests.length" class="admin-table w-full text-sm">
+        <div class="table-wrap" v-if="sourced.adTests.length"><table style="min-width: 520px">
           <thead>
             <tr>
-              <th class="px-3 py-2 text-left">Platform</th>
-              <th class="px-3 py-2 text-right">Price</th>
-              <th class="px-3 py-2 text-right">CPA</th>
-              <th class="px-3 py-2 text-right">ROAS</th>
-              <th class="px-3 py-2 text-left">Status</th>
+              <th>Platform</th>
+              <th class="num">Price</th>
+              <th class="num">CPA</th>
+              <th class="num">ROAS</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="t in sourced.adTests" :key="t.id">
-              <td class="px-3 py-2">
+              <td>
                 <div class="flex items-center gap-1.5">{{ t.platform }}<AdsIcon v-if="t.isWinner" name="i-lucide-trophy" class="size-3.5 text-warning" /></div>
               </td>
-              <td class="tabular px-3 py-2 text-right">{{ formatDzd(t.priceCents) }}</td>
-              <td class="tabular px-3 py-2 text-right">{{ adTestCpaCents(t) == null ? '—' : formatDzd(adTestCpaCents(t)!) }}</td>
-              <td class="tabular px-3 py-2 text-right">{{ adTestRoas(t) == null ? '—' : `${adTestRoas(t)!.toFixed(2)}x` }}</td>
-              <td class="px-3 py-2"><AdsBadge :color="adTestStatusColor[t.status]" variant="subtle" size="sm">{{ t.status }}</AdsBadge></td>
+              <td class="num">{{ formatDzd(t.priceCents) }}</td>
+              <td class="num">{{ adTestCpaCents(t) == null ? '—' : formatDzd(adTestCpaCents(t)!) }}</td>
+              <td class="num">{{ adTestRoas(t) == null ? '—' : `${adTestRoas(t)!.toFixed(2)}x` }}</td>
+              <td><AdsBadge :color="adTestStatusColor[t.status]" variant="subtle" size="sm">{{ t.status }}</AdsBadge></td>
             </tr>
           </tbody>
-        </table>
-        <p v-else class="py-2 text-sm text-muted">No ad tests yet.</p>
+        </table></div>
+        <p v-else class="muted">No ad tests yet.</p>
       </div>
 
       <!-- Sourcing Requests -->
-      <div class="admin-kpi-card p-5">
-        <div class="mb-3 flex items-center justify-between">
-          <h3 class="text-sm font-medium text-muted">Sourcing requests ({{ sourced.sourcingRequests.length }})</h3>
+      <div class="card">
+        <div class="card-head">
+          <h2>Sourcing requests ({{ sourced.sourcingRequests.length }})</h2>
           <AdsButton size="xs" variant="link" color="neutral" trailing-icon="i-lucide-arrow-right" label="Edit" @click="activeTab = 'requests'" />
         </div>
-        <table v-if="sourced.sourcingRequests.length" class="admin-table w-full text-sm">
+        <div class="table-wrap" v-if="sourced.sourcingRequests.length"><table style="min-width: 520px">
           <thead>
             <tr>
-              <th class="px-3 py-2 text-right">Quantity</th>
-              <th class="px-3 py-2 text-left">Country</th>
-              <th class="px-3 py-2 text-right">Unit cost</th>
-              <th class="px-3 py-2 text-left">Status</th>
+              <th class="num">Quantity</th>
+              <th>Country</th>
+              <th class="num">Unit cost</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="r in sourced.sourcingRequests" :key="r.id">
-              <td class="tabular px-3 py-2 text-right">{{ r.requestedQuantity }}</td>
-              <td class="px-3 py-2 text-muted">{{ r.requestedCountry }}</td>
-              <td class="tabular px-3 py-2 text-right">{{ r.unitCostCents == null ? '—' : formatDzd(r.unitCostCents) }}</td>
-              <td class="px-3 py-2"><AdsBadge :color="requestStatusColor[r.status]" variant="subtle" size="sm">{{ r.status }}</AdsBadge></td>
+              <td class="num">{{ r.requestedQuantity }}</td>
+              <td class="muted">{{ r.requestedCountry }}</td>
+              <td class="num">{{ r.unitCostCents == null ? '—' : formatDzd(r.unitCostCents) }}</td>
+              <td><AdsBadge :color="requestStatusColor[r.status]" variant="subtle" size="sm">{{ r.status }}</AdsBadge></td>
             </tr>
           </tbody>
-        </table>
-        <p v-else class="py-2 text-sm text-muted">No sourcing requests yet.</p>
+        </table></div>
+        <p v-else class="muted">No sourcing requests yet.</p>
       </div>
     </div>
 
     <!-- Overview Tab -->
-    <div v-show="activeTab === 'overview'" class="admin-kpi-card space-y-5 p-6">
+    <div v-show="activeTab === 'overview'" class="card">
       <AdsField label="Name"><AdsInput v-model="form.name" class="w-full" /></AdsField>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <AdsField label="Status">
@@ -833,21 +833,21 @@ async function deleteCompetitor(competitorId: string) {
     </div>
 
     <!-- Media & Links Tab -->
-    <div v-show="activeTab === 'media'" class="space-y-5">
+    <div v-show="activeTab === 'media'" class="stack">
       <!-- Upload from computer -->
-      <div class="admin-kpi-card p-5">
-        <h3 class="mb-3 text-sm font-medium text-muted">Upload image or video</h3>
+      <div class="card">
+        <h2>Upload image or video</h2>
         <div class="flex items-center gap-3">
           <AdsButton icon="i-lucide-upload" color="primary" :loading="uploadingFile" label="Choose file" @click="triggerFileUpload" />
-          <p class="text-xs text-muted">Images (JPG/PNG/WebP/GIF/SVG/AVIF) or videos (MP4/WebM/MOV) — max 50 MB</p>
+          <p class="muted">Images (JPG/PNG/WebP/GIF/SVG/AVIF) or videos (MP4/WebM/MOV) — max 50 MB</p>
           <input ref="fileInput" type="file" accept="image/*,video/*" class="hidden" @change="onFileSelected" />
         </div>
       </div>
 
       <!-- Download from URL -->
-      <div class="admin-kpi-card p-5">
-        <h3 class="mb-3 text-sm font-medium text-muted">Download from URL</h3>
-        <p class="mb-3 text-xs text-muted">Paste an image or video URL — the server downloads and stores it locally.</p>
+      <div class="card">
+        <h2>Download from URL</h2>
+        <p class="muted">Paste an image or video URL — the server downloads and stores it locally.</p>
         <div class="flex gap-3">
           <AdsInput v-model="downloadUrlInput" placeholder="https://example.com/photo.jpg" class="flex-1" />
           <AdsButton icon="i-lucide-download" :loading="downloadingUrl" color="primary" :disabled="!downloadUrlInput" @click="downloadAndAddMedia">Download</AdsButton>
@@ -855,9 +855,9 @@ async function deleteCompetitor(competitorId: string) {
       </div>
 
       <!-- Link external -->
-      <div class="admin-kpi-card p-5">
-        <h3 class="mb-3 text-sm font-medium text-muted">Link external image/video</h3>
-        <p class="mb-3 text-xs text-muted">Use a remote URL directly (not copied to our server) — e.g. a supplier's product photo/video CDN link.</p>
+      <div class="card">
+        <h2>Link external image/video</h2>
+        <p class="muted">Use a remote URL directly (not copied to our server) — e.g. a supplier's product photo/video CDN link.</p>
         <div class="flex gap-3">
           <AdsInput v-model="newMediaUrl" placeholder="https://…" class="flex-1" />
           <AdsInput v-model="newMediaCaption" placeholder="Caption (optional)" class="w-48" />
@@ -866,11 +866,11 @@ async function deleteCompetitor(competitorId: string) {
       </div>
 
       <!-- Gallery -->
-      <div class="admin-table-wrap">
-        <div class="border-b border-[var(--color-admin-border)] p-4">
-          <h3 class="text-sm font-medium text-muted">Gallery ({{ sourced.media.length }})</h3>
+      <div class="card">
+        <div class="card-head">
+          <h2>Gallery ({{ sourced.media.length }})</h2>
         </div>
-        <div class="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3 md:grid-cols-4">
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
           <div v-for="(m, idx) in sourced.media" :key="m.id" class="group relative overflow-hidden rounded-lg border border-[var(--color-admin-border)]">
             <video v-if="m.type === 'Video'" :src="resolveMediaUrl(m.url)" class="aspect-square size-full object-cover" muted controls />
             <img v-else :src="resolveMediaUrl(m.url)" :alt="m.caption ?? ''" class="aspect-square size-full object-cover" />
@@ -882,16 +882,16 @@ async function deleteCompetitor(competitorId: string) {
             <AdsBadge size="sm" :color="m.type === 'Video' ? 'primary' : 'neutral'" variant="solid" class="absolute left-1 top-1">{{ m.type }}</AdsBadge>
           </div>
         </div>
-        <p v-if="!sourced.media.length" class="px-4 py-12 text-center text-sm text-muted">No images or videos yet.</p>
+        <p v-if="!sourced.media.length" class="empty">No images or videos yet.</p>
       </div>
 
       <!-- External links -->
-      <div class="admin-table-wrap">
-        <div class="flex items-center justify-between border-b border-[var(--color-admin-border)] p-4">
-          <h3 class="text-sm font-medium text-muted">Links ({{ sourced.links.length }})</h3>
+      <div class="card">
+        <div class="card-head">
+          <h2>Links ({{ sourced.links.length }})</h2>
         </div>
-        <p class="px-4 pt-3 text-xs text-muted">Where this product is listed elsewhere — the supplier's marketplace page, a competitor selling it, the ad post it was spotted in, etc.</p>
-        <div class="space-y-2 p-4">
+        <p class="muted">Where this product is listed elsewhere — the supplier's marketplace page, a competitor selling it, the ad post it was spotted in, etc.</p>
+        <div class="space-y-2">
           <div v-for="l in sourced.links" :key="l.id" class="flex items-center gap-3 rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg)] p-3">
             <template v-if="editingLinkId === l.id">
               <AdsInput v-model="editLinkLabel" placeholder="Label" class="w-40" />
@@ -906,9 +906,9 @@ async function deleteCompetitor(competitorId: string) {
               <AdsButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="deleteLink(l.id)" />
             </template>
           </div>
-          <p v-if="!sourced.links.length" class="py-8 text-center text-sm text-muted">No links yet.</p>
+          <p v-if="!sourced.links.length" class="empty">No links yet.</p>
         </div>
-        <div class="flex gap-3 border-t border-[var(--color-admin-border)] p-4">
+        <div class="flex gap-3 border-t border-[var(--color-admin-border)] pt-4">
           <AdsInput v-model="newLinkLabel" placeholder="Label (e.g. AliExpress)" class="w-48" />
           <AdsInput v-model="newLinkUrl" placeholder="https://…" class="flex-1" />
           <AdsButton icon="i-lucide-plus" :loading="savingLink" color="primary" :disabled="!newLinkLabel.trim() || !newLinkUrl.trim()" @click="addLink">Add link</AdsButton>
@@ -917,13 +917,13 @@ async function deleteCompetitor(competitorId: string) {
     </div>
 
     <!-- Video Creatives Tab -->
-    <div v-show="activeTab === 'videoCreatives'" class="admin-table-wrap">
-      <div class="flex items-center justify-between border-b border-[var(--color-admin-border)] p-4">
-        <h3 class="text-sm font-medium text-muted">Video creatives ({{ sourced.videoCreatives.length }})</h3>
+    <div v-show="activeTab === 'videoCreatives'" class="card">
+      <div class="card-head">
+        <h2>Video creatives ({{ sourced.videoCreatives.length }})</h2>
         <AdsButton icon="i-lucide-plus" size="xs" color="primary" label="New video creative" @click="openCreateVideoCreative" />
       </div>
-      <p class="px-4 pt-3 text-xs text-muted">Video ad-creatives worth keeping an eye on — yours or a competitor's — with the angle/hook/description that make it clear why each one is worth testing.</p>
-      <div class="space-y-3 p-4">
+      <p class="muted">Video ad-creatives worth keeping an eye on — yours or a competitor's — with the angle/hook/description that make it clear why each one is worth testing.</p>
+      <div class="space-y-3">
         <div v-for="v in sourced.videoCreatives" :key="v.id" class="rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg)] p-4">
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div class="min-w-0 flex-1">
@@ -946,24 +946,24 @@ async function deleteCompetitor(competitorId: string) {
           </dl>
           <p v-if="v.notes" class="mt-2 text-xs text-muted">{{ v.notes }}</p>
         </div>
-        <p v-if="!sourced.videoCreatives.length" class="py-8 text-center text-sm text-muted">No video creatives yet. Click "New video creative" to log one.</p>
+        <p v-if="!sourced.videoCreatives.length" class="empty">No video creatives yet. Click "New video creative" to log one.</p>
       </div>
     </div>
 
     <!-- Competitors Tab -->
-    <div v-show="activeTab === 'competitors'" class="admin-table-wrap">
-      <div class="flex items-center justify-between border-b border-[var(--color-admin-border)] p-4">
-        <h3 class="text-sm font-medium text-muted">Competitors ({{ sourced.competitors.length }})</h3>
+    <div v-show="activeTab === 'competitors'" class="card">
+      <div class="card-head">
+        <h2>Competitors ({{ sourced.competitors.length }})</h2>
       </div>
-      <p class="px-4 pt-3 text-xs text-muted">Who else is selling this product, at what price, and any other detail worth noting.</p>
-      <table v-if="sourced.competitors.length" class="admin-table w-full text-sm">
+      <p class="muted">Who else is selling this product, at what price, and any other detail worth noting.</p>
+      <div class="table-wrap" v-if="sourced.competitors.length"><table style="min-width: 520px">
         <thead>
           <tr>
-            <th class="px-4 py-2.5 text-left">Name</th>
-            <th class="px-4 py-2.5 text-left">Link</th>
-            <th class="px-4 py-2.5 text-right">Price</th>
-            <th class="px-4 py-2.5 text-left">Details</th>
-            <th class="px-4 py-2.5 text-right">Actions</th>
+            <th>Name</th>
+            <th>Link</th>
+            <th class="num">Price</th>
+            <th>Details</th>
+            <th class="num">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -981,20 +981,20 @@ async function deleteCompetitor(competitorId: string) {
               </td>
             </template>
             <template v-else>
-              <td class="px-4 py-3 font-medium text-highlighted">{{ c.name || '—' }}</td>
-              <td class="px-4 py-3"><a :href="c.url" target="_blank" rel="noopener noreferrer" class="truncate text-primary hover:underline">{{ c.url }}</a></td>
-              <td class="tabular px-4 py-3 text-right">{{ c.priceCents == null ? '—' : formatDzd(c.priceCents) }}</td>
+              <td class="strong">{{ c.name || '—' }}</td>
+              <td><a :href="c.url" target="_blank" rel="noopener noreferrer" class="truncate text-primary hover:underline">{{ c.url }}</a></td>
+              <td class="num">{{ c.priceCents == null ? '—' : formatDzd(c.priceCents) }}</td>
               <td class="max-w-64 truncate px-4 py-3 text-muted" :title="c.details ?? ''">{{ c.details || '—' }}</td>
-              <td class="px-4 py-3 text-right">
+              <td class="num">
                 <AdsButton icon="i-lucide-pencil" size="xs" variant="ghost" color="neutral" @click="openEditCompetitor(c)" />
                 <AdsButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="deleteCompetitor(c.id)" />
               </td>
             </template>
           </tr>
         </tbody>
-      </table>
-      <p v-else class="px-4 py-8 text-center text-sm text-muted">No competitors logged yet.</p>
-      <div class="space-y-3 border-t border-[var(--color-admin-border)] p-4">
+      </table></div>
+      <p v-else class="empty">No competitors logged yet.</p>
+      <div class="space-y-3 border-t border-[var(--color-admin-border)] pt-4">
         <div class="flex flex-wrap items-center gap-3">
           <AdsInput v-model="newCompetitor.name" placeholder="Name (optional)" class="w-40" />
           <AdsInput v-model="newCompetitor.url" placeholder="https://…" class="min-w-56 flex-1" />
@@ -1006,87 +1006,84 @@ async function deleteCompetitor(competitorId: string) {
     </div>
 
     <!-- Ad Tests Tab -->
-    <div v-show="activeTab === 'adTests'" class="admin-table-wrap">
-      <div class="flex items-center justify-between border-b border-[var(--color-admin-border)] p-4">
-        <h3 class="text-sm font-medium text-muted">Ad tests ({{ sourced.adTests.length }})</h3>
+    <div v-show="activeTab === 'adTests'" class="card">
+      <div class="card-head">
+        <h2>Ad tests ({{ sourced.adTests.length }})</h2>
         <AdsButton icon="i-lucide-plus" size="xs" color="primary" label="New ad test" @click="openCreateAdTest" />
       </div>
-      <table v-if="sourced.adTests.length" class="admin-table w-full text-sm">
+      <div class="table-wrap" v-if="sourced.adTests.length"><table style="min-width: 520px">
         <thead>
           <tr>
-            <th class="px-4 py-2.5 text-left">Platform</th>
-            <th class="px-4 py-2.5 text-right">Price</th>
-            <th class="px-4 py-2.5 text-right">Spend</th>
-            <th class="px-4 py-2.5 text-right">Orders</th>
-            <th class="px-4 py-2.5 text-right">CPA</th>
-            <th class="px-4 py-2.5 text-right">ROAS</th>
-            <th class="px-4 py-2.5 text-left">Status</th>
-            <th class="px-4 py-2.5 text-right">Actions</th>
+            <th>Platform</th>
+            <th class="num">Price</th>
+            <th class="num">Spend</th>
+            <th class="num">Orders</th>
+            <th class="num">CPA</th>
+            <th class="num">ROAS</th>
+            <th>Status</th>
+            <th class="num">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="t in sourced.adTests" :key="t.id">
-            <td class="px-4 py-3">
+            <td>
               <div class="flex items-center gap-1.5">
                 {{ t.platform }}
                 <AdsIcon v-if="t.isWinner" name="i-lucide-trophy" class="size-3.5 text-warning" />
               </div>
             </td>
-            <td class="tabular px-4 py-3 text-right">{{ formatDzd(t.priceCents) }}</td>
-            <td class="tabular px-4 py-3 text-right">{{ formatDzd(t.adSpendCents) }}</td>
-            <td class="tabular px-4 py-3 text-right">{{ t.ordersCount }}</td>
-            <td class="tabular px-4 py-3 text-right">{{ adTestCpaCents(t) == null ? '—' : formatDzd(adTestCpaCents(t)!) }}</td>
-            <td class="tabular px-4 py-3 text-right">{{ adTestRoas(t) == null ? '—' : `${adTestRoas(t)!.toFixed(2)}x` }}</td>
-            <td class="px-4 py-3"><AdsBadge :color="adTestStatusColor[t.status]" variant="subtle">{{ t.status }}</AdsBadge></td>
-            <td class="px-4 py-3 text-right">
+            <td class="num">{{ formatDzd(t.priceCents) }}</td>
+            <td class="num">{{ formatDzd(t.adSpendCents) }}</td>
+            <td class="num">{{ t.ordersCount }}</td>
+            <td class="num">{{ adTestCpaCents(t) == null ? '—' : formatDzd(adTestCpaCents(t)!) }}</td>
+            <td class="num">{{ adTestRoas(t) == null ? '—' : `${adTestRoas(t)!.toFixed(2)}x` }}</td>
+            <td><AdsBadge :color="adTestStatusColor[t.status]" variant="subtle">{{ t.status }}</AdsBadge></td>
+            <td class="num">
               <AdsButton :icon="t.isWinner ? 'i-lucide-trophy' : 'i-lucide-star'" size="xs" variant="ghost" :color="t.isWinner ? 'warning' : 'neutral'" @click="toggleWinner(t)" />
               <AdsButton icon="i-lucide-pencil" size="xs" variant="ghost" color="neutral" @click="openEditAdTest(t)" />
               <AdsButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="deleteAdTest(t.id)" />
             </td>
           </tr>
         </tbody>
-      </table>
-      <p v-else class="px-4 py-12 text-center text-sm text-muted">No ad tests yet. Click "New ad test" to log a price/creative experiment.</p>
+      </table></div>
+      <p v-else class="empty">No ad tests yet. Click "New ad test" to log a price/creative experiment.</p>
     </div>
 
     <!-- Sourcing Requests Tab -->
-    <div v-show="activeTab === 'requests'" class="admin-table-wrap">
-      <div class="flex items-center justify-between border-b border-[var(--color-admin-border)] p-4">
-        <h3 class="text-sm font-medium text-muted">Sourcing requests ({{ sourced.sourcingRequests.length }})</h3>
+    <div v-show="activeTab === 'requests'" class="card">
+      <div class="card-head">
+        <h2>Sourcing requests ({{ sourced.sourcingRequests.length }})</h2>
         <AdsButton icon="i-lucide-plus" size="xs" color="primary" label="New request" @click="openCreateRequest" />
       </div>
-      <table v-if="sourced.sourcingRequests.length" class="admin-table w-full text-sm">
+      <div class="table-wrap" v-if="sourced.sourcingRequests.length"><table style="min-width: 520px">
         <thead>
           <tr>
-            <th class="px-4 py-2.5 text-right">Quantity</th>
-            <th class="px-4 py-2.5 text-left">Country</th>
-            <th class="px-4 py-2.5 text-right">Unit cost</th>
-            <th class="px-4 py-2.5 text-left">Status</th>
-            <th class="px-4 py-2.5 text-right">Actions</th>
+            <th class="num">Quantity</th>
+            <th>Country</th>
+            <th class="num">Unit cost</th>
+            <th>Status</th>
+            <th class="num">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="r in sourced.sourcingRequests" :key="r.id">
-            <td class="tabular px-4 py-3 text-right">{{ r.requestedQuantity }}</td>
-            <td class="px-4 py-3 text-muted">{{ r.requestedCountry }}</td>
-            <td class="tabular px-4 py-3 text-right">{{ r.unitCostCents == null ? '—' : formatDzd(r.unitCostCents) }}</td>
-            <td class="px-4 py-3"><AdsBadge :color="requestStatusColor[r.status]" variant="subtle">{{ r.status }}</AdsBadge></td>
-            <td class="px-4 py-3 text-right">
+            <td class="num">{{ r.requestedQuantity }}</td>
+            <td class="muted">{{ r.requestedCountry }}</td>
+            <td class="num">{{ r.unitCostCents == null ? '—' : formatDzd(r.unitCostCents) }}</td>
+            <td><AdsBadge :color="requestStatusColor[r.status]" variant="subtle">{{ r.status }}</AdsBadge></td>
+            <td class="num">
               <AdsButton icon="i-lucide-pencil" size="xs" variant="ghost" color="neutral" @click="openEditRequest(r)" />
               <AdsButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="deleteRequest(r.id)" />
             </td>
           </tr>
         </tbody>
-      </table>
-      <p v-else class="px-4 py-12 text-center text-sm text-muted">No sourcing requests yet.</p>
+      </table></div>
+      <p v-else class="empty">No sourcing requests yet.</p>
     </div>
   </div>
 
   <!-- Ad test modal -->
-  <AdsModal v-model:open="showAdTestModal">
-    <template #content>
-      <div class="space-y-4 p-6">
-        <h3 class="text-lg font-semibold">{{ editingAdTestId ? 'Edit' : 'New' }} ad test</h3>
+  <AdsDialog v-model:open="showAdTestModal" :title="`${editingAdTestId ? 'Edit' : 'New'} ad test`">
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <AdsField label="Platform">
             <AdsSelect v-model="adTestForm.platform" :items="platformOptions" class="w-full" />
@@ -1113,19 +1110,14 @@ async function deleteCompetitor(competitorId: string) {
           </div>
         </div>
         <AdsField label="Notes"><AdsTextarea v-model="adTestForm.notes" class="w-full" :rows="3" /></AdsField>
-        <div class="flex justify-end gap-2">
+    <template #footer>
           <AdsButton color="neutral" variant="ghost" label="Cancel" @click="showAdTestModal = false" />
           <AdsButton :loading="savingAdTest" label="Save" color="primary" @click="saveAdTest" />
-        </div>
-      </div>
-    </template>
-  </AdsModal>
+        </template>
+  </AdsDialog>
 
   <!-- Sourcing request modal -->
-  <AdsModal v-model:open="showRequestModal">
-    <template #content>
-      <div class="space-y-4 p-6">
-        <h3 class="text-lg font-semibold">{{ editingRequestId ? 'Edit' : 'New' }} sourcing request</h3>
+  <AdsDialog v-model:open="showRequestModal" :title="`${editingRequestId ? 'Edit' : 'New'} sourcing request`">
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <AdsField label="Requested quantity"><AdsNumberInput v-model="requestForm.requestedQuantity" :min="1" class="w-full" /></AdsField>
           <AdsField label="Requested country"><AdsInput v-model="requestForm.requestedCountry" class="w-full" /></AdsField>
@@ -1137,19 +1129,14 @@ async function deleteCompetitor(competitorId: string) {
           </AdsField>
         </div>
         <AdsField label="Notes"><AdsTextarea v-model="requestForm.notes" class="w-full" :rows="3" /></AdsField>
-        <div class="flex justify-end gap-2">
+    <template #footer>
           <AdsButton color="neutral" variant="ghost" label="Cancel" @click="showRequestModal = false" />
           <AdsButton :loading="savingRequest" :disabled="!requestForm.requestedCountry.trim()" label="Save" color="primary" @click="saveRequest" />
-        </div>
-      </div>
-    </template>
-  </AdsModal>
+        </template>
+  </AdsDialog>
 
   <!-- Video creative modal -->
-  <AdsModal v-model:open="showVideoCreativeModal">
-    <template #content>
-      <div class="space-y-4 p-6">
-        <h3 class="text-lg font-semibold">{{ editingVideoCreativeId ? 'Edit' : 'New' }} video creative</h3>
+  <AdsDialog v-model:open="showVideoCreativeModal" :title="`${editingVideoCreativeId ? 'Edit' : 'New'} video creative`">
         <AdsField label="Video URL"><AdsInput v-model="videoCreativeForm.url" class="w-full" placeholder="https://…" /></AdsField>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <AdsField label="Name" help="Short internal label"><AdsInput v-model="videoCreativeForm.name" class="w-full" placeholder="e.g. UGC unboxing v2" /></AdsField>
@@ -1176,12 +1163,10 @@ async function deleteCompetitor(competitorId: string) {
           <AdsTextarea v-model="videoCreativeForm.description" class="w-full" :rows="3" />
         </AdsField>
         <AdsField label="Notes"><AdsTextarea v-model="videoCreativeForm.notes" class="w-full" :rows="2" /></AdsField>
-        <div class="flex justify-end gap-2">
+    <template #footer>
           <AdsButton color="neutral" variant="ghost" label="Cancel" @click="showVideoCreativeModal = false" />
           <AdsButton :loading="savingVideoCreative" :disabled="!videoCreativeForm.url.trim()" label="Save" color="primary" @click="saveVideoCreative" />
-        </div>
-      </div>
-    </template>
-  </AdsModal>
+        </template>
+  </AdsDialog>
 </AdsPage>
 </template>

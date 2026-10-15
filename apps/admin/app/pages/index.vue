@@ -56,9 +56,9 @@ const attention = computed(() => stats.value
 <template>
   <AdsPage title="Overview" :description="greeting">
     <template #actions>
-      <div class="actions hide-sm">
+      <div class="hide-sm" style="display: flex; align-items: center; gap: 10px">
         <button class="icon-btn" type="button" aria-label="Notifications"><Bell class="i" /></button>
-        <span class="avatar-btn" style="display: inline-flex; align-items: center; justify-content: center" aria-hidden="true">{{ initials }}</span>
+        <span class="avatar-btn" style="display: inline-flex; align-items: center; justify-content: center; cursor: default" :title="auth.user?.email" aria-hidden="true">{{ initials }}</span>
       </div>
     </template>
 

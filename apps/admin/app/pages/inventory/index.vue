@@ -264,37 +264,28 @@ function stockPct(p: Product) { return p.stockQuantity ? Math.max(4, Math.min(10
     </section>
 
   <!-- Quick-create modal -->
-  <AdsModal v-model:open="showCreate">
-    <template #content>
-      <div style="padding: 24px; display: flex; flex-direction: column; gap: 16px">
-        <h2 style="font-size: 20px">New product</h2>
-        <p class="muted" style="margin: 0">Create a product, then edit its details, variants, and images in the full editor.</p>
-        <AdsField label="Name"><AdsInput v-model="newName" placeholder="e.g. Cotton T-Shirt" class="w-full" @update:model-value="onNameInput" /></AdsField>
-        <AdsField label="Slug"><AdsInput v-model="newSlug" placeholder="cotton-t-shirt" class="w-full" /></AdsField>
-        <div class="flex justify-end gap-2">
-          <AdsButton color="neutral" variant="ghost" label="Cancel" @click="showCreate = false" />
-          <AdsButton :loading="creating" :disabled="!newName || !newSlug" label="Create & edit" color="primary" @click="createProduct" />
-        </div>
-      </div>
+  <AdsDialog v-model:open="showCreate" title="New product" description="Create a product, then edit its details, variants, and images in the full editor." width="sm">
+    <AdsField label="Name"><AdsInput v-model="newName" placeholder="e.g. Cotton T-Shirt" @update:model-value="onNameInput" /></AdsField>
+    <AdsField label="Slug"><AdsInput v-model="newSlug" placeholder="cotton-t-shirt" /></AdsField>
+    <template #footer>
+      <button class="btn" type="button" @click="showCreate = false">Cancel</button>
+      <AdsButton :loading="creating" :disabled="!newName || !newSlug" label="Create & edit" @click="createProduct" />
     </template>
-  </AdsModal>
+  </AdsDialog>
 
   <!-- Stock adjustment modal (kept inline for convenience) -->
-  <AdsModal v-model:open="showAdjust">
-    <template #content>
-      <div v-if="adjusting" style="padding: 24px; display: flex; flex-direction: column; gap: 16px">
-        <h2 style="font-size: 20px">Adjust stock — {{ adjusting.name }}</h2>
-        <p class="muted" style="margin: 0">Current: <span class="tabular font-medium">{{ adjusting.stockQuantity }}</span></p>
-        <AdsField label="Change (negative for stock-out)"><AdsNumberInput v-model="adjustDelta" class="w-full" /></AdsField>
-        <AdsField label="Reason"><AdsSelect v-model="adjustReason" :items="['Restock', 'Correction', 'Damage', 'Sale', 'Return']" class="w-full" /></AdsField>
-        <AdsField label="Note (optional)"><AdsInput v-model="adjustNote" class="w-full" /></AdsField>
-        <p class="text-sm">New stock: <span class="tabular font-medium">{{ adjusting.stockQuantity + adjustDelta }}</span></p>
-        <div class="flex justify-end gap-2">
-          <AdsButton color="neutral" variant="ghost" label="Cancel" @click="adjusting = null" />
-          <AdsButton :loading="savingAdjust" label="Save" color="primary" @click="saveAdjust" />
-        </div>
-      </div>
+  <AdsDialog v-model:open="showAdjust" :title="`Adjust stock — ${adjusting?.name ?? ''}`" width="sm">
+    <template v-if="adjusting">
+      <p class="muted">Current stock: <b>{{ adjusting.stockQuantity }}</b></p>
+      <AdsField label="Change (negative for stock-out)"><AdsNumberInput v-model="adjustDelta" /></AdsField>
+      <AdsField label="Reason"><AdsSelect v-model="adjustReason" :items="['Restock', 'Correction', 'Damage', 'Sale', 'Return']" /></AdsField>
+      <AdsField label="Note (optional)"><AdsInput v-model="adjustNote" /></AdsField>
+      <p>New stock: <b>{{ adjusting.stockQuantity + adjustDelta }}</b></p>
     </template>
-  </AdsModal>
+    <template #footer>
+      <button class="btn" type="button" @click="adjusting = null">Cancel</button>
+      <AdsButton :loading="savingAdjust" label="Save" @click="saveAdjust" />
+    </template>
+  </AdsDialog>
 </AdsPage>
 </template>

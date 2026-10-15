@@ -55,56 +55,32 @@ function metaPreview(m: unknown): string {
 </script>
 
 <template>
-  <AdsPage title="Audit Log" wide>
-  <div class="space-y-4">
-    <div class="flex items-center gap-3">
-      <span class="text-sm text-muted">Entity:</span>
-      <AdsSelect
-        :model-value="entity"
-        :items="entityOptions.map(e => ({ label: e || 'All', value: e }))"
-        class="w-48"
-        @update:model-value="(v) => applyEntity(v as string)"
-      />
-    </div>
-
-    <p class="text-xs text-muted">Read-only. Entries are immutable — no edit or delete exists on this screen or anywhere in the system (plan §7).</p>
-
-    <div class="admin-table-wrap">
-      <table class="admin-table w-full text-sm">
-        <thead>
-          <tr>
-            <th class="px-4 py-2.5 text-left">When</th>
-            <th class="px-4 py-2.5 text-left">Actor</th>
-            <th class="px-4 py-2.5 text-left">Action</th>
-            <th class="px-4 py-2.5 text-left">Entity</th>
-            <th class="px-4 py-2.5 text-left">Detail</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="pending"><td colspan="5" class="px-4 py-12 text-center text-muted">Loading…</td></tr>
-          <tr v-else-if="!data?.items.length"><td colspan="5" class="px-4 py-12 text-center text-muted">No audit entries match this filter.</td></tr>
-          <tr v-for="entry in data?.items" :key="entry.id">
-            <td class="px-4 py-3 text-muted">{{ fmtDateTime(entry.createdAt ?? '') }}</td>
-            <td class="px-4 py-3">{{ entry.actorEmail ?? 'system' }}</td>
-            <td class="px-4 py-3"><AdsBadge color="neutral" variant="subtle">{{ entry.action }}</AdsBadge></td>
-            <td class="px-4 py-3">
-              <span class="text-highlighted">{{ entry.entity }}</span>
-              <span class="tabular ml-2 text-xs text-muted">{{ entry.entityId.slice(0, 8) }}</span>
-            </td>
-            <td class="px-4 py-3 text-muted">{{ metaPreview(entry.metadata) }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <AdsPagination
-      :total="data?.total ?? 0"
-      :page="currentPage"
-      :page-size="currentPageSize"
-      item-label="entries"
-      @update:page="goToPage"
-      @update:page-size="changePageSize"
-    />
-  </div>
-</AdsPage>
+  <AdsPage title="Audit log" description="Business events across the platform">
+    <section class="card" aria-label="Audit log">
+      <div class="card-head">
+        <label class="field" style="flex-direction: row; align-items: center; gap: 10px">
+          <span class="muted">Entity</span>
+          <AdsSelect :model-value="entity" :options="entityOptions.map((e) => ({ label: e || 'All', value: e }))" size="sm" style="width: 190px" @update:model-value="(v) => applyEntity(v as string)" />
+        </label>
+        <span class="muted">Read-only. Entries are immutable — nothing can edit or delete them.</span>
+      </div>
+      <div class="table-wrap">
+        <table style="min-width: 760px">
+          <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Entity</th><th>Detail</th></tr></thead>
+          <tbody>
+            <tr v-if="pending"><td colspan="5" class="empty">Loading…</td></tr>
+            <tr v-else-if="!data?.items.length"><td colspan="5" class="empty">No audit entries match this filter.</td></tr>
+            <tr v-for="entry in data?.items" v-else :key="entry.id">
+              <td class="muted">{{ fmtDateTime(entry.createdAt ?? '') }}</td>
+              <td>{{ entry.actorEmail ?? 'system' }}</td>
+              <td><span class="pill neutral">{{ entry.action }}</span></td>
+              <td><span class="strong">{{ entry.entity }}</span> <span class="mono muted">{{ entry.entityId.slice(0, 8) }}</span></td>
+              <td class="muted">{{ metaPreview(entry.metadata) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <AdsPagination :total="data?.total ?? 0" :page="currentPage" :page-size="currentPageSize" item-label="entries" @update:page="goToPage" @update:page-size="changePageSize" />
+    </section>
+  </AdsPage>
 </template>

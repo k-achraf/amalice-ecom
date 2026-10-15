@@ -233,7 +233,7 @@ async function outcome(to: 'Confirmed' | 'CallCenterNoAnswer' | 'WrongNumber' | 
 
       <section class="card" aria-label="Current call">
         <div v-if="!current" class="empty" style="padding: 60px 20px">
-          <AdsIcon name="i-lucide-check" style="width: 32px; height: 32px; color: var(--teal)" />
+          <AdsIcon name="i-lucide-check" style="width: 32px; height: 32px; color: var(--teal); display: block; margin: 0 auto" />
           <h2 style="font-size: 18px; margin-top: 10px; color: var(--pine)">Queue is empty</h2>
           <p>Every order in this tab has been called.</p>
         </div>

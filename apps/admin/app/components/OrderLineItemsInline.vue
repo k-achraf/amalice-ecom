@@ -37,94 +37,73 @@ const detailOpen = computed({
 </script>
 
 <template>
-  <div :class="['flex flex-col', compact ? 'gap-1.5' : 'gap-2']">
+  <div :style="{ display: 'flex', flexDirection: 'column', gap: compact ? '6px' : '8px' }">
     <button
       v-for="item in items"
       :key="item.id"
       type="button"
-      class="flex items-center gap-2 rounded-md text-start transition-colors hover:bg-[var(--color-admin-row-hover)]"
+      class="line-item"
       @click="detailItem = item"
     >
       <!-- Overlapping thumbnail stack of every shot of this product -->
-      <div v-if="galleryFor(item).length" class="flex shrink-0 -space-x-2 rtl:space-x-reverse">
+      <span v-if="galleryFor(item).length" class="line-thumbs">
         <img
           v-for="(url, i) in galleryFor(item).slice(0, 4)"
           :key="i"
           :src="resolveImageUrl(url)"
           :alt="item.product.name"
-          :class="['rounded-md border-2 border-[var(--color-admin-surface)] object-cover', compact ? 'size-7' : 'size-9']"
+          :style="{ width: compact ? '28px' : '36px', height: compact ? '28px' : '36px' }"
           loading="lazy"
         >
-        <div
-          v-if="galleryFor(item).length > 4"
-          :class="['flex shrink-0 items-center justify-center rounded-md border-2 border-[var(--color-admin-surface)] bg-elevated text-[10px] font-medium text-muted', compact ? 'size-7' : 'size-9']"
-        >
-          +{{ galleryFor(item).length - 4 }}
-        </div>
-      </div>
-      <div
-        v-else
-        :class="['flex shrink-0 items-center justify-center rounded-md bg-elevated text-muted', compact ? 'size-7' : 'size-9']"
-      >
-        <AdsIcon name="i-lucide-image-off" class="size-3.5" />
-      </div>
+        <span v-if="galleryFor(item).length > 4" class="more" :style="{ width: compact ? '28px' : '36px', height: compact ? '28px' : '36px' }">+{{ galleryFor(item).length - 4 }}</span>
+      </span>
+      <span v-else class="thumb" :style="{ width: compact ? '28px' : '36px', height: compact ? '28px' : '36px' }"><AdsIcon name="i-lucide-image-off" style="width: 14px; height: 14px" /></span>
 
-      <div class="min-w-0 leading-tight">
-        <p class="truncate text-sm text-highlighted">
-          {{ item.product.name }}
-          <span v-if="item.variantLabel" class="text-muted">— {{ item.variantLabel }}</span>
-        </p>
-        <p class="text-xs text-muted">×{{ item.quantity }}<span v-if="item.isUpsell"> · upsell</span></p>
-      </div>
+      <span class="line-text">
+        <span class="strong">{{ item.product.name }}<span v-if="item.variantLabel" class="muted"> — {{ item.variantLabel }}</span></span>
+        <span class="muted">×{{ item.quantity }}<template v-if="item.isUpsell"> · upsell</template></span>
+      </span>
     </button>
   </div>
 
   <!-- Product detail modal -->
-  <AdsModal v-model:open="detailOpen">
-    <template #content>
-      <div v-if="detailItem" class="space-y-4 p-6">
-        <div>
-          <h3 class="text-lg font-semibold text-highlighted">{{ detailItem.product.name }}</h3>
-          <p v-if="detailItem.variantLabel" class="text-sm text-muted">{{ detailItem.variantLabel }}</p>
-        </div>
+  <AdsDialog v-model:open="detailOpen" :title="detailItem?.product.name ?? 'Product'" :description="detailItem?.variantLabel ?? undefined" width="sm">
+    <template v-if="detailItem">
+      <div v-if="galleryFor(detailItem).length" class="grid-3" style="gap: 8px">
+        <img
+          v-for="(url, i) in galleryFor(detailItem)"
+          :key="i"
+          :src="resolveImageUrl(url)"
+          :alt="detailItem.product.name"
+          style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--r)"
+          loading="lazy"
+        >
+      </div>
+      <div v-else class="empty" style="background: var(--ivory); border-radius: var(--r)"><AdsIcon name="i-lucide-image-off" style="width: 24px; height: 24px" /></div>
 
-        <div v-if="galleryFor(detailItem).length" class="grid grid-cols-3 gap-2">
-          <img
-            v-for="(url, i) in galleryFor(detailItem)"
-            :key="i"
-            :src="resolveImageUrl(url)"
-            :alt="detailItem.product.name"
-            class="aspect-square w-full rounded-md object-cover"
-            loading="lazy"
-          >
-        </div>
-        <div v-else class="flex aspect-video items-center justify-center rounded-md bg-elevated text-muted">
-          <AdsIcon name="i-lucide-image-off" class="size-6" />
-        </div>
-
-        <div class="grid grid-cols-2 gap-3 text-sm">
-          <div>
-            <p class="text-muted">Quantity</p>
-            <p class="tabular font-medium text-highlighted">{{ detailItem.quantity }}</p>
-          </div>
-          <div>
-            <p class="text-muted">Unit price</p>
-            <AdsPrice :amount-cents="detailItem.unitPriceCents" class="tabular font-medium text-highlighted" />
-          </div>
-          <div>
-            <p class="text-muted">Line total</p>
-            <AdsPrice :amount-cents="detailItem.lineTotalCents" class="tabular font-medium text-highlighted" />
-          </div>
-          <div class="flex items-center gap-1.5">
-            <AdsBadge v-if="detailItem.isUpsell" size="sm" color="primary" variant="subtle">Upsell</AdsBadge>
-            <AdsBadge v-if="detailItem.offerId" size="sm" color="success" variant="subtle">Offer</AdsBadge>
-          </div>
-        </div>
-
-        <div class="flex justify-end">
-          <AdsButton color="neutral" variant="ghost" label="Close" @click="detailOpen = false" />
+      <div class="mini-stats">
+        <div><span class="muted">Quantity</span><b>{{ detailItem.quantity }}</b></div>
+        <div><span class="muted">Unit price</span><b><AdsPrice :amount-cents="detailItem.unitPriceCents" /></b></div>
+        <div><span class="muted">Line total</span><b><AdsPrice :amount-cents="detailItem.lineTotalCents" /></b></div>
+        <div v-if="detailItem.isUpsell || detailItem.offerId" style="display: flex; align-items: center; gap: 6px">
+          <span v-if="detailItem.isUpsell" class="pill shipping">Upsell</span>
+          <span v-if="detailItem.offerId" class="pill confirmed">Offer</span>
         </div>
       </div>
     </template>
-  </AdsModal>
+    <template #footer>
+      <button class="btn" type="button" @click="detailOpen = false">Close</button>
+    </template>
+  </AdsDialog>
 </template>
+
+<style scoped>
+.line-item { display: flex; align-items: center; gap: 10px; padding: 0; border: 0; background: none; border-radius: var(--r); text-align: start; cursor: pointer; font: inherit; color: inherit; min-width: 0; }
+.line-item:hover { background: var(--hover); }
+.line-thumbs { display: flex; flex-shrink: 0; }
+.line-thumbs img, .line-thumbs .more { border-radius: var(--r-sm); border: 2px solid var(--white); object-fit: cover; margin-inline-start: -8px; }
+.line-thumbs > :first-child { margin-inline-start: 0; }
+.line-thumbs .more { display: flex; align-items: center; justify-content: center; background: var(--mist); color: var(--teal); font-size: 10px; font-weight: 600; }
+.line-text { display: flex; flex-direction: column; min-width: 0; font-size: 13px; line-height: 1.3; }
+.line-text .strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+</style>

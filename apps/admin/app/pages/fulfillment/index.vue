@@ -87,35 +87,23 @@ async function dispatch(orderId: string) {
 </script>
 
 <template>
-  <AdsPage title="Fulfillment" wide>
-  <div class="space-y-8">
+  <AdsPage title="Fulfillment" description="Pack, hold and dispatch confirmed orders">
     <!-- Awaiting packing -->
-    <section>
-      <h2 class="mb-3 text-sm font-medium text-muted">Awaiting packing (Confirmed)</h2>
-      <div class="admin-table-wrap">
-        <table class="admin-table w-full text-sm">
-          <thead>
-            <tr>
-              <th class="px-4 py-2.5 text-left">Order</th>
-              <th class="px-4 py-2.5 text-left">Customer</th>
-              <th class="px-4 py-2.5 text-right">COD</th>
-              <th class="px-4 py-2.5 text-right">Action</th>
-            </tr>
-          </thead>
+    <section class="card" aria-label="Awaiting packing">
+      <div class="card-head"><h2>Awaiting packing</h2><span class="pill neutral">Confirmed</span></div>
+      <div class="table-wrap">
+        <table style="min-width: 640px">
+          <thead><tr><th>Order</th><th>Customer</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
           <tbody>
-            <tr v-if="pendingConfirmed"><td colspan="4" class="px-4 py-12 text-center text-muted">Loading…</td></tr>
-            <tr v-else-if="!confirmed?.items.length"><td colspan="4" class="px-4 py-12 text-center text-muted">Nothing waiting to be packed.</td></tr>
-            <tr v-for="o in confirmed?.items" :key="o.id">
-              <td class="px-4 py-3">
-                <NuxtLink :to="`/orders/${o.id}`" class="tabular text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink>
-              </td>
-              <td class="px-4 py-3">{{ o.customer.name ?? '—' }}</td>
-              <td class="tabular px-4 py-3 text-right"><AdsPrice :amount-cents="o.totalCents" /></td>
-              <td class="px-4 py-3 text-right">
-                <div class="flex justify-end gap-2">
-                  <AdsButton icon="i-lucide-pause-circle" size="xs" color="neutral" variant="outline" :loading="acting === o.id" label="Hold" @click="putOnHold(o.id)" />
-                  <AdsButton icon="i-lucide-package-check" size="xs" color="primary" :loading="acting === o.id" label="Mark packed" @click="markPacked(o.id)" />
-                </div>
+            <tr v-if="pendingConfirmed"><td colspan="4" class="empty">Loading…</td></tr>
+            <tr v-else-if="!confirmed?.items.length"><td colspan="4" class="empty">Nothing waiting to be packed.</td></tr>
+            <tr v-for="o in confirmed?.items" v-else :key="o.id">
+              <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
+              <td>{{ o.customer.name ?? '—' }}</td>
+              <td class="num"><AdsPrice :amount-cents="o.totalCents" /></td>
+              <td class="num" style="white-space: nowrap">
+                <AdsButton appearance="default" size="sm" icon="i-lucide-pause-circle" :loading="acting === o.id" label="Hold" @click="putOnHold(o.id)" />
+                <AdsButton size="sm" icon="i-lucide-package-check" style="margin-left: 6px" :loading="acting === o.id" label="Mark packed" @click="markPacked(o.id)" />
               </td>
             </tr>
           </tbody>
@@ -124,31 +112,20 @@ async function dispatch(orderId: string) {
     </section>
 
     <!-- On hold -->
-    <section v-if="onHold?.items.length">
-      <h2 class="mb-3 text-sm font-medium text-muted">On hold</h2>
-      <div class="admin-table-wrap">
-        <table class="admin-table w-full text-sm">
-          <thead>
-            <tr>
-              <th class="px-4 py-2.5 text-left">Order</th>
-              <th class="px-4 py-2.5 text-left">Customer</th>
-              <th class="px-4 py-2.5 text-right">COD</th>
-              <th class="px-4 py-2.5 text-right">Action</th>
-            </tr>
-          </thead>
+    <section v-if="onHold?.items.length" class="card" aria-label="On hold">
+      <div class="card-head"><h2>On hold</h2></div>
+      <div class="table-wrap">
+        <table style="min-width: 640px">
+          <thead><tr><th>Order</th><th>Customer</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
           <tbody>
-            <tr v-if="pendingOnHold"><td colspan="4" class="px-4 py-12 text-center text-muted">Loading…</td></tr>
-            <tr v-for="o in onHold?.items" :key="o.id">
-              <td class="px-4 py-3">
-                <NuxtLink :to="`/orders/${o.id}`" class="tabular text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink>
-              </td>
-              <td class="px-4 py-3">{{ o.customer.name ?? '—' }}</td>
-              <td class="tabular px-4 py-3 text-right"><AdsPrice :amount-cents="o.totalCents" /></td>
-              <td class="px-4 py-3 text-right">
-                <div class="flex justify-end gap-2">
-                  <AdsButton icon="i-lucide-play-circle" size="xs" color="primary" :loading="acting === o.id" label="Resume" @click="resumeFromHold(o.id)" />
-                  <AdsButton icon="i-lucide-x" size="xs" color="error" variant="outline" :loading="acting === o.id" label="Cancel" @click="cancelOnHold(o.id)" />
-                </div>
+            <tr v-if="pendingOnHold"><td colspan="4" class="empty">Loading…</td></tr>
+            <tr v-for="o in onHold?.items" v-else :key="o.id">
+              <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
+              <td>{{ o.customer.name ?? '—' }}</td>
+              <td class="num"><AdsPrice :amount-cents="o.totalCents" /></td>
+              <td class="num" style="white-space: nowrap">
+                <AdsButton size="sm" icon="i-lucide-play-circle" :loading="acting === o.id" label="Resume" @click="resumeFromHold(o.id)" />
+                <AdsButton appearance="danger" size="sm" icon="i-lucide-x" style="margin-left: 6px" :loading="acting === o.id" label="Cancel" @click="cancelOnHold(o.id)" />
               </td>
             </tr>
           </tbody>
@@ -157,67 +134,32 @@ async function dispatch(orderId: string) {
     </section>
 
     <!-- Ready to dispatch -->
-    <section>
-      <h2 class="mb-3 text-sm font-medium text-muted">Ready to dispatch (Packed)</h2>
-      <div class="admin-table-wrap">
-        <table class="admin-table w-full text-sm">
-          <thead>
-            <tr>
-              <th class="px-4 py-2.5 text-left">Order</th>
-              <th class="px-4 py-2.5 text-left">Customer</th>
-              <th class="px-4 py-2.5 text-left">Shipping</th>
-              <th class="px-4 py-2.5 text-right">COD</th>
-              <th class="px-4 py-2.5 text-right">Action</th>
-            </tr>
-          </thead>
+    <section class="card" aria-label="Ready to dispatch">
+      <div class="card-head"><h2>Ready to dispatch</h2><span class="pill neutral">Packed</span></div>
+      <div class="table-wrap">
+        <table style="min-width: 720px">
+          <thead><tr><th>Order</th><th>Customer</th><th>Shipping</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
           <tbody>
-            <tr v-if="pendingPacked"><td colspan="5" class="px-4 py-12 text-center text-muted">Loading…</td></tr>
-            <tr v-else-if="!packed?.items.length"><td colspan="5" class="px-4 py-12 text-center text-muted">No orders ready to dispatch.</td></tr>
-            <tr v-for="o in packed?.items" :key="o.id">
-              <td class="px-4 py-3">
-                <NuxtLink :to="`/orders/${o.id}`" class="tabular text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink>
+            <tr v-if="pendingPacked"><td colspan="5" class="empty">Loading…</td></tr>
+            <tr v-else-if="!packed?.items.length"><td colspan="5" class="empty">No orders ready to dispatch.</td></tr>
+            <tr v-for="o in packed?.items" v-else :key="o.id">
+              <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
+              <td>{{ o.customer.name ?? '—' }}</td>
+              <td>
+                <span v-if="o.fulfillmentMethod === 'Unassigned'" class="pill new">Unassigned</span>
+                <span v-else-if="o.fulfillmentMethod === 'Manual'" class="pill neutral">Manual</span>
+                <span v-else class="pill shipping">{{ o.shippingCompanyName }}</span>
               </td>
-              <td class="px-4 py-3">{{ o.customer.name ?? '—' }}</td>
-              <td class="px-4 py-3">
-                <AdsBadge v-if="o.fulfillmentMethod === 'Unassigned'" color="warning" variant="subtle">Unassigned</AdsBadge>
-                <AdsBadge v-else-if="o.fulfillmentMethod === 'Manual'" color="neutral" variant="subtle">Manual</AdsBadge>
-                <AdsBadge v-else color="primary" variant="subtle">{{ o.shippingCompanyName }}</AdsBadge>
-              </td>
-              <td class="tabular px-4 py-3 text-right"><AdsPrice :amount-cents="o.totalCents" /></td>
-              <td class="px-4 py-3 text-right">
-                <AdsButton
-                  v-if="o.fulfillmentMethod === 'Unassigned'"
-                  icon="i-lucide-link"
-                  size="xs"
-                  color="neutral"
-                  variant="outline"
-                  label="Assign"
-                  :to="`/orders/${o.id}`"
-                />
-                <AdsButton
-                  v-else-if="o.fulfillmentMethod === 'Manual'"
-                  icon="i-lucide-truck"
-                  size="xs"
-                  color="primary"
-                  variant="outline"
-                  label="Hand to driver"
-                  :to="`/orders/${o.id}`"
-                />
-                <AdsButton
-                  v-else
-                  icon="i-lucide-truck"
-                  size="xs"
-                  color="primary"
-                  :loading="acting === o.id"
-                  label="Dispatch"
-                  @click="dispatch(o.id)"
-                />
+              <td class="num"><AdsPrice :amount-cents="o.totalCents" /></td>
+              <td class="num" style="white-space: nowrap">
+                <AdsButton v-if="o.fulfillmentMethod === 'Unassigned'" appearance="default" size="sm" icon="i-lucide-link" label="Assign" :to="`/orders/${o.id}`" />
+                <AdsButton v-else-if="o.fulfillmentMethod === 'Manual'" appearance="default" size="sm" icon="i-lucide-truck" label="Hand to driver" :to="`/orders/${o.id}`" />
+                <AdsButton v-else size="sm" icon="i-lucide-truck" :loading="acting === o.id" label="Dispatch" @click="dispatch(o.id)" />
               </td>
             </tr>
           </tbody>
         </table>
       </div>
     </section>
-  </div>
-</AdsPage>
+  </AdsPage>
 </template>

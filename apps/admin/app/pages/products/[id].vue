@@ -995,9 +995,9 @@ async function deleteUpsell(upsellId: string) {
   <template #breadcrumb>
     <NuxtLink to="/inventory">Products</NuxtLink><AdsIcon name="i-lucide-chevron-right" style="width: 14px; height: 14px" /><span>{{ product?.name ?? 'Edit product' }}</span>
   </template>
-  <div v-if="pending" class="py-24 text-center text-muted">Loading…</div>
-  <div v-else-if="!product" class="py-24 text-center text-muted">Product not found.</div>
-  <div v-else class="max-w-4xl space-y-6">
+  <div v-if="pending" class="empty">Loading…</div>
+  <div v-else-if="!product" class="empty">Product not found.</div>
+  <div v-else class="stack" style="max-width: 900px">
     <!-- Tabs -->
     <AdsTabs
       v-model="activeTab"
@@ -1015,16 +1015,16 @@ async function deleteUpsell(upsellId: string) {
     />
 
     <!-- Details Tab -->
-    <div v-show="activeTab === 'details'" class="space-y-5">
+    <div v-show="activeTab === 'details'" class="stack">
       <!-- Generate with AI — see the script section above generateProductContent
            for the full contract. Draft only: nothing here is saved until
            "Apply to form" is clicked and then the Save button below it. -->
-      <div class="admin-kpi-card space-y-4 p-6">
+      <div class="card">
         <div>
-          <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
-            <AdsIcon name="i-lucide-wand-2" class="size-4 text-primary" /> Generate with AI
-          </h3>
-          <p class="text-sm text-muted">
+          <h2 style="display: flex; align-items: center; gap: 8px">
+            <AdsIcon name="i-lucide-wand-2" style="width: 18px; height: 18px; color: var(--teal)" /> Generate with AI
+          </h2>
+          <p class="muted">
             Paste everything you have about this product — title, description, specs, FAQ, all mixed together,
             any language — and optionally pick a few photos below. A free AI model drafts a short,
             conversion-focused name, description, key benefits, FAQ, and specifications from it.
@@ -1063,7 +1063,7 @@ async function deleteUpsell(upsellId: string) {
 
         <div v-if="aiDraft" class="space-y-3 rounded-lg border border-[var(--color-admin-border)] p-4">
           <div class="flex items-center justify-between gap-2">
-            <h4 class="text-sm font-medium text-highlighted">Draft</h4>
+            <h3 style="font-size: 15px">Draft</h3>
             <div class="flex gap-2">
               <AdsButton size="xs" variant="ghost" color="neutral" label="Discard" @click="discardGeneratedContent" />
               <AdsButton size="xs" variant="solid" color="primary" icon="i-lucide-check" label="Apply to form" @click="applyGeneratedContent" />
@@ -1100,7 +1100,7 @@ async function deleteUpsell(upsellId: string) {
         </div>
       </div>
 
-      <div class="admin-kpi-card space-y-5 p-6">
+      <div class="card">
         <AdsField label="Name"><AdsInput v-model="product.name" class="w-full" /></AdsField>
         <AdsField label="Slug"><AdsInput v-model="product.slug" class="w-full" /></AdsField>
         <AdsField label="Description">
@@ -1123,10 +1123,10 @@ async function deleteUpsell(upsellId: string) {
             <AdsCheckbox v-model="product.bestSeller" label="Best seller" />
           </div>
         </div>
-        <div class="admin-kpi-card flex items-center justify-between gap-3 p-4">
+        <div class="card" style="flex-direction: row; align-items: center; justify-content: space-between">
           <div class="min-w-0">
             <p class="text-sm font-medium text-highlighted">Visible on storefront</p>
-            <p class="text-xs text-muted">
+            <p class="muted">
               Off hides this product from catalog, search, home sections, and other products' "related" — but its own product page
               and any AI landing pages keep working for anyone with the direct link. Use this for ad-only funnel products.
             </p>
@@ -1143,13 +1143,13 @@ async function deleteUpsell(upsellId: string) {
          Impulse template's Key Benefits/FAQ/Specifications sections).
          Empty by default; a template shows nothing rather than fabricate
          copy when a section is left blank. -->
-    <div v-show="activeTab === 'content'" class="space-y-5">
-      <div class="admin-kpi-card space-y-4 p-6">
+    <div v-show="activeTab === 'content'" class="stack">
+      <div class="card">
         <div>
-          <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
-            <AdsIcon name="i-lucide-sparkles" class="size-4 text-primary" /> Key benefits
-          </h3>
-          <p class="text-sm text-muted">Short, customer-facing bullet points (e.g. "Waterproof up to 50m") — up to 8.</p>
+          <h2 style="display: flex; align-items: center; gap: 8px">
+            <AdsIcon name="i-lucide-sparkles" style="width: 18px; height: 18px; color: var(--teal)" /> Key benefits
+          </h2>
+          <p class="muted">Short, customer-facing bullet points (e.g. "Waterproof up to 50m") — up to 8.</p>
         </div>
         <div v-for="(benefit, idx) in product.keyBenefits" :key="idx" class="flex items-center gap-2">
           <AdsInput v-model="product.keyBenefits[idx]" placeholder="e.g. Waterproof up to 50m" class="flex-1" />
@@ -1158,12 +1158,12 @@ async function deleteUpsell(upsellId: string) {
         <AdsButton v-if="product.keyBenefits.length < 8" icon="i-lucide-plus" size="sm" variant="outline" color="neutral" label="Add benefit" @click="addBenefit" />
       </div>
 
-      <div class="admin-kpi-card space-y-4 p-6">
+      <div class="card">
         <div>
-          <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
-            <AdsIcon name="i-lucide-circle-help" class="size-4 text-primary" /> FAQ
-          </h3>
-          <p class="text-sm text-muted">Common questions about this product — payment, delivery, sizing, returns, etc.</p>
+          <h2 style="display: flex; align-items: center; gap: 8px">
+            <AdsIcon name="i-lucide-circle-help" style="width: 18px; height: 18px; color: var(--teal)" /> FAQ
+          </h2>
+          <p class="muted">Common questions about this product — payment, delivery, sizing, returns, etc.</p>
         </div>
         <div v-for="(faq, idx) in product.faqs" :key="idx" class="space-y-2 rounded-md border border-[var(--color-admin-border)] p-3">
           <div class="flex items-start justify-between gap-2">
@@ -1175,12 +1175,12 @@ async function deleteUpsell(upsellId: string) {
         <AdsButton v-if="product.faqs.length < 20" icon="i-lucide-plus" size="sm" variant="outline" color="neutral" label="Add question" @click="addFaq" />
       </div>
 
-      <div class="admin-kpi-card space-y-4 p-6">
+      <div class="card">
         <div>
-          <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
-            <AdsIcon name="i-lucide-list-checks" class="size-4 text-primary" /> Specifications
-          </h3>
-          <p class="text-sm text-muted">Technical spec-table rows (e.g. "Material" / "Stainless steel") — distinct from variant options.</p>
+          <h2 style="display: flex; align-items: center; gap: 8px">
+            <AdsIcon name="i-lucide-list-checks" style="width: 18px; height: 18px; color: var(--teal)" /> Specifications
+          </h2>
+          <p class="muted">Technical spec-table rows (e.g. "Material" / "Stainless steel") — distinct from variant options.</p>
         </div>
         <div v-for="(spec, idx) in product.specifications" :key="idx" class="flex items-center gap-2">
           <AdsInput v-model="spec.label" placeholder="Label (e.g. Material)" class="w-48" />
@@ -1196,10 +1196,10 @@ async function deleteUpsell(upsellId: string) {
     </div>
 
     <!-- Variants Tab -->
-    <div v-show="activeTab === 'variants'" class="space-y-5">
+    <div v-show="activeTab === 'variants'" class="stack">
       <!-- Applied attributes -->
-      <div class="admin-kpi-card p-5">
-        <h3 class="mb-3 text-sm font-medium text-muted">Attributes this product varies on</h3>
+      <div class="card">
+        <h2>Attributes this product varies on</h2>
         <div v-if="product.attributes.length" class="mb-4 flex flex-wrap gap-2">
           <AdsBadge v-for="attr in product.attributes" :key="attr.id" color="info" variant="subtle" class="flex items-center gap-1 py-1 pl-2 pr-1">
             {{ attr.name }}
@@ -1210,7 +1210,7 @@ async function deleteUpsell(upsellId: string) {
         </div>
         <p v-else class="mb-4 text-sm text-muted">No attributes applied. Add one below to enable variant creation.</p>
         <div v-if="availableAttributes.length" class="flex items-center gap-2">
-          <span class="text-xs text-muted">Add:</span>
+          <span class="muted">Add:</span>
           <AdsButton
             v-for="attr in availableAttributes"
             :key="attr.id"
@@ -1221,13 +1221,13 @@ async function deleteUpsell(upsellId: string) {
             @click="applyAttribute(attr.id)"
           />
         </div>
-        <p v-else class="text-xs text-muted">All available attributes are applied (or none exist — create some in Settings).</p>
+        <p v-else class="muted">All available attributes are applied (or none exist — create some in Settings).</p>
       </div>
 
       <!-- Variants table -->
-      <div class="admin-table-wrap">
-        <div class="flex items-center justify-between border-b border-[var(--color-admin-border)] p-4">
-          <h3 class="text-sm font-medium text-muted">Variants ({{ product.variants.length }})</h3>
+      <div class="card">
+        <div class="card-head">
+          <h2>Variants ({{ product.variants.length }})</h2>
           <div v-if="product.attributes.length" class="flex gap-2">
             <AdsButton
               icon="i-lucide-sparkles"
@@ -1246,43 +1246,43 @@ async function deleteUpsell(upsellId: string) {
             />
           </div>
         </div>
-        <table v-if="product.variants.length" class="admin-table w-full text-sm">
+        <div class="table-wrap" v-if="product.variants.length"><table style="min-width: 520px">
           <thead>
             <tr>
-              <th class="px-4 py-2.5 text-left">SKU</th>
-              <th class="px-4 py-2.5 text-left">Options</th>
-              <th class="px-4 py-2.5 text-right">Price</th>
-              <th class="px-4 py-2.5 text-right">Stock</th>
-              <th class="px-4 py-2.5 text-right">Actions</th>
+              <th>SKU</th>
+              <th>Options</th>
+              <th class="num">Price</th>
+              <th class="num">Stock</th>
+              <th class="num">Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="v in product.variants" :key="v.id">
-              <td class="px-4 py-3 font-medium">{{ v.sku }}</td>
-              <td class="px-4 py-3 text-muted">
+              <td class="strong">{{ v.sku }}</td>
+              <td class="muted">
                 <AdsBadge v-for="opt in v.options" :key="opt.id" size="sm" color="neutral" variant="subtle" class="mr-1">
                   {{ opt.attributeName }}: {{ opt.value }}
                 </AdsBadge>
               </td>
-              <td class="tabular px-4 py-3 text-right"><AdsPrice :amount-cents="v.priceCents" /></td>
-              <td class="tabular px-4 py-3 text-right">{{ v.stockQuantity }}</td>
-              <td class="px-4 py-3 text-right">
+              <td class="num"><AdsPrice :amount-cents="v.priceCents" /></td>
+              <td class="num">{{ v.stockQuantity }}</td>
+              <td class="num">
                 <AdsButton icon="i-lucide-pencil" size="xs" variant="ghost" color="neutral" @click="openEditVariant(v)" />
                 <AdsButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="deleteVariant(v.id)" />
               </td>
             </tr>
           </tbody>
-        </table>
-        <p v-else-if="product.attributes.length" class="px-4 py-12 text-center text-sm text-muted">No variants yet. Click "Add variant" to create one.</p>
-        <p v-else class="px-4 py-12 text-center text-sm text-muted">Apply at least one attribute above before creating variants.</p>
+        </table></div>
+        <p v-else-if="product.attributes.length" class="empty">No variants yet. Click "Add variant" to create one.</p>
+        <p v-else class="empty">Apply at least one attribute above before creating variants.</p>
       </div>
     </div>
 
     <!-- Images Tab -->
-    <div v-show="activeTab === 'images'" class="space-y-5">
+    <div v-show="activeTab === 'images'" class="stack">
       <!-- Upload from computer -->
-      <div class="admin-kpi-card p-5">
-        <h3 class="mb-3 text-sm font-medium text-muted">Upload from computer</h3>
+      <div class="card">
+        <h2>Upload from computer</h2>
         <div class="flex items-center gap-3">
           <AdsButton
             icon="i-lucide-upload"
@@ -1291,7 +1291,7 @@ async function deleteUpsell(upsellId: string) {
             label="Choose image file"
             @click="triggerFileUpload"
           />
-          <p class="text-xs text-muted">JPG, PNG, WebP, GIF, SVG, AVIF — max 10 MB</p>
+          <p class="muted">JPG, PNG, WebP, GIF, SVG, AVIF — max 10 MB</p>
           <input
             ref="fileInput"
             type="file"
@@ -1303,9 +1303,9 @@ async function deleteUpsell(upsellId: string) {
       </div>
 
       <!-- Download from URL -->
-      <div class="admin-kpi-card p-5">
-        <h3 class="mb-3 text-sm font-medium text-muted">Download from URL</h3>
-        <p class="mb-3 text-xs text-muted">Paste an image URL — the server downloads and stores it locally so it won't break if the source goes offline.</p>
+      <div class="card">
+        <h2>Download from URL</h2>
+        <p class="muted">Paste an image URL — the server downloads and stores it locally so it won't break if the source goes offline.</p>
         <div class="flex gap-3">
           <AdsInput v-model="downloadUrlInput" placeholder="https://example.com/product.jpg" class="flex-1" />
           <AdsInput v-model="newImageAlt" placeholder="Alt text (optional)" class="w-48" />
@@ -1314,19 +1314,19 @@ async function deleteUpsell(upsellId: string) {
       </div>
 
       <!-- Direct link (external URL, not downloaded) -->
-      <div class="admin-kpi-card p-5">
-        <h3 class="mb-3 text-sm font-medium text-muted">Link external image</h3>
-        <p class="mb-3 text-xs text-muted">Use a remote URL directly (not copied to our server).</p>
+      <div class="card">
+        <h2>Link external image</h2>
+        <p class="muted">Use a remote URL directly (not copied to our server).</p>
         <div class="flex gap-3">
           <AdsInput v-model="newImageUrl" placeholder="https://…" class="flex-1" />
           <AdsButton icon="i-lucide-link" :loading="savingImage" color="neutral" variant="outline" :disabled="!newImageUrl" @click="addImage">Link</AdsButton>
         </div>
       </div>
-      <div class="admin-table-wrap">
-        <div class="border-b border-[var(--color-admin-border)] p-4">
-          <h3 class="text-sm font-medium text-muted">Gallery ({{ product.images.length }}) — first image is the hero</h3>
+      <div class="card">
+        <div class="card-head">
+          <h2>Gallery ({{ product.images.length }}) — first image is the hero</h2>
         </div>
-        <div class="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3 md:grid-cols-4">
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
           <div v-for="(img, idx) in product.images" :key="img.id" class="group relative overflow-hidden rounded-lg border border-[var(--color-admin-border)]">
             <img :src="resolveImgUrl(img.url)" :alt="img.altText ?? ''" class="aspect-square size-full object-cover" />
             <div class="absolute inset-0 flex items-center justify-center gap-1 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
@@ -1337,15 +1337,15 @@ async function deleteUpsell(upsellId: string) {
             <AdsBadge v-if="idx === 0" size="sm" color="primary" variant="solid" class="absolute left-1 top-1">Hero</AdsBadge>
           </div>
         </div>
-        <p v-if="!product.images.length" class="px-4 py-12 text-center text-sm text-muted">No images yet.</p>
+        <p v-if="!product.images.length" class="empty">No images yet.</p>
       </div>
     </div>
 
     <!-- Landing Page Tab -->
-    <div v-show="activeTab === 'landingPage'" class="space-y-5">
+    <div v-show="activeTab === 'landingPage'" class="stack">
       <!-- Normal product page — always reachable, never affected by
            landing pages below. -->
-      <div class="admin-kpi-card flex items-center justify-between gap-3 p-4">
+      <div class="card" style="flex-direction: row; align-items: center; justify-content: space-between">
         <div class="min-w-0">
           <p class="text-sm font-medium text-highlighted">Product page</p>
           <a :href="productPageUrl" target="_blank" rel="noopener" class="truncate text-xs text-primary hover:underline">{{ productPageUrl }}</a>
@@ -1356,8 +1356,8 @@ async function deleteUpsell(upsellId: string) {
       <!-- Existing landing pages — a product can have several, each its
            own URL, independently enabled. -->
       <div v-if="landingPages.length" class="space-y-3">
-        <h3 class="text-sm font-medium text-muted">Landing pages ({{ landingPages.length }})</h3>
-        <div v-for="lp in landingPages" :key="lp.id" class="admin-kpi-card space-y-4 p-6">
+        <h2>Landing pages ({{ landingPages.length }})</h2>
+        <div v-for="lp in landingPages" :key="lp.id" class="card">
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div class="min-w-0">
               <div class="flex flex-wrap items-center gap-2">
@@ -1373,7 +1373,7 @@ async function deleteUpsell(upsellId: string) {
             </div>
             <div class="flex shrink-0 items-center gap-2">
               <div v-if="lp.status === 'Completed'" class="flex items-center gap-1.5">
-                <span class="text-xs text-muted">Live</span>
+                <span class="muted">Live</span>
                 <AdsSwitch :model-value="lp.enabled" :loading="savingEnabledFor === lp.id" @update:model-value="toggleLandingPageEnabled(lp.id, $event as boolean)" />
               </div>
               <AdsButton
@@ -1528,7 +1528,7 @@ async function deleteUpsell(upsellId: string) {
             </div>
 
             <div v-if="lp.finalImageUrl">
-              <h4 class="mb-2 text-sm font-medium text-muted">Final long image</h4>
+              <h3 style="font-size: 15px">Final long image</h3>
               <button type="button" class="cursor-zoom-in" @click="openLightbox(lp.finalImageUrl)">
                 <img :src="resolveImgUrl(lp.finalImageUrl)" class="w-full max-w-sm rounded-md border border-[var(--color-admin-border)]" />
               </button>
@@ -1537,12 +1537,12 @@ async function deleteUpsell(upsellId: string) {
         </div>
       </div>
 
-      <div class="admin-kpi-card space-y-5 p-6">
+      <div class="card">
         <div>
-          <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
-            <AdsIcon name="i-lucide-sparkles" class="size-4 text-primary" /> Generate a new landing page
-          </h3>
-          <p class="text-sm text-muted">
+          <h2 style="display: flex; align-items: center; gap: 8px">
+            <AdsIcon name="i-lucide-sparkles" style="width: 18px; height: 18px; color: var(--teal)" /> Generate a new landing page
+          </h2>
+          <p class="muted">
             Turns this product's photos and description into a long-scroll marketing image — a hero section, a
             few feature highlights, and a call-to-action. Gemini composes the entire page in a single generation
             using your real photos; Pollinations (free) generates each section separately and stitches them
@@ -1594,7 +1594,7 @@ async function deleteUpsell(upsellId: string) {
               </div>
             </button>
           </div>
-          <p v-else class="text-sm text-muted">Add product photos in the Images tab first.</p>
+          <p v-else class="muted">Add product photos in the Images tab first.</p>
         </AdsField>
 
         <AdsField label="Image provider" help="Gemini edits your real product photos and draws its own text, but needs Google Cloud billing enabled. Pollinations is free with no billing step, but generates a generic product-style image (not your real photos) and adds text separately.">
@@ -1637,13 +1637,13 @@ async function deleteUpsell(upsellId: string) {
     </div>
 
     <!-- Offers Tab -->
-    <div v-show="activeTab === 'offers'" class="space-y-5">
-      <div class="admin-kpi-card space-y-5 p-6">
+    <div v-show="activeTab === 'offers'" class="stack">
+      <div class="card">
         <div>
-          <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
-            <AdsIcon name="i-lucide-tag" class="size-4 text-primary" /> Offers
-          </h3>
-          <p class="text-sm text-muted">
+          <h2 style="display: flex; align-items: center; gap: 8px">
+            <AdsIcon name="i-lucide-tag" style="width: 18px; height: 18px; color: var(--teal)" /> Offers
+          </h2>
+          <p class="muted">
             Quantity-based promos shown on the product page — the customer picks an offer card, which sets the
             quantity for them and locks in that price.
           </p>
@@ -1657,7 +1657,7 @@ async function deleteUpsell(upsellId: string) {
           >
             <div>
               <p class="text-sm font-medium text-highlighted">{{ offerSummary(offer) }}</p>
-              <p class="text-xs text-muted">{{ offerTypeOptions.find(t => t.value === offer.type)?.label }}</p>
+              <p class="muted">{{ offerTypeOptions.find(t => t.value === offer.type)?.label }}</p>
             </div>
             <div class="flex items-center gap-2">
               <AdsSwitch
@@ -1676,7 +1676,7 @@ async function deleteUpsell(upsellId: string) {
             </div>
           </div>
         </div>
-        <p v-else class="text-sm text-muted">No offers yet.</p>
+        <p v-else class="muted">No offers yet.</p>
       </div>
 
       <!-- ADM-13 — for products only ever sold in fixed lots (wholesale
@@ -1684,11 +1684,11 @@ async function deleteUpsell(upsellId: string) {
            customer to pick one of the offers above instead of using the
            normal free-quantity stepper. Reuses the offers system as the
            sole way to set quantity rather than an optional promo. -->
-      <div class="admin-kpi-card space-y-3 p-6">
+      <div class="card">
         <div class="flex items-center justify-between gap-3">
           <div>
-            <h4 class="text-sm font-medium text-highlighted">Sell only in fixed quantities</h4>
-            <p class="text-sm text-muted">
+            <h3 style="font-size: 15px">Sell only in fixed quantities</h3>
+            <p class="muted">
               Hides the free-quantity stepper on the product page — the customer must pick one of the offers
               above (e.g. "40 units", "80 units") to buy at all. The first enabled offer is pre-selected by default.
             </p>
@@ -1705,8 +1705,8 @@ async function deleteUpsell(upsellId: string) {
         </div>
       </div>
 
-      <div class="admin-kpi-card space-y-4 p-6">
-        <h4 class="text-sm font-medium text-highlighted">Add an offer</h4>
+      <div class="card">
+        <h3 style="font-size: 15px">Add an offer</h3>
 
         <AdsField label="Type">
           <AdsSelect v-model="newOffer.type" :items="offerTypeOptions" value-key="value" label-key="label" class="w-full" />
@@ -1724,7 +1724,7 @@ async function deleteUpsell(upsellId: string) {
           <AdsNumberInput v-model="newOfferBundlePriceDzd" :min="0" class="w-40" />
         </AdsField>
 
-        <p v-if="newOffer.type === 'FreeShipping'" class="text-sm text-muted">
+        <p v-if="newOffer.type === 'FreeShipping'" class="muted">
           Display-only — there's no shipping-fee concept yet, so this shows a badge but doesn't change the order total.
         </p>
 
@@ -1735,13 +1735,13 @@ async function deleteUpsell(upsellId: string) {
     </div>
 
     <!-- Upsells Tab -->
-    <div v-show="activeTab === 'upsells'" class="space-y-5">
-      <div class="admin-kpi-card space-y-5 p-6">
+    <div v-show="activeTab === 'upsells'" class="stack">
+      <div class="card">
         <div>
-          <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
-            <AdsIcon name="i-lucide-plus-circle" class="size-4 text-primary" /> Upsells
-          </h3>
-          <p class="text-sm text-muted">
+          <h2 style="display: flex; align-items: center; gap: 8px">
+            <AdsIcon name="i-lucide-plus-circle" style="width: 18px; height: 18px; color: var(--teal)" /> Upsells
+          </h2>
+          <p class="muted">
             Products suggested to a customer right after they place an order for this one — shown on a one-click
             "add this?" page before the order confirmation. Set a special price to sweeten the offer, or leave it
             blank to use the product's normal price.
@@ -1756,7 +1756,7 @@ async function deleteUpsell(upsellId: string) {
           >
             <div>
               <p class="text-sm font-medium text-highlighted">{{ u.upsellProduct.name }}</p>
-              <p class="text-xs text-muted">
+              <p class="muted">
                 {{ formatDzd(u.priceCentsOverride ?? u.upsellProduct.priceCents) }}
                 <span v-if="u.priceCentsOverride != null">(normally {{ formatDzd(u.upsellProduct.priceCents) }})</span>
               </p>
@@ -1778,11 +1778,11 @@ async function deleteUpsell(upsellId: string) {
             </div>
           </div>
         </div>
-        <p v-else class="text-sm text-muted">No upsells configured yet.</p>
+        <p v-else class="muted">No upsells configured yet.</p>
       </div>
 
-      <div class="admin-kpi-card space-y-4 p-6">
-        <h4 class="text-sm font-medium text-highlighted">Add an upsell</h4>
+      <div class="card">
+        <h3 style="font-size: 15px">Add an upsell</h3>
 
         <AdsField label="Suggested product">
           <AdsSelect
@@ -1804,9 +1804,9 @@ async function deleteUpsell(upsellId: string) {
     </div>
 
     <!-- Inventory Tab -->
-    <div v-show="activeTab === 'inventory'" class="space-y-5">
-      <div class="admin-kpi-card p-6">
-        <h3 class="mb-4 text-sm font-medium text-muted">Current stock: <span class="tabular text-lg font-bold text-highlighted">{{ product.stockQuantity }}</span></h3>
+    <div v-show="activeTab === 'inventory'" class="stack">
+      <div class="card">
+        <h2>Current stock: <span class="tabular text-lg font-bold text-highlighted">{{ product.stockQuantity }}</span></h2>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <AdsField label="Change (+/-)">
             <AdsNumberInput v-model="adjustDelta" class="w-full" />
@@ -1827,25 +1827,25 @@ async function deleteUpsell(upsellId: string) {
   </div>
 
   <!-- Variant modal -->
-  <AdsModal v-model:open="showVariantModalBool">
-    <template #content>
-      <div v-if="editingVariant" class="space-y-4 p-6">
-        <h3 class="text-lg font-semibold">{{ editingVariant.id ? 'Edit' : 'New' }} variant</h3>
+  <AdsDialog v-model:open="showVariantModalBool" :title="`${editingVariant?.id ? 'Edit' : 'New'} variant`">
+      <template v-if="editingVariant">
         <AdsField label="SKU"><AdsInput v-model="editingVariant.sku" class="w-full" /></AdsField>
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div class="grid-2">
           <AdsField label="Price (DZD)"><AdsNumberInput v-model="editingVariantPriceDzd" :min="0" class="w-full" /></AdsField>
           <AdsField label="Stock"><AdsNumberInput v-model="editingVariant.stockQuantity" class="w-full" /></AdsField>
         </div>
         <!-- Option selectors: one per applied attribute, rendered by type -->
-        <div v-for="attr in product?.attributes" :key="attr.id" class="space-y-2">
-          <p class="text-sm font-medium">{{ attr.name }} <span class="text-xs text-muted">({{ attr.type }})</span></p>
+        <div v-for="attr in product?.attributes" :key="attr.id" class="stack" style="gap: 8px">
+          <b style="font-size: 14px">{{ attr.name }} <span class="muted">({{ attr.type }})</span></b>
           <div class="flex flex-wrap gap-2">
             <button
               v-for="opt in attr.options"
               :key="opt.id"
               type="button"
-              class="flex items-center gap-1.5 rounded-lg border-2 px-3 py-1.5 text-sm transition-colors"
-              :class="editingVariant.optionIds.includes(opt.id) ? 'border-primary bg-primary/5 text-primary' : 'border-[var(--color-admin-border)] text-muted hover:border-primary/40'"
+              class="tag"
+              style="cursor: pointer; padding: 6px 10px"
+              :style="editingVariant.optionIds.includes(opt.id) ? 'background: var(--teal); color: var(--ivory); border-color: var(--teal)' : ''"
+              :aria-pressed="editingVariant.optionIds.includes(opt.id)"
               @click="editingVariant.optionIds = editingVariant.optionIds.includes(opt.id) ? editingVariant.optionIds.filter((x) => x !== opt.id) : [...editingVariant.optionIds, opt.id]"
             >
               <!-- Color: hex swatch -->
@@ -1863,42 +1863,36 @@ async function deleteUpsell(upsellId: string) {
             </button>
           </div>
         </div>
-        <div class="flex justify-end gap-2">
-          <AdsButton color="neutral" variant="ghost" label="Cancel" @click="showVariantModalBool = false" />
-          <AdsButton :loading="savingVariant" label="Save variant" color="primary" @click="saveVariant" />
-        </div>
-      </div>
+      </template>
+    <template #footer>
+      <button class="btn" type="button" @click="showVariantModalBool = false">Cancel</button>
+      <AdsButton :loading="savingVariant" label="Save variant" @click="saveVariant">Save variant</AdsButton>
     </template>
-  </AdsModal>
+  </AdsDialog>
 
   <!-- Generate variants modal — Cartesian product preview -->
-  <AdsModal v-model:open="showGenerateBool">
-    <template #content>
-      <div class="space-y-4 p-6">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold">Generate variants</h3>
-          <AdsBadge color="primary" variant="subtle">{{ generatingCount }} combinations</AdsBadge>
-        </div>
-        <p class="text-sm text-muted">
+  <AdsDialog v-model:open="showGenerateBool" title="Generate variants" width="lg">
+        <div><span class="pill shipping">{{ generatingCount }} combinations</span></div>
+        <p class="muted">
           All combinations from the product's applied attributes. Edit SKU, price, and stock for each,
           remove any you don't want, then click "Create all" to add the rest in bulk.
         </p>
 
         <!-- Preview table -->
-        <div v-if="generatedVariants.length" class="max-h-96 overflow-y-auto rounded-lg border border-[var(--color-admin-border)]">
-          <table class="w-full text-sm">
-            <thead class="sticky top-0 bg-[var(--color-admin-surface)]">
+        <div v-if="generatedVariants.length" style="max-height: 384px; overflow-y: auto">
+          <div class="table-wrap"><table style="min-width: 520px">
+            <thead>
               <tr>
-                <th class="px-3 py-2 text-left">Combination</th>
-                <th class="px-3 py-2 text-left">SKU</th>
-                <th class="px-3 py-2 text-right">Price</th>
-                <th class="px-3 py-2 text-right">Stock</th>
-                <th class="px-3 py-2"></th>
+                <th>Combination</th>
+                <th>SKU</th>
+                <th class="num">Price</th>
+                <th class="num">Stock</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(gv, i) in generatedVariants" :key="i" class="border-t border-[var(--color-admin-border)]">
-                <td class="px-3 py-2">
+              <tr v-for="(gv, i) in generatedVariants" :key="i">
+                <td>
                   <div class="flex items-center gap-1.5">
                     <span
                       v-for="sw in gv.colorSwatches"
@@ -1909,8 +1903,8 @@ async function deleteUpsell(upsellId: string) {
                     {{ gv.label }}
                   </div>
                 </td>
-                <td class="px-3 py-2"><AdsInput v-model="gv.sku" size="xs" class="w-32" /></td>
-                <td class="px-3 py-2">
+                <td><AdsInput v-model="gv.sku" size="xs" class="w-32" /></td>
+                <td>
                   <AdsNumberInput
                     :model-value="gv.priceCents / 100"
                     :min="0"
@@ -1919,28 +1913,24 @@ async function deleteUpsell(upsellId: string) {
                     @update:model-value="(v) => (gv.priceCents = Math.round((Number(v) || 0) * 100))"
                   />
                 </td>
-                <td class="px-3 py-2"><AdsNumberInput v-model="gv.stockQuantity" size="xs" class="w-20" /></td>
-                <td class="px-3 py-2 text-right">
+                <td><AdsNumberInput v-model="gv.stockQuantity" size="xs" class="w-20" /></td>
+                <td class="num">
                   <AdsButton icon="i-lucide-x" size="xs" variant="ghost" color="error" title="Remove" @click="removeGeneratedVariant(i)" />
                 </td>
               </tr>
             </tbody>
-          </table>
+          </table></div>
         </div>
-        <p v-else class="rounded-lg border border-dashed border-[var(--color-admin-border)] px-4 py-8 text-center text-sm text-muted">
+        <p v-else class="empty">
           All combinations removed. Click "Regenerate" to start over.
         </p>
 
-        <div class="flex items-center justify-between">
-          <AdsButton size="xs" variant="ghost" color="neutral" icon="i-lucide-rotate-ccw" label="Regenerate" @click="openGenerate" />
-          <div class="flex gap-2">
-            <AdsButton color="neutral" variant="ghost" label="Cancel" @click="showGenerateBool = false" />
-            <AdsButton :disabled="!generatedVariants.length" :loading="generating" icon="i-lucide-check" label="Create all" color="primary" @click="createGeneratedVariants" />
-          </div>
-        </div>
-      </div>
+    <template #footer>
+      <AdsButton appearance="subtle" size="sm" icon="i-lucide-rotate-ccw" label="Regenerate" style="margin-right: auto" @click="openGenerate" />
+      <button class="btn" type="button" @click="showGenerateBool = false">Cancel</button>
+      <AdsButton :disabled="!generatedVariants.length" :loading="generating" icon="i-lucide-check" label="Create all" @click="createGeneratedVariants" />
     </template>
-  </AdsModal>
+  </AdsDialog>
 
   <!-- Lightbox — full-size preview for any landing-page section/final
        image (see openLightbox in the Landing Page tab's script). -->
