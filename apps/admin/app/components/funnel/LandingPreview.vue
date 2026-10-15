@@ -11,12 +11,11 @@ import {
   type ProductOffer
 } from '@amalice/shared'
 
-// Live preview of a funnel's landing page, phone-first. Backbone of every template:
-// product photos, title + price, the order form (offers, short form), then the rest
-// of the page. Built for cash-on-delivery conversion on a phone: big tap targets,
-// 16px inputs (no iOS zoom), a short form, tappable offer cards with the best value
-// flagged, honest scarcity (real stock only) and an order bar pinned to the bottom.
-// Customer reviews are sample text (the platform has no review text) and are labelled.
+// Live preview of a funnel's landing page. It mirrors the funnels site (apps/funnels/src/render.ts +
+// styles.ts): same structure, same spacing and type scale, same Arabic copy, so what the admin
+// sees is what visitors get. Every page has the same backbone: photos, title + price, the order form
+// (offers, short form), then the rest of the page. Reviews come from the product's real approved
+// reviews on the live page, so none are drawn here.
 const props = defineProps<{
   settings: LandingSettings
   product: {
@@ -40,6 +39,28 @@ const { resolveImageUrl } = useResolveImageUrl()
 const template = computed(() => getLandingTemplate(props.settings.templateId))
 const layout = computed(() => template.value?.layout ?? 'stacked')
 const accent = computed(() => LANDING_ACCENT_HEX[props.settings.accent])
+
+// Same contrast rules as the site: dark button text on light accents, darkened accent for text on white.
+function lum(hex: string) {
+  const n = parseInt(hex.slice(1), 16)
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
+    const c = v / 255
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  }) as [number, number, number]
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+const contrast = (hex: string) => 1.05 / (lum(hex) + 0.05)
+const vars = computed(() => {
+  const solid = accent.value.solid
+  let text = solid
+  for (let i = 0; i < 12 && contrast(text) < 4.5; i++) {
+    const n = parseInt(text.slice(1), 16)
+    const d = (v: number) => Math.round(v * 0.9)
+    text = '#' + ((d((n >> 16) & 255) << 16) | (d((n >> 8) & 255) << 8) | d(n & 255)).toString(16).padStart(6, '0')
+  }
+  return { '--a': solid, '--s': accent.value.soft, '--on': contrast(solid) >= 4.5 ? '#ffffff' : '#1c2022', '--at': text }
+})
+
 const sections = computed(() => props.settings.sections.filter((s) => s.enabled).map((s) => s.type))
 const photos = computed(() => {
   const list = props.product.images.map((i) => i.url)
@@ -55,8 +76,7 @@ const isImage = computed(() => layout.value === 'image')
 const compact = computed(() => layout.value === 'compact')
 const mobile = computed(() => props.device === 'mobile')
 
-// Offers as the form shows them: the plain unit first, then each enabled offer. The one that
-// saves the customer the most is flagged "Best value".
+// Offers as the form shows them; the one that saves the most is flagged.
 const offers = computed(() => {
   const unit = props.product.priceCents
   const list = [{ key: 'one', label: T.singleUnit, note: T.singleItemNote, total: unit, save: 0, best: false }]
@@ -83,7 +103,7 @@ const lowStock = computed(() => {
   const n = props.product.stockQuantity
   return props.settings.showStock && n > 0 && n <= Math.max(props.product.lowStockThreshold, 10) ? n : null
 })
-const quickBenefits = computed(() => (props.settings.quickBenefits ? props.product.keyBenefits.slice(0, 3) : []))
+const quickBenefits = computed(() => (props.settings.quickBenefits && !compact.value ? props.product.keyBenefits.slice(0, 3) : []))
 
 const plainDescription = computed(() => {
   const html = props.product.description
@@ -91,304 +111,275 @@ const plainDescription = computed(() => {
   const text = new DOMParser().parseFromString(html, 'text/html').body.textContent?.trim() ?? ''
   return text.length > 420 ? `${text.slice(0, 420)}…` : text
 })
-const benefits = computed(() => props.product.keyBenefits)
-const faqs = computed(() => props.product.faqs.slice(0, 4))
-const specs = computed(() => props.product.specifications.slice(0, 8))
 </script>
 
 <template>
-  <div class="device" :class="[device, `layout-${layout}`]" :style="{ '--a': accent.solid, '--s': accent.soft }">
+  <div class="device" :class="[device, `layout-${layout}`]" :style="vars">
     <div v-if="mobile" class="notch" aria-hidden="true"><span /></div>
     <div v-else class="chrome" aria-hidden="true"><i /><i /><i /><span>/f/…</span></div>
 
     <div class="scroller" :dir="T.dir" :lang="T.lang">
-      <div v-if="settings.urgency" class="urgency"><AdsIcon name="i-lucide-clock" />{{ settings.urgencyText?.trim() || T.defaultUrgency }}</div>
+      <div v-if="settings.urgency" class="urg">{{ settings.urgencyText?.trim() || T.defaultUrgency }}</div>
+      <header class="hd">اسم المتجر</header>
 
-      <div class="page">
+      <main class="wrap">
         <div class="top">
           <!-- 1. Photos -->
-          <div class="photos">
+          <div class="gal">
             <div class="main">
               <img v-if="photos[active]" :src="photos[active]" alt="">
-              <AdsIcon v-else name="i-lucide-image" />
-              <span class="cod-badge"><AdsIcon name="i-lucide-truck" />{{ T.payOnDelivery }}</span>
-              <span v-if="photos.length > 1" class="count">{{ active + 1 }}/{{ photos.length }}</span>
+              <AdsIcon v-else name="i-lucide-image" class="ph" />
             </div>
-            <div v-if="photos.length > 1 && mobile" class="dots"><button v-for="(u, i) in photos.slice(0, 8)" :key="i" type="button" :class="{ on: i === active }" :aria-label="`Photo ${i + 1}`" @click="active = i" /></div>
-            <div v-else-if="photos.length > 1" class="strip">
-              <button v-for="(u, i) in photos.slice(0, compact ? 4 : 6)" :key="i" type="button" :class="{ on: i === active }" :aria-label="`Photo ${i + 1}`" @click="active = i"><img :src="u" alt=""></button>
-            </div>
+            <div v-if="photos.length > 1" class="dots"><span><i v-for="(u, i) in photos.slice(0, 8)" :key="i" :class="{ on: i === active }" @click="active = i" /></span></div>
           </div>
 
           <div class="buy">
             <!-- 2. Title + price -->
-            <div class="title">
-              <h2>{{ headline }}</h2>
+            <div>
+              <h1>{{ headline }}</h1>
               <p v-if="settings.subheadline" class="sub">{{ settings.subheadline }}</p>
-              <div v-if="settings.showPrice" class="price-row">
-                <span class="price">{{ fmt(product.priceCents) }}</span>
-                <span v-if="offers.find((o) => o.best)" class="from">{{ T.lessPerUnit }}</span>
-              </div>
+              <div v-if="settings.showPrice" class="price">{{ fmt(product.priceCents) }}</div>
               <p v-if="lowStock" class="stock"><i />{{ T.onlyLeft(lowStock) }}</p>
             </div>
-
             <ul v-if="quickBenefits.length" class="quick">
               <li v-for="(b, i) in quickBenefits" :key="i"><AdsIcon name="i-lucide-check" />{{ b }}</li>
             </ul>
 
             <!-- 3. Order form -->
             <form class="order" @submit.prevent>
-              <div class="form-head"><b>{{ T.orderNow }}</b><span><AdsIcon name="i-lucide-shield" />{{ T.payWhenArrives }}</span></div>
+              <div class="fh"><h2>{{ T.orderNow }}</h2><p>{{ T.payWhenArrives }}</p></div>
 
               <fieldset v-if="showOffers">
                 <legend>{{ T.chooseOffer }}</legend>
                 <label v-for="o in offers" :key="o.key" class="offer" :class="{ on: chosen === o.key }">
                   <input v-model="chosen" type="radio" name="offer" :value="o.key">
-                  <span class="radio" aria-hidden="true" />
-                  <span class="grow">
-                    <b>{{ o.label }}</b>
+                  <i class="rd" />
+                  <span class="g">
+                    <b>{{ o.label }}<span v-if="o.best" class="tg">{{ T.bestValue }}</span></b>
                     <small>{{ o.note }}<template v-if="o.save"> · <em>{{ T.save(fmt(o.save)) }}</em></template></small>
                   </span>
-                  <span class="amt">{{ fmt(o.total) }}</span>
-                  <span v-if="o.best" class="ribbon">{{ T.bestValue }}</span>
+                  <span class="am">{{ fmt(o.total) }}</span>
                 </label>
               </fieldset>
 
-              <div class="field"><span>{{ T.fullName }}</span><i><AdsIcon name="i-lucide-user" /></i></div>
-              <div class="field"><span>{{ T.phone }}</span><i><AdsIcon name="i-lucide-phone-call" /><em>{{ T.phoneHint }}</em></i></div>
+              <div class="fl"><span>{{ T.fullName }}</span><i class="in" /></div>
+              <div class="fl"><span>{{ T.phone }}</span><i class="in"><em>{{ T.phoneHint }}</em></i></div>
               <div class="two">
-                <div class="field"><span>{{ T.wilaya }}</span><i><AdsIcon name="i-lucide-chevron-down" /></i></div>
-                <div class="field"><span>{{ T.commune }}</span><i><AdsIcon name="i-lucide-chevron-down" /></i></div>
+                <div class="fl"><span>{{ T.wilaya }}</span><i class="in sel">{{ T.chooseWilaya }}</i></div>
+                <div class="fl"><span>{{ T.commune }}</span><i class="in sel off">{{ T.chooseCommune }}</i></div>
               </div>
-              <div v-if="settings.addressField !== 'hidden'" class="field"><span>{{ T.address }}<template v-if="settings.addressField === 'optional'"> {{ T.optional }}</template></span><i /></div>
-              <div class="seg" aria-hidden="true"><span class="on"><AdsIcon name="i-lucide-package" />{{ T.homeDelivery }}</span><span><AdsIcon name="i-lucide-truck" />{{ T.deskDelivery }}</span></div>
-              <div v-if="settings.showNotes" class="field"><span>{{ T.notes }}</span><i class="tall" /></div>
+              <div v-if="settings.addressField !== 'hidden'" class="fl"><span>{{ T.address }}<template v-if="settings.addressField === 'optional'"> {{ T.optional }}</template></span><i class="in" /></div>
+              <div class="fl">
+                <span>{{ T.delivery }}</span>
+                <div class="opts"><span class="opt"><i class="rd" />{{ T.homeDelivery }}</span><span class="opt"><i class="rd" />{{ T.deskDelivery }}</span></div>
+              </div>
+              <div v-if="settings.showNotes" class="fl"><span>{{ T.notes }}</span><i class="in tall" /></div>
 
               <div v-if="settings.showPrice" class="sum">
                 <div><span>{{ T.product }}</span><span>{{ fmt(total) }}</span></div>
                 <div><span>{{ T.delivery }}</span><span>{{ T.deliveryByWilaya }}</span></div>
-                <div class="grand"><span>{{ T.toPay }}</span><b>{{ fmt(total) }}</b></div>
+                <div class="gr"><span>{{ T.toPay }}</span><b>{{ fmt(total) }}</b></div>
               </div>
-              <span class="btn-cta"><AdsIcon name="i-lucide-arrow-right" />{{ settings.ctaLabel }}</span>
-
+              <span class="cta">{{ settings.ctaLabel }}</span>
               <ul v-if="settings.trustBadges" class="trust">
                 <li><AdsIcon name="i-lucide-truck" />{{ T.trust[0] }}</li>
                 <li><AdsIcon name="i-lucide-eye" />{{ T.trust[1] }}</li>
                 <li><AdsIcon name="i-lucide-arrow-left" />{{ T.trust[2] }}</li>
               </ul>
-              <small class="safe">{{ T.safeNote }}</small>
+              <p class="safe">{{ T.safeNote }}</p>
             </form>
           </div>
         </div>
 
         <!-- 4. The rest of the page -->
-        <div class="details">
+        <div class="det">
           <template v-if="isImage">
             <img v-if="generatedImageUrl" :src="resolveImageUrl(generatedImageUrl)" class="long" alt="">
-            <div v-else class="long-ph"><AdsIcon name="i-lucide-image" /><span dir="ltr">Choose a generated page to show here</span></div>
+            <div v-else class="long-ph" dir="ltr"><AdsIcon name="i-lucide-image" /><span>Choose a generated page to show here</span></div>
           </template>
 
           <template v-for="type in sections" :key="type">
-            <section v-if="type === 'description'" class="block">
-              <h3>{{ T.about }}</h3>
-              <p v-if="plainDescription" class="text">{{ plainDescription }}</p>
+            <section v-if="type === 'description'">
+              <h2>{{ T.about }}</h2>
+              <p v-if="plainDescription" class="txt">{{ plainDescription }}</p>
               <p v-else class="ghost">{{ T.noteNoDescription }}</p>
             </section>
 
-            <section v-else-if="type === 'benefits'" class="block">
-              <h3>{{ T.why }}</h3>
-              <ul v-if="benefits.length" class="checks">
-                <li v-for="(b, i) in benefits" :key="i"><AdsIcon name="i-lucide-check" />{{ b }}</li>
+            <section v-else-if="type === 'benefits'">
+              <h2>{{ T.why }}</h2>
+              <ul v-if="product.keyBenefits.length" class="checks">
+                <li v-for="(b, i) in product.keyBenefits" :key="i"><AdsIcon name="i-lucide-check" />{{ b }}</li>
               </ul>
               <p v-else class="ghost">{{ T.noteNoBenefits }}</p>
             </section>
 
-            <section v-else-if="type === 'specs'" class="block">
-              <h3>{{ T.specs }}</h3>
-              <dl v-if="specs.length" class="specs"><template v-for="(s, i) in specs" :key="i"><dt>{{ s.label }}</dt><dd>{{ s.value }}</dd></template></dl>
+            <section v-else-if="type === 'specs'">
+              <h2>{{ T.specs }}</h2>
+              <dl v-if="product.specifications.length" class="specs"><div v-for="(s, i) in product.specifications.slice(0, 12)" :key="i"><dt>{{ s.label }}</dt><dd>{{ s.value }}</dd></div></dl>
               <p v-else class="ghost">{{ T.noteNoSpecs }}</p>
             </section>
 
-            <section v-else-if="type === 'howItWorks'" class="block">
-              <h3>{{ T.how }}</h3>
-              <ol class="steps">
-                <li v-for="(x, i) in T.howSteps" :key="i"><b>{{ i + 1 }}</b>{{ x }}</li>
-              </ol>
+            <section v-else-if="type === 'howItWorks'">
+              <h2>{{ T.how }}</h2>
+              <ol class="how"><li v-for="(x, i) in T.howSteps" :key="i"><b>{{ i + 1 }}</b><span>{{ x }}</span></li></ol>
             </section>
 
-            <section v-else-if="type === 'testimonials'" class="block">
-              <h3>{{ T.reviews }}</h3>
-              <p class="ghost" dir="ltr">Shows the product’s real approved reviews on the live page. A funnel with none omits this section.</p>
+            <section v-else-if="type === 'testimonials'">
+              <h2>{{ T.reviews }}</h2>
+              <p class="ghost" dir="ltr">Shows the product’s real approved reviews on the live page. The section is left out when there are none.</p>
             </section>
 
-            <section v-else-if="type === 'guarantee'" class="guarantee">
+            <section v-else-if="type === 'guarantee'" class="gt">
               <span><AdsIcon name="i-lucide-truck" />{{ T.trust[0] }}</span>
               <span><AdsIcon name="i-lucide-eye" />{{ T.trust[1] }}</span>
               <span><AdsIcon name="i-lucide-arrow-left" />{{ T.trust[2] }}</span>
             </section>
 
-            <section v-else-if="type === 'faq'" class="block">
-              <h3>{{ T.questions }}</h3>
-              <template v-if="faqs.length"><div v-for="(f, i) in faqs" :key="i" class="faq"><b>{{ f.question }}</b><span>{{ f.answer }}</span></div></template>
+            <section v-else-if="type === 'faq'" class="faqs">
+              <h2>{{ T.questions }}</h2>
+              <template v-if="product.faqs.length">
+                <details v-for="(f, i) in product.faqs.slice(0, 4)" :key="i"><summary>{{ f.question }}</summary><p>{{ f.answer }}</p></details>
+              </template>
               <p v-else class="ghost">{{ T.noteNoFaq }}</p>
             </section>
           </template>
-
-          <section class="closing">
-            <b>{{ headline }}</b>
-            <span class="btn-cta"><AdsIcon name="i-lucide-arrow-right" />{{ settings.ctaLabel }}</span>
-          </section>
         </div>
-      </div>
+      </main>
+
+      <footer class="ft"><bdi>© 2026 اسم المتجر</bdi></footer>
 
       <!-- Pinned order bar: always present -->
-      <div class="sticky">
-        <span v-if="settings.showPrice" class="sp"><small>{{ T.total }}</small><b>{{ fmt(total) }}</b></span>
-        <span class="btn-cta"><AdsIcon name="i-lucide-arrow-right" />{{ settings.ctaLabel }}</span>
+      <div class="bar">
+        <div class="bi">
+          <div class="t"><small>{{ T.total }}</small><b>{{ fmt(total) }}</b></div>
+          <span class="cta">{{ settings.ctaLabel }}</span>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.device { --a: #1f5f5b; --s: #e6ede9; margin: 0 auto; width: 100%; color: var(--pine); background: var(--white); display: flex; flex-direction: column; overflow: hidden; }
+/* Mirrors apps/funnels/src/styles.ts: 4px grid; type 12/13/14/15/16/18/20/24; radius 8 (controls), 12 (cards), 4 (tags). */
+.device { --ink: #1c2022; --ink2: #596164; --ink3: #8a9295; --line: #e4e7e8; --line2: #cbd1d3; --soft: #f6f7f7; --bad: #b42318; --g: 16px; margin: 0 auto; width: 100%; background: #fff; color: var(--ink); display: flex; flex-direction: column; overflow: hidden; font: 400 15px/1.6 system-ui, -apple-system, 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; font-variant-numeric: tabular-nums; }
 .device.desktop { border: 1px solid var(--line); border-radius: var(--r-lg); }
-.device.mobile { max-width: 390px; border: 9px solid var(--pine); border-radius: 36px; box-shadow: 0 10px 30px rgba(14, 41, 40, .18); }
-.notch { height: 22px; background: var(--white); display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
-.notch span { width: 74px; height: 7px; border-radius: 4px; background: var(--pine); opacity: .85; }
-.chrome { display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--ivory); border-bottom: 1px solid var(--line-soft); flex-shrink: 0; }
-.chrome i { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
-.chrome span { margin-inline-start: 8px; flex: 1; font-size: 11px; color: var(--text-2); background: var(--white); border-radius: 4px; padding: 2px 8px; }
+.device.mobile { max-width: 390px; border: 8px solid #1c2022; border-radius: 32px; }
+.device * { box-sizing: border-box; }
+.notch { height: 20px; background: #fff; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+.notch span { width: 64px; height: 6px; border-radius: 3px; background: #1c2022; }
+.chrome { display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--soft); border-bottom: 1px solid var(--line); flex-shrink: 0; }
+.chrome i { width: 9px; height: 9px; border-radius: 50%; background: var(--line2); }
+.chrome span { margin-inline-start: 8px; flex: 1; font-size: 11px; color: var(--ink2); background: #fff; border-radius: 4px; padding: 2px 8px; }
 .scroller { overflow-y: auto; position: relative; }
 .desktop .scroller { max-height: 760px; }
 .mobile .scroller { height: 680px; scrollbar-width: none; }
 .mobile .scroller::-webkit-scrollbar { display: none; }
-.urgency { background: var(--a); color: #fff; text-align: center; font-weight: 600; font-size: 12.5px; padding: 8px 14px; display: flex; align-items: center; justify-content: center; gap: 6px; position: sticky; top: 0; z-index: 3; }
-.urgency svg { width: 14px; height: 14px; flex-shrink: 0; }
-.page { display: flex; flex-direction: column; font-size: 13px; line-height: 1.5; }
+b { font-weight: 700; }
+h1, h2, p, ul, ol, dl, dd, fieldset { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+fieldset { border: 0; padding: 0; min-width: 0; display: grid; gap: 8px; }
+svg { width: 16px; height: 16px; flex: none; stroke-width: 1.75; }
 
-/* Backbone */
-.top { display: flex; flex-direction: column; gap: 14px; padding: 12px 14px 18px; background: linear-gradient(180deg, var(--s), var(--white) 55%); }
-.desktop .top { padding: 20px 24px; gap: 16px; }
-.photos { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-.main { position: relative; aspect-ratio: 1 / 1; width: 100%; border-radius: 14px; background: var(--white); border: 1px solid var(--line-soft); display: flex; align-items: center; justify-content: center; overflow: hidden; color: var(--line); }
-.desktop .main { max-height: 420px; }
+.urg { display: flex; align-items: center; justify-content: center; min-height: 36px; padding: 6px var(--g); background: var(--a); color: var(--on); font-size: 13px; font-weight: 500; text-align: center; }
+.hd { display: flex; align-items: center; justify-content: center; height: 48px; border-bottom: 1px solid var(--line); font-size: 15px; font-weight: 700; }
+.wrap { max-width: 560px; margin: 0 auto; }
+.top { display: grid; }
+.gal { position: relative; min-width: 0; }
+.main { aspect-ratio: 1 / 1; background: var(--soft); display: flex; align-items: center; justify-content: center; overflow: hidden; color: var(--line2); }
 .main img { width: 100%; height: 100%; object-fit: cover; }
-.main > svg { width: 44px; height: 44px; }
-.cod-badge { position: absolute; top: 10px; inset-inline-start: 10px; background: var(--a); color: #fff; font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px; }
-.cod-badge svg { width: 12px; height: 12px; }
-.count { position: absolute; bottom: 10px; inset-inline-end: 10px; background: rgba(14, 41, 40, .65); color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 999px; }
-.dots { display: flex; justify-content: center; gap: 6px; }
-.dots button { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 50%; background: var(--line); cursor: pointer; }
-.dots button.on { background: var(--a); width: 18px; border-radius: 4px; }
-.strip { display: flex; gap: 6px; overflow-x: auto; }
-.strip button { flex: 0 0 56px; height: 56px; padding: 0; border: 2px solid transparent; border-radius: var(--r); background: none; overflow: hidden; cursor: pointer; opacity: .7; }
-.strip button.on { border-color: var(--a); opacity: 1; }
-.strip img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.buy { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.title { display: flex; flex-direction: column; gap: 6px; }
-h2 { font-size: 21px; line-height: 1.25; margin: 0; letter-spacing: -.01em; }
-.sub { margin: 0; color: var(--text-2); font-size: 14px; }
-.price-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
-.price { font-size: 26px; font-weight: 800; color: var(--a); line-height: 1.1; }
-.from { font-size: 12px; color: var(--text-2); }
-.stock { margin: 0; display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; color: #8a3a26; background: #f5e3dd; padding: 5px 10px; border-radius: 999px; align-self: flex-start; }
-.stock i { width: 7px; height: 7px; border-radius: 50%; background: #b4533a; }
-.quick { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.quick li { display: flex; gap: 8px; align-items: flex-start; font-size: 13.5px; font-weight: 500; }
-.quick svg { width: 17px; height: 17px; color: var(--a); flex-shrink: 0; margin-top: 1px; }
+.main .ph { width: 40px; height: 40px; }
+.dots { position: absolute; inset-inline: 0; bottom: 12px; display: flex; justify-content: center; }
+.dots span { display: flex; gap: 6px; padding: 6px 8px; border-radius: 99px; background: rgba(0, 0, 0, .34); }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, .55); cursor: pointer; }
+.dots i.on { background: #fff; }
+.buy { display: grid; gap: 24px; padding: 16px var(--g) 24px; align-content: start; min-width: 0; }
+h1 { font-size: 20px; line-height: 1.45; font-weight: 700; }
+.sub { margin-top: 4px; font-size: 14px; color: var(--ink2); }
+.price { margin-top: 12px; font-size: 24px; line-height: 1.2; font-weight: 700; }
+.stock { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; font-weight: 500; color: var(--bad); }
+.stock i { width: 6px; height: 6px; border-radius: 50%; background: var(--bad); }
+.quick { display: grid; gap: 8px; font-size: 14px; }
+.quick li, .checks li { display: flex; gap: 8px; align-items: flex-start; }
+.quick svg, .checks svg { margin-top: 4px; color: var(--at); }
 
-/* Order form */
-.order { background: var(--white); border: 1.5px solid var(--a); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 6px 18px rgba(14, 41, 40, .08); }
-.form-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.form-head b { font-size: 17px; }
-.form-head span { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--a); font-weight: 600; }
-.form-head svg { width: 14px; height: 14px; }
-fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-legend { font-size: 12px; color: var(--text-2); padding: 0; margin-bottom: 6px; }
-.offer { position: relative; display: flex; align-items: center; gap: 10px; border: 1.5px solid var(--line); border-radius: 12px; padding: 12px; min-height: 56px; cursor: pointer; background: var(--white); }
-.offer.on { border-color: var(--a); background: var(--s); }
+.order { display: grid; gap: 16px; padding: 16px; border: 1px solid var(--line2); border-radius: 12px; }
+.fh h2 { font-size: 18px; line-height: 1.4; font-weight: 700; }
+.fh p { margin-top: 2px; font-size: 13px; color: var(--ink2); }
+legend { padding: 0; margin-bottom: 8px; font-size: 14px; font-weight: 500; }
+.offer, .opt { position: relative; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 12px 16px; border: 1px solid var(--line2); border-radius: 8px; background: #fff; }
+.opt { min-height: 48px; font-size: 14px; color: var(--ink3); background: var(--soft); }
+.opts { display: grid; gap: 8px; }
 .offer input { position: absolute; opacity: 0; pointer-events: none; }
-.radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--line); flex-shrink: 0; display: inline-block; }
-.offer.on .radio { border-color: var(--a); background: radial-gradient(circle, var(--a) 0 45%, transparent 50%); }
-.offer .grow { display: flex; flex-direction: column; line-height: 1.3; min-width: 0; }
-.offer b { font-size: 14px; }
-.offer small { color: var(--text-2); font-size: 11.5px; }
-.offer small em { font-style: normal; color: var(--a); font-weight: 700; }
-.amt { font-weight: 800; font-size: 15px; white-space: nowrap; }
-.ribbon { position: absolute; top: -9px; inset-inline-end: 10px; background: var(--brass); color: #fff; font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; letter-spacing: .02em; }
-.field { display: flex; flex-direction: column; gap: 4px; }
-.field > span { font-size: 12px; color: var(--text-2); font-weight: 500; }
-.field i { height: 48px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--white); display: flex; align-items: center; gap: 8px; padding: 0 12px; color: var(--text-2); font-style: normal; }
-.field i.tall { height: 72px; }
-.field i svg { width: 16px; height: 16px; flex-shrink: 0; }
-.field i em { font-style: normal; font-size: 13px; opacity: .6; }
-.two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--ivory); border-radius: 12px; padding: 4px; }
-.seg span { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; border-radius: 9px; font-weight: 600; font-size: 12.5px; color: var(--text-2); }
-.seg span.on { background: var(--white); color: var(--a); box-shadow: 0 1px 3px rgba(14, 41, 40, .15); }
-.seg svg { width: 15px; height: 15px; }
-.sum { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: var(--text-2); padding-top: 8px; border-top: 1px dashed var(--line); }
-.sum > div { display: flex; justify-content: space-between; }
-.sum .grand { color: var(--pine); font-size: 15px; font-weight: 600; padding-top: 4px; }
-.sum .grand b { color: var(--a); font-size: 20px; font-weight: 800; }
-.btn-cta { display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--a); color: #fff; font-weight: 700; font-size: 16px; min-height: 54px; padding: 0 18px; border-radius: 14px; text-align: center; box-shadow: 0 4px 0 rgba(0, 0, 0, .18); }
-.btn-cta svg { width: 18px; height: 18px; }
-.trust { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-.trust li { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; font-size: 11px; line-height: 1.25; color: var(--text-2); font-weight: 500; }
-.trust svg { width: 18px; height: 18px; color: var(--a); }
-.safe { text-align: center; color: var(--text-2); font-size: 11px; }
+.rd { width: 18px; height: 18px; flex: none; border: 1.5px solid #9ba3a6; border-radius: 50%; display: inline-block; }
+.offer.on { border-color: var(--a); box-shadow: 0 0 0 1px var(--a); background: var(--s); }
+.offer.on .rd { border-color: var(--a); background: radial-gradient(circle, var(--a) 0 38%, transparent 42%); }
+.offer .g { flex: 1; min-width: 0; display: grid; line-height: 1.45; }
+.offer b { font-size: 15px; font-weight: 500; }
+.offer small { font-size: 13px; color: var(--ink2); }
+.offer em { font-style: normal; font-weight: 500; color: var(--at); }
+.tg { display: inline-block; margin-inline-start: 8px; padding: 0 6px; border-radius: 4px; background: var(--a); color: var(--on); font-size: 11px; font-weight: 700; line-height: 18px; vertical-align: 1px; }
+.am { font-size: 15px; font-weight: 700; white-space: nowrap; }
+.fl { display: grid; gap: 6px; }
+.fl > span { font-size: 14px; font-weight: 500; }
+.in { display: flex; align-items: center; height: 48px; padding: 0 12px; border: 1px solid var(--line2); border-radius: 8px; background: #fff; font-size: 16px; font-style: normal; color: var(--ink3); }
+.in em { font-style: normal; font-size: 15px; }
+.in.tall { height: 80px; }
+.in.sel { justify-content: space-between; color: var(--ink2); }
+.in.off { background: var(--soft); color: var(--ink3); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sum { display: grid; gap: 8px; padding: 12px 16px; border-radius: 8px; background: var(--soft); font-size: 14px; color: var(--ink2); }
+.sum > div { display: flex; justify-content: space-between; gap: 12px; }
+.sum .gr { margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 16px; font-weight: 700; color: var(--ink); }
+.cta { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 52px; padding: 0 24px; border-radius: 8px; background: var(--a); color: var(--on); font-size: 16px; font-weight: 700; line-height: 1.3; text-align: center; }
+.trust { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; font-size: 13px; color: var(--ink2); }
+.trust li { display: flex; align-items: center; gap: 6px; }
+.safe { font-size: 13px; color: var(--ink3); text-align: center; }
 
-/* Layouts */
-.desktop.layout-split .top { flex-direction: row; align-items: flex-start; gap: 24px; }
-.desktop.layout-split .photos { flex: 1 1 50%; }
-.desktop.layout-split .buy { flex: 1 1 50%; }
-.layout-compact .main { aspect-ratio: 4 / 3; }
-.layout-compact .top { gap: 10px; }
-.layout-compact .order { gap: 8px; }
-.layout-compact h2 { font-size: 19px; }
-.layout-compact .quick { display: none; }
-
-/* Details */
-.details { display: flex; flex-direction: column; }
-.details > * { border-top: 1px solid var(--row-line); }
-.block { padding: 18px 14px; }
-.desktop .block { padding: 20px 24px; }
-h3 { font-size: 16px; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
-.tag { font-style: normal; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; background: var(--warn-bg); color: var(--warn-fg); border-radius: 3px; padding: 2px 6px; }
-.text { margin: 0; white-space: pre-line; font-size: 14px; }
-.ghost { margin: 0; color: var(--text-2); font-style: italic; }
-.checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; font-size: 14px; }
-.checks li { display: flex; gap: 8px; align-items: flex-start; }
-.checks svg { width: 17px; height: 17px; color: var(--a); flex-shrink: 0; margin-top: 2px; }
-.specs { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 0; font-size: 13.5px; }
-.specs dt { color: var(--text-2); }
-.specs dd { margin: 0; font-weight: 500; }
-.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.steps li { background: var(--s); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
-.steps b { width: 24px; height: 24px; border-radius: 6px; background: var(--a); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; }
-.mobile .steps, .mobile .quotes { grid-template-columns: 1fr; }
-.mobile .steps li { flex-direction: row; align-items: center; gap: 10px; }
-.quotes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-blockquote { margin: 0; background: var(--ivory); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
-.stars { color: var(--brass); letter-spacing: 2px; }
-cite { font-size: 11px; color: var(--text-2); font-style: normal; }
-.guarantee { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 18px; padding: 16px 14px; background: var(--s); font-weight: 600; font-size: 12.5px; }
-.guarantee span { display: inline-flex; align-items: center; gap: 6px; }
-.guarantee svg { width: 16px; height: 16px; color: var(--a); }
-.faq { display: flex; flex-direction: column; gap: 2px; padding: 11px 0; border-top: 1px solid var(--row-line); font-size: 13.5px; }
-.faq:first-of-type { border-top: 0; padding-top: 0; }
-.faq span { color: var(--text-2); }
-.long { width: 100%; max-height: 560px; object-fit: cover; object-position: top; display: block; }
-.long-ph { width: 100%; min-height: 220px; display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center; color: var(--text-2); background: var(--hover); }
+.det > * { padding: 24px var(--g); border-top: 1px solid var(--line); }
+.det h2 { margin-bottom: 12px; font-size: 18px; line-height: 1.4; font-weight: 700; }
+.txt { font-size: 15px; line-height: 1.75; white-space: pre-line; }
+.ghost { color: var(--ink3); font-style: italic; font-size: 14px; }
+.checks { display: grid; gap: 12px; font-size: 15px; }
+.specs { display: block; font-size: 14px; }
+.specs > div { display: grid; grid-template-columns: 2fr 3fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.specs > div:first-child { padding-top: 0; }
+.specs > div:last-child { border: 0; padding-bottom: 0; }
+.specs dt { color: var(--ink2); }
+.specs dd { font-weight: 500; }
+.how { display: grid; gap: 12px; font-size: 15px; }
+.how li { display: flex; gap: 12px; }
+.how b { flex: none; width: 24px; height: 24px; border: 1px solid var(--at); border-radius: 50%; color: var(--at); font-size: 13px; line-height: 22px; text-align: center; }
+.gt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center; font-size: 13px; color: var(--ink2); }
+.gt span { display: grid; justify-items: center; gap: 8px; }
+.gt svg { width: 20px; height: 20px; color: var(--ink2); }
+.det > .faqs { padding-bottom: 8px; }
+details { border-bottom: 1px solid var(--line); }
+details:last-of-type { border: 0; }
+summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 0; font-size: 15px; font-weight: 500; cursor: pointer; list-style: none; }
+summary::-webkit-details-marker { display: none; }
+details p { padding-bottom: 16px; font-size: 14px; color: var(--ink2); }
+.long { width: 100%; max-height: 560px; object-fit: cover; object-position: top; display: block; padding: 0 !important; }
+.long-ph { min-height: 220px; display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center; color: var(--ink3); background: var(--soft); }
 .long-ph svg { width: 28px; height: 28px; }
-.closing { display: flex; flex-direction: column; gap: 12px; padding: 20px 14px 24px; text-align: center; background: var(--s); font-size: 16px; }
-.mobile .closing { padding-bottom: 96px; }
+.ft { padding: 24px var(--g) 88px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink3); text-align: center; }
 
-/* Pinned order bar (phones) */
-.sticky { position: sticky; bottom: 0; z-index: 3; display: flex; align-items: center; gap: 12px; padding: 10px 12px calc(10px + 4px); background: var(--white); border-top: 1px solid var(--line); box-shadow: 0 -6px 16px rgba(14, 41, 40, .1); }
-.sticky .sp { display: flex; flex-direction: column; line-height: 1.1; }
-.sticky small { font-size: 10.5px; color: var(--text-2); }
-.sticky b { color: var(--a); font-size: 17px; font-weight: 800; white-space: nowrap; }
-.sticky .btn-cta { flex: 1; min-height: 48px; font-size: 15px; }
+.bar { position: sticky; bottom: 0; z-index: 3; background: #fff; border-top: 1px solid var(--line2); padding: 12px var(--g); }
+.bi { display: flex; align-items: center; gap: 16px; max-width: 560px; margin: 0 auto; }
+.bi .t { display: grid; line-height: 1.25; }
+.bi .t small { font-size: 12px; color: var(--ink2); }
+.bi .t b { font-size: 16px; font-weight: 700; white-space: nowrap; }
+.bi .cta { flex: 1; min-height: 48px; }
+
+/* wide screens */
+.desktop { --g: 24px; }
+.desktop h1 { font-size: 24px; }
+.desktop .top { padding: 32px var(--g); }
+.desktop .gal { border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
+.desktop .buy { padding: 24px 0 0; }
+.desktop.layout-split .wrap { max-width: 1000px; }
+.desktop.layout-split .top { grid-template-columns: 1fr 1fr; gap: 16px 32px; align-items: start; }
+.desktop.layout-split .buy { padding: 0; }
+.desktop.layout-split .det { max-width: 720px; margin-inline: auto; }
+.layout-compact .buy { gap: 16px; }
+.layout-compact h1 { font-size: 19px; }
 </style>

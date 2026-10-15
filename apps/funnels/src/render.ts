@@ -35,16 +35,37 @@ const CLIENT_JS = readFileSync(join(__dirname, '..', 'src', 'client.js'), 'utf8'
 
 const ICONS: Record<string, string> = {
   check: '<path d="M20 6 9 17l-5-5"/>',
+  star: '<path d="M12 2.5l2.94 5.96 6.58.96-4.76 4.64 1.12 6.55L12 17.52 6.12 20.6l1.12-6.55L2.48 9.42l6.58-.96L12 2.5z"/>',
   truck: '<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>',
-  shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
   eye: '<path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/>',
-  undo: '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>',
-  arrow: '<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>'
+  undo: '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>'
 }
 const SPRITE = `<svg width="0" height="0" style="position:absolute" aria-hidden="true">${Object.entries(ICONS)
   .map(([id, p]) => `<symbol id="i-${id}" viewBox="0 0 24 24">${p}</symbol>`)
   .join('')}</svg>`
 const ico = (n: keyof typeof ICONS) => `<svg aria-hidden="true"><use href="#i-${n}"/></svg>`
+
+// WCAG relative luminance, so the button text and accent-coloured text stay readable on every accent
+// (a light accent like brass gets dark button text; as text on white it is darkened until it passes 4.5:1).
+function luminance(hex: string): number {
+  const n = parseInt(hex.slice(1), 16)
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
+    const c = v / 255
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  }) as [number, number, number]
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+const contrastOnWhite = (hex: string) => 1.05 / (luminance(hex) + 0.05)
+function accentVars(solid: string, soft: string): string {
+  const on = contrastOnWhite(solid) >= 4.5 ? '#ffffff' : '#1c2022'
+  let text = solid
+  for (let i = 0; i < 12 && contrastOnWhite(text) < 4.5; i++) {
+    const n = parseInt(text.slice(1), 16)
+    const d = (v: number) => Math.round(v * 0.9)
+    text = '#' + ((d((n >> 16) & 255) << 16) | (d((n >> 8) & 255) << 8) | d(n & 255)).toString(16).padStart(6, '0')
+  }
+  return `--a:${solid};--s:${soft};--on:${on};--at:${text}`
+}
 
 const PIXEL_META = /^[0-9]{5,20}$/
 const PIXEL_TIKTOK = /^[A-Za-z0-9]{6,40}$/
@@ -133,14 +154,14 @@ function build(f: PublicFunnel): string {
       ]
         .map(
           (o) =>
-            `<label class="offer"><input type="radio" name="offer" value="${esc(o.key)}"${o.key === chosenKey ? ' checked' : ''}><i class="rd"></i><span class="g"><b>${esc(o.label)}</b><small>${esc(o.note)}${o.save ? ` · <em data-os="${esc(o.key)}">${esc(T.save(formatDa(o.save)))}</em>` : ''}</small></span><span class="am" data-ot="${esc(o.key)}">${formatDa(o.total)}</span>${o.isBest ? `<span class="rb">${T.bestValue}</span>` : ''}</label>`
+            `<label class="offer"><input type="radio" name="offer" value="${esc(o.key)}"${o.key === chosenKey ? ' checked' : ''}><i class="rd"></i><span class="g"><b>${esc(o.label)}${o.isBest ? `<span class="tg">${T.bestValue}</span>` : ''}</b><small>${esc(o.note)}${o.save ? ` · <em data-os="${esc(o.key)}">${esc(T.save(formatDa(o.save)))}</em>` : ''}</small></span><span class="am" data-ot="${esc(o.key)}">${formatDa(o.total)}</span></label>`
         )
         .join('')}</div></fieldset>`
     : ''
 
   const bumpHtml = bumpStep?.offerProduct
     ? `<label class="bump"><input type="checkbox" name="bump" value="${esc(bumpStep.id)}">${
-        bumpStep.offerProduct.imageUrl ? `<img src="${esc(imgUrl(bumpStep.offerProduct.imageUrl, 320))}" width="46" height="46" alt="" loading="lazy" decoding="async">` : ''
+        bumpStep.offerProduct.imageUrl ? `<img src="${esc(imgUrl(bumpStep.offerProduct.imageUrl, 320))}" width="44" height="44" alt="" loading="lazy" decoding="async">` : ''
       }<span class="g"><b>${esc(bumpStep.headline || T.bump)}</b><span>${esc(bumpStep.offerProduct.name)}</span></span><span class="am">+${formatDa(bumpStep.offerProduct.priceCents)}</span></label>`
     : ''
 
@@ -148,7 +169,7 @@ function build(f: PublicFunnel): string {
   const field = (name: string, label: string, control: string, err: string) => `<div class="fl" data-f="${name}"><span>${label}</span>${control}<span class="em">${err}</span></div>`
 
   const form = `<form id="f" class="order" novalidate>
-<div class="fh"><b>${T.orderNow}</b><span>${ico('shield')}${T.payWhenArrives}</span></div>
+<div class="fh"><h2>${T.orderNow}</h2><p>${T.payWhenArrives}</p></div>
 ${variantHtml}${offersHtml}${bumpHtml}
 ${field('name', T.fullName, '<input class="in" name="name" autocomplete="name" required>', T.errName)}
 ${field('phone', T.phone, `<input class="in" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="${T.phoneHint}" dir="ltr" style="text-align:start" required>`, T.errPhone)}
@@ -157,7 +178,7 @@ ${field('wilaya', T.wilaya, `<select class="in" name="wilaya" autocomplete="off"
 ${field('commune', T.commune, `<select class="in" name="commune" autocomplete="off" required disabled><option value="">${T.chooseCommune}</option></select>`, T.errCommune)}
 </div>
 ${s.addressField === 'hidden' ? '' : field('address', addrLabel, '<input class="in" name="address" autocomplete="street-address">', T.errAddress)}
-<div class="fl" data-f="ship"><div class="seg"><label><input type="radio" name="ship" value="Home" disabled><span data-sl="Home">${T.homeDelivery}</span></label><label><input type="radio" name="ship" value="Desk" disabled><span data-sl="Desk">${T.deskDelivery}</span></label></div><span class="em">${T.errDelivery}</span></div>
+<div class="fl" data-f="ship"><span>${T.delivery}</span><div class="opts"><label class="opt"><input type="radio" name="ship" value="Home" disabled><i class="rd"></i><span data-sl="Home">${T.homeDelivery}</span></label><label class="opt"><input type="radio" name="ship" value="Desk" disabled><i class="rd"></i><span data-sl="Desk">${T.deskDelivery}</span></label></div><span class="em">${T.errDelivery}</span></div>
 ${s.showNotes ? `<div class="fl"><span>${T.notes}</span><textarea class="in" name="notes" maxlength="300"></textarea></div>` : ''}
 ${
   s.showPrice
@@ -165,7 +186,7 @@ ${
     : ''
 }
 <div class="fe" id="fe" role="alert"></div>
-<button class="cta" type="submit" id="sub">${ico('arrow')}<span>${esc(s.ctaLabel)}</span></button>
+<button class="cta" type="submit" id="sub"><span>${esc(s.ctaLabel)}</span></button>
 ${s.trustBadges ? `<ul class="trust"><li>${ico('truck')}${T.trust[0]}</li><li>${ico('eye')}${T.trust[1]}</li><li>${ico('undo')}${T.trust[2]}</li></ul>` : ''}
 <p class="safe">${T.safeNote}</p>
 </form>`
@@ -173,16 +194,13 @@ ${s.trustBadges ? `<ul class="trust"><li>${ico('truck')}${T.trust[0]}</li><li>${
   // ---- title block ----
   const quick = s.quickBenefits && layout !== 'compact' ? p.keyBenefits.slice(0, 3) : []
   const title = `<div><h1>${esc(headline)}</h1>${s.subheadline ? `<p class="sub">${esc(s.subheadline)}</p>` : ''}${
-    s.showPrice ? `<div class="pr"><span class="price" data-unit>${formatDa(unit)}</span>${best ? `<span class="from">${T.lessPerUnit}</span>` : ''}</div>` : ''
-  }${f.rating ? `<div class="rt"><span class="st">★</span><b>${f.rating.avg}</b><span>(${f.rating.count})</span></div>` : ''}${lowStock ? `<div class="stock"><i></i>${T.onlyLeft(lowStock)}</div>` : ''}</div>${
+    f.rating ? `<div class="rt">${ico('star')}<b>${f.rating.avg}</b><span>(${f.rating.count})</span></div>` : ''
+  }${s.showPrice ? `<div class="price" data-unit>${formatDa(unit)}</div>` : ''}${lowStock ? `<div class="stock"><i></i>${T.onlyLeft(lowStock)}</div>` : ''}</div>${
     quick.length ? `<ul class="quick">${quick.map((b) => `<li>${ico('check')}<span>${esc(b)}</span></li>`).join('')}</ul>` : ''
   }`
 
-  const gallery = `<div class="gal"><div class="slides" id="sl">${slides || '<div class="slide"></div>'}</div><span class="badge">${ico('truck')}${T.payOnDelivery}</span>${
-    photos.length > 1 ? `<span class="cnt" id="cnt">1/${Math.min(photos.length, 8)}</span><div class="dots" id="dots">${photos
-      .slice(0, 8)
-      .map((_, i) => `<i${i === 0 ? ' class="on"' : ''}></i>`)
-      .join('')}</div>` : ''
+  const gallery = `<div class="gal"><div class="slides" id="sl">${slides || '<div class="slide"></div>'}</div>${
+    photos.length > 1 ? `<div class="dots" id="dots"><span>${photos.slice(0, 8).map((_, i) => `<i${i === 0 ? ' class="on"' : ''}></i>`).join('')}</span></div>` : ''
   }</div>`
 
   const buy = soldOut ? `${title}<div class="soldout">${T.outOfStock}</div>` : `${title}${form}`
@@ -196,39 +214,38 @@ ${s.trustBadges ? `<ul class="trust"><li>${ico('truck')}${T.trust[0]}</li><li>${
     if (!sec.enabled) continue
     switch (sec.type) {
       case 'description':
-        if (p.description) details.push(`<section class="blk"><h2>${T.about}</h2><div class="txt">${sanitizeHtml(p.description)}</div></section>`)
+        if (p.description) details.push(`<section><h2>${T.about}</h2><div class="txt">${sanitizeHtml(p.description)}</div></section>`)
         break
       case 'benefits':
-        if (p.keyBenefits.length) details.push(`<section class="blk"><h2>${T.why}</h2><ul class="checks">${p.keyBenefits.map((b) => `<li>${ico('check')}<span>${esc(b)}</span></li>`).join('')}</ul></section>`)
+        if (p.keyBenefits.length) details.push(`<section><h2>${T.why}</h2><ul class="checks">${p.keyBenefits.map((b) => `<li>${ico('check')}<span>${esc(b)}</span></li>`).join('')}</ul></section>`)
         break
       case 'specs':
-        if (p.specifications.length) details.push(`<section class="blk"><h2>${T.specs}</h2><dl class="specs">${p.specifications.slice(0, 12).map((x) => `<dt>${esc(x.label)}</dt><dd>${esc(x.value)}</dd>`).join('')}</dl></section>`)
+        if (p.specifications.length) details.push(`<section><h2>${T.specs}</h2><dl class="specs">${p.specifications.slice(0, 12).map((x) => `<div><dt>${esc(x.label)}</dt><dd>${esc(x.value)}</dd></div>`).join('')}</dl></section>`)
         break
       case 'howItWorks':
-        details.push(`<section class="blk"><h2>${T.how}</h2><ol class="how">${T.howSteps.map((x, i) => `<li><b>${i + 1}</b><span>${x}</span></li>`).join('')}</ol></section>`)
+        details.push(`<section><h2>${T.how}</h2><ol class="how">${T.howSteps.map((x, i) => `<li><b>${i + 1}</b><span>${x}</span></li>`).join('')}</ol></section>`)
         break
       case 'testimonials':
         // Real, approved reviews only. With none, the section is simply omitted (never placeholder quotes).
-        if (f.reviews.length) details.push(`<section class="blk"><h2>${T.reviews}</h2><div class="qs">${f.reviews.map((r) => `<blockquote><span class="st">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>${esc(r.text)}${r.author ? `<cite>${esc(r.author)}</cite>` : ''}</blockquote>`).join('')}</div></section>`)
+        if (f.reviews.length) details.push(`<section><h2>${T.reviews}</h2><div class="rv">${f.reviews.map((r) => `<div><span class="st">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span><p>${esc(r.text)}</p>${r.author ? `<cite>${esc(r.author)}</cite>` : ''}</div>`).join('')}</div></section>`)
         break
       case 'guarantee':
         details.push(`<section class="gt"><span>${ico('truck')}${T.trust[0]}</span><span>${ico('eye')}${T.trust[1]}</span><span>${ico('undo')}${T.trust[2]}</span></section>`)
         break
       case 'faq':
-        if (p.faqs.length) details.push(`<section class="blk"><h2>${T.questions}</h2>${p.faqs.slice(0, 8).map((q) => `<div class="faq"><b>${esc(q.question)}</b><span>${esc(q.answer)}</span></div>`).join('')}</section>`)
+        if (p.faqs.length) details.push(`<section class="faqs"><h2>${T.questions}</h2>${p.faqs.slice(0, 8).map((q) => `<details><summary>${esc(q.question)}</summary><p>${esc(q.answer)}</p></details>`).join('')}</section>`)
         break
     }
   }
-  if (!soldOut) details.push(`<section class="end"><span>${esc(headline)}</span><button type="button" class="cta" data-go>${ico('arrow')}<span>${esc(s.ctaLabel)}</span></button></section>`)
 
   // ---- post-order screens ----
   const offerScreen = (st: PublicFunnelStep) => {
     const op = st.offerProduct!
-    return `<section class="scr" data-screen="o:${esc(st.id)}" hidden><p class="kk" style="font-weight:700;color:#b8892b">${T.offerKicker}</p><h1>${esc(st.headline || st.name)}</h1><div class="card">${
+    return `<section class="scr" data-screen="o:${esc(st.id)}" hidden><div><h1>${esc(st.headline || st.name)}</h1></div><div class="card"><span class="kk">${T.offerKicker}</span>${
       op.imageUrl ? `<img class="op" src="${esc(imgUrl(op.imageUrl, 800))}" width="800" height="800" alt="${esc(op.name)}" loading="lazy" decoding="async">` : ''
-    }<b style="font-size:17px">${esc(op.name)}</b><div class="ops">${op.normalPriceCents > op.priceCents ? `<s>${formatDa(op.normalPriceCents)}</s>` : ''}<b>${formatDa(op.priceCents)}</b></div><p class="safe" style="text-align:start">${T.offerNote}</p><div class="fe" data-oe></div><button type="button" class="cta" data-accept="${esc(st.id)}">${ico('arrow')}<span>${T.offerAdd}</span></button><button type="button" class="ghost" data-skip="${esc(st.id)}">${T.offerSkip}</button></div></section>`
+    }<span class="nm">${esc(op.name)}</span><div class="ops">${op.normalPriceCents > op.priceCents ? `<s>${formatDa(op.normalPriceCents)}</s>` : ''}<b>${formatDa(op.priceCents)}</b></div><p class="note">${T.offerNote}</p><div class="fe" data-oe></div><button type="button" class="cta" data-accept="${esc(st.id)}"><span>${T.offerAdd}</span></button><button type="button" class="ghost" data-skip="${esc(st.id)}">${T.offerSkip}</button></div></section>`
   }
-  const thanks = `<section class="scr" data-screen="thanks" hidden><div class="big">${ico('check')}</div><h1>${T.thanksTitle}</h1><p id="tb"></p><p>${T.orderNumber}: <span class="oid" id="oid"></span></p><div class="card"><b>${T.thanksNext}</b><ol class="nx">${T.thanksSteps.map((x, i) => `<li><b>${i + 1}</b><span>${x}</span></li>`).join('')}</ol></div></section>`
+  const thanks = `<section class="scr" data-screen="thanks" hidden><div><div class="ok">${ico('check')}</div><h1 style="margin-top:16px">${T.thanksTitle}</h1><p class="lead" id="tb"></p><p class="lead">${T.orderNumber}: <span class="oid" id="oid"></span></p></div><div class="card"><b>${T.thanksNext}</b><ol class="nx">${T.thanksSteps.map((x, i) => `<li><b>${i + 1}</b><span>${x}</span></li>`).join('')}</ol></div></section>`
 
   // ---- client data (everything the script needs, nothing it must fetch) ----
   const metaId = f.pixels.metaPixelId && PIXEL_META.test(f.pixels.metaPixelId) ? f.pixels.metaPixelId : null
@@ -273,7 +290,10 @@ ${s.trustBadges ? `<ul class="trust"><li>${ico('truck')}${T.trust[0]}</li><li>${
   // Always present (the visitor can always reach the order button), unless there is nothing left to sell.
   const hasBar = !soldOut
 
-  return `<!doctype html><html lang="${T.lang}" dir="${T.dir}" style="--a:${accent.solid};--s:${accent.soft}"><head>${head}</head><body class="${layout === 'split' ? 'split' : ''}${hasBar ? ' hasbar' : ''}">${SPRITE}<div id="m" data-screen="landing">${urgency}<div class="wrap"><div class="top">${gallery}<div class="buy">${buy}</div></div><div class="det">${details.join('')}</div></div></div>${after.map(offerScreen).join('')}${thanks}${
-    hasBar ? `<div class="bar" id="bar"><div class="t"><small>${T.total}</small><b data-total>${formatDa(subtotal)}</b></div><button type="button" class="cta" id="bb">${ico('arrow')}<span>${esc(s.ctaLabel)}</span></button></div>` : ''
+  const header = `<header class="hd">${esc(f.storeName)}</header>`
+  const footer = `<footer class="ft"><bdi>© ${new Date().getFullYear()} ${esc(f.storeName)}</bdi></footer>`
+
+  return `<!doctype html><html lang="${T.lang}" dir="${T.dir}" style="${accentVars(accent.solid, accent.soft)}"><head>${head}</head><body class="${layout === 'split' ? 'split' : ''}${hasBar ? ' hasbar' : ''}">${SPRITE}<div id="m" data-screen="landing">${urgency}${header}<main class="wrap"><div class="top">${gallery}<div class="buy">${buy}</div></div><div class="det">${details.join('')}</div></main>${footer}</div>${after.map(offerScreen).join('')}${thanks}${
+    hasBar ? `<div class="bar" id="bar"><div class="bi"><div class="t"><small>${T.total}</small><b data-total>${formatDa(subtotal)}</b></div><button type="button" class="cta" id="bb"><span>${esc(s.ctaLabel)}</span></button></div></div>` : ''
   }<script type="application/json" id="fd">${escJson(fd)}</script><script>${CLIENT_JS}</script></body></html>`
 }
