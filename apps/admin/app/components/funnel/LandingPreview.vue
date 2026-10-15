@@ -114,7 +114,7 @@ const plainDescription = computed(() => {
 </script>
 
 <template>
-  <div class="device" :class="[device, `layout-${layout}`]" :style="vars">
+  <div class="device" :class="[device, `layout-${layout}`, `tpl-${settings.templateId}`]" :style="vars">
     <div v-if="mobile" class="notch" aria-hidden="true"><span /></div>
     <div v-else class="chrome" aria-hidden="true"><i /><i /><i /><span>/f/…</span></div>
 
@@ -367,6 +367,21 @@ details p { padding-bottom: 16px; font-size: 14px; color: var(--ink2); }
 .desktop.layout-split .top { grid-template-columns: 1fr 1fr; gap: 16px 32px; align-items: start; }
 .desktop.layout-split .buy { padding: 0; }
 .desktop.layout-split .det { max-width: 720px; margin-inline: auto; }
-.layout-compact .buy { gap: 16px; }
-.layout-compact h1 { font-size: 19px; }
+.tpl-compact .slide { aspect-ratio: 16 / 9; }
+.tpl-compact .buy { gap: 12px; padding-top: 12px; }
+.tpl-compact h1 { font-size: 18px; }
+.tpl-compact .price { margin-top: 8px; font-size: 20px; }
+.tpl-compact .order { padding: 12px; gap: 12px; }
+.tpl-bold .slide { aspect-ratio: 4 / 5; }
+.tpl-bold .buy { text-align: center; }
+.tpl-bold h1 { font-size: 24px; line-height: 1.35; }
+.tpl-bold .price { font-size: 30px; color: var(--at); }
+.tpl-bold .stock, .tpl-bold .rt { justify-content: center; }
+.tpl-bold .quick { text-align: start; }
+.tpl-bold .order { border: 2px solid var(--a); background: var(--s); text-align: start; }
+.tpl-bold .cta { min-height: 58px; font-size: 18px; }
+.tpl-bold .det h2 { color: var(--at); }
+.tpl-bold .urg { min-height: 44px; font-size: 14px; font-weight: 700; }
+.tpl-side-by-side .order { background: var(--soft); border-color: var(--line); }
+.tpl-side-by-side .det h2 { padding-inline-start: 12px; border-inline-start: 3px solid var(--a); }
 </style>

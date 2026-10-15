@@ -174,7 +174,7 @@ ${variantHtml}${offersHtml}${bumpHtml}
 ${field('name', T.fullName, '<input class="in" name="name" autocomplete="name" required>', T.errName)}
 ${field('phone', T.phone, `<input class="in" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="${T.phoneHint}" dir="ltr" style="text-align:start" required>`, T.errPhone)}
 <div class="two">
-${field('wilaya', T.wilaya, `<select class="in" name="wilaya" autocomplete="off" required><option value="">${T.chooseWilaya}</option>${f.wilayas.map((w) => `<option value="${esc(w.id)}">${esc(w.name)}</option>`).join('')}</select>`, T.errWilaya)}
+${field('wilaya', T.wilaya, `<select class="in" name="wilaya" autocomplete="off" required><option value="">${T.chooseWilaya}</option>${[...f.wilayas].sort((a, b) => Number(a.id) - Number(b.id) || a.name.localeCompare(b.name)).map((w) => `<option value="${esc(w.id)}">${esc(`${w.id} - ${w.name}`)}</option>`).join('')}</select>`, T.errWilaya)}
 ${field('commune', T.commune, `<select class="in" name="commune" autocomplete="off" required disabled><option value="">${T.chooseCommune}</option></select>`, T.errCommune)}
 </div>
 ${s.addressField === 'hidden' ? '' : field('address', addrLabel, '<input class="in" name="address" autocomplete="street-address">', T.errAddress)}
@@ -284,7 +284,7 @@ ${s.trustBadges ? `<ul class="trust"><li>${ico('truck')}${T.trust[0]}</li><li>${
   // Always present (the visitor can always reach the order button), unless there is nothing left to sell.
   const hasBar = !soldOut
 
-  return `<!doctype html><html lang="${T.lang}" dir="${T.dir}" style="${accentVars(accent.solid, accent.soft)}"><head>${head}</head><body class="${layout === 'split' ? 'split' : ''}${hasBar ? ' hasbar' : ''}">${SPRITE}<div id="m" data-screen="landing">${urgency}<main class="wrap"><div class="top">${gallery}<div class="buy">${buy}</div></div><div class="det">${details.join('')}</div></main></div>${after.map(offerScreen).join('')}${thanks}${
+  return `<!doctype html><html lang="${T.lang}" dir="${T.dir}" style="${accentVars(accent.solid, accent.soft)}"><head>${head}</head><body class="${layout === 'split' ? 'split ' : ''}t-${tpl?.id ?? 'classic'}${hasBar ? ' hasbar' : ''}">${SPRITE}<div id="m" data-screen="landing">${urgency}<main class="wrap"><div class="top">${gallery}<div class="buy">${buy}</div></div><div class="det">${details.join('')}</div></main></div>${after.map(offerScreen).join('')}${thanks}${
     hasBar ? `<div class="bar" id="bar"><div class="bi"><div class="t"><small>${T.total}</small><b data-total>${formatDa(subtotal)}</b></div><button type="button" class="cta" id="bb"><span>${esc(s.ctaLabel)}</span></button></div></div>` : ''
   }<script type="application/json" id="fd">${escJson(fd)}</script><script>${CLIENT_JS}</script></body></html>`
 }

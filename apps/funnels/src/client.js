@@ -189,6 +189,85 @@
     loadCommunes(id)
   }
 
+  // ---------- searchable selects (wilaya / commune) ----------
+  // The native <select> stays in the DOM (hidden) as the source of truth; a text box + list sits on top.
+  function norm(s) { return digits(s).toLowerCase().normalize('NFD').replace(/[̀-ًͯ-ٟ]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim() }
+  function combo(sel) {
+    var box = document.createElement('div')
+    box.className = 'cb'
+    var inp = document.createElement('input')
+    inp.className = 'in'
+    inp.type = 'text'
+    inp.autocomplete = 'off'
+    inp.setAttribute('role', 'combobox')
+    inp.setAttribute('aria-expanded', 'false')
+    var list = document.createElement('ul')
+    list.className = 'cl'
+    list.hidden = true
+    sel.style.display = 'none'
+    sel.parentNode.insertBefore(box, sel)
+    box.appendChild(inp)
+    box.appendChild(list)
+    box.appendChild(sel)
+    var items = []
+    var hi = -1
+    function refresh() {
+      items = $$('option', sel).filter(function (o) { return o.value !== '' }).map(function (o) { return { v: o.value, t: o.textContent, n: norm(o.textContent) } })
+      inp.disabled = sel.disabled
+      inp.placeholder = sel.options.length ? sel.options[0].textContent : ''
+      inp.value = sel.value ? sel.options[sel.selectedIndex].textContent : ''
+    }
+    function close() { list.hidden = true; inp.setAttribute('aria-expanded', 'false'); hi = -1 }
+    function show() {
+      var q = norm(inp.value === (sel.value && sel.options[sel.selectedIndex].textContent) ? '' : inp.value)
+      var m = items.filter(function (i) { return !q || i.n.indexOf(q) !== -1 })
+      list.innerHTML = ''
+      if (!m.length) { var e = document.createElement('li'); e.className = 'ce'; e.textContent = '—'; list.appendChild(e) }
+      m.forEach(function (i) {
+        var li = document.createElement('li')
+        li.textContent = i.t
+        li.setAttribute('role', 'option')
+        li.dataset.v = i.v
+        if (i.v === sel.value) li.className = 'on'
+        list.appendChild(li)
+      })
+      hi = -1
+      list.hidden = false
+      inp.setAttribute('aria-expanded', 'true')
+    }
+    function pick(v) {
+      sel.value = v
+      sel.dispatchEvent(new Event('change', { bubbles: true }))
+      refresh()
+      close()
+    }
+    function move(d) {
+      var lis = $$('li[data-v]', list)
+      if (!lis.length) return
+      if (hi >= 0) lis[hi].classList.remove('hv')
+      hi = (hi + d + lis.length) % lis.length
+      lis[hi].classList.add('hv')
+      lis[hi].scrollIntoView({ block: 'nearest' })
+    }
+    inp.addEventListener('focus', function () { inp.select(); show() })
+    inp.addEventListener('input', show)
+    inp.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); if (list.hidden) show(); move(1) }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); move(-1) }
+      else if (e.key === 'Enter') {
+        var lis = $$('li[data-v]', list)
+        if (!list.hidden && lis.length) { e.preventDefault(); pick(lis[hi >= 0 ? hi : 0].dataset.v) }
+      } else if (e.key === 'Escape') { close(); refresh() }
+    })
+    inp.addEventListener('blur', function () { setTimeout(function () { close(); refresh() }, 150) })
+    list.addEventListener('mousedown', function (e) { e.preventDefault() })
+    list.addEventListener('click', function (e) { var li = e.target.closest('li[data-v]'); if (li) pick(li.dataset.v) })
+    new MutationObserver(refresh).observe(sel, { childList: true, attributes: true, attributeFilter: ['disabled'] })
+    refresh()
+  }
+  combo(form.wilaya)
+  combo(form.commune)
+
   form.addEventListener('change', function (e) {
     var n = e.target.name
     if (n === 'offer') st.off = e.target.value
