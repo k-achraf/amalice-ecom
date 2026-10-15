@@ -46,12 +46,40 @@ export interface OrderMilestones {
   settledAt: string | null
 }
 
+// Everything the shipping company itself reports about the parcel, kept apart
+// from our own order history: its status (in its own words), the driver, stop
+// desk, delivery attempts, remarks and fees, plus its raw event log.
+export interface OrderCourierSection {
+  courierName: string
+  trackingReference: string | null
+  // How the parcel got to the courier: through its API, or recorded by hand.
+  viaApi: boolean
+  confirmed: boolean
+  confirmedAt: string | null
+  // The courier's own status code and a readable label for it.
+  statusCode: string | null
+  statusLabel: string | null
+  driverName: string | null
+  driverPhone: string | null
+  desk: { phone: string | null; commune: string | null; address: string | null; mapLink: string | null } | null
+  lastFailureReason: string | null
+  postponedTo: string | null
+  carrierFeeCents: number | null
+  returnFeeCents: number | null
+  lastSyncedAt: string | null
+  // Courier-side events only (status changes, delivery attempts, remarks, webhooks), oldest first.
+  events: OrderTimelineEvent[]
+}
+
 export interface OrderTimelineResponse {
   orderId: string
+  // Our own system's view: the order's status, calls, edits, our shipping actions, money, messages.
   state: string
   trackingReference: string | null
   courierName: string | null
   courierStatus: string | null
+  // The shipping company's view; null when the order has no shipment yet.
+  courier: OrderCourierSection | null
   totalCalls: number
   actors: string[]
   milestones: OrderMilestones

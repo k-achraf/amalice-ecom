@@ -203,3 +203,14 @@ export function switchLandingTemplate(current: LandingSettings, templateId: Land
     generatedPageId: current.generatedPageId ?? null
   }
 }
+
+// Landing settings saved before the description block existed (the Compact
+// template never offered it) have no entry for it at all. Treat that as "on, first
+// below the form" so the product description always shows, and the editor shows its
+// switch. An entry that exists keeps whatever the admin chose. The long-image
+// template replaces the details, so it is left alone.
+export function withDescriptionSection(settings: LandingSettings): LandingSettings {
+  if (getLandingTemplate(settings.templateId)?.layout === 'image') return settings
+  if (settings.sections.some((x) => x.type === 'description')) return settings
+  return { ...settings, sections: [{ type: 'description', enabled: true }, ...settings.sections] }
+}

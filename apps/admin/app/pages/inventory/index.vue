@@ -11,7 +11,7 @@ const router = useRouter()
 const currentPage = computed(() => Number(route.query.page ?? 1))
 const currentPageSize = computed(() => Number(route.query.pageSize ?? 50))
 
-const { data: products, pending } = await useAdminFetch<ProductListResponse>('/admin/products', {
+const { data: products, pending, refresh: refreshProducts } = await useAdminFetch<ProductListResponse>('/admin/products', {
   key: 'admin-inventory',
   query: { page: route.query.page ?? '1', pageSize: route.query.pageSize ?? '50' }
 })
@@ -169,6 +169,20 @@ const visibleRows = computed(() => {
 })
 const STOCK_PILL = { ok: { cls: 'instock', label: 'In stock', color: 'var(--teal)' }, low: { cls: 'low', label: 'Low stock', color: 'var(--brass)' }, out: { cls: 'out', label: 'Out of stock', color: 'var(--danger)' } } as const
 function stockPct(p: Product) { return p.stockQuantity ? Math.max(4, Math.min(100, Math.round((p.stockQuantity / 150) * 100))) : 0 }
+
+// ---- Bulk select + permanent delete (SuperAdmin only) ----
+const { isSuperAdmin } = useDangerDelete()
+const { selected: selIds, allChecked: selAll, indeterminate: selSome, toggleAll: selToggleAll, toggle: selToggle, clear: selClear, count: selCount } = useBulkSelect(visibleRows)
+const { bulkDelete, busy: bulkBusy } = useBulkDelete()
+const bulkApi = useAdminApi()
+
+async function deleteSelected() {
+  const deleted = await bulkDelete([...selIds.value], { noun: 'product', remove: (id) => bulkApi(`/admin/products/__ID__`.replace('__ID__', id), { method: 'DELETE' }) })
+  if (deleted.length) {
+    selClear()
+    await refreshProducts()
+  }
+}
 </script>
 
 <template>
@@ -196,14 +210,15 @@ function stockPct(p: Product) { return p.stockQuantity ? Math.max(4, Math.min(10
         </select>
         <AdsSearch v-model="search" soft placeholder="Name or slug" label="Search products" />
       </div>
+      <BulkBar v-if="isSuperAdmin" :count="selCount" :busy="bulkBusy" can-delete @delete="deleteSelected" @clear="selClear" />
       <div class="table-wrap">
         <table style="min-width: 860px">
-          <thead><tr><th>Product</th><th>Category</th><th class="num">Price</th><th>Stock</th><th>Status</th><th><span class="sr">Actions</span></th></tr></thead>
+          <thead><tr><th v-if="isSuperAdmin" style="width: 28px"><input type="checkbox" aria-label="Select all" :checked="selAll" :indeterminate="selSome" @change="selToggleAll(($event.target as HTMLInputElement).checked)"></th><th>Product</th><th>Category</th><th class="num">Price</th><th>Stock</th><th>Status</th><th><span class="sr">Actions</span></th></tr></thead>
           <tbody>
-            <tr v-if="pending"><td colspan="6" class="empty">Loading…</td></tr>
-            <tr v-else-if="!visibleRows.length"><td colspan="6" class="empty">{{ rows.length ? 'No products match this filter.' : 'No products yet. Click "New product" to create one.' }}</td></tr>
+            <tr v-if="pending"><td :colspan="6 + (isSuperAdmin ? 1 : 0)" class="empty">Loading…</td></tr>
+            <tr v-else-if="!visibleRows.length"><td :colspan="6 + (isSuperAdmin ? 1 : 0)" class="empty">{{ rows.length ? 'No products match this filter.' : 'No products yet. Click "New product" to create one.' }}</td></tr>
             <template v-else>
-              <tr v-for="p in visibleRows" :key="p.id" style="cursor: pointer" @click="router.push(`/products/${p.id}`)">
+              <tr v-for="p in visibleRows" :key="p.id" style="cursor: pointer" @click="router.push(`/products/${p.id}`)"><td v-if="isSuperAdmin" @click.stop><input type="checkbox" :aria-label="`Select ${p.name}`" :checked="selIds.has(p.id)" @change="selToggle(p.id, ($event.target as HTMLInputElement).checked)"></td>
                 <td>
                   <div class="prod">
                     <span class="thumb"><AdsIcon name="i-lucide-package" /></span>

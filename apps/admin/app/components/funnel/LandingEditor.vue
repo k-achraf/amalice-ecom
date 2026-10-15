@@ -9,6 +9,7 @@ import {
   defaultLandingSettings,
   getLandingTemplate,
   switchLandingTemplate,
+  withDescriptionSection,
   type AdminProductDetail,
   type FunnelStepView,
   type LandingSettings,
@@ -35,7 +36,7 @@ const saved = computed<LandingSettings | null>(() => {
   const raw = props.step.config.landing
   if (!raw) return null
   const parsed = LandingSettingsSchema.safeParse(raw)
-  return parsed.success ? parsed.data : null
+  return parsed.success ? withDescriptionSection(parsed.data) : null
 })
 const draft = ref<LandingSettings | null>(saved.value ? structuredClone(toRaw(saved.value)) : null)
 // Re-sync when the saved settings change underneath (after a save, or switching step).

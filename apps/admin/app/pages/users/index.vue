@@ -68,6 +68,20 @@ const visible = computed(() => {
   return (users.value ?? []).filter((u) => (roleFilter.value === 'all' || u.roleName === roleFilter.value) && (!q || u.email.toLowerCase().includes(q)))
 })
 
+
+// ---- Bulk select + permanent delete (SuperAdmin only) ----
+const { isSuperAdmin } = useDangerDelete()
+const { selected: selIds, allChecked: selAll, indeterminate: selSome, toggleAll: selToggleAll, toggle: selToggle, clear: selClear, count: selCount } = useBulkSelect(computed(() => visible.value.filter((u) => u.email !== auth.user?.email)))
+const { bulkDelete, busy: bulkBusy } = useBulkDelete()
+const bulkApi = useAdminApi()
+
+async function deleteSelected() {
+  const deleted = await bulkDelete([...selIds.value], { noun: 'user', remove: (id) => bulkApi(`/admin/users/__ID__`.replace('__ID__', id), { method: 'DELETE' }) })
+  if (deleted.length) {
+    selClear()
+    await refresh()
+  }
+}
 </script>
 
 <template>
@@ -91,13 +105,14 @@ const visible = computed(() => {
           <AdsTabs v-model="roleFilter" :items="roleTabs" />
           <AdsSearch v-model="search" soft placeholder="Email" label="Search users" />
         </div>
-        <div class="table-wrap">
+        <BulkBar v-if="isSuperAdmin" :count="selCount" :busy="bulkBusy" can-delete @delete="deleteSelected" @clear="selClear" />
+      <div class="table-wrap">
           <table style="min-width: 640px">
-            <thead><tr><th>User</th><th>Role</th><th>Status</th><th><span class="sr">Actions</span></th></tr></thead>
+            <thead><tr><th v-if="isSuperAdmin" style="width: 28px"><input type="checkbox" aria-label="Select all" :checked="selAll" :indeterminate="selSome" @change="selToggleAll(($event.target as HTMLInputElement).checked)"></th><th>User</th><th>Role</th><th>Status</th><th><span class="sr">Actions</span></th></tr></thead>
             <tbody>
-              <tr v-if="pending"><td colspan="4" class="empty">Loading…</td></tr>
-              <tr v-else-if="!visible.length"><td colspan="4" class="empty">No users found.</td></tr>
-              <tr v-for="u in visible" v-else :key="u.id">
+              <tr v-if="pending"><td :colspan="4 + (isSuperAdmin ? 1 : 0)" class="empty">Loading…</td></tr>
+              <tr v-else-if="!visible.length"><td :colspan="4 + (isSuperAdmin ? 1 : 0)" class="empty">No users found.</td></tr>
+              <tr v-for="u in visible" v-else :key="u.id"><td v-if="isSuperAdmin" @click.stop><input v-if="u.email !== auth.user?.email" type="checkbox" :aria-label="`Select ${u.email}`" :checked="selIds.has(u.id)" @change="selToggle(u.id, ($event.target as HTMLInputElement).checked)"></td>
                 <td>
                   <div class="prod">
                     <span class="initials" :class="{ dark: u.email === auth.user?.email }">{{ u.email.slice(0, 2).toUpperCase() }}</span>

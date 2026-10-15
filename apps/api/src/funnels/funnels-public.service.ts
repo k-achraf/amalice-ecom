@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import {
   LandingSettingsSchema,
   defaultLandingSettings,
+  withDescriptionSection,
   offerTotalQuantity,
   type AcceptFunnelOffer,
   type FunnelOrder,
@@ -63,11 +64,7 @@ export class FunnelsPublicService {
     // product description right below the form, so a visitor can still read about
     // the product before ordering.
     const fallback = defaultLandingSettings(landingStep ? 'classic' : 'compact')
-    const landing: LandingSettings = parsed?.success
-      ? parsed.data
-      : landingStep
-        ? fallback
-        : { ...fallback, sections: [{ type: 'description', enabled: true }, ...fallback.sections.filter((x) => x.type !== 'description')] }
+    const landing: LandingSettings = withDescriptionSection(parsed?.success ? parsed.data : fallback)
 
     let generatedImageUrl: string | null = null
     if (landing.generatedPageId) {

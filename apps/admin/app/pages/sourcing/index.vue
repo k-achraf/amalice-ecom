@@ -14,7 +14,7 @@ const router = useRouter()
 const api = useAdminApi()
 const toast = useToast()
 
-const { data: sourcedProducts, pending: productsPending } = await useAdminFetch<SourcedProductListItem[]>('/admin/sourcing/products', { key: 'admin-sourcing-products' })
+const { data: sourcedProducts, pending: productsPending, refresh: refreshSourced } = await useAdminFetch<SourcedProductListItem[]>('/admin/sourcing/products', { key: 'admin-sourcing-products' })
 
 const statusColor: Record<SourcedProductStatus, 'neutral' | 'info' | 'warning' | 'error' | 'success' | 'primary'> = {
   Researching: 'neutral',
@@ -57,6 +57,20 @@ async function createProduct() {
 }
 
 void productsPending
+
+// ---- Bulk select + permanent delete (SuperAdmin only) ----
+const { isSuperAdmin } = useDangerDelete()
+const { selected: selIds, allChecked: selAll, indeterminate: selSome, toggleAll: selToggleAll, toggle: selToggle, clear: selClear, count: selCount } = useBulkSelect(computed(() => sourcedProducts.value ?? []))
+const { bulkDelete, busy: bulkBusy } = useBulkDelete()
+const bulkApi = useAdminApi()
+
+async function deleteSelected() {
+  const deleted = await bulkDelete([...selIds.value], { noun: 'sourced product', remove: (id) => bulkApi(`/admin/sourcing/products/__ID__`.replace('__ID__', id), { method: 'DELETE' }) })
+  if (deleted.length) {
+    selClear()
+    await refreshSourced()
+  }
+}
 </script>
 
 <template>
@@ -66,13 +80,14 @@ void productsPending
     </template>
 
     <section class="card" aria-label="Sourced products">
+      <BulkBar v-if="isSuperAdmin" :count="selCount" :busy="bulkBusy" can-delete @delete="deleteSelected" @clear="selClear" />
       <div class="table-wrap">
         <table style="min-width: 760px">
-          <thead><tr><th>Product</th><th>Niche</th><th>Status</th><th>Linked product</th><th class="num">Ad tests</th><th class="num">Sourcing requests</th></tr></thead>
+          <thead><tr><th v-if="isSuperAdmin" style="width: 28px"><input type="checkbox" aria-label="Select all" :checked="selAll" :indeterminate="selSome" @change="selToggleAll(($event.target as HTMLInputElement).checked)"></th><th>Product</th><th>Niche</th><th>Status</th><th>Linked product</th><th class="num">Ad tests</th><th class="num">Sourcing requests</th></tr></thead>
           <tbody>
-            <tr v-if="productsPending"><td colspan="6" class="empty">Loading…</td></tr>
-            <tr v-else-if="!sourcedProducts?.length"><td colspan="6" class="empty">No sourced products yet. Click “New sourced product” to start tracking one.</td></tr>
-            <tr v-for="p in sourcedProducts" v-else :key="p.id" class="clickable" @click="router.push(`/sourcing/${p.id}`)">
+            <tr v-if="productsPending"><td :colspan="6 + (isSuperAdmin ? 1 : 0)" class="empty">Loading…</td></tr>
+            <tr v-else-if="!sourcedProducts?.length"><td :colspan="6 + (isSuperAdmin ? 1 : 0)" class="empty">No sourced products yet. Click “New sourced product” to start tracking one.</td></tr>
+            <tr v-for="p in sourcedProducts" v-else :key="p.id" class="clickable" @click="router.push(`/sourcing/${p.id}`)"><td v-if="isSuperAdmin" @click.stop><input type="checkbox" :aria-label="`Select ${p.name}`" :checked="selIds.has(p.id)" @change="selToggle(p.id, ($event.target as HTMLInputElement).checked)"></td>
               <td>
                 <div class="prod">
                   <img v-if="p.imageUrl" :src="p.imageUrl" class="thumb" style="object-fit: cover" alt="">

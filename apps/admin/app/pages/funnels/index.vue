@@ -17,7 +17,7 @@ const api = useAdminApi()
 const router = useRouter()
 const { run } = useApiAction()
 
-const { data: funnels, pending } = await useAdminFetch<FunnelListItem[]>('/admin/funnels', { key: 'admin-funnels' })
+const { data: funnels, pending, refresh: refreshFunnels } = await useAdminFetch<FunnelListItem[]>('/admin/funnels', { key: 'admin-funnels' })
 // Product picker source. The list endpoint pages, so this covers the first 100 products.
 const { data: products } = await useAdminFetch<ProductListResponse>('/admin/products', { key: 'admin-funnels-products', query: { page: '1', pageSize: '100' } })
 
@@ -81,6 +81,20 @@ async function create() {
     await router.push(`/funnels/${created.id}`)
   }
 }
+
+// ---- Bulk select + permanent delete (SuperAdmin only) ----
+const { isSuperAdmin } = useDangerDelete()
+const { selected: selIds, allChecked: selAll, indeterminate: selSome, toggleAll: selToggleAll, toggle: selToggle, clear: selClear, count: selCount } = useBulkSelect(visible)
+const { bulkDelete, busy: bulkBusy } = useBulkDelete()
+const bulkApi = useAdminApi()
+
+async function deleteSelected() {
+  const deleted = await bulkDelete([...selIds.value], { noun: 'funnel', remove: (id) => bulkApi(`/admin/funnels/__ID__`.replace('__ID__', id), { method: 'DELETE' }) })
+  if (deleted.length) {
+    selClear()
+    await refreshFunnels()
+  }
+}
 </script>
 
 <template>
@@ -101,17 +115,18 @@ async function create() {
         <AdsTabs v-model="statusFilter" :items="tabs" />
         <AdsSearch v-model="search" soft placeholder="Funnel or product" label="Search funnels" />
       </div>
+      <BulkBar v-if="isSuperAdmin" :count="selCount" :busy="bulkBusy" can-delete @delete="deleteSelected" @clear="selClear" />
       <div class="table-wrap">
         <table style="min-width: 820px">
-          <thead><tr><th>Funnel</th><th>Product</th><th>Template</th><th>Steps</th><th>Status</th><th>Updated</th><th><span class="sr">Open</span></th></tr></thead>
+          <thead><tr><th v-if="isSuperAdmin" style="width: 28px"><input type="checkbox" aria-label="Select all" :checked="selAll" :indeterminate="selSome" @change="selToggleAll(($event.target as HTMLInputElement).checked)"></th><th>Funnel</th><th>Product</th><th>Template</th><th>Steps</th><th>Status</th><th>Updated</th><th><span class="sr">Open</span></th></tr></thead>
           <tbody>
-            <tr v-if="pending"><td colspan="7" class="empty">Loading…</td></tr>
+            <tr v-if="pending"><td :colspan="7 + (isSuperAdmin ? 1 : 0)" class="empty">Loading…</td></tr>
             <tr v-else-if="!visible.length">
-              <td colspan="7" class="empty">
+              <td :colspan="7 + (isSuperAdmin ? 1 : 0)" class="empty">
                 {{ all.length ? 'No funnels match this filter.' : 'No funnels yet. Create one from a template to get started.' }}
               </td>
             </tr>
-            <tr v-for="f in visible" v-else :key="f.id" class="clickable" @click="router.push(`/funnels/${f.id}`)">
+            <tr v-for="f in visible" v-else :key="f.id" class="clickable" @click="router.push(`/funnels/${f.id}`)"><td v-if="isSuperAdmin" @click.stop><input type="checkbox" :aria-label="`Select ${f.name}`" :checked="selIds.has(f.id)" @change="selToggle(f.id, ($event.target as HTMLInputElement).checked)"></td>
               <td>
                 <NuxtLink :to="`/funnels/${f.id}`" class="link-cell" @click.stop>{{ f.name }}</NuxtLink>
                 <span class="sub mono">/{{ f.slug }}</span>

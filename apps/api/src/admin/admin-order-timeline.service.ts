@@ -7,8 +7,10 @@ import {
   ORDER_STAGE_BY_STATE,
   ORDER_STATE_LABELS,
   courierStatusLabel,
+  normalizeCourierStatus,
   type ActivityFeedResponse,
   type CallOutcome,
+  type OrderCourierSection,
   type OrderMilestones,
   type OrderState,
   type OrderTimelineEvent,
@@ -37,11 +39,13 @@ function stateTone(state: OrderState): TimelineTone {
   return 'neutral'
 }
 
+// Our own status changes are never filed under "courier": even when a courier
+// webhook or sync caused one, it is OUR order moving to a new state. The courier's
+// own report of the parcel lives in its separate section (OrderCourierSection).
 function stateCategory(state: OrderState): TimelineCategory {
   const stage = ORDER_STAGE_BY_STATE[state]
-  if (stage === 'Shipping') return 'courier'
   if (stage === 'Finance') return 'finance'
-  if (state === 'Packed' || state === 'OnHold') return 'shipping'
+  if (stage === 'Shipping' || state === 'Packed' || state === 'OnHold') return 'shipping'
   return 'order'
 }
 
@@ -223,8 +227,6 @@ export class AdminOrderTimelineService {
       if (e) events.push({ ...e, orderId })
     }
     for (const c of calls) events.push(this.callEvent(c as never))
-    for (const e of shipmentEvents) events.push(this.shipmentEvent(e))
-    for (const w of webhooks) events.push(this.webhookEvent(w))
     for (const n of notifications) {
       events.push({ id: `notif:${n.id}`, at: n.createdAt.toISOString(), category: 'notification', tone: n.status === 'Failed' ? 'bad' : 'neutral', title: `${n.channel} message — ${n.status}`, detail: `To ${n.recipient}: ${n.message}${n.lastError ? ` (${n.lastError})` : ''}`, actor: 'System', orderId })
     }
@@ -262,12 +264,40 @@ export class AdminOrderTimelineService {
     const minutes = (from: string | null, to: string | null) => (from && to ? Math.max(0, Math.round((new Date(to).getTime() - new Date(from).getTime()) / 60000)) : null)
     const end = milestones.deliveredAt ?? milestones.returnedAt ?? milestones.cancelledAt
 
+    // ---- the courier's own section ----
+    const shipment = order.shipment
+    let courier: OrderCourierSection | null = null
+    if (shipment) {
+      const courierEvents = [...shipmentEvents.map((e) => this.shipmentEvent(e)), ...webhooks.map((w) => this.webhookEvent(w))].sort((a, b) => a.at.localeCompare(b.at))
+      const desk = shipment.deskInfo as OrderCourierSection['desk']
+      const code = shipment.courierStatus && shipment.courierStatus !== 'manual_dispatch' ? shipment.courierStatus : null
+      courier = {
+        courierName: shipment.courier.name,
+        trackingReference: shipment.trackingReference,
+        viaApi: shipment.courierStatus !== 'manual_dispatch' && !!shipment.trackingReference,
+        confirmed: !!shipment.carrierConfirmedAt,
+        confirmedAt: shipment.carrierConfirmedAt?.toISOString() ?? null,
+        statusCode: code,
+        statusLabel: code ? courierStatusLabel(code) : null,
+        driverName: shipment.driverName,
+        driverPhone: shipment.driverPhone,
+        desk: desk ?? null,
+        lastFailureReason: shipment.lastFailureReason,
+        postponedTo: shipment.postponedTo?.toISOString() ?? null,
+        carrierFeeCents: shipment.carrierFeeCents,
+        returnFeeCents: shipment.returnFeeCents,
+        lastSyncedAt: shipment.lastSyncedAt?.toISOString() ?? null,
+        events: courierEvents
+      }
+    }
+
     return {
       orderId,
       state: order.state,
       trackingReference: order.shipment?.trackingReference ?? null,
       courierName: order.shipment?.courier.name ?? null,
       courierStatus: order.shipment?.courierStatus ?? null,
+      courier,
       totalCalls: calls.length,
       actors: [...new Set(events.map((e) => e.actor).filter((a) => a.includes('@')))],
       milestones,

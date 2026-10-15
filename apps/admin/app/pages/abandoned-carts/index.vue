@@ -77,6 +77,20 @@ const visible = computed(() => {
 const money = (cents: number) => Math.round(cents / 100).toLocaleString('en-US')
 const totalCents = computed(() => activeItems.value.reduce((n, o) => n + o.items.reduce((m, i) => m + i.lineTotalCents, 0), 0))
 
+
+// ---- Bulk select + permanent delete (SuperAdmin only) ----
+const { isSuperAdmin } = useDangerDelete()
+const { selected: selIds, allChecked: selAll, indeterminate: selSome, toggleAll: selToggleAll, toggle: selToggle, clear: selClear, count: selCount } = useBulkSelect(visible)
+const { bulkDelete, busy: bulkBusy } = useBulkDelete()
+const bulkApi = useAdminApi()
+
+async function deleteSelected() {
+  const deleted = await bulkDelete([...selIds.value], { noun: 'abandoned cart', remove: (id) => bulkApi(`/admin/orders/__ID__`.replace('__ID__', id), { method: 'DELETE' }) })
+  if (deleted.length) {
+    selClear()
+    await refresh()
+  }
+}
 </script>
 
 <template>
@@ -92,13 +106,14 @@ const totalCents = computed(() => activeItems.value.reduce((n, o) => n + o.items
         <h2>Carts to follow up</h2>
         <label class="search soft"><AdsIcon name="i-lucide-search" /><span class="sr">Search carts</span><input v-model="search" type="search" placeholder="Name or phone"></label>
       </div>
+      <BulkBar v-if="isSuperAdmin" :count="selCount" :busy="bulkBusy" can-delete @delete="deleteSelected" @clear="selClear" />
       <div class="table-wrap">
         <table style="min-width: 900px">
-          <thead><tr><th>Customer</th><th>Products</th><th class="num">Value</th><th>Left at</th><th>Status</th><th><span class="sr">Actions</span></th></tr></thead>
+          <thead><tr><th v-if="isSuperAdmin" style="width: 28px"><input type="checkbox" aria-label="Select all" :checked="selAll" :indeterminate="selSome" @change="selToggleAll(($event.target as HTMLInputElement).checked)"></th><th>Customer</th><th>Products</th><th class="num">Value</th><th>Left at</th><th>Status</th><th><span class="sr">Actions</span></th></tr></thead>
           <tbody>
-            <tr v-if="pending"><td colspan="6" class="empty">Loading…</td></tr>
-            <tr v-else-if="!visible.length"><td colspan="6" class="empty">No abandoned carts. Every lead-form visitor who typed a phone number has either finished checking out or already been contacted.</td></tr>
-            <tr v-for="o in visible" v-else :key="o.id">
+            <tr v-if="pending"><td :colspan="6 + (isSuperAdmin ? 1 : 0)" class="empty">Loading…</td></tr>
+            <tr v-else-if="!visible.length"><td :colspan="6 + (isSuperAdmin ? 1 : 0)" class="empty">No abandoned carts. Every lead-form visitor who typed a phone number has either finished checking out or already been contacted.</td></tr>
+            <tr v-for="o in visible" v-else :key="o.id"><td v-if="isSuperAdmin" @click.stop><input type="checkbox" :aria-label="`Select cart ${o.id.slice(0, 8)}`" :checked="selIds.has(o.id)" @change="selToggle(o.id, ($event.target as HTMLInputElement).checked)"></td>
               <td><span class="strong">{{ o.customer.name || 'No name given' }}</span><span class="sub">{{ o.customer.phone || 'No phone' }}<template v-if="o.address.region"> · {{ o.address.region }}</template></span></td>
               <td class="muted" style="max-width: 220px">{{ o.items.map((i) => `${i.product.name}${i.quantity > 1 ? ` ×${i.quantity}` : ''}`).join(', ') }}</td>
               <td class="num strong"><AdsPrice :amount-cents="o.items.reduce((n, i) => n + i.lineTotalCents, 0)" /></td>

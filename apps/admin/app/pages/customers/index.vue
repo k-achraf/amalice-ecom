@@ -24,7 +24,7 @@ const search = ref((route.query.search as string) ?? '')
 const currentPage = computed(() => Number(route.query.page ?? 1))
 const currentPageSize = computed(() => Number(route.query.pageSize ?? 20))
 
-const { data, pending } = await useAdminFetch<CustomerListResponse>('/admin/customers', {
+const { data, pending, refresh: refreshCustomers } = await useAdminFetch<CustomerListResponse>('/admin/customers', {
   key: 'admin-customers',
   query: { page: route.query.page ?? '1', pageSize: route.query.pageSize ?? '20', search: route.query.search }
 })
@@ -69,6 +69,20 @@ const vipCount = computed(() => rowsOnPage.value.filter((c) => c.orderCount >= 5
 const avgValue = computed(() => (rowsOnPage.value.length ? Math.round(rowsOnPage.value.reduce((n, c) => n + c.totalValueCents, 0) / rowsOnPage.value.length / 100).toLocaleString('en-US') : '0'))
 function since(iso: string) { return new Date(iso).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) }
 
+
+// ---- Bulk select + permanent delete (SuperAdmin only) ----
+const { isSuperAdmin } = useDangerDelete()
+const { selected: selIds, allChecked: selAll, indeterminate: selSome, toggleAll: selToggleAll, toggle: selToggle, clear: selClear, count: selCount } = useBulkSelect(computed(() => data.value?.items ?? []))
+const { bulkDelete, busy: bulkBusy } = useBulkDelete()
+const bulkApi = useAdminApi()
+
+async function deleteSelected() {
+  const deleted = await bulkDelete([...selIds.value], { noun: 'customer', warn: `Their orders (${(data.value?.items ?? []).filter((c) => selIds.value.has(c.id)).reduce((n, c) => n + c.orderCount, 0)}) are deleted with them.`, remove: (id) => bulkApi(`/admin/customers/__ID__`.replace('__ID__', id), { method: 'DELETE', query: { withOrders: '1' } }) })
+  if (deleted.length) {
+    selClear()
+    await refreshCustomers()
+  }
+}
 </script>
 
 <template>
@@ -85,13 +99,14 @@ function since(iso: string) { return new Date(iso).toLocaleDateString('en-GB', {
 
     <div class="row">
       <section class="card wide" aria-label="Customer list" style="padding-top: 12px; padding-bottom: 12px">
-        <div class="table-wrap">
+        <BulkBar v-if="isSuperAdmin" :count="selCount" :busy="bulkBusy" can-delete @delete="deleteSelected" @clear="selClear" />
+      <div class="table-wrap">
           <table style="min-width: 600px">
-            <thead><tr><th>Customer</th><th class="num">Orders</th><th class="num">Total spent</th><th>Customer since</th><th>Segment</th></tr></thead>
+            <thead><tr><th v-if="isSuperAdmin" style="width: 28px"><input type="checkbox" aria-label="Select all" :checked="selAll" :indeterminate="selSome" @change="selToggleAll(($event.target as HTMLInputElement).checked)"></th><th>Customer</th><th class="num">Orders</th><th class="num">Total spent</th><th>Customer since</th><th>Segment</th></tr></thead>
             <tbody>
-              <tr v-if="pending"><td colspan="5" class="empty">Loading…</td></tr>
-              <tr v-else-if="!data?.items.length"><td colspan="5" class="empty">No customers found.</td></tr>
-              <tr v-for="c in data?.items" v-else :key="c.id" :class="{ selected: c.id === selected?.id }">
+              <tr v-if="pending"><td :colspan="5 + (isSuperAdmin ? 1 : 0)" class="empty">Loading…</td></tr>
+              <tr v-else-if="!data?.items.length"><td :colspan="5 + (isSuperAdmin ? 1 : 0)" class="empty">No customers found.</td></tr>
+              <tr v-for="c in data?.items" v-else :key="c.id" :class="{ selected: c.id === selected?.id }"><td v-if="isSuperAdmin" @click.stop><input type="checkbox" :aria-label="`Select ${c.name ?? c.phone}`" :checked="selIds.has(c.id)" @change="selToggle(c.id, ($event.target as HTMLInputElement).checked)"></td>
                 <td>
                   <button class="cust-btn" type="button" :aria-pressed="c.id === selected?.id" @click="selectedId = c.id">
                     <span class="initials">{{ initials(c.name) }}</span>
