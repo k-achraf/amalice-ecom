@@ -1037,6 +1037,9 @@ model Commune {
 // schema doesn't otherwise use).
 enum ShippingCompanyProvider {
   Dhd
+  SwiftExpress
+  Anderson
+  Hr48
 }
 
 model ShippingCompany {

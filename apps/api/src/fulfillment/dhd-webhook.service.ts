@@ -1,7 +1,7 @@
 import { BadRequestException, HttpException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common'
 import * as crypto from 'crypto'
 import type { IncomingHttpHeaders } from 'http'
-import { DHD_WEBHOOK_EVENT_TO_STATE, DhdWebhookPayloadSchema, isValidTransition, type DhdWebhookPayload } from '@amalice/shared'
+import { DHD_WEBHOOK_EVENT_TO_STATE, DhdWebhookPayloadSchema, SHIPPING_COMPANY_WEBHOOK_SLUG, isValidTransition, type DhdWebhookPayload, type ShippingCompanyProvider } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService } from '../common/audit.service'
 import { GoogleSheetsService } from '../apps/google-sheets.service'
@@ -48,7 +48,7 @@ export class DhdWebhookService {
     return crypto.timingSafeEqual(expectedBuf, actualBuf)
   }
 
-  async handle(shippingCompanyId: string, rawBody: Buffer | undefined, signatureHeader: string | undefined, rawPayload: unknown, headers: IncomingHttpHeaders): Promise<{ received: true; applied: boolean }> {
+  async handle(provider: ShippingCompanyProvider, shippingCompanyId: string, rawBody: Buffer | undefined, signatureHeader: string | undefined, rawPayload: unknown, headers: IncomingHttpHeaders): Promise<{ received: true; applied: boolean }> {
     // Captured unconditionally in the outer try/finally below, regardless of
     // which branch this request ends up taking (or throwing out of).
     let signatureValid: boolean | null = null
@@ -57,7 +57,7 @@ export class DhdWebhookService {
 
     try {
       const company = await this.prisma.shippingCompany.findUnique({ where: { id: shippingCompanyId } })
-      if (!company || company.provider !== 'Dhd') throw new NotFoundException('Unknown webhook endpoint')
+      if (!company || company.provider !== provider) throw new NotFoundException('Unknown webhook endpoint')
 
       if (!company.webhookSecret) {
         throw new BadRequestException('This webhook has no secret configured yet — set one under Settings → Shipping Companies before enabling it in DHD.')
@@ -174,9 +174,9 @@ export class DhdWebhookService {
         .create({
           data: {
             shippingCompanyId,
-            provider: 'Dhd',
+            provider,
             method: 'POST',
-            path: `/webhooks/dhd/${shippingCompanyId}`,
+            path: `/webhooks/${SHIPPING_COMPANY_WEBHOOK_SLUG[provider]}/${shippingCompanyId}`,
             headers: headers as object,
             rawBody: rawBody ? rawBody.toString('utf8').slice(0, RAW_LOG_MAX_CHARS) : null,
             signatureHeader: signatureHeader ?? null,

@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
+import { SHIPPING_COMPANY_CATALOG, SHIPPING_COMPANY_WEBHOOK_SLUG } from '@amalice/shared'
 import type {
   ApplyShippingCompanyTariffs,
   ApplyShippingCompanyTariffsResult,
@@ -17,21 +18,10 @@ import { AuditService, type AuditActor } from '../common/audit.service'
 import { DhdApiService } from './dhd-api.service'
 import type { Env } from '../config/env.validation'
 
-// Which URL path each provider's webhook lands on — see
-// fulfillment/webhooks.controller.ts for the actual handler. Keyed here
-// (not hardcoded per-provider in toView) so a second provider just adds an
-// entry rather than a branch.
-const WEBHOOK_PATH_BY_PROVIDER: Record<ShippingCompanyProvider, string> = {
-  Dhd: 'webhooks/dhd'
-}
-
-// The fixed catalog of supported providers — DHD today, more land here as
-// entries (name + default base URL) plus a DHD-shaped client. Every
-// provider in this catalog shows up as a card in the admin Shipping
-// Companies section whether or not it's been linked yet.
-const PROVIDER_CATALOG: Record<ShippingCompanyProvider, { name: string; baseUrl: string }> = {
-  Dhd: { name: 'DHD', baseUrl: 'https://platform.dhd-dz.com' }
-}
+// Display name + default base URL of every supported provider, and the webhook path each one lands on
+// (see fulfillment/webhooks.controller.ts). Both live in packages/shared so the admin and API agree.
+// DHD and the Ecotrack-hosted couriers share one API client: they differ only by base URL.
+const PROVIDER_CATALOG = SHIPPING_COMPANY_CATALOG
 
 @Injectable()
 export class ShippingCompaniesService {
@@ -58,7 +48,7 @@ export class ShippingCompaniesService {
       lastSyncedAt: row?.lastSyncedAt?.toISOString() ?? null,
       // Only buildable once the row (and its real id) exists — see
       // ShippingCompanyViewSchema's comment.
-      webhookUrl: row?.id ? `${this.config.get('PUBLIC_API_URL', { infer: true })}/${WEBHOOK_PATH_BY_PROVIDER[provider]}/${row.id}` : null,
+      webhookUrl: row?.id ? `${this.config.get('PUBLIC_API_URL', { infer: true })}/webhooks/${SHIPPING_COMPANY_WEBHOOK_SLUG[provider]}/${row.id}` : null,
       hasWebhookSecret: !!row?.webhookSecret
     }
   }
@@ -71,9 +61,9 @@ export class ShippingCompaniesService {
     )
   }
 
-  private client(provider: ShippingCompanyProvider) {
-    if (provider === 'Dhd') return this.dhd
-    throw new BadRequestException(`Unsupported shipping company: ${provider}`)
+  // Every supported provider speaks the same Ecotrack API, so one client serves them all.
+  private client(_provider: ShippingCompanyProvider) {
+    return this.dhd
   }
 
   // The single "which shipping company do we actually ship with" resolver —

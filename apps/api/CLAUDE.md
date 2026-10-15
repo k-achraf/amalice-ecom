@@ -10,7 +10,7 @@ NestJS 11 + Prisma 7 + Postgres backend. Feature-module-per-domain layout under 
 | `catalog` | Products, categories, reviews, search |
 | `orders`, `order-items` | Order lifecycle, line items, upsells |
 | `fulfillment` | Fulfillment/shipping workflow (call center → ship → deliver) |
-| `shipping-companies` | Carrier integrations (DHD API client), tariffs |
+| `shipping-companies` | Carrier integrations, tariffs. DHD, Swift Express, Anderson and 48 Hr Express all speak the same Ecotrack API (one client, `DhdApiService`); each is just a provider in `SHIPPING_COMPANY_CATALOG` (`packages/shared/src/shipping-company.ts`) with its own base URL and webhook slug. To add another Ecotrack courier: add it to that catalog + the `ShippingCompanyProvider` Prisma enum (migration) + an icon in the admin's `shipping-companies.vue` |
 | `reconciliation` | COD cash reconciliation |
 | `locations` | Wilaya/Commune reference data (Algeria) |
 | `funnels` | Product funnels (admin CRUD only): ordered steps created from a template in `packages/shared` (`FUNNEL_TEMPLATES`). Not served to the storefront yet |

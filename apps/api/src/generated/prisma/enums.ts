@@ -170,7 +170,10 @@ export type ShippingType = (typeof ShippingType)[keyof typeof ShippingType]
 
 
 export const ShippingCompanyProvider = {
-  Dhd: 'Dhd'
+  Dhd: 'Dhd',
+  SwiftExpress: 'SwiftExpress',
+  Anderson: 'Anderson',
+  Hr48: 'Hr48'
 } as const
 
 export type ShippingCompanyProvider = (typeof ShippingCompanyProvider)[keyof typeof ShippingCompanyProvider]

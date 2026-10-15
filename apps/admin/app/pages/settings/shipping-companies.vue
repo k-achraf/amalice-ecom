@@ -18,7 +18,10 @@ const { data: companies, pending, refresh } = await useAdminFetch<ShippingCompan
 })
 
 const iconByProvider: Record<ShippingCompanyProvider, string> = {
-  Dhd: 'i-lucide-truck'
+  Dhd: 'i-lucide-truck',
+  SwiftExpress: 'i-lucide-truck',
+  Anderson: 'i-lucide-truck',
+  Hr48: 'i-lucide-truck'
 }
 
 // Per-provider local UI state, keyed by provider — one card can be linking
@@ -293,7 +296,7 @@ const lastSync = computed(() => {
       </AdsField>
 
       <template v-if="company.webhookUrl">
-        <AdsField label="Webhook URL" help="Paste this into DHD's own webhook configuration (state-webhooks settings) as the endpoint URL.">
+        <AdsField label="Webhook URL" :help="`Paste this into ${company.name}'s own webhook configuration (state-webhooks settings) as the endpoint URL.`">
           <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
             <AdsInput :model-value="company.webhookUrl" readonly class="mono" style="flex: 1 1 240px" @focus="($event.target as HTMLInputElement)?.select()" />
             <AdsButton appearance="default" icon="i-lucide-copy" @click="copyWebhookUrl(company.webhookUrl!)">Copy</AdsButton>
@@ -302,7 +305,7 @@ const lastSync = computed(() => {
 
         <AdsField
           label="Webhook secret (HMAC-SHA256)"
-          :help="company.hasWebhookSecret ? 'A secret is already saved — leave blank to keep it.' : 'The secret DHD generated (or you set) when configuring the webhook on their side — needed to verify incoming requests.'"
+          :help="company.hasWebhookSecret ? 'A secret is already saved — leave blank to keep it.' : 'The secret ' + company.name + ' generated (or you set) when configuring the webhook on their side — needed to verify incoming requests.'"
         >
           <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
             <AdsInput
@@ -370,7 +373,7 @@ const lastSync = computed(() => {
           v-if="!webhookLogsByProvider[company.provider]!.items.length"
           icon="i-lucide-history"
           title="No webhook deliveries yet"
-          description="Once DHD's webhook is configured and an order's state changes, deliveries will show up here."
+          :description="`Once ${company.name}'s webhook is configured and an order's state changes, deliveries will show up here.`"
         />
         <template v-else>
           <div class="table-wrap" style="max-height: 384px; overflow-y: auto">

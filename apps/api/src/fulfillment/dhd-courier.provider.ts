@@ -36,9 +36,6 @@ export class DhdCourierProvider implements CourierProvider {
     if (!company.isLinked || !company.apiToken) {
       throw new BadRequestException(`${company.name} is not linked — link it under Settings → Shipping Companies.`)
     }
-    if (company.provider !== 'Dhd') {
-      throw new BadRequestException(`${company.name} isn't DHD — this adapter only speaks DHD's API.`)
-    }
     return { baseUrl: company.baseUrl, apiToken: company.apiToken }
   }
 

@@ -99,10 +99,10 @@ export class DhdApiService {
     try {
       response = await fetch(this.url(baseUrl, path, apiToken, extraQuery), init)
     } catch (error) {
-      throw new BadGatewayException(`Could not reach DHD: ${(error as Error).message}`)
+      throw new BadGatewayException(`Could not reach the courier: ${(error as Error).message}`)
     }
     if (response.status === 401 || response.status === 403) {
-      throw new BadRequestException('DHD rejected this API token.')
+      throw new BadRequestException('The courier rejected this API token.')
     }
     return response
   }
@@ -116,15 +116,15 @@ export class DhdApiService {
     if (response.status === 422) {
       const body = (await response.json().catch(() => null)) as { message?: string; errors?: Record<string, string[]> } | null
       const detail = body?.errors ? Object.values(body.errors).flat().join(' ') : body?.message
-      throw new BadRequestException(`DHD rejected ${context}${detail ? `: ${detail}` : ''}`)
+      throw new BadRequestException(`The courier rejected ${context}${detail ? `: ${detail}` : ''}`)
     }
     if (!response.ok) {
-      throw new BadGatewayException(`DHD returned HTTP ${response.status} while ${context}.`)
+      throw new BadGatewayException(`The courier returned HTTP ${response.status} while ${context}.`)
     }
     const body = (await response.json().catch(() => null)) as ({ success?: boolean; message?: string } & T) | null
-    if (!body) throw new BadGatewayException(`DHD returned an unreadable response while ${context}.`)
+    if (!body) throw new BadGatewayException(`The courier returned an unreadable response while ${context}.`)
     if (body.success === false) {
-      throw new BadRequestException(`DHD rejected ${context}${body.message ? `: ${body.message}` : ''}`)
+      throw new BadRequestException(`The courier rejected ${context}${body.message ? `: ${body.message}` : ''}`)
     }
     return body
   }
@@ -135,7 +135,7 @@ export class DhdApiService {
   async validateToken(baseUrl: string, apiToken: string): Promise<void> {
     const response = await this.request(baseUrl, '/api/v1/validate/token', apiToken, {})
     if (!response.ok) {
-      throw new BadGatewayException(`DHD returned HTTP ${response.status} while validating the token.`)
+      throw new BadGatewayException(`The courier returned HTTP ${response.status} while validating the token.`)
     }
   }
 
@@ -147,11 +147,11 @@ export class DhdApiService {
   async getFees(baseUrl: string, apiToken: string): Promise<DhdFeesResponse> {
     const response = await this.request(baseUrl, '/api/v1/get/fees', apiToken, {})
     if (!response.ok) {
-      throw new BadGatewayException(`DHD returned HTTP ${response.status} while fetching tariffs.`)
+      throw new BadGatewayException(`The courier returned HTTP ${response.status} while fetching tariffs.`)
     }
     const body = (await response.json().catch(() => null)) as DhdFeesResponse | null
     if (!body || !Array.isArray(body.livraison)) {
-      throw new BadGatewayException('DHD returned an unexpected tariffs response.')
+      throw new BadGatewayException('The courier returned an unexpected tariffs response.')
     }
     return body
   }
@@ -237,7 +237,7 @@ export class DhdApiService {
   async getLabel(baseUrl: string, apiToken: string, tracking: string): Promise<DhdLabelResult> {
     const response = await this.request(baseUrl, '/api/v1/get/order/label', apiToken, {}, { tracking })
     if (!response.ok) {
-      throw new BadGatewayException(`DHD returned HTTP ${response.status} while fetching the label.`)
+      throw new BadGatewayException(`The courier returned HTTP ${response.status} while fetching the label.`)
     }
     const data = Buffer.from(await response.arrayBuffer())
     return { data, contentType: response.headers.get('content-type') ?? 'application/pdf' }
