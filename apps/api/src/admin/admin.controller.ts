@@ -33,6 +33,8 @@ import {
   UpdateOrderCustomerInfoSchema,
   OrderState,
   TIMELINE_CATEGORIES,
+  DELIVERY_STAGES,
+  type DeliveryStage,
   type TimelineCategory,
   ProductListQuerySchema,
   GenerateProductContentSchema,
@@ -46,6 +48,7 @@ import { AdminOrdersService } from './admin-orders.service'
 import { AdminCallCenterService } from './admin-call-center.service'
 import { AdminDeleteService } from './admin-delete.service'
 import { AdminOrderTimelineService } from './admin-order-timeline.service'
+import { AdminDeliveriesService } from './admin-deliveries.service'
 import { AdminStatsService } from './admin-stats.service'
 import { AdminUsersService } from './admin-users.service'
 import { AdminProductManagementService } from './admin-product-management.service'
@@ -97,6 +100,7 @@ export class AdminController {
     private readonly callCenter: AdminCallCenterService,
     private readonly deleter: AdminDeleteService,
     private readonly timeline: AdminOrderTimelineService,
+    private readonly deliveries: AdminDeliveriesService,
     private readonly catalog: AdminCatalogService,
     private readonly usersSvc: AdminUsersService,
     private readonly stats: AdminStatsService,
@@ -160,6 +164,25 @@ export class AdminController {
       pageSize: Number(pageSize),
       abandoned,
       archived
+    })
+  }
+
+  // ---- Delivery details: every order sent to a shipping company ------------
+  @Get('deliveries')
+  @Roles('SuperAdmin', 'OpsManager', 'Finance', 'Support', 'Warehouse')
+  deliveryList(
+    @Query('stage') stage: string | undefined,
+    @Query('company') company: string | undefined,
+    @Query('search') search: string | undefined,
+    @Query('page') page: string = '1',
+    @Query('pageSize') pageSize: string = '25'
+  ) {
+    return this.deliveries.list({
+      stage: DELIVERY_STAGES.includes(stage as DeliveryStage) ? (stage as DeliveryStage) : 'all',
+      companyId: company || undefined,
+      search: search || undefined,
+      page: Math.max(Number(page) || 1, 1),
+      pageSize: Math.min(Math.max(Number(pageSize) || 25, 1), 100)
     })
   }
 
