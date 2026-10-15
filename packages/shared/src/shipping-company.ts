@@ -45,6 +45,9 @@ export const ShippingCompanyViewSchema = z.object({
   isLinked: z.boolean(),
   isDefault: z.boolean(),
   lastSyncedAt: z.string().nullable(),
+  // Last sync of the courier's wilaya/commune list (needed for address checks).
+  locationsSyncedAt: z.string().nullable(),
+  communesCount: z.number().int(),
   // The URL to paste into the provider's own webhook configuration (e.g.
   // DHD's "state-webhooks" settings) — null until the company is linked
   // (there's no real id to build it from yet, see `id` above).

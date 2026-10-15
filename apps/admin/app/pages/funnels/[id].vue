@@ -89,6 +89,7 @@ async function duplicate() {
   if (copy) await router.push(`/funnels/${copy.id}`)
 }
 
+const { isSuperAdmin } = useDangerDelete()
 async function remove() {
   if (!funnel.value || !confirm(`Delete "${funnel.value.name}"? This can't be undone.`)) return
   const ok = await run(() => api(`/admin/funnels/${id}`, { method: 'DELETE' }), { success: 'Funnel deleted' })
@@ -268,7 +269,7 @@ const warnings = computed(() => {
     </template>
     <template v-if="funnel" #actions>
       <button class="btn hide-sm" type="button" @click="duplicate"><AdsIcon name="i-lucide-copy" />Duplicate</button>
-      <button class="btn btn-danger hide-sm" type="button" @click="remove"><AdsIcon name="i-lucide-trash-2" />Delete</button>
+      <button v-if="isSuperAdmin" class="btn btn-danger hide-sm" type="button" @click="remove"><AdsIcon name="i-lucide-trash-2" />Delete</button>
       <AdsButton v-if="funnel.status !== 'Live'" :loading="statusBusy" icon="i-lucide-check" @click="setStatus('Live')">{{ funnel.status === 'Paused' ? 'Resume' : 'Mark as live' }}</AdsButton>
       <AdsButton v-else appearance="default" :loading="statusBusy" icon="i-lucide-pause-circle" @click="setStatus('Paused')">Pause</AdsButton>
     </template>
@@ -312,7 +313,7 @@ const warnings = computed(() => {
             <span class="muted">Editing</span>
             <AdsSelect v-model="landingStepId" :items="landingSteps.map((s) => ({ label: s.name, value: s.id }))" size="sm" style="width: 240px" />
           </div>
-          <FunnelLandingEditor :step="landingStep" :product="productDetail" :landing-pages="productPages" :saving="savingLanding" @save="saveLanding" />
+          <FunnelLandingEditor :step="landingStep" :product="productDetail" :landing-pages="productPages" :saving="savingLanding" @save="saveLanding" @pages-changed="(list: ProductLandingPage[]) => (productPages = list)" />
         </template>
       </section>
 

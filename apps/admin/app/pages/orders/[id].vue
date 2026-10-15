@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CALL_CENTER_STATE_TO_ORDER_STATE, formatPhoneLocal, ORDER_STATE_LABELS, PRICE_EDITABLE_STATES, SHIPPING_STATE_TO_ORDER_STATE, type AdminOrderDetail, type OrderState, type ShippingCompanyView } from '@amalice/shared'
+import { CALL_CENTER_STATE_TO_ORDER_STATE, formatPhoneLocal, ORDER_STATE_LABELS, PRICE_EDITABLE_STATES, SHIPPING_STATE_TO_ORDER_STATE, STATES_REQUIRING_SHIPMENT, type AdminOrderDetail, type OrderState, type ShippingCompanyView } from '@amalice/shared'
 import { VALID_TRANSITIONS } from '~/composables/order-transitions'
 import { toast } from 'vue-sonner'
 
@@ -17,9 +17,26 @@ useHead({ title: `Order ${id.slice(0, 8)}` })
 
 const api = useAdminApi()
 const { run } = useApiAction()
+const { isSuperAdmin, confirmDelete } = useDangerDelete()
+
+// Permanent delete (SuperAdmin): removes the order with its items, shipment and
+// reconciliation rows. A parcel already created at a courier is NOT removed there.
+const deleting = ref(false)
+async function deleteOrder() {
+  if (!order.value) return
+  const warn = order.value.shipment ? ' It already has a courier shipment — the parcel is NOT cancelled at the courier.' : ''
+  if (!confirmDelete(`Permanently delete order #${id.slice(0, 8)} (${order.value.customer.name ?? order.value.customer.phone})?${warn}`)) return
+  deleting.value = true
+  const res = await run(() => api(`/admin/orders/${id}`, { method: 'DELETE' }), { success: 'Order deleted', errorFallback: 'Could not delete the order' })
+  deleting.value = false
+  if (res !== undefined) await navigateTo('/orders')
+}
 const { data: order, pending, error, refresh } = await useAdminFetch<AdminOrderDetail>(`/admin/orders/${id}`, { key: `admin-order-${id}` })
 
 const transitioning = ref<OrderState | null>(null)
+// No in-transit states before a courier shipment exists (server enforces it too).
+const needsShipment = computed(() => !!order.value && !order.value.shipment && (VALID_TRANSITIONS[order.value.state] ?? []).some((s) => STATES_REQUIRING_SHIPMENT.includes(s as OrderState)))
+const nextStates = computed(() => (order.value ? (VALID_TRANSITIONS[order.value.state] ?? []).filter((s) => order.value!.shipment || !STATES_REQUIRING_SHIPMENT.includes(s as OrderState)) : []))
 
 async function transition(to: OrderState, postponedUntil?: string) {
   transitioning.value = to
@@ -250,15 +267,11 @@ async function assignManual() {
 const manualTrackingReference = ref('')
 const dispatchingManual = ref(false)
 async function dispatchManual() {
-  if (!manualTrackingReference.value.trim()) {
-    toast.warning('Enter a tracking reference')
-    return
-  }
   dispatchingManual.value = true
   const result = await run(
-    () => api(`/admin/fulfillment/orders/${id}/dispatch-manual`, { method: 'POST', body: { trackingReference: manualTrackingReference.value.trim() } }),
+    () => api(`/admin/fulfillment/orders/${id}/dispatch-manual`, { method: 'POST', body: { trackingReference: manualTrackingReference.value.trim() || undefined } }),
     {
-      success: order.value?.fulfillmentMethod === 'Manual' ? 'Handed to delivery driver' : 'Recorded as manually dispatched',
+      success: order.value?.fulfillmentMethod === 'Manual' ? 'Handed to delivery driver' : 'Marked as sent to the courier',
       errorFallback: 'Could not dispatch manually'
     }
   )
@@ -270,49 +283,18 @@ async function dispatchManual() {
 // ---- Shipment actions (DHD "Commandes" API — see apps/api's
 // FulfillmentService for requestPickup/cancelShipmentForOrder/
 // getShipmentLabel) ----
-const shipmentActing = ref<'dispatch' | 'pickup' | 'cancel' | 'label' | null>(null)
+const shipmentActing = ref<'dispatch' | null>(null)
 
-async function dispatchToCourier() {
+async function dispatchToCourier(confirm = true) {
   shipmentActing.value = 'dispatch'
-  await run(() => api(`/admin/fulfillment/orders/${id}/dispatch`, { method: 'POST' }), {
-    success: 'Order dispatched to courier',
+  const res = await run(() => api<{ confirmed: boolean; confirmError: string | null }>(`/admin/fulfillment/orders/${id}/dispatch`, { method: 'POST', body: { confirm } }), {
     errorFallback: 'Could not dispatch the order'
   })
+  if (res) {
+    if (res.confirmError) toast.warning('Created at the courier, but confirming failed', { description: `${res.confirmError} Confirm it from the Shipment card.` })
+    else toast.success(res.confirmed ? 'Sent to the courier and confirmed' : 'Created at the courier — confirm it when ready')
+  }
   await refresh()
-  shipmentActing.value = null
-}
-
-async function requestPickup() {
-  shipmentActing.value = 'pickup'
-  await run(() => api(`/admin/fulfillment/orders/${id}/request-pickup`, { method: 'POST', body: { askCollection: true } }), {
-    success: 'Pickup requested with DHD',
-    errorFallback: 'Could not request pickup'
-  })
-  await refresh()
-  shipmentActing.value = null
-}
-
-async function cancelShipment() {
-  shipmentActing.value = 'cancel'
-  await run(() => api(`/admin/fulfillment/orders/${id}/cancel-shipment`, { method: 'POST' }), {
-    success: 'Shipment cancelled',
-    errorFallback: 'Could not cancel the shipment'
-  })
-  await refresh()
-  shipmentActing.value = null
-}
-
-async function downloadLabel() {
-  shipmentActing.value = 'label'
-  await run(async () => {
-    const blob = await api<Blob>(`/admin/fulfillment/orders/${id}/label`, { responseType: 'blob' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `label-${id}.pdf`
-    a.click()
-    URL.revokeObjectURL(url)
-  }, { errorFallback: 'Could not download the label' })
   shipmentActing.value = null
 }
 
@@ -428,6 +410,7 @@ function initials(name: string | null) {
     </template>
     <template v-if="order" #actions>
       <button class="btn" type="button" :disabled="archiving" @click="toggleArchive"><AdsIcon :name="order.archived ? 'i-lucide-archive-restore' : 'i-lucide-archive'" />{{ order.archived ? 'Unarchive' : 'Archive' }}</button>
+      <button v-if="isSuperAdmin" class="btn btn-danger" type="button" :disabled="deleting" @click="deleteOrder"><AdsIcon name="i-lucide-trash-2" />Delete</button>
     </template>
 
     <div v-if="pending" class="empty">Loading…</div>
@@ -489,6 +472,8 @@ function initials(name: string | null) {
             </div>
           </section>
 
+          <DeliveryDetails v-if="['Confirmed', 'OnHold', 'Packed', 'HandedToCourier'].includes(order.state)" :order="order" @changed="refresh" />
+
           <!-- Shipping assignment: required before dispatch; never defaults to any company. -->
           <section v-if="!order.shipment" class="card" aria-labelledby="dl-h">
             <div class="card-head"><h2 id="dl-h">Delivery</h2></div>
@@ -507,33 +492,19 @@ function initials(name: string | null) {
 
             <template v-if="order.state === 'Packed' && order.fulfillmentMethod !== 'Unassigned'">
               <hr class="divider">
-              <button v-if="order.fulfillmentMethod === 'ShippingCompany'" class="btn btn-primary" type="button" style="align-self: flex-start" :disabled="shipmentActing === 'dispatch'" @click="dispatchToCourier"><AdsIcon name="i-lucide-truck" />Dispatch to courier</button>
-              <p v-if="order.fulfillmentMethod === 'ShippingCompany'" class="muted" style="line-height: 1.5">Or, if this shipment was arranged directly with the courier instead of through our API, record it manually:</p>
+              <div v-if="order.fulfillmentMethod === 'ShippingCompany'" style="display: flex; gap: 8px; flex-wrap: wrap">
+                <button class="btn btn-primary" type="button" :disabled="shipmentActing === 'dispatch'" @click="dispatchToCourier(true)"><AdsIcon name="i-lucide-truck" />Send to courier</button>
+                <button class="btn" type="button" :disabled="shipmentActing === 'dispatch'" title="Create the parcel at the courier but don't confirm it yet, so it can still be edited" @click="dispatchToCourier(false)">Create without confirming</button>
+              </div>
+              <p v-if="order.fulfillmentMethod === 'ShippingCompany'" class="muted" style="line-height: 1.5">Or, if you created this shipment by hand on the courier's own platform, mark it as sent here (add the tracking number if you have it):</p>
               <div style="display: flex; gap: 8px; flex-wrap: wrap">
-                <input v-model="manualTrackingReference" class="input" style="max-width: 280px" placeholder="Tracking reference">
-                <button class="btn" type="button" :disabled="dispatchingManual || !manualTrackingReference.trim()" @click="dispatchManual"><AdsIcon name="i-lucide-package-check" />{{ order.fulfillmentMethod === 'Manual' ? 'Hand to delivery driver' : 'Dispatch manually' }}</button>
+                <input v-model="manualTrackingReference" class="input" style="max-width: 280px" placeholder="Tracking reference (optional)">
+                <button class="btn" type="button" :disabled="dispatchingManual" @click="dispatchManual"><AdsIcon name="i-lucide-package-check" />{{ order.fulfillmentMethod === 'Manual' ? 'Hand to delivery driver' : 'Mark as sent' }}</button>
               </div>
             </template>
           </section>
 
-          <section v-else class="card" aria-labelledby="sh-h">
-            <div class="card-head"><h2 id="sh-h">Shipment</h2><AdsLozenge v-if="order.shipment.trackingReference" tone="connected">Tracking active</AdsLozenge></div>
-            <dl class="details">
-              <dt>Courier</dt><dd>{{ order.shipment.courier.name }}</dd>
-              <dt>Tracking ref</dt><dd class="mono">{{ order.shipment.trackingReference ?? '— (manual delivery)' }}</dd>
-              <dt>Courier status</dt><dd>{{ order.shipment.courierStatus ?? '—' }}</dd>
-              <template v-if="order.shipment.driverName || order.shipment.driverPhone">
-                <dt>Driver</dt><dd>{{ order.shipment.driverName || '—' }} <a v-if="order.shipment.driverPhone" :href="`tel:${order.shipment.driverPhone}`" class="mono">{{ order.shipment.driverPhone }}</a></dd>
-              </template>
-            </dl>
-            <div style="display: flex; flex-wrap: wrap; gap: 8px">
-              <template v-if="order.shipment.trackingReference">
-                <button class="btn" type="button" :disabled="shipmentActing === 'pickup'" @click="requestPickup"><AdsIcon name="i-lucide-package-check" />Request pickup</button>
-                <button class="btn" type="button" :disabled="shipmentActing === 'label'" @click="downloadLabel"><AdsIcon name="i-lucide-file-down" />Download label</button>
-              </template>
-              <button class="btn btn-danger" type="button" :disabled="shipmentActing === 'cancel'" @click="cancelShipment"><AdsIcon name="i-lucide-x" />Cancel shipment</button>
-            </div>
-          </section>
+          <ShipmentPanel v-else :order="order" @changed="refresh" />
 
           <section class="card" aria-labelledby="tl-h">
             <div class="card-head"><h2 id="tl-h">Activity</h2><button class="btn btn-sm" type="button" @click="openNotes"><AdsIcon name="i-lucide-sticky-note" />{{ order.notes ? 'Edit note' : 'Add note' }}</button></div>
@@ -545,6 +516,8 @@ function initials(name: string | null) {
               <li class="done"><span class="dot" /><div><b>Order placed</b><span>{{ fmtDateTime(order.createdAt) }} · Customer</span></div></li>
             </ol>
           </section>
+
+          <OrderTimeline :order-id="id" :refresh-key="order.updatedAt" />
         </div>
 
         <div class="stack">
@@ -553,8 +526,9 @@ function initials(name: string | null) {
             <div class="card-head"><h2 id="ac-h">Next step</h2></div>
             <div class="stack" style="gap: 8px">
               <p class="muted" style="line-height: 1.5">Only valid transitions are offered; the server re-validates each one.</p>
+              <p v-if="needsShipment" class="muted" style="line-height: 1.5"><AdsIcon name="i-lucide-truck" /> "Out for delivery" is only available once the order has been sent to the courier (Dispatch to courier, or Mark as sent).</p>
               <button
-                v-for="(next, i) in VALID_TRANSITIONS[order.state]"
+                v-for="(next, i) in nextStates"
                 :key="next"
                 class="btn btn-block"
                 :class="next === 'Cancelled' ? 'btn-danger' : i === 0 ? 'btn-primary' : ''"

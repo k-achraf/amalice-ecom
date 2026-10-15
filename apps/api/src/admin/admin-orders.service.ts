@@ -1,5 +1,5 @@
-import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, type OrderState, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { ADDRESS_EDITABLE_STATES, CALL_CENTER_WORK_STATES, STATES_REQUIRING_SHIPMENT, deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, type OrderState, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
 import type { Prisma } from '../generated/prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
@@ -81,6 +81,12 @@ export class AdminOrdersService {
 
   async list(args: {
     state?: OrderState
+    // Restricts to any of these states (used to confine a CallCenterAgent to
+    // the call-center queues); combined with `state` as an intersection.
+    states?: readonly OrderState[]
+    // 'oldest' = longest-waiting first (call-center queues); 'followup' =
+    // earliest promised callback first (Postponed queue).
+    sort?: 'oldest' | 'followup'
     search?: string
     courierId?: string
     from?: Date
@@ -102,7 +108,8 @@ export class AdminOrdersService {
     const where: Prisma.OrderWhereInput = {
       isAbandoned: args.abandoned === 'only',
       archived: args.archived === 'only',
-      ...(args.state && { state: args.state }),
+      ...(args.state && !args.states && { state: args.state }),
+      ...(args.states && { state: { in: args.state ? args.states.filter((x) => x === args.state) : [...args.states] } }),
       ...(args.courierId && { shipment: { courierId: args.courierId } }),
       ...((args.from || args.to) && {
         createdAt: { ...(args.from && { gte: args.from }), ...(args.to && { lte: args.to }) }
@@ -111,7 +118,8 @@ export class AdminOrdersService {
         OR: [
           { id: { equals: args.search, mode: 'insensitive' } },
           { customer: { phone: { contains: args.search, mode: 'insensitive' } } },
-          { customer: { name: { contains: args.search, mode: 'insensitive' } } }
+          { customer: { name: { contains: args.search, mode: 'insensitive' } } },
+          { shipment: { trackingReference: { contains: args.search, mode: 'insensitive' } } }
         ]
       })
     }
@@ -125,7 +133,7 @@ export class AdminOrdersService {
           shipment: { include: { courier: { select: { name: true } } } },
           shippingCompany: { select: { name: true } }
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: args.sort === 'followup' ? [{ postponedUntil: 'asc' }, { createdAt: 'asc' }] : { createdAt: args.sort === 'oldest' ? 'asc' : 'desc' },
         skip: (args.page - 1) * args.pageSize,
         take: args.pageSize
       }),
@@ -139,137 +147,6 @@ export class AdminOrdersService {
       })
     )
     return { items, total, page: args.page, pageSize: args.pageSize }
-  }
-
-  // Call Center's "Drop Queue" (ADM-11) — a single-order-at-a-time power-
-  // dialer view. Combines all 4 call-center states into one priority-ranked
-  // list so an agent never has to think about which of the 4 index.vue
-  // queues to work next; the page just pulls item [0], the agent acts on
-  // it, and the next findMany (after the state changes) naturally drops it
-  // out of this list and promotes whatever's now first.
-  //
-  // Priority: brand-new leads first (tier 1) — conversion drops fast with
-  // response time, so a lead that's never been called outranks a retry.
-  // No-answer retries (tier 2) and postponed follow-ups (tier 3) come next.
-  // Abandoned-cart orders (tier 4, lowest) sink below both — the customer
-  // never actually finished submitting the form, so these are the
-  // lowest-intent leads in the queue; still worth a follow-up call, just
-  // never ahead of someone who actually completed checkout. Within a tier:
-  // higher COD value first (bigger RTO loss if never confirmed), then
-  // oldest-first as the final tiebreak so nothing starves.
-  //
-  // WrongNumber is deliberately NOT in this queue at all (was tier 4,
-  // removed) — these need the customer's number corrected via another
-  // channel (SMS/WhatsApp) before a call is even possible, so they'd just
-  // sit un-actionable at the bottom forever; an agent who fixes a number
-  // moves the order back to PendingCallCenter by hand from the regular
-  // Call Center queue (call-center/index.vue's own Wrong Number section),
-  // which re-admits it here naturally.
-  //
-  // CallCenterNoAnswer and Postponed both get a re-surface delay instead of
-  // showing again the instant they're acted on (dialing the same
-  // unreachable number twice in five minutes wastes the agent's time and
-  // looks amateurish to anyone who does pick up on a retry):
-  //  - No-answer: hidden for NO_ANSWER_COOLDOWN_HOURS from whenever the
-  //    order last changed (updatedAt) — an approximation, since updatedAt
-  //    bumps on ANY edit (a note, a price fix), not just the transition
-  //    into this state, but that's a rare edge case worth accepting rather
-  //    than adding a dedicated "entered this state at" column.
-  //  - Postponed: hidden until Order.postponedUntil (now a required field
-  //    when transitioning to Postponed — see TransitionOrderSchema).
-  //    postponedUntil === null only for legacy rows predating this field;
-  //    those are shown immediately rather than hidden forever with no way
-  //    to know when to re-surface them.
-  //
-  // Includes abandoned orders — they only ever sit in PendingCallCenter (see
-  // OrdersService.createAbandonedOrder); confirming one here goes through
-  // transition(), which clears isAbandoned so it becomes a normal order the
-  // rest of the pipeline (fulfillment/shipping) can see.
-  //
-  // Capped at 500 rows before sorting rather than loading the entire
-  // backlog — call-center backlogs are bounded in practice (an unconfirmed
-  // queue that size is its own emergency); revisit if that stops holding.
-  private static readonly NO_ANSWER_COOLDOWN_HOURS = 4
-  private static readonly DROP_QUEUE_TIER: Record<string, number> = {
-    PendingCallCenter: 1,
-    CallCenterNoAnswer: 2,
-    Postponed: 3
-  }
-  private static readonly DROP_QUEUE_ABANDONED_TIER = 4
-
-  async dropQueue(pageSize: number) {
-    const now = new Date()
-    const noAnswerCutoff = new Date(now.getTime() - AdminOrdersService.NO_ANSWER_COOLDOWN_HOURS * 3600 * 1000)
-
-    const rows = await this.prisma.order.findMany({
-      where: {
-        archived: false,
-        OR: [
-          { state: 'PendingCallCenter' },
-          { state: 'CallCenterNoAnswer', updatedAt: { lte: noAnswerCutoff } },
-          { state: 'Postponed', OR: [{ postponedUntil: null }, { postponedUntil: { lte: now } }] }
-        ]
-      },
-      include: {
-        customer: { select: { id: true, name: true, phone: true } },
-        address: { select: { line1: true, line2: true, city: true, region: true, postalCode: true, country: true } },
-        items: { include: itemInclude },
-        shipment: { include: { courier: { select: { name: true } } } },
-        shippingCompany: { select: { name: true } }
-      },
-      orderBy: { createdAt: 'asc' },
-      take: 500
-    })
-    const items = rows
-      .map((order) =>
-        withDerivedStates({
-          ...order,
-          items: order.items.map(toLineItem),
-          shippingCompanyName: order.shippingCompany?.name ?? null
-        })
-      )
-      .sort((a, b) => {
-        const tierOf = (o: typeof a) => (o.isAbandoned ? AdminOrdersService.DROP_QUEUE_ABANDONED_TIER : AdminOrdersService.DROP_QUEUE_TIER[o.state])
-        const tierDiff = tierOf(a) - tierOf(b)
-        if (tierDiff !== 0) return tierDiff
-        if (a.totalCents !== b.totalCents) return b.totalCents - a.totalCents
-        return a.createdAt.getTime() - b.createdAt.getTime()
-      })
-    return { items: items.slice(0, pageSize), total: items.length }
-  }
-
-  // Drop Queue's session-stats cards (ADM-11) were showing a purely local,
-  // per-page-load counter that starts at 0 and only ever grows from actions
-  // taken in the CURRENT browser tab — indistinguishable from "broken" to an
-  // agent opening the page fresh, since real call-center activity from
-  // earlier today (their own last session, or a teammate's) never showed up.
-  // This is the real source: every state transition is already recorded in
-  // AuditLog (StateTransition, metadata {from, to}), which is the actual
-  // history of what happened — not "count orders currently in state X"
-  // (which undercounts anything that moved on again, e.g. Confirmed →
-  // Packed later the same day). Scoped to today (server-local midnight) and
-  // just the 5 outcomes this queue's action buttons produce.
-  private static readonly CALL_CENTER_OUTCOME_STATES: OrderState[] = ['Confirmed', 'CallCenterNoAnswer', 'WrongNumber', 'Postponed', 'Cancelled']
-
-  async todayCallCenterStats() {
-    const startOfDay = new Date()
-    startOfDay.setHours(0, 0, 0, 0)
-
-    const rows = await this.prisma.auditLog.findMany({
-      where: {
-        entity: 'Order',
-        action: 'StateTransition',
-        createdAt: { gte: startOfDay }
-      },
-      select: { metadata: true }
-    })
-
-    const counts: Record<string, number> = { Confirmed: 0, CallCenterNoAnswer: 0, WrongNumber: 0, Postponed: 0, Cancelled: 0 }
-    for (const row of rows) {
-      const to = (row.metadata as { to?: string } | null)?.to
-      if (to && to in counts) counts[to]++
-    }
-    return counts as Record<(typeof AdminOrdersService.CALL_CENTER_OUTCOME_STATES)[number], number>
   }
 
   async findOne(id: string) {
@@ -300,7 +177,7 @@ export class AdminOrdersService {
   async archiveOrder(id: string, actor: AuditActor) {
     const order = await this.prisma.order.findUnique({ where: { id } })
     if (!order) throw new NotFoundException('Order not found')
-    await this.prisma.order.update({ where: { id }, data: { archived: true, archivedAt: new Date() } })
+    await this.prisma.order.update({ where: { id }, data: { archived: true, archivedAt: new Date(), assignedToId: null, assignedToEmail: null, lockedUntil: null } })
     await this.audit.log({ actor, action: 'Update', entity: 'Order', entityId: id, metadata: { archived: true } })
     return { id, archived: true }
   }
@@ -317,11 +194,28 @@ export class AdminOrdersService {
   // server-side (client-side gating is UX only). Every transition is
   // audit-logged with from/to (SEC-03). Rejecting illegal transitions here
   // means the UI can't bypass the machine even if it tried.
-  async transition(id: string, to: OrderState, actor: AuditActor, postponedUntil?: string) {
+  async transition(id: string, to: OrderState, actor: AuditActor, postponedUntil?: string, role?: string) {
     const order = await this.prisma.order.findUnique({ where: { id } })
     if (!order) throw new NotFoundException('Order not found')
     const from = order.state
+    // A CallCenterAgent only works the call-center queues: they may not touch
+    // an order that already left them, nor push one into fulfillment/shipping/
+    // finance states (Packed, Delivered, CashCollected...).
+    if (role === 'CallCenterAgent') {
+      const allowedTargets: OrderState[] = [...CALL_CENTER_WORK_STATES, 'Confirmed', 'Cancelled']
+      if (!CALL_CENTER_WORK_STATES.includes(from) || !allowedTargets.includes(to)) {
+        throw new ForbiddenException('Call-center agents can only move orders between the call-center states')
+      }
+    }
     if (from === to) throw new BadRequestException(`Order is already ${to}`)
+    // Never "in transit" without a courier shipment: it must be created via
+    // Dispatch to courier, or recorded with Mark as sent (manual).
+    if (STATES_REQUIRING_SHIPMENT.includes(to)) {
+      const shipment = await this.prisma.shipment.findUnique({ where: { orderId: id }, select: { id: true } })
+      if (!shipment) {
+        throw new BadRequestException('Create the shipment first: use "Dispatch to courier", or "Mark as sent" if it was created manually at the courier.')
+      }
+    }
     if (!isValidTransition(from, to)) {
       throw new BadRequestException(`Illegal transition: ${from} → ${to}`)
     }
@@ -350,6 +244,10 @@ export class AdminOrdersService {
         // that has since moved on (e.g. confirmed after a later, different
         // call), which would otherwise misreport if it's ever postponed again.
         postponedUntil: to === 'Postponed' ? new Date(postponedUntil!) : null,
+        // Any state change ends the current claim on the order.
+        assignedToId: null,
+        assignedToEmail: null,
+        lockedUntil: null,
         ...(clearsAbandoned && { isAbandoned: false })
       }
     })
@@ -456,10 +354,10 @@ export class AdminOrdersService {
   // already belongs to someone else. Rejected with a clear conflict instead
   // of ever letting that happen quietly.
   async updateCustomerInfo(id: string, input: UpdateOrderCustomerInfo, actor: AuditActor) {
-    const order = await this.prisma.order.findUnique({ where: { id }, include: { customer: true, address: true } })
+    const order = await this.prisma.order.findUnique({ where: { id }, include: { customer: true, address: true, shipment: { select: { id: true } } } })
     if (!order) throw new NotFoundException('Order not found')
-    if (!PRICE_EDITABLE_STATES.includes(order.state)) {
-      throw new BadRequestException(`Can't edit customer info for an order in state ${order.state} — it's already past the call-center confirmation step.`)
+    if (!ADDRESS_EDITABLE_STATES.includes(order.state) || order.shipment) {
+      throw new BadRequestException(`Can't edit customer info for an order in state ${order.state}${order.shipment ? ' with a shipment' : ''} — it's already with the courier or past packing.`)
     }
 
     const changes: Record<string, { from: unknown; to: unknown }> = {}

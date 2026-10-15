@@ -18,6 +18,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   // Whatever this returns becomes `request.user` — kept to exactly what
   // guards/routes need (id, email, role), not the raw JWT payload shape.
   validate(payload: AdminJwtPayload) {
-    return { id: payload.sub, email: payload.email, role: payload.role }
+    // `sub` is kept alongside `id`: controllers type request.user as the raw
+    // JWT payload and read `req.user.sub` for the audit actor — without it every
+    // audit row had a null actorId.
+    return { sub: payload.sub, id: payload.sub, email: payload.email, role: payload.role }
   }
 }

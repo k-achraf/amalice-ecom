@@ -4,6 +4,7 @@ import type { Queue } from 'bullmq'
 import {
   extractSpreadsheetId,
   isValidTransition,
+  STATES_REQUIRING_SHIPMENT,
   ORDER_STAGE_BY_STATE,
   ORDER_STATE_LABELS,
   ORDER_STATE_SHEET_COLORS,
@@ -493,6 +494,8 @@ export class GoogleSheetsService implements OnModuleInit {
       const targetState = LABEL_TO_STATE[label]
       if (!targetState || targetState === current.state) continue
       if (!isValidTransition(current.state, targetState)) continue
+      // A sheet edit can't put an order in transit without a courier shipment.
+      if (STATES_REQUIRING_SHIPMENT.includes(targetState) && !(await this.prisma.shipment.findUnique({ where: { orderId }, select: { id: true } }))) continue
       await this.applyTransitionFromSheet(orderId, current.state, targetState)
       break
     }

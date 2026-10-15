@@ -5,12 +5,13 @@ import { LandingPagesService } from './landing-pages.service'
 import { LandingPagesProcessor } from './landing-pages.processor'
 import { GeminiService } from './gemini.service'
 import { PollinationsService } from './pollinations.service'
+import { LandingComposerService } from './landing-composer.service'
 import { CommonModule } from '../common/common.module'
 
 @Module({
   imports: [BullModule.registerQueue({ name: 'landing-pages' }), CommonModule],
   controllers: [LandingPagesController],
-  providers: [LandingPagesService, LandingPagesProcessor, GeminiService, PollinationsService],
+  providers: [LandingPagesService, LandingPagesProcessor, LandingComposerService, GeminiService, PollinationsService],
   // GeminiService is also used outside this module — AdminModule imports
   // LandingPagesModule to reuse it for the product editor's "generate with
   // AI" content drafter (see admin-product-management.service.ts).

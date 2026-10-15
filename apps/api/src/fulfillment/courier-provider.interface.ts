@@ -39,6 +39,17 @@ export interface CreateShipmentInput {
   // the courier (DHD's produit/quantite fields) — descriptive only, never
   // used for pricing (codAmountCents is authoritative).
   items?: { name: string; quantity: number }[]
+  // The courier's own spelling of the commune and its postal code, resolved from
+  // its commune list (see FulfillmentService.checkAddress) — preferred over the
+  // free-form address.city when present.
+  courierCommune?: string
+  courierPostalCode?: string
+  fragile?: boolean
+  gpsLink?: string | null
+  shopName?: string
+  // 'Exchange' maps to the courier's Échange operation (type 2).
+  operation?: 'Delivery' | 'Exchange'
+  exchangeProduct?: string | null
 }
 
 export interface ShipmentResult {

@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Header, Param, Post, Req, Res, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Header, Param, Patch, Post, Query, Req, Res, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import type { Request, Response } from 'express'
 import { createZodDto } from 'nestjs-zod'
-import { RequestPickupSchema, UpdateShipmentSchema, BulkDispatchSchema, ValidateOrderReturnsSchema, AssignShippingCompanySchema, DispatchManualSchema } from '@amalice/shared'
+import { RequestPickupSchema, UpdateShipmentSchema, BulkDispatchSchema, ValidateOrderReturnsSchema, AssignShippingCompanySchema, DispatchManualSchema, DispatchOrderSchema, UpdateDeliveryInfoSchema, CourierNoteSchema } from '@amalice/shared'
 import { FulfillmentService } from './fulfillment.service'
 import { MockCourierProvider } from './mock-courier.provider'
 import { JwtAuthGuard } from '../identity/admin-auth/jwt-auth.guard'
@@ -17,6 +17,9 @@ class BulkDispatchDto extends createZodDto(BulkDispatchSchema) {}
 class ValidateOrderReturnsDto extends createZodDto(ValidateOrderReturnsSchema) {}
 class AssignShippingCompanyDto extends createZodDto(AssignShippingCompanySchema) {}
 class DispatchManualDto extends createZodDto(DispatchManualSchema) {}
+class DispatchOrderDto extends createZodDto(DispatchOrderSchema) {}
+class UpdateDeliveryInfoDto extends createZodDto(UpdateDeliveryInfoSchema) {}
+class CourierNoteDto extends createZodDto(CourierNoteSchema) {}
 
 interface AuthedRequest extends Request {
   user: AdminJwtPayload
@@ -63,9 +66,9 @@ export class FulfillmentController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('SuperAdmin', 'OpsManager')
-  dispatch(@Param('id') id: string, @Req() req: AuthedRequest) {
+  dispatch(@Param('id') id: string, @Body() body: DispatchOrderDto, @Req() req: AuthedRequest) {
     const actor: AuditActor = { id: req.user.sub, email: req.user.email }
-    return this.fulfillment.createShipmentForOrder(id, actor)
+    return this.fulfillment.createShipmentForOrder(id, actor, body)
   }
 
   // Manual dispatch — no shipping company API call, tracking reference
@@ -82,6 +85,64 @@ export class FulfillmentController {
     return this.fulfillment.dispatchManual(id, body.trackingReference, actor)
   }
 
+  // Checks an order's address against the courier's commune list (valid spelling,
+  // served wilaya, stop-desk availability). Also used by the call center, which
+  // can't reach the rest of this controller.
+  @Get('admin/fulfillment/orders/:id/address-check')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  addressCheck(@Param('id') id: string) {
+    return this.fulfillment.checkAddress(id)
+  }
+
+  // Remark / fragile / GPS link / operation type sent to the courier.
+  @Patch('admin/fulfillment/orders/:id/delivery-info')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  updateDeliveryInfo(@Param('id') id: string, @Body() body: UpdateDeliveryInfoDto, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.fulfillment.updateDeliveryInfo(id, body, actor)
+  }
+
+  // The courier's view of the parcel (driver, failed-attempt reason, history,
+  // fees). ?refresh=1 re-reads it live from the courier first.
+  @Get('admin/fulfillment/orders/:id/tracking')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'Warehouse')
+  tracking(@Param('id') id: string, @Query('refresh') refresh?: string) {
+    return this.fulfillment.getShipmentTracking(id, refresh === '1' || refresh === 'true')
+  }
+
+  @Post('admin/fulfillment/orders/:id/courier-note')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager', 'Support')
+  courierNote(@Param('id') id: string, @Body() body: CourierNoteDto, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.fulfillment.addCourierNote(id, body.content, actor)
+  }
+
+  @Post('admin/fulfillment/orders/:id/request-return')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager')
+  requestReturn(@Param('id') id: string, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.fulfillment.requestReturn(id, actor)
+  }
+
+  // Runs the courier status sync now (it also runs every 5 minutes).
+  @Post('admin/fulfillment/sync')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager')
+  syncNow() {
+    return this.fulfillment.syncAllCompanies()
+  }
+
   // "Ajouter plusieurs commandes" — dispatch several Packed orders at once,
   // all pre-assigned to the same shipping company.
   @Post('admin/fulfillment/orders/bulk-dispatch')
@@ -90,7 +151,7 @@ export class FulfillmentController {
   @Roles('SuperAdmin', 'OpsManager')
   bulkDispatch(@Body() body: BulkDispatchDto, @Req() req: AuthedRequest) {
     const actor: AuditActor = { id: req.user.sub, email: req.user.email }
-    return this.fulfillment.bulkDispatch(body.orderIds, body.shippingCompanyId, actor)
+    return this.fulfillment.bulkDispatch(body.orderIds, body.shippingCompanyId, actor, { confirm: body.confirm, askCollection: body.askCollection })
   }
 
   // "Expedier une commande" — confirm/dispatch an already-created DHD

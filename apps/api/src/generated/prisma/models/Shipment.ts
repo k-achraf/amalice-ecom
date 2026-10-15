@@ -20,8 +20,20 @@ export type ShipmentModel = runtime.Types.Result.DefaultSelection<Prisma.$Shipme
 
 export type AggregateShipment = {
   _count: ShipmentCountAggregateOutputType | null
+  _avg: ShipmentAvgAggregateOutputType | null
+  _sum: ShipmentSumAggregateOutputType | null
   _min: ShipmentMinAggregateOutputType | null
   _max: ShipmentMaxAggregateOutputType | null
+}
+
+export type ShipmentAvgAggregateOutputType = {
+  carrierFeeCents: number | null
+  returnFeeCents: number | null
+}
+
+export type ShipmentSumAggregateOutputType = {
+  carrierFeeCents: number | null
+  returnFeeCents: number | null
 }
 
 export type ShipmentMinAggregateOutputType = {
@@ -32,6 +44,12 @@ export type ShipmentMinAggregateOutputType = {
   courierStatus: string | null
   driverName: string | null
   driverPhone: string | null
+  carrierConfirmedAt: Date | null
+  carrierFeeCents: number | null
+  returnFeeCents: number | null
+  lastFailureReason: string | null
+  postponedTo: Date | null
+  lastSyncedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -44,6 +62,12 @@ export type ShipmentMaxAggregateOutputType = {
   courierStatus: string | null
   driverName: string | null
   driverPhone: string | null
+  carrierConfirmedAt: Date | null
+  carrierFeeCents: number | null
+  returnFeeCents: number | null
+  lastFailureReason: string | null
+  postponedTo: Date | null
+  lastSyncedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,11 +80,29 @@ export type ShipmentCountAggregateOutputType = {
   courierStatus: number
   driverName: number
   driverPhone: number
+  carrierConfirmedAt: number
+  carrierFeeCents: number
+  returnFeeCents: number
+  lastFailureReason: number
+  postponedTo: number
+  deskInfo: number
+  activity: number
+  lastSyncedAt: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
+
+export type ShipmentAvgAggregateInputType = {
+  carrierFeeCents?: true
+  returnFeeCents?: true
+}
+
+export type ShipmentSumAggregateInputType = {
+  carrierFeeCents?: true
+  returnFeeCents?: true
+}
 
 export type ShipmentMinAggregateInputType = {
   id?: true
@@ -70,6 +112,12 @@ export type ShipmentMinAggregateInputType = {
   courierStatus?: true
   driverName?: true
   driverPhone?: true
+  carrierConfirmedAt?: true
+  carrierFeeCents?: true
+  returnFeeCents?: true
+  lastFailureReason?: true
+  postponedTo?: true
+  lastSyncedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -82,6 +130,12 @@ export type ShipmentMaxAggregateInputType = {
   courierStatus?: true
   driverName?: true
   driverPhone?: true
+  carrierConfirmedAt?: true
+  carrierFeeCents?: true
+  returnFeeCents?: true
+  lastFailureReason?: true
+  postponedTo?: true
+  lastSyncedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -94,6 +148,14 @@ export type ShipmentCountAggregateInputType = {
   courierStatus?: true
   driverName?: true
   driverPhone?: true
+  carrierConfirmedAt?: true
+  carrierFeeCents?: true
+  returnFeeCents?: true
+  lastFailureReason?: true
+  postponedTo?: true
+  deskInfo?: true
+  activity?: true
+  lastSyncedAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -137,6 +199,18 @@ export type ShipmentAggregateArgs<ExtArgs extends runtime.Types.Extensions.Inter
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: ShipmentAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: ShipmentSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: ShipmentMinAggregateInputType
@@ -167,6 +241,8 @@ export type ShipmentGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   _count?: ShipmentCountAggregateInputType | true
+  _avg?: ShipmentAvgAggregateInputType
+  _sum?: ShipmentSumAggregateInputType
   _min?: ShipmentMinAggregateInputType
   _max?: ShipmentMaxAggregateInputType
 }
@@ -179,9 +255,19 @@ export type ShipmentGroupByOutputType = {
   courierStatus: string | null
   driverName: string | null
   driverPhone: string | null
+  carrierConfirmedAt: Date | null
+  carrierFeeCents: number | null
+  returnFeeCents: number | null
+  lastFailureReason: string | null
+  postponedTo: Date | null
+  deskInfo: runtime.JsonValue | null
+  activity: runtime.JsonValue | null
+  lastSyncedAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: ShipmentCountAggregateOutputType | null
+  _avg: ShipmentAvgAggregateOutputType | null
+  _sum: ShipmentSumAggregateOutputType | null
   _min: ShipmentMinAggregateOutputType | null
   _max: ShipmentMaxAggregateOutputType | null
 }
@@ -212,10 +298,19 @@ export type ShipmentWhereInput = {
   courierStatus?: Prisma.StringNullableFilter<"Shipment"> | string | null
   driverName?: Prisma.StringNullableFilter<"Shipment"> | string | null
   driverPhone?: Prisma.StringNullableFilter<"Shipment"> | string | null
+  carrierConfirmedAt?: Prisma.DateTimeNullableFilter<"Shipment"> | Date | string | null
+  carrierFeeCents?: Prisma.IntNullableFilter<"Shipment"> | number | null
+  returnFeeCents?: Prisma.IntNullableFilter<"Shipment"> | number | null
+  lastFailureReason?: Prisma.StringNullableFilter<"Shipment"> | string | null
+  postponedTo?: Prisma.DateTimeNullableFilter<"Shipment"> | Date | string | null
+  deskInfo?: Prisma.JsonNullableFilter<"Shipment">
+  activity?: Prisma.JsonNullableFilter<"Shipment">
+  lastSyncedAt?: Prisma.DateTimeNullableFilter<"Shipment"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Shipment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Shipment"> | Date | string
   order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>
   courier?: Prisma.XOR<Prisma.CourierScalarRelationFilter, Prisma.CourierWhereInput>
+  shipmentEvents?: Prisma.ShipmentEventListRelationFilter
 }
 
 export type ShipmentOrderByWithRelationInput = {
@@ -226,10 +321,19 @@ export type ShipmentOrderByWithRelationInput = {
   courierStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   driverName?: Prisma.SortOrderInput | Prisma.SortOrder
   driverPhone?: Prisma.SortOrderInput | Prisma.SortOrder
+  carrierConfirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  carrierFeeCents?: Prisma.SortOrderInput | Prisma.SortOrder
+  returnFeeCents?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastFailureReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  postponedTo?: Prisma.SortOrderInput | Prisma.SortOrder
+  deskInfo?: Prisma.SortOrderInput | Prisma.SortOrder
+  activity?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastSyncedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   order?: Prisma.OrderOrderByWithRelationInput
   courier?: Prisma.CourierOrderByWithRelationInput
+  shipmentEvents?: Prisma.ShipmentEventOrderByRelationAggregateInput
 }
 
 export type ShipmentWhereUniqueInput = Prisma.AtLeast<{
@@ -243,10 +347,19 @@ export type ShipmentWhereUniqueInput = Prisma.AtLeast<{
   courierStatus?: Prisma.StringNullableFilter<"Shipment"> | string | null
   driverName?: Prisma.StringNullableFilter<"Shipment"> | string | null
   driverPhone?: Prisma.StringNullableFilter<"Shipment"> | string | null
+  carrierConfirmedAt?: Prisma.DateTimeNullableFilter<"Shipment"> | Date | string | null
+  carrierFeeCents?: Prisma.IntNullableFilter<"Shipment"> | number | null
+  returnFeeCents?: Prisma.IntNullableFilter<"Shipment"> | number | null
+  lastFailureReason?: Prisma.StringNullableFilter<"Shipment"> | string | null
+  postponedTo?: Prisma.DateTimeNullableFilter<"Shipment"> | Date | string | null
+  deskInfo?: Prisma.JsonNullableFilter<"Shipment">
+  activity?: Prisma.JsonNullableFilter<"Shipment">
+  lastSyncedAt?: Prisma.DateTimeNullableFilter<"Shipment"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Shipment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Shipment"> | Date | string
   order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>
   courier?: Prisma.XOR<Prisma.CourierScalarRelationFilter, Prisma.CourierWhereInput>
+  shipmentEvents?: Prisma.ShipmentEventListRelationFilter
 }, "id" | "orderId">
 
 export type ShipmentOrderByWithAggregationInput = {
@@ -257,11 +370,21 @@ export type ShipmentOrderByWithAggregationInput = {
   courierStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   driverName?: Prisma.SortOrderInput | Prisma.SortOrder
   driverPhone?: Prisma.SortOrderInput | Prisma.SortOrder
+  carrierConfirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  carrierFeeCents?: Prisma.SortOrderInput | Prisma.SortOrder
+  returnFeeCents?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastFailureReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  postponedTo?: Prisma.SortOrderInput | Prisma.SortOrder
+  deskInfo?: Prisma.SortOrderInput | Prisma.SortOrder
+  activity?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastSyncedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ShipmentCountOrderByAggregateInput
+  _avg?: Prisma.ShipmentAvgOrderByAggregateInput
   _max?: Prisma.ShipmentMaxOrderByAggregateInput
   _min?: Prisma.ShipmentMinOrderByAggregateInput
+  _sum?: Prisma.ShipmentSumOrderByAggregateInput
 }
 
 export type ShipmentScalarWhereWithAggregatesInput = {
@@ -275,6 +398,14 @@ export type ShipmentScalarWhereWithAggregatesInput = {
   courierStatus?: Prisma.StringNullableWithAggregatesFilter<"Shipment"> | string | null
   driverName?: Prisma.StringNullableWithAggregatesFilter<"Shipment"> | string | null
   driverPhone?: Prisma.StringNullableWithAggregatesFilter<"Shipment"> | string | null
+  carrierConfirmedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Shipment"> | Date | string | null
+  carrierFeeCents?: Prisma.IntNullableWithAggregatesFilter<"Shipment"> | number | null
+  returnFeeCents?: Prisma.IntNullableWithAggregatesFilter<"Shipment"> | number | null
+  lastFailureReason?: Prisma.StringNullableWithAggregatesFilter<"Shipment"> | string | null
+  postponedTo?: Prisma.DateTimeNullableWithAggregatesFilter<"Shipment"> | Date | string | null
+  deskInfo?: Prisma.JsonNullableWithAggregatesFilter<"Shipment">
+  activity?: Prisma.JsonNullableWithAggregatesFilter<"Shipment">
+  lastSyncedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Shipment"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Shipment"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Shipment"> | Date | string
 }
@@ -285,10 +416,19 @@ export type ShipmentCreateInput = {
   courierStatus?: string | null
   driverName?: string | null
   driverPhone?: string | null
+  carrierConfirmedAt?: Date | string | null
+  carrierFeeCents?: number | null
+  returnFeeCents?: number | null
+  lastFailureReason?: string | null
+  postponedTo?: Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   order: Prisma.OrderCreateNestedOneWithoutShipmentInput
   courier: Prisma.CourierCreateNestedOneWithoutShipmentsInput
+  shipmentEvents?: Prisma.ShipmentEventCreateNestedManyWithoutShipmentInput
 }
 
 export type ShipmentUncheckedCreateInput = {
@@ -299,8 +439,17 @@ export type ShipmentUncheckedCreateInput = {
   courierStatus?: string | null
   driverName?: string | null
   driverPhone?: string | null
+  carrierConfirmedAt?: Date | string | null
+  carrierFeeCents?: number | null
+  returnFeeCents?: number | null
+  lastFailureReason?: string | null
+  postponedTo?: Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  shipmentEvents?: Prisma.ShipmentEventUncheckedCreateNestedManyWithoutShipmentInput
 }
 
 export type ShipmentUpdateInput = {
@@ -309,10 +458,19 @@ export type ShipmentUpdateInput = {
   courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrierConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  carrierFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  returnFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastFailureReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postponedTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   order?: Prisma.OrderUpdateOneRequiredWithoutShipmentNestedInput
   courier?: Prisma.CourierUpdateOneRequiredWithoutShipmentsNestedInput
+  shipmentEvents?: Prisma.ShipmentEventUpdateManyWithoutShipmentNestedInput
 }
 
 export type ShipmentUncheckedUpdateInput = {
@@ -323,8 +481,17 @@ export type ShipmentUncheckedUpdateInput = {
   courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrierConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  carrierFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  returnFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastFailureReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postponedTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  shipmentEvents?: Prisma.ShipmentEventUncheckedUpdateManyWithoutShipmentNestedInput
 }
 
 export type ShipmentCreateManyInput = {
@@ -335,6 +502,14 @@ export type ShipmentCreateManyInput = {
   courierStatus?: string | null
   driverName?: string | null
   driverPhone?: string | null
+  carrierConfirmedAt?: Date | string | null
+  carrierFeeCents?: number | null
+  returnFeeCents?: number | null
+  lastFailureReason?: string | null
+  postponedTo?: Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -345,6 +520,14 @@ export type ShipmentUpdateManyMutationInput = {
   courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrierConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  carrierFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  returnFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastFailureReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postponedTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -357,6 +540,14 @@ export type ShipmentUncheckedUpdateManyInput = {
   courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrierConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  carrierFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  returnFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastFailureReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postponedTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -384,8 +575,21 @@ export type ShipmentCountOrderByAggregateInput = {
   courierStatus?: Prisma.SortOrder
   driverName?: Prisma.SortOrder
   driverPhone?: Prisma.SortOrder
+  carrierConfirmedAt?: Prisma.SortOrder
+  carrierFeeCents?: Prisma.SortOrder
+  returnFeeCents?: Prisma.SortOrder
+  lastFailureReason?: Prisma.SortOrder
+  postponedTo?: Prisma.SortOrder
+  deskInfo?: Prisma.SortOrder
+  activity?: Prisma.SortOrder
+  lastSyncedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type ShipmentAvgOrderByAggregateInput = {
+  carrierFeeCents?: Prisma.SortOrder
+  returnFeeCents?: Prisma.SortOrder
 }
 
 export type ShipmentMaxOrderByAggregateInput = {
@@ -396,6 +600,12 @@ export type ShipmentMaxOrderByAggregateInput = {
   courierStatus?: Prisma.SortOrder
   driverName?: Prisma.SortOrder
   driverPhone?: Prisma.SortOrder
+  carrierConfirmedAt?: Prisma.SortOrder
+  carrierFeeCents?: Prisma.SortOrder
+  returnFeeCents?: Prisma.SortOrder
+  lastFailureReason?: Prisma.SortOrder
+  postponedTo?: Prisma.SortOrder
+  lastSyncedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -408,8 +618,24 @@ export type ShipmentMinOrderByAggregateInput = {
   courierStatus?: Prisma.SortOrder
   driverName?: Prisma.SortOrder
   driverPhone?: Prisma.SortOrder
+  carrierConfirmedAt?: Prisma.SortOrder
+  carrierFeeCents?: Prisma.SortOrder
+  returnFeeCents?: Prisma.SortOrder
+  lastFailureReason?: Prisma.SortOrder
+  postponedTo?: Prisma.SortOrder
+  lastSyncedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type ShipmentSumOrderByAggregateInput = {
+  carrierFeeCents?: Prisma.SortOrder
+  returnFeeCents?: Prisma.SortOrder
+}
+
+export type ShipmentScalarRelationFilter = {
+  is?: Prisma.ShipmentWhereInput
+  isNot?: Prisma.ShipmentWhereInput
 }
 
 export type ShipmentCreateNestedManyWithoutCourierInput = {
@@ -486,15 +712,38 @@ export type ShipmentUncheckedUpdateOneWithoutOrderNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ShipmentUpdateToOneWithWhereWithoutOrderInput, Prisma.ShipmentUpdateWithoutOrderInput>, Prisma.ShipmentUncheckedUpdateWithoutOrderInput>
 }
 
+export type ShipmentCreateNestedOneWithoutShipmentEventsInput = {
+  create?: Prisma.XOR<Prisma.ShipmentCreateWithoutShipmentEventsInput, Prisma.ShipmentUncheckedCreateWithoutShipmentEventsInput>
+  connectOrCreate?: Prisma.ShipmentCreateOrConnectWithoutShipmentEventsInput
+  connect?: Prisma.ShipmentWhereUniqueInput
+}
+
+export type ShipmentUpdateOneRequiredWithoutShipmentEventsNestedInput = {
+  create?: Prisma.XOR<Prisma.ShipmentCreateWithoutShipmentEventsInput, Prisma.ShipmentUncheckedCreateWithoutShipmentEventsInput>
+  connectOrCreate?: Prisma.ShipmentCreateOrConnectWithoutShipmentEventsInput
+  upsert?: Prisma.ShipmentUpsertWithoutShipmentEventsInput
+  connect?: Prisma.ShipmentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ShipmentUpdateToOneWithWhereWithoutShipmentEventsInput, Prisma.ShipmentUpdateWithoutShipmentEventsInput>, Prisma.ShipmentUncheckedUpdateWithoutShipmentEventsInput>
+}
+
 export type ShipmentCreateWithoutCourierInput = {
   id?: string
   trackingReference?: string | null
   courierStatus?: string | null
   driverName?: string | null
   driverPhone?: string | null
+  carrierConfirmedAt?: Date | string | null
+  carrierFeeCents?: number | null
+  returnFeeCents?: number | null
+  lastFailureReason?: string | null
+  postponedTo?: Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   order: Prisma.OrderCreateNestedOneWithoutShipmentInput
+  shipmentEvents?: Prisma.ShipmentEventCreateNestedManyWithoutShipmentInput
 }
 
 export type ShipmentUncheckedCreateWithoutCourierInput = {
@@ -504,8 +753,17 @@ export type ShipmentUncheckedCreateWithoutCourierInput = {
   courierStatus?: string | null
   driverName?: string | null
   driverPhone?: string | null
+  carrierConfirmedAt?: Date | string | null
+  carrierFeeCents?: number | null
+  returnFeeCents?: number | null
+  lastFailureReason?: string | null
+  postponedTo?: Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  shipmentEvents?: Prisma.ShipmentEventUncheckedCreateNestedManyWithoutShipmentInput
 }
 
 export type ShipmentCreateOrConnectWithoutCourierInput = {
@@ -545,6 +803,14 @@ export type ShipmentScalarWhereInput = {
   courierStatus?: Prisma.StringNullableFilter<"Shipment"> | string | null
   driverName?: Prisma.StringNullableFilter<"Shipment"> | string | null
   driverPhone?: Prisma.StringNullableFilter<"Shipment"> | string | null
+  carrierConfirmedAt?: Prisma.DateTimeNullableFilter<"Shipment"> | Date | string | null
+  carrierFeeCents?: Prisma.IntNullableFilter<"Shipment"> | number | null
+  returnFeeCents?: Prisma.IntNullableFilter<"Shipment"> | number | null
+  lastFailureReason?: Prisma.StringNullableFilter<"Shipment"> | string | null
+  postponedTo?: Prisma.DateTimeNullableFilter<"Shipment"> | Date | string | null
+  deskInfo?: Prisma.JsonNullableFilter<"Shipment">
+  activity?: Prisma.JsonNullableFilter<"Shipment">
+  lastSyncedAt?: Prisma.DateTimeNullableFilter<"Shipment"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Shipment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Shipment"> | Date | string
 }
@@ -555,9 +821,18 @@ export type ShipmentCreateWithoutOrderInput = {
   courierStatus?: string | null
   driverName?: string | null
   driverPhone?: string | null
+  carrierConfirmedAt?: Date | string | null
+  carrierFeeCents?: number | null
+  returnFeeCents?: number | null
+  lastFailureReason?: string | null
+  postponedTo?: Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   courier: Prisma.CourierCreateNestedOneWithoutShipmentsInput
+  shipmentEvents?: Prisma.ShipmentEventCreateNestedManyWithoutShipmentInput
 }
 
 export type ShipmentUncheckedCreateWithoutOrderInput = {
@@ -567,8 +842,17 @@ export type ShipmentUncheckedCreateWithoutOrderInput = {
   courierStatus?: string | null
   driverName?: string | null
   driverPhone?: string | null
+  carrierConfirmedAt?: Date | string | null
+  carrierFeeCents?: number | null
+  returnFeeCents?: number | null
+  lastFailureReason?: string | null
+  postponedTo?: Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  shipmentEvents?: Prisma.ShipmentEventUncheckedCreateNestedManyWithoutShipmentInput
 }
 
 export type ShipmentCreateOrConnectWithoutOrderInput = {
@@ -593,9 +877,18 @@ export type ShipmentUpdateWithoutOrderInput = {
   courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrierConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  carrierFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  returnFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastFailureReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postponedTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   courier?: Prisma.CourierUpdateOneRequiredWithoutShipmentsNestedInput
+  shipmentEvents?: Prisma.ShipmentEventUpdateManyWithoutShipmentNestedInput
 }
 
 export type ShipmentUncheckedUpdateWithoutOrderInput = {
@@ -605,6 +898,111 @@ export type ShipmentUncheckedUpdateWithoutOrderInput = {
   courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrierConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  carrierFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  returnFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastFailureReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postponedTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  shipmentEvents?: Prisma.ShipmentEventUncheckedUpdateManyWithoutShipmentNestedInput
+}
+
+export type ShipmentCreateWithoutShipmentEventsInput = {
+  id?: string
+  trackingReference?: string | null
+  courierStatus?: string | null
+  driverName?: string | null
+  driverPhone?: string | null
+  carrierConfirmedAt?: Date | string | null
+  carrierFeeCents?: number | null
+  returnFeeCents?: number | null
+  lastFailureReason?: string | null
+  postponedTo?: Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  order: Prisma.OrderCreateNestedOneWithoutShipmentInput
+  courier: Prisma.CourierCreateNestedOneWithoutShipmentsInput
+}
+
+export type ShipmentUncheckedCreateWithoutShipmentEventsInput = {
+  id?: string
+  orderId: string
+  courierId: string
+  trackingReference?: string | null
+  courierStatus?: string | null
+  driverName?: string | null
+  driverPhone?: string | null
+  carrierConfirmedAt?: Date | string | null
+  carrierFeeCents?: number | null
+  returnFeeCents?: number | null
+  lastFailureReason?: string | null
+  postponedTo?: Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type ShipmentCreateOrConnectWithoutShipmentEventsInput = {
+  where: Prisma.ShipmentWhereUniqueInput
+  create: Prisma.XOR<Prisma.ShipmentCreateWithoutShipmentEventsInput, Prisma.ShipmentUncheckedCreateWithoutShipmentEventsInput>
+}
+
+export type ShipmentUpsertWithoutShipmentEventsInput = {
+  update: Prisma.XOR<Prisma.ShipmentUpdateWithoutShipmentEventsInput, Prisma.ShipmentUncheckedUpdateWithoutShipmentEventsInput>
+  create: Prisma.XOR<Prisma.ShipmentCreateWithoutShipmentEventsInput, Prisma.ShipmentUncheckedCreateWithoutShipmentEventsInput>
+  where?: Prisma.ShipmentWhereInput
+}
+
+export type ShipmentUpdateToOneWithWhereWithoutShipmentEventsInput = {
+  where?: Prisma.ShipmentWhereInput
+  data: Prisma.XOR<Prisma.ShipmentUpdateWithoutShipmentEventsInput, Prisma.ShipmentUncheckedUpdateWithoutShipmentEventsInput>
+}
+
+export type ShipmentUpdateWithoutShipmentEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  trackingReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrierConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  carrierFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  returnFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastFailureReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postponedTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  order?: Prisma.OrderUpdateOneRequiredWithoutShipmentNestedInput
+  courier?: Prisma.CourierUpdateOneRequiredWithoutShipmentsNestedInput
+}
+
+export type ShipmentUncheckedUpdateWithoutShipmentEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderId?: Prisma.StringFieldUpdateOperationsInput | string
+  courierId?: Prisma.StringFieldUpdateOperationsInput | string
+  trackingReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrierConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  carrierFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  returnFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastFailureReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postponedTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -616,6 +1014,14 @@ export type ShipmentCreateManyCourierInput = {
   courierStatus?: string | null
   driverName?: string | null
   driverPhone?: string | null
+  carrierConfirmedAt?: Date | string | null
+  carrierFeeCents?: number | null
+  returnFeeCents?: number | null
+  lastFailureReason?: string | null
+  postponedTo?: Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -626,9 +1032,18 @@ export type ShipmentUpdateWithoutCourierInput = {
   courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrierConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  carrierFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  returnFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastFailureReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postponedTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   order?: Prisma.OrderUpdateOneRequiredWithoutShipmentNestedInput
+  shipmentEvents?: Prisma.ShipmentEventUpdateManyWithoutShipmentNestedInput
 }
 
 export type ShipmentUncheckedUpdateWithoutCourierInput = {
@@ -638,8 +1053,17 @@ export type ShipmentUncheckedUpdateWithoutCourierInput = {
   courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrierConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  carrierFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  returnFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastFailureReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postponedTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  shipmentEvents?: Prisma.ShipmentEventUncheckedUpdateManyWithoutShipmentNestedInput
 }
 
 export type ShipmentUncheckedUpdateManyWithoutCourierInput = {
@@ -649,10 +1073,47 @@ export type ShipmentUncheckedUpdateManyWithoutCourierInput = {
   courierStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrierConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  carrierFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  returnFeeCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastFailureReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postponedTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deskInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  activity?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+
+/**
+ * Count Type ShipmentCountOutputType
+ */
+
+export type ShipmentCountOutputType = {
+  shipmentEvents: number
+}
+
+export type ShipmentCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  shipmentEvents?: boolean | ShipmentCountOutputTypeCountShipmentEventsArgs
+}
+
+/**
+ * ShipmentCountOutputType without action
+ */
+export type ShipmentCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ShipmentCountOutputType
+   */
+  select?: Prisma.ShipmentCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * ShipmentCountOutputType without action
+ */
+export type ShipmentCountOutputTypeCountShipmentEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ShipmentEventWhereInput
+}
 
 
 export type ShipmentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -663,10 +1124,20 @@ export type ShipmentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   courierStatus?: boolean
   driverName?: boolean
   driverPhone?: boolean
+  carrierConfirmedAt?: boolean
+  carrierFeeCents?: boolean
+  returnFeeCents?: boolean
+  lastFailureReason?: boolean
+  postponedTo?: boolean
+  deskInfo?: boolean
+  activity?: boolean
+  lastSyncedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
   courier?: boolean | Prisma.CourierDefaultArgs<ExtArgs>
+  shipmentEvents?: boolean | Prisma.Shipment$shipmentEventsArgs<ExtArgs>
+  _count?: boolean | Prisma.ShipmentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["shipment"]>
 
 export type ShipmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -677,6 +1148,14 @@ export type ShipmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   courierStatus?: boolean
   driverName?: boolean
   driverPhone?: boolean
+  carrierConfirmedAt?: boolean
+  carrierFeeCents?: boolean
+  returnFeeCents?: boolean
+  lastFailureReason?: boolean
+  postponedTo?: boolean
+  deskInfo?: boolean
+  activity?: boolean
+  lastSyncedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
@@ -691,6 +1170,14 @@ export type ShipmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   courierStatus?: boolean
   driverName?: boolean
   driverPhone?: boolean
+  carrierConfirmedAt?: boolean
+  carrierFeeCents?: boolean
+  returnFeeCents?: boolean
+  lastFailureReason?: boolean
+  postponedTo?: boolean
+  deskInfo?: boolean
+  activity?: boolean
+  lastSyncedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
@@ -705,14 +1192,24 @@ export type ShipmentSelectScalar = {
   courierStatus?: boolean
   driverName?: boolean
   driverPhone?: boolean
+  carrierConfirmedAt?: boolean
+  carrierFeeCents?: boolean
+  returnFeeCents?: boolean
+  lastFailureReason?: boolean
+  postponedTo?: boolean
+  deskInfo?: boolean
+  activity?: boolean
+  lastSyncedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ShipmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "courierId" | "trackingReference" | "courierStatus" | "driverName" | "driverPhone" | "createdAt" | "updatedAt", ExtArgs["result"]["shipment"]>
+export type ShipmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "courierId" | "trackingReference" | "courierStatus" | "driverName" | "driverPhone" | "carrierConfirmedAt" | "carrierFeeCents" | "returnFeeCents" | "lastFailureReason" | "postponedTo" | "deskInfo" | "activity" | "lastSyncedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["shipment"]>
 export type ShipmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
   courier?: boolean | Prisma.CourierDefaultArgs<ExtArgs>
+  shipmentEvents?: boolean | Prisma.Shipment$shipmentEventsArgs<ExtArgs>
+  _count?: boolean | Prisma.ShipmentCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ShipmentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
@@ -728,6 +1225,7 @@ export type $ShipmentPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   objects: {
     order: Prisma.$OrderPayload<ExtArgs>
     courier: Prisma.$CourierPayload<ExtArgs>
+    shipmentEvents: Prisma.$ShipmentEventPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -737,6 +1235,14 @@ export type $ShipmentPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     courierStatus: string | null
     driverName: string | null
     driverPhone: string | null
+    carrierConfirmedAt: Date | null
+    carrierFeeCents: number | null
+    returnFeeCents: number | null
+    lastFailureReason: string | null
+    postponedTo: Date | null
+    deskInfo: runtime.JsonValue | null
+    activity: runtime.JsonValue | null
+    lastSyncedAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["shipment"]>
@@ -1135,6 +1641,7 @@ export interface Prisma__ShipmentClient<T, Null = never, ExtArgs extends runtime
   readonly [Symbol.toStringTag]: "PrismaPromise"
   order<T extends Prisma.OrderDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrderDefaultArgs<ExtArgs>>): Prisma.Prisma__OrderClient<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   courier<T extends Prisma.CourierDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CourierDefaultArgs<ExtArgs>>): Prisma.Prisma__CourierClient<runtime.Types.Result.GetResult<Prisma.$CourierPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  shipmentEvents<T extends Prisma.Shipment$shipmentEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Shipment$shipmentEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ShipmentEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1171,6 +1678,14 @@ export interface ShipmentFieldRefs {
   readonly courierStatus: Prisma.FieldRef<"Shipment", 'String'>
   readonly driverName: Prisma.FieldRef<"Shipment", 'String'>
   readonly driverPhone: Prisma.FieldRef<"Shipment", 'String'>
+  readonly carrierConfirmedAt: Prisma.FieldRef<"Shipment", 'DateTime'>
+  readonly carrierFeeCents: Prisma.FieldRef<"Shipment", 'Int'>
+  readonly returnFeeCents: Prisma.FieldRef<"Shipment", 'Int'>
+  readonly lastFailureReason: Prisma.FieldRef<"Shipment", 'String'>
+  readonly postponedTo: Prisma.FieldRef<"Shipment", 'DateTime'>
+  readonly deskInfo: Prisma.FieldRef<"Shipment", 'Json'>
+  readonly activity: Prisma.FieldRef<"Shipment", 'Json'>
+  readonly lastSyncedAt: Prisma.FieldRef<"Shipment", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Shipment", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Shipment", 'DateTime'>
 }
@@ -1571,6 +2086,30 @@ export type ShipmentDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * Limit how many Shipments to delete.
    */
   limit?: number
+}
+
+/**
+ * Shipment.shipmentEvents
+ */
+export type Shipment$shipmentEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ShipmentEvent
+   */
+  select?: Prisma.ShipmentEventSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ShipmentEvent
+   */
+  omit?: Prisma.ShipmentEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ShipmentEventInclude<ExtArgs> | null
+  where?: Prisma.ShipmentEventWhereInput
+  orderBy?: Prisma.ShipmentEventOrderByWithRelationInput | Prisma.ShipmentEventOrderByWithRelationInput[]
+  cursor?: Prisma.ShipmentEventWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ShipmentEventScalarFieldEnum | Prisma.ShipmentEventScalarFieldEnum[]
 }
 
 /**

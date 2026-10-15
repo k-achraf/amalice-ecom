@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { deriveCallCenterState, deriveShippingState, type DashboardStats } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 
+// Archived orders (Order.archived) never count in any KPI here.
 // ADM-09 — operations dashboard KPIs. One query per metric rather than one
 // giant aggregate: each is independently readable and the dashboard can
 // render incrementally. Sourced from real Order/Product data, not placeholder
@@ -33,29 +34,29 @@ export class AdminStatsService {
       // really placed. Matches AdminOrdersService.list()'s default
       // (isAbandoned excluded unless explicitly asked for), which is what
       // every other admin orders view already does.
-      this.prisma.order.count({ where: { createdAt: { gte: startOfToday }, isAbandoned: false } }),
+      this.prisma.order.count({ where: { createdAt: { gte: startOfToday }, isAbandoned: false, archived: false } }),
       // COD "pending" = total of orders not yet at CashCollected/Reconciled/Settled.
       this.prisma.order.aggregate({
-        where: { state: { in: ['Confirmed', 'Packed', 'HandedToCourier', 'OutForDelivery', 'Delivered'] } },
+        where: { state: { in: ['Confirmed', 'Packed', 'HandedToCourier', 'OutForDelivery', 'Delivered'] }, archived: false },
         _sum: { totalCents: true }
       }),
       this.prisma.order.aggregate({
-        where: { state: { in: ['CashCollected', 'Reconciled', 'Settled'] } },
+        where: { state: { in: ['CashCollected', 'Reconciled', 'Settled'] }, archived: false },
         _sum: { totalCents: true }
       }),
-      this.prisma.order.count({ where: { state: { in: ['PendingCallCenter', 'CallCenterNoAnswer'] } } }),
-      this.prisma.order.count({ where: { state: 'Confirmed' } }),
-      this.prisma.order.count({ where: { state: 'Packed' } }),
+      this.prisma.order.count({ where: { state: { in: ['PendingCallCenter', 'CallCenterNoAnswer'] }, archived: false } }),
+      this.prisma.order.count({ where: { state: 'Confirmed', archived: false } }),
+      this.prisma.order.count({ where: { state: 'Packed', archived: false } }),
       this.prisma.order.count({
-        where: { state: 'Delivered', updatedAt: { gte: startOfToday } }
+        where: { state: 'Delivered', updatedAt: { gte: startOfToday }, archived: false }
       }),
       this.prisma.order.count({
-        where: { state: { in: ['ReturnedToOrigin', 'Restocked' as never] }, createdAt: { gte: thirtyDaysAgo } }
+        where: { state: { in: ['ReturnedToOrigin', 'Restocked' as never] }, createdAt: { gte: thirtyDaysAgo }, archived: false }
       }),
       // Same isAbandoned exclusion as ordersToday above — this feeds the
       // RTO-rate stat, which would be diluted by including orders that were
       // never actually placed.
-      this.prisma.order.count({ where: { createdAt: { gte: thirtyDaysAgo }, isAbandoned: false } }),
+      this.prisma.order.count({ where: { createdAt: { gte: thirtyDaysAgo }, isAbandoned: false, archived: false } }),
       this.prisma.product.count({
         where: { stockQuantity: { lte: this.prisma.product.fields.lowStockThreshold } }
       })
@@ -103,7 +104,7 @@ export class AdminStatsService {
     const withStats = await Promise.all(
       items.map(async (c) => {
         const agg = await this.prisma.order.aggregate({
-          where: { customerId: c.id },
+          where: { customerId: c.id, archived: false },
           _sum: { totalCents: true },
           _count: true
         })
@@ -126,6 +127,7 @@ export class AdminStatsService {
       include: {
         addresses: true,
         orders: {
+          where: { archived: false },
           orderBy: { createdAt: 'desc' },
           include: { items: { include: { product: { select: { name: true, slug: true } } } } },
           take: 50

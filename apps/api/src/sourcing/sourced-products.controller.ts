@@ -78,6 +78,7 @@ export class SourcedProductsController {
     return this.sourcedProducts.update(id, body, actor)
   }
 
+  @Roles('SuperAdmin')
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req: AuthedRequest) {
     const actor: AuditActor = { id: req.user.sub, email: req.user.email }

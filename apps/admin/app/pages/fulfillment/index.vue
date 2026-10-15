@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { OrderListResponse } from '@amalice/shared'
+import type { AdminOrderListItem, OrderListResponse } from '@amalice/shared'
+import { toast } from 'vue-sonner'
 
 // Stage 2 of the order pipeline: warehouse picks/packs a call-center-confirmed
 // order, then hands it to a courier — which is where fulfillment's job ends
@@ -26,7 +27,25 @@ const { data: onHold, pending: pendingOnHold, refresh: refreshOnHold } = await u
   { key: 'admin-fulfillment-onhold' }
 )
 
+// Parcels created at a courier but not yet confirmed ("Expedier"): the courier
+// won't collect them until they are.
+const { data: handedOver, refresh: refreshHandedOver } = await useAdminFetch<OrderListResponse>(
+  '/admin/orders?state=HandedToCourier&pageSize=100',
+  { key: 'admin-fulfillment-handed' }
+)
+const unconfirmed = computed(() =>
+  (handedOver.value?.items ?? []).filter((o) => o.fulfillmentMethod === 'ShippingCompany' && o.shipment?.trackingReference && !o.shipment.carrierConfirmedAt)
+)
+
 const acting = ref<string | null>(null)
+const selected = ref<Set<string>>(new Set())
+function toggle(id: string) {
+  const next = new Set(selected.value)
+  if (next.has(id)) next.delete(id)
+  else next.add(id)
+  selected.value = next
+}
+const selectable = (o: AdminOrderListItem) => o.fulfillmentMethod === 'ShippingCompany' && !!o.shippingCompanyId
 
 async function markPacked(orderId: string) {
   acting.value = orderId
@@ -73,11 +92,72 @@ async function cancelOnHold(orderId: string) {
 
 async function dispatch(orderId: string) {
   acting.value = orderId
-  await run(() => api(`/admin/fulfillment/orders/${orderId}/dispatch`, { method: 'POST' }), {
-    success: 'Order dispatched to courier',
+  const res = await run(() => api<{ confirmed: boolean; confirmError: string | null }>(`/admin/fulfillment/orders/${orderId}/dispatch`, { method: 'POST', body: { confirm: true } }), {
     errorFallback: 'Could not dispatch the order'
   })
-  await refreshPacked()
+  if (res) {
+    if (res.confirmError) toast.warning('Created at the courier, but confirming failed', { description: res.confirmError })
+    else toast.success('Sent to the courier and confirmed')
+  }
+  await Promise.all([refreshPacked(), refreshHandedOver()])
+  acting.value = null
+}
+
+// Several packed orders at once — grouped by their shipping company, since the
+// courier API takes one account per request (100 orders max per request).
+async function dispatchSelected() {
+  const items = (packed.value?.items ?? []).filter((o) => selected.value.has(o.id) && selectable(o))
+  if (!items.length) return
+  acting.value = 'bulk'
+  const byCompany = new Map<string, string[]>()
+  for (const o of items) byCompany.set(o.shippingCompanyId!, [...(byCompany.get(o.shippingCompanyId!) ?? []), o.id])
+  let ok = 0
+  const problems: string[] = []
+  for (const [shippingCompanyId, orderIds] of byCompany) {
+    const res = await run(() => api<{ dispatched: { confirmed: boolean }[]; failed: { orderId: string; reason: string }[]; skipped: { orderId: string; reason: string }[] }>('/admin/fulfillment/orders/bulk-dispatch', {
+      method: 'POST',
+      body: { orderIds, shippingCompanyId, confirm: true }
+    }), { errorFallback: 'Bulk dispatch failed' })
+    if (!res) continue
+    ok += res.dispatched.length
+    for (const f of [...res.failed, ...res.skipped]) problems.push(`#${f.orderId.slice(0, 8)}: ${f.reason}`)
+  }
+  if (ok) toast.success(`${ok} order${ok > 1 ? 's' : ''} sent to the courier`)
+  if (problems.length) toast.error(`${problems.length} order${problems.length > 1 ? 's' : ''} not sent`, { description: problems.slice(0, 4).join('\n'), duration: 12000 })
+  selected.value = new Set()
+  await Promise.all([refreshPacked(), refreshHandedOver()])
+  acting.value = null
+}
+
+async function confirmParcel(orderId: string) {
+  acting.value = orderId
+  await run(() => api(`/admin/fulfillment/orders/${orderId}/request-pickup`, { method: 'POST', body: { askCollection: true } }), {
+    success: 'Confirmed with the courier',
+    errorFallback: 'Could not confirm the parcel'
+  })
+  await refreshHandedOver()
+  acting.value = null
+}
+async function confirmAll() {
+  acting.value = 'confirm-all'
+  for (const o of unconfirmed.value) {
+    await run(() => api(`/admin/fulfillment/orders/${o.id}/request-pickup`, { method: 'POST', body: { askCollection: true } }), { errorFallback: `Could not confirm #${o.id.slice(0, 8)}` })
+  }
+  await refreshHandedOver()
+  acting.value = null
+}
+
+// Re-read every active parcel from the couriers now (also runs every 5 minutes).
+async function syncCouriers() {
+  acting.value = 'sync'
+  const res = await run(() => api<{ company: string; checked: number; applied: number; error?: string }[]>('/admin/fulfillment/sync', { method: 'POST' }), { errorFallback: 'Courier sync failed' })
+  if (res) {
+    const applied = res.reduce((n, r) => n + r.applied, 0)
+    const errors = res.filter((r) => r.error)
+    if (errors.length) toast.error('Some couriers could not be reached', { description: errors.map((e) => `${e.company}: ${e.error}`).join('\n') })
+    else toast.success(applied ? `${applied} status change${applied > 1 ? 's' : ''} applied` : 'Everything is up to date')
+  }
+  await Promise.all([refreshPacked(), refreshHandedOver()])
   acting.value = null
 }
 
@@ -88,6 +168,33 @@ async function dispatch(orderId: string) {
 
 <template>
   <AdsPage title="Fulfillment" description="Pack, hold and dispatch confirmed orders">
+    <template #actions>
+      <button class="btn" type="button" :disabled="acting === 'sync'" @click="syncCouriers"><AdsIcon name="i-lucide-refresh-cw" />Sync with couriers</button>
+    </template>
+
+    <!-- Created at the courier, not confirmed yet -->
+    <section v-if="unconfirmed.length" class="card" aria-label="Awaiting courier confirmation">
+      <div class="card-head">
+        <h2>Awaiting courier confirmation</h2>
+        <span class="pill new">{{ unconfirmed.length }}</span>
+        <button class="btn btn-sm btn-primary" type="button" :disabled="acting === 'confirm-all'" style="margin-left: auto" @click="confirmAll"><AdsIcon name="i-lucide-package-check" />Confirm all</button>
+      </div>
+      <p class="muted" style="padding: 0 20px">These parcels exist at the courier but it will not collect them until they are confirmed.</p>
+      <div class="table-wrap">
+        <table style="min-width: 640px">
+          <thead><tr><th>Order</th><th>Courier</th><th>Tracking</th><th class="num">Action</th></tr></thead>
+          <tbody>
+            <tr v-for="o in unconfirmed" :key="o.id">
+              <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
+              <td>{{ o.shippingCompanyName }}</td>
+              <td class="mono">{{ o.shipment?.trackingReference }}</td>
+              <td class="num"><AdsButton size="sm" icon="i-lucide-package-check" :loading="acting === o.id" label="Confirm" @click="confirmParcel(o.id)" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <!-- Awaiting packing -->
     <section class="card" aria-label="Awaiting packing">
       <div class="card-head"><h2>Awaiting packing</h2><span class="pill neutral">Confirmed</span></div>
@@ -135,14 +242,18 @@ async function dispatch(orderId: string) {
 
     <!-- Ready to dispatch -->
     <section class="card" aria-label="Ready to dispatch">
-      <div class="card-head"><h2>Ready to dispatch</h2><span class="pill neutral">Packed</span></div>
+      <div class="card-head">
+        <h2>Ready to dispatch</h2><span class="pill neutral">Packed</span>
+        <button v-if="selected.size" class="btn btn-sm btn-primary" type="button" :disabled="acting === 'bulk'" style="margin-left: auto" @click="dispatchSelected"><AdsIcon name="i-lucide-truck" />Send {{ selected.size }} selected</button>
+      </div>
       <div class="table-wrap">
         <table style="min-width: 720px">
-          <thead><tr><th>Order</th><th>Customer</th><th>Shipping</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
+          <thead><tr><th style="width: 32px" /><th>Order</th><th>Customer</th><th>Shipping</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
           <tbody>
-            <tr v-if="pendingPacked"><td colspan="5" class="empty">Loading…</td></tr>
-            <tr v-else-if="!packed?.items.length"><td colspan="5" class="empty">No orders ready to dispatch.</td></tr>
+            <tr v-if="pendingPacked"><td colspan="6" class="empty">Loading…</td></tr>
+            <tr v-else-if="!packed?.items.length"><td colspan="6" class="empty">No orders ready to dispatch.</td></tr>
             <tr v-for="o in packed?.items" v-else :key="o.id">
+              <td><input v-if="selectable(o)" type="checkbox" :checked="selected.has(o.id)" :aria-label="`Select #${o.id.slice(0, 8)}`" @change="toggle(o.id)"></td>
               <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
               <td>{{ o.customer.name ?? '—' }}</td>
               <td>
@@ -154,7 +265,10 @@ async function dispatch(orderId: string) {
               <td class="num" style="white-space: nowrap">
                 <AdsButton v-if="o.fulfillmentMethod === 'Unassigned'" appearance="default" size="sm" icon="i-lucide-link" label="Assign" :to="`/orders/${o.id}`" />
                 <AdsButton v-else-if="o.fulfillmentMethod === 'Manual'" appearance="default" size="sm" icon="i-lucide-truck" label="Hand to driver" :to="`/orders/${o.id}`" />
-                <AdsButton v-else size="sm" icon="i-lucide-truck" :loading="acting === o.id" label="Dispatch" @click="dispatch(o.id)" />
+                <template v-else>
+                  <AdsButton appearance="default" size="sm" icon="i-lucide-package-check" label="Mark as sent" :to="`/orders/${o.id}`" title="Created by hand at the courier? Record it as sent." />
+                  <AdsButton size="sm" icon="i-lucide-truck" :loading="acting === o.id" label="Send to courier" @click="dispatch(o.id)" />
+                </template>
               </td>
             </tr>
           </tbody>

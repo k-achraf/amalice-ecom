@@ -19,7 +19,11 @@ export type LandingPageSectionStatus = z.infer<typeof LandingPageSectionStatusSc
 // Which backend generates the section images — see the Prisma model comment
 // for the Gemini-needs-billing / Pollinations-is-free-but-lower-quality
 // tradeoff. Stored per landing page so "Regenerate" reuses the same choice.
-export const LandingPageImageProviderSchema = z.enum(['Gemini', 'Pollinations'])
+// 'Template' = no AI images at all: sections are composed in code on designed
+// gradient backgrounds from the product's own photos (free, instant, never
+// fails). 'Gemini' / 'Pollinations' add an AI-generated, text-free background
+// scene behind each section.
+export const LandingPageImageProviderSchema = z.enum(['Gemini', 'Pollinations', 'Template'])
 export type LandingPageImageProvider = z.infer<typeof LandingPageImageProviderSchema>
 
 // One section of the long-scroll image (hero, a feature highlight, the CTA,
@@ -32,12 +36,37 @@ export const LandingPageSectionSchema = z.object({
   role: z.enum(['hero', 'feature', 'cta']),
   headline: z.string(),
   body: z.string(),
+  // The finished section image (copy rendered in code on top of the scene and
+  // the product's real photos — the AI never draws any text).
   imageUrl: z.string().nullable(),
+  // The AI-generated, text-free background behind this section; kept so the copy
+  // can be edited and re-rendered instantly without another AI call.
+  sceneUrl: z.string().nullable().optional(),
   sourceImageUrls: z.array(z.string()),
   status: LandingPageSectionStatusSchema,
-  errorMessage: z.string().nullable().optional()
+  errorMessage: z.string().nullable().optional(),
+  // Non-fatal note, e.g. the AI background was unavailable so a designed one was used.
+  warning: z.string().nullable().optional()
 })
 export type LandingPageSection = z.infer<typeof LandingPageSectionSchema>
+
+// Visual style of the composed sections.
+export const LANDING_STYLES = ['vibrant', 'dark', 'light'] as const
+export const LandingStyleSchema = z.enum(LANDING_STYLES)
+export type LandingStyle = z.infer<typeof LandingStyleSchema>
+
+export const LANDING_LANGUAGES = ['ar', 'fr', 'en'] as const
+export const LandingLanguageSchema = z.enum(LANDING_LANGUAGES)
+export type LandingLanguage = z.infer<typeof LandingLanguageSchema>
+
+// How a landing page is drawn (kept on the page so edits re-render consistently).
+export const LandingDesignSchema = z.object({
+  language: LandingLanguageSchema.default('ar'),
+  style: LandingStyleSchema.default('vibrant'),
+  // Accent colour; derived from the product photo when not chosen.
+  accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional()
+})
+export type LandingDesign = z.infer<typeof LandingDesignSchema>
 
 export const ProductLandingPageSchema = z.object({
   id: z.uuid(),
@@ -51,6 +80,7 @@ export const ProductLandingPageSchema = z.object({
   imageProvider: LandingPageImageProviderSchema,
   finalImageUrl: z.string().nullable(),
   sections: z.array(LandingPageSectionSchema),
+  design: LandingDesignSchema.optional(),
   errorMessage: z.string().nullable(),
   createdAt: z.string().datetime().nullable().optional(),
   updatedAt: z.string().datetime().nullable().optional()
@@ -74,6 +104,9 @@ export const GenerateLandingPageSchema = z.object({
   description: z.string().trim().min(1).max(20000),
   sectionCount: z.number().int().min(3).max(7).default(5),
   imageProvider: LandingPageImageProviderSchema.default('Gemini'),
+  language: LandingLanguageSchema.default('ar'),
+  style: LandingStyleSchema.default('vibrant'),
+  accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
   name: z.string().trim().min(1).max(100).optional(),
   // Freeform art-direction/copy steer on top of the plain product
   // description — e.g. "target a younger audience", "emphasize the 2-year
@@ -155,3 +188,36 @@ export const PublicLandingPageSchema = z.object({
   })
 })
 export type PublicLandingPage = z.infer<typeof PublicLandingPageSchema>
+
+// Edit one section's copy by hand and re-render it instantly (no AI call): the
+// fix for any wording the model got wrong. Sanitized server-side.
+export const UpdateLandingPageSectionSchema = z.object({
+  headline: z.string().trim().min(1).max(120),
+  body: z.string().trim().max(220)
+})
+export type UpdateLandingPageSection = z.infer<typeof UpdateLandingPageSectionSchema>
+
+// Change the look (style / accent colour) and re-render every section from the
+// stored backgrounds and photos — instant, no AI call.
+export const UpdateLandingPageDesignSchema = z.object({
+  style: LandingStyleSchema.optional(),
+  accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional()
+})
+export type UpdateLandingPageDesign = z.infer<typeof UpdateLandingPageDesignSchema>
+
+// AI-written copy for a funnel's native landing page (headline, subheadline,
+// button label) — grounded in the product's own content, validated the same way
+// as the image page copy. Not saved: the editor fills its fields and the admin
+// reviews before saving.
+export const GenerateLandingCopySchema = z.object({
+  language: LandingLanguageSchema.default('ar'),
+  instructions: z.string().trim().max(1000).optional()
+})
+export type GenerateLandingCopy = z.infer<typeof GenerateLandingCopySchema>
+export interface GeneratedLandingCopy {
+  headline: string
+  subheadline: string
+  ctaLabel: string
+  // Problems the validator found and could not fix (the copy is still usable).
+  warnings: string[]
+}

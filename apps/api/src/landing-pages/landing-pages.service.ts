@@ -3,7 +3,12 @@ import { InjectQueue } from '@nestjs/bullmq'
 import type { Queue } from 'bullmq'
 import { randomUUID } from 'node:crypto'
 import {
+  LandingDesignSchema,
   LandingPageSectionSchema,
+  type GenerateLandingCopy,
+  type GeneratedLandingCopy,
+  type UpdateLandingPageDesign,
+  type UpdateLandingPageSection,
   type GenerateLandingPage,
   type ImproveLandingPageDescription,
   type ImprovedLandingPageDescription,
@@ -16,6 +21,8 @@ import { PrismaService } from '../prisma/prisma.service'
 import { Prisma } from '../generated/prisma/client'
 import { AuditService, type AuditActor } from '../common/audit.service'
 import { GeminiService } from './gemini.service'
+import { LandingComposerService } from './landing-composer.service'
+import { sanitizeText } from './landing-copy.util'
 
 // Spreads the store owner's selected product photos across sections — each
 // section gets only 1 or 2 of them, never the whole set. Previously every
@@ -52,7 +59,8 @@ export class LandingPagesService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     @InjectQueue('landing-pages') private readonly queue: Queue,
-    private readonly gemini: GeminiService
+    private readonly gemini: GeminiService,
+    private readonly composer: LandingComposerService
   ) {}
 
   // "Improve with AI" on the generation form's "description to generate
@@ -76,6 +84,7 @@ export class LandingPagesService {
     imageProvider: string
     finalImageUrl: string | null
     sections: unknown
+    design: unknown
     errorMessage: string | null
     createdAt: Date
     updatedAt: Date
@@ -91,6 +100,7 @@ export class LandingPagesService {
       imageProvider: row.imageProvider as ProductLandingPage['imageProvider'],
       finalImageUrl: row.finalImageUrl,
       sections: sectionsParsed.success ? sectionsParsed.data : [],
+      design: LandingDesignSchema.parse(row.design ?? {}),
       errorMessage: row.errorMessage,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString()
@@ -158,6 +168,7 @@ export class LandingPagesService {
         name: input.name ?? 'Landing Page',
         status: 'Generating',
         imageProvider: input.imageProvider,
+        design: { language: input.language, style: input.style, accentColor: input.accentColor ?? null } as unknown as Prisma.InputJsonValue,
         sections: placeholderSections as unknown as Prisma.InputJsonValue
       }
     })
@@ -174,7 +185,9 @@ export class LandingPagesService {
         number,
         sectionCount: input.sectionCount,
         sourceImageCount: input.sourceImageUrls.length,
-        imageProvider: input.imageProvider
+        imageProvider: input.imageProvider,
+        language: input.language,
+        style: input.style
       }
     })
 
@@ -209,6 +222,68 @@ export class LandingPagesService {
     })
 
     return this.toView(updated)
+  }
+
+  // Fix a section's wording by hand: sanitized, re-drawn and re-stitched on the
+  // spot (no AI call, about a second). The backstop for any line the model got
+  // wrong — what you type is exactly what is drawn.
+  async updateSection(id: string, sectionId: string, input: UpdateLandingPageSection, actor: AuditActor): Promise<ProductLandingPage> {
+    const row = await this.prisma.productLandingPage.findUnique({ where: { id } })
+    if (!row) throw new NotFoundException('Landing page not found')
+    if (row.status === 'Generating') throw new BadRequestException('This page is still being generated.')
+    const sections = LandingPageSectionSchema.array().parse(row.sections)
+    const index = sections.findIndex((x) => x.id === sectionId)
+    if (index === -1) throw new NotFoundException('Section not found')
+
+    const headline = sanitizeText(input.headline)
+    const body = sanitizeText(input.body)
+    if (!headline) throw new BadRequestException('The headline cannot be empty.')
+    sections[index] = { ...sections[index]!, headline, body }
+    return this.rerender(row, sections, actor, { action: 'edit-section', sectionId })
+  }
+
+  // Change the look (style / accent colour) of the whole page — re-drawn from the
+  // stored backgrounds and photos, instantly.
+  async updateDesign(id: string, input: UpdateLandingPageDesign, actor: AuditActor): Promise<ProductLandingPage> {
+    const row = await this.prisma.productLandingPage.findUnique({ where: { id } })
+    if (!row) throw new NotFoundException('Landing page not found')
+    if (row.status === 'Generating') throw new BadRequestException('This page is still being generated.')
+    const design = LandingDesignSchema.parse(row.design ?? {})
+    const next = { ...design, ...(input.style && { style: input.style }), ...(input.accentColor !== undefined && { accentColor: input.accentColor }) }
+    const updated = await this.prisma.productLandingPage.update({ where: { id }, data: { design: next as unknown as Prisma.InputJsonValue } })
+    return this.rerender(updated, LandingPageSectionSchema.array().parse(updated.sections), actor, { action: 'restyle', ...input })
+  }
+
+  private async rerender(row: { id: string; productId: string; design: unknown; sections: unknown; [k: string]: unknown }, sections: LandingPageSection[], actor: AuditActor, meta: Record<string, unknown>): Promise<ProductLandingPage> {
+    const design = LandingDesignSchema.parse(row.design ?? {})
+    const ctx = await this.composer.prepare(design, sections.flatMap((x) => x.sourceImageUrls))
+    if (ctx.photos.size === 0) throw new BadRequestException('None of the selected product photos could be read.')
+    const out = [...sections]
+    for (let i = 0; i < out.length; i++) {
+      const buffer = await this.composer.renderOne(ctx, out, i, await this.composer.loadScene(out[i]!))
+      out[i] = { ...out[i]!, imageUrl: this.composer.saveSectionImage(buffer), status: 'completed', errorMessage: null }
+    }
+    const finalImageUrl = await this.composer.stitchAndSave(out)
+    const saved = await this.prisma.productLandingPage.update({
+      where: { id: row.id },
+      data: { sections: out as unknown as Prisma.InputJsonValue, finalImageUrl, status: 'Completed', errorMessage: null, design: ctx.design as unknown as Prisma.InputJsonValue }
+    })
+    await this.audit.log({ actor, action: 'Update', entity: 'ProductLandingPage', entityId: row.id, metadata: meta })
+    return this.toView(saved)
+  }
+
+  // AI-written headline / subheadline / button label for a funnel's native
+  // landing page. Built from everything the product holds, validated like the
+  // image page copy, never saved here.
+  async suggestCopy(productId: string, input: GenerateLandingCopy): Promise<GeneratedLandingCopy> {
+    const product = await this.prisma.product.findUnique({ where: { id: productId } })
+    if (!product) throw new NotFoundException('Product not found')
+    const text = (html: string | null) => sanitizeText((html ?? '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' '))
+    const benefits = (product.keyBenefits as string[] | null) ?? []
+    const specs = (product.specifications as { label: string; value: string }[] | null) ?? []
+    const description = [text(product.description), benefits.length ? `Key benefits: ${benefits.join('; ')}` : '', specs.length ? `Specifications: ${specs.map((x) => `${x.label}: ${x.value}`).join('; ')}` : ''].filter(Boolean).join('\n')
+    if (!description.trim()) throw new BadRequestException('Add a description to the product first: the copy is written from it.')
+    return this.composer.produceLandingCopy({ productName: product.name, description, language: input.language, instructions: input.instructions })
   }
 
   // Rename and/or toggle public visibility — either field optional, send

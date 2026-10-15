@@ -209,6 +209,10 @@ export class DhdWebhookService {
           ...(driverPhone !== undefined ? { driverPhone } : {})
         }
       })
+      // Any event that moves the parcel along means the courier has taken it.
+      if (targetState) {
+        await tx.shipment.updateMany({ where: { id: shipment.id, carrierConfirmedAt: null }, data: { carrierConfirmedAt: new Date() } })
+      }
       if (canTransition) {
         await tx.order.update({ where: { id: shipment.orderId }, data: { state: targetState as never } })
       }

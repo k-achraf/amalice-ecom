@@ -1,5 +1,6 @@
 import { BadGatewayException, BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
+import type { LandingLanguage } from '@amalice/shared'
 import type { Env } from '../config/env.validation'
 
 // Google's Generative Language API (Gemini) — REST, camelCase JSON, unlike
@@ -16,6 +17,15 @@ const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models'
 export interface InlineImage {
   base64: string
   mimeType: string
+}
+
+export interface ProductBrief {
+  category: string
+  audience: string
+  benefits: string[]
+  objections: string[]
+  sceneKeywords: string
+  tone: string
 }
 
 export interface DraftedSection {
@@ -47,16 +57,16 @@ interface GeminiResponse {
   error?: { message?: string; status?: string }
 }
 
-// Talks to Gemini (free-tier text + image models) for two admin AI
-// features: the landing page builder (packages/shared/src/landing-page.ts —
-// one text call drafts per-section marketing copy, then ONE image call
-// composes the product's own photos and every section's copy into the whole
-// long-scroll page at once, see generateLandingPageImage/
-// editLandingPageImage — no per-section images, no after-the-fact
-// stitching), and the product editor's "generate with AI" content drafter
-// (draftProductContent — turns a raw content dump + optional photos into a
-// name/description/keyBenefits/faqs/specifications draft, same free text
-// model and structured-JSON-output approach as draftSectionCopy).
+// Talks to Gemini for the admin AI features:
+//  - the landing page builder: analyzeProduct → draftSectionCopy → proofreadCopy
+//    (text), generateScene + checkScene (a text-free background, vision-checked).
+//    The copy is validated in code (landing-copy.util.ts) and drawn by code
+//    (landing-page-render.util.ts): the image model never draws text or the
+//    product, which is what caused misspelled Arabic and distorted products;
+//  - draftLandingCopy for a funnel's native page;
+//  - draftProductContent, the product editor's "generate with AI" drafter, and
+//    improveLandingPageDescription.
+// Requests are retried with backoff on 429/5xx (the free tier rate-limits).
 @Injectable()
 export class GeminiService {
   private readonly logger = new Logger(GeminiService.name)
@@ -73,82 +83,189 @@ export class GeminiService {
     return key
   }
 
+  // Gemini's free tier rate-limits (429) and sometimes answers 5xx under load:
+  // retried with backoff, so a busy moment doesn't fail a whole page.
   private async post(model: string, apiKey: string, body: Record<string, unknown>): Promise<GeminiResponse> {
-    let response: Response
-    try {
-      response = await fetch(`${API_BASE}/${model}:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(60_000)
-      })
-    } catch (error) {
-      throw new BadGatewayException(`Could not reach the Gemini API: ${(error as Error).message}`)
-    }
+    let lastError: Error | null = null
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, 2500 * attempt))
+      let response: Response
+      try {
+        response = await fetch(`${API_BASE}/${model}:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          signal: AbortSignal.timeout(90_000)
+        })
+      } catch (error) {
+        lastError = new BadGatewayException(`Could not reach the Gemini API: ${(error as Error).message}`)
+        continue
+      }
 
-    const json = (await response.json().catch(() => ({}))) as GeminiResponse
-    if (!response.ok) {
-      throw new BadGatewayException(`Gemini API error: ${json.error?.message ?? `HTTP ${response.status}`}`)
+      const json = (await response.json().catch(() => ({}))) as GeminiResponse
+      if (response.status === 429 || response.status >= 500) {
+        lastError = new BadGatewayException(`Gemini API error: ${json.error?.message ?? `HTTP ${response.status}`}`)
+        continue
+      }
+      if (!response.ok) {
+        throw new BadGatewayException(`Gemini API error: ${json.error?.message ?? `HTTP ${response.status}`}`)
+      }
+      if (json.promptFeedback?.blockReason) {
+        throw new BadGatewayException(`Gemini blocked the request: ${json.promptFeedback.blockReason}`)
+      }
+      return json
     }
-    if (json.promptFeedback?.blockReason) {
-      throw new BadGatewayException(`Gemini blocked the request: ${json.promptFeedback.blockReason}`)
-    }
-    return json
+    throw lastError ?? new BadGatewayException('Gemini request failed.')
   }
 
-  // Turns a raw product description into short, punchy per-section
-  // marketing copy — a plain product description reads badly pasted
-  // verbatim onto a landing-page image. Uses structured JSON output so the
-  // result is directly usable without prompt-parsing heuristics.
-  async draftSectionCopy(input: { productName: string; description: string; sectionCount: number; instructions?: string }): Promise<DraftedSection[]> {
+  private async generateJson<T>(prompt: string, schema: Record<string, unknown>, extraParts: Record<string, unknown>[] = [], temperature = 0.6): Promise<T> {
     const apiKey = this.requireApiKey()
+    const json = await this.post(TEXT_MODEL, apiKey, {
+      contents: [{ parts: [{ text: prompt }, ...extraParts] }],
+      generationConfig: { responseMimeType: 'application/json', responseSchema: schema, temperature }
+    })
+    const text = json.candidates?.[0]?.content?.parts?.find((p) => p.text)?.text
+    if (!text) throw new BadGatewayException('Gemini returned no content.')
+    try {
+      return JSON.parse(text) as T
+    } catch {
+      throw new BadGatewayException('Gemini returned content in an unexpected format.')
+    }
+  }
 
+  private languageRule(language: LandingLanguage, instructions?: string): string {
+    const override = instructions ? ' Unless the store owner\'s instructions explicitly ask for another language, ' : ' '
+    if (language === 'ar') {
+      return `STRICT LANGUAGE REQUIREMENT: write everything in formal Modern Standard Arabic (الفصحى) ONLY — this storefront is Arabic-only.${override}never use colloquial/dialect words or expressions (Algerian, Gulf, Egyptian, Levantine…), slang, transliterated French/English words, or internet-Arabic. Use correct spelling with the hamza and ta marbuta written properly. Do not use diacritics (tashkeel), emoji, or decorative symbols.`
+    }
+    if (language === 'fr') return 'STRICT LANGUAGE REQUIREMENT: write everything in clear, correct standard French. No slang, no emoji.'
+    return 'STRICT LANGUAGE REQUIREMENT: write everything in clear, correct English. No slang, no emoji.'
+  }
+
+  // Step 1 — understand the product before writing anything: what it is, who
+  // buys it, which real benefits the source supports, what a hesitant buyer
+  // worries about, and what kind of background scene suits it. Writing from this
+  // brief (instead of straight from the raw text) is what keeps the copy specific
+  // and on-topic.
+  async analyzeProduct(input: { productName: string; description: string; photos?: InlineImage[]; instructions?: string }): Promise<ProductBrief> {
+    const prompt = `You are a senior e-commerce copywriter preparing to write landing-page copy for a cash-on-delivery store in Algeria. First ANALYZE the product — do not write copy yet.
+
+Product name: ${input.productName}
+Product information (the ONLY source of truth):
+"""
+${input.description}
+"""
+${input.instructions ? `\nStore owner's instructions: ${input.instructions}\n` : ''}${input.photos?.length ? '\nThe attached photos show the real product.\n' : ''}
+Return:
+- category: what kind of product this is, in a few English words.
+- audience: who typically buys it and why, one English sentence.
+- benefits: 3-5 of the strongest benefits or features that are EXPLICITLY supported by the product information (each as a short phrase in the language of the source). Never invent any.
+- objections: 2-3 doubts a hesitant buyer would have (quality, size, how it works…), based on the product type.
+- sceneKeywords: 8-14 ENGLISH words describing a fitting, tasteful background scene for advertising this product (setting, materials, lighting, mood) — NO text, NO people's faces, NO brand names.
+- tone: one English phrase for the right voice (e.g. "warm and reassuring", "energetic and modern").`
+    const schema = {
+      type: 'OBJECT',
+      properties: {
+        category: { type: 'STRING' },
+        audience: { type: 'STRING' },
+        benefits: { type: 'ARRAY', items: { type: 'STRING' } },
+        objections: { type: 'ARRAY', items: { type: 'STRING' } },
+        sceneKeywords: { type: 'STRING' },
+        tone: { type: 'STRING' }
+      },
+      required: ['category', 'audience', 'benefits', 'objections', 'sceneKeywords', 'tone']
+    }
+    const parts = (input.photos ?? []).slice(0, 3).map((p) => ({ inlineData: { mimeType: p.mimeType, data: p.base64 } }))
+    return this.generateJson<ProductBrief>(prompt, schema, parts, 0.3)
+  }
+
+  // Step 2 — draft the section copy from the brief. `feedback` carries the
+  // concrete problems validation found in the previous attempt, so a retry fixes
+  // them instead of rolling the dice again.
+  async draftSectionCopy(input: {
+    productName: string
+    description: string
+    sectionCount: number
+    language: LandingLanguage
+    brief?: ProductBrief
+    instructions?: string
+    feedback?: string[]
+    previous?: DraftedSection[]
+  }): Promise<DraftedSection[]> {
     const featureCount = Math.max(1, input.sectionCount - 2)
-    const prompt = `You are writing short marketing copy for a cash-on-delivery e-commerce product's long-scroll landing page image (the AliExpress/TikTok-ad style single-image funnel).
+    const prompt = `You are writing the text of a long-scroll landing page (AliExpress/TikTok-ad style) for a cash-on-delivery e-commerce product. The text is drawn by code over images, so it must be short, complete, and perfectly spelled.
 
 Product: ${input.productName}
-Description: ${input.description}
-${input.instructions ? `\nAdditional instructions from the store owner (follow these closely — they override the defaults below where they conflict): ${input.instructions}\n` : ''}
-STRICT LANGUAGE REQUIREMENT: write every headline and line in formal Modern Standard Arabic (الفصحى) ONLY — this store's storefront is Arabic-only. Never use colloquial/dialect words or expressions (Algerian, Gulf, Egyptian, or any other dialect), slang, or informal internet-Arabic phrasing, unless the instructions above explicitly ask for a different language.
+Product information (the ONLY source of truth):
+"""
+${input.description}
+"""
+${input.brief ? `\nProduct analysis — category: ${input.brief.category}. Audience: ${input.brief.audience}. Strongest supported benefits: ${input.brief.benefits.join(' | ')}. Buyer doubts to ease: ${input.brief.objections.join(' | ')}. Voice: ${input.brief.tone}.\n` : ''}${input.instructions ? `\nStore owner's instructions (follow closely — they override the defaults where they conflict): ${input.instructions}\n` : ''}
+${this.languageRule(input.language, input.instructions)}
 
 Write exactly ${input.sectionCount} sections in this order:
-1. One "hero" section — a bold, attention-grabbing headline (max 6 words) and one short supporting line (max 12 words).
-2. ${featureCount} "feature" section(s) — each highlights one distinct, SPECIFIC benefit or feature that is actually present in the description above (never a generic, vague claim that could describe any product), with a punchy headline (max 5 words) and a short supporting line (max 14 words).
-3. One "cta" section — a confident call-to-action headline (max 6 words) and a short line reinforcing cash-on-delivery / easy ordering (max 14 words).
+1. One "hero" — a bold headline (max 6 words) naming the product's single strongest benefit, plus one short supporting line (max 12 words).
+2. ${featureCount} "feature" section(s) — each about ONE distinct, SPECIFIC benefit or feature present in the product information (never a generic claim that could describe any product); headline max 5 words, supporting line max 14 words. Each feature must be different from the others.
+3. One "cta" — a confident call-to-action headline (max 6 words) and a short line (max 14 words) about easy ordering and paying only on delivery.
 
-Keep every line short — this is text overlaid on an image, not a paragraph. STRICT ACCURACY REQUIREMENT: every headline and line must accurately and specifically describe what's actually in the description above — do not invent product claims, features, or specs the description doesn't support, and do NOT invent promotions, discounts, "free delivery", or time-limited/urgency claims ("offer ends soon", "limited stock", countdowns, etc.) unless they are explicitly stated in the description above — cash-on-delivery and easy ordering are the only claims safe to make without support from the description. If the description doesn't give you enough distinct real details for ${featureCount} feature section(s), reuse and rephrase its strongest existing points rather than inventing new ones.`
+Rules: every line must be a complete, natural phrase (never cut off, no trailing ellipsis). Do not invent specs, numbers, prices, promotions, discounts, "free delivery", guarantees, awards, or urgency ("limited stock", "offer ends") — only what the product information states; cash-on-delivery and easy ordering are the only claims allowed without support. If the information has too few distinct points for ${featureCount} features, rephrase the strongest points differently rather than inventing new ones. No emoji, no quotation marks, no ALL CAPS, no hashtags.
+${input.feedback?.length ? `\nYour previous attempt was REJECTED for these problems — fix every one of them:\n${input.feedback.map((f) => `- ${f}`).join('\n')}\nPrevious attempt:\n${JSON.stringify(input.previous ?? [])}\n` : ''}`
 
     const schema = {
       type: 'ARRAY',
       items: {
         type: 'OBJECT',
-        properties: {
-          role: { type: 'STRING', enum: ['hero', 'feature', 'cta'] },
-          headline: { type: 'STRING' },
-          body: { type: 'STRING' }
-        },
+        properties: { role: { type: 'STRING', enum: ['hero', 'feature', 'cta'] }, headline: { type: 'STRING' }, body: { type: 'STRING' } },
         required: ['role', 'headline', 'body']
       }
     }
+    const parsed = await this.generateJson<DraftedSection[]>(prompt, schema, [], input.feedback?.length ? 0.4 : 0.7)
+    if (!Array.isArray(parsed) || parsed.length === 0) throw new BadGatewayException('Gemini returned no usable copy for this product.')
+    return parsed
+  }
 
-    const json = await this.post(TEXT_MODEL, apiKey, {
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { responseMimeType: 'application/json', responseSchema: schema }
-    })
+  // Step 3 — a dedicated proofreading pass: spelling, grammar, wording. Same
+  // meaning and length, no new claims.
+  async proofreadCopy(input: { sections: DraftedSection[]; language: LandingLanguage }): Promise<DraftedSection[]> {
+    const prompt = `You are a meticulous native-level proofreader. Below is landing-page copy in ${input.language === 'ar' ? 'Modern Standard Arabic' : input.language === 'fr' ? 'French' : 'English'}. Fix ONLY: spelling mistakes, wrong letters or word forms, grammar, punctuation, awkward or unnatural phrasing, and any dialect words (replace them with the formal equivalent). Keep each section's role, meaning, and approximate length. Do NOT add new claims, numbers, or promotions, and do not lengthen the lines. Return the same ${input.sections.length} sections in the same order. If a line is already correct, return it unchanged.
 
-    const text = json.candidates?.[0]?.content?.parts?.find((p) => p.text)?.text
-    if (!text) throw new BadGatewayException('Gemini returned no copy for this product.')
-
-    let parsed: unknown
-    try {
-      parsed = JSON.parse(text)
-    } catch {
-      throw new BadGatewayException('Gemini returned copy in an unexpected format.')
+${JSON.stringify(input.sections)}`
+    const schema = {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: { role: { type: 'STRING', enum: ['hero', 'feature', 'cta'] }, headline: { type: 'STRING' }, body: { type: 'STRING' } },
+        required: ['role', 'headline', 'body']
+      }
     }
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      throw new BadGatewayException('Gemini returned no usable copy for this product.')
+    const parsed = await this.generateJson<DraftedSection[]>(prompt, schema, [], 0.1)
+    if (!Array.isArray(parsed) || parsed.length !== input.sections.length) throw new BadGatewayException('Proofreading returned an unexpected result.')
+    return parsed
+  }
+
+  // Native funnel landing page copy: a headline, a subheadline and a button label.
+  async draftLandingCopy(input: { productName: string; description: string; language: LandingLanguage; brief?: ProductBrief; instructions?: string; feedback?: string[] }): Promise<{ headline: string; subheadline: string; ctaLabel: string }> {
+    const prompt = `Write the top-of-page copy for a one-product cash-on-delivery landing page.
+
+Product: ${input.productName}
+Product information (the ONLY source of truth):
+"""
+${input.description}
+"""
+${input.brief ? `\nProduct analysis — audience: ${input.brief.audience}. Supported benefits: ${input.brief.benefits.join(' | ')}. Voice: ${input.brief.tone}.\n` : ''}${input.instructions ? `\nStore owner's instructions: ${input.instructions}\n` : ''}
+${this.languageRule(input.language, input.instructions)}
+
+Return:
+- headline: max 9 words, names the main benefit for the buyer, complete and natural.
+- subheadline: one sentence, max 22 words, adds the most convincing supported detail.
+- ctaLabel: the order button text, max 5 words, mentioning ordering (e.g. order now, pay on delivery).
+Never invent specs, numbers, promotions, discounts, free delivery, guarantees or urgency not stated in the product information. No emoji, no quotation marks.${input.feedback?.length ? `\n\nYour previous attempt was rejected for:\n${input.feedback.map((f) => `- ${f}`).join('\n')}\nFix all of them.` : ''}`
+    const schema = {
+      type: 'OBJECT',
+      properties: { headline: { type: 'STRING' }, subheadline: { type: 'STRING' }, ctaLabel: { type: 'STRING' } },
+      required: ['headline', 'subheadline', 'ctaLabel']
     }
-    return parsed as DraftedSection[]
+    return this.generateJson(prompt, schema, [], 0.6)
   }
 
   // Admin product editor's "generate with AI" — turns a raw, messy content
@@ -267,12 +384,17 @@ Improve this text: fix grammar and clarity, organize it so the description, spec
     }
   }
 
-  private async requestImage(parts: Record<string, unknown>[]): Promise<InlineImage> {
+  private async requestImage(parts: Record<string, unknown>[], aspectRatio?: string): Promise<InlineImage> {
     const apiKey = this.requireApiKey()
-    const json = await this.post(IMAGE_MODEL, apiKey, {
-      contents: [{ parts }],
-      generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
-    })
+    const run = (generationConfig: Record<string, unknown>) => this.post(IMAGE_MODEL, apiKey, { contents: [{ parts }], generationConfig })
+    let json: GeminiResponse
+    try {
+      json = await run({ responseModalities: ['TEXT', 'IMAGE'], ...(aspectRatio && { imageConfig: { aspectRatio } }) })
+    } catch (error) {
+      // Some model versions reject imageConfig: retry once without it.
+      if (!aspectRatio || !/imageConfig|aspect|Unknown name|Invalid JSON/i.test((error as Error).message)) throw error
+      json = await run({ responseModalities: ['TEXT', 'IMAGE'] })
+    }
     const inline = json.candidates?.[0]?.content?.parts?.find((p) => p.inlineData)?.inlineData
     if (!inline) {
       const finishReason = json.candidates?.[0]?.finishReason
@@ -281,79 +403,62 @@ Improve this text: fix grammar and clarity, organize it so the description, spec
     return { base64: inline.data, mimeType: inline.mimeType }
   }
 
-  // Composes ALL of the product's selected photos and ALL of the drafted
-  // section copy into ONE long, vertical landing-page image in a single
-  // model call — the same way a store owner driving Gemini by hand gets a
-  // one-image result (one prompt, every section described in it, one output
-  // image), rather than generating N separate section images and stitching
-  // them together after the fact with sharp. This is also the main cost
-  // lever for this feature: Gemini's image-output pricing is dominated by a
-  // flat per-generated-image cost, not by resolution or prompt length, so
-  // one call producing the whole page costs roughly 1/N of the old
-  // N-calls-then-stitch approach for an N-section page.
-  async generateLandingPageImage(input: {
-    sections: { role: 'hero' | 'feature' | 'cta'; headline: string; body: string }[]
-    sourceImages: InlineImage[]
+  // A text-free background scene for one section. The model never draws
+  // letters, the product, or a logo: text is drawn by code afterwards (so it can
+  // never be misspelled or distorted) and the real product photo is placed on top
+  // untouched. Colours follow the page palette so sections look like one design.
+  async generateScene(input: {
+    role: 'hero' | 'feature' | 'cta'
+    sceneKeywords: string
+    paletteHint: string
+    style: 'vibrant' | 'dark' | 'light'
     instructions?: string
   }): Promise<InlineImage> {
-    const styleByRole: Record<'hero' | 'feature' | 'cta', string> = {
-      hero: 'bold, attention-grabbing — dramatic lighting or a vivid gradient background behind the product, large dominant headline',
-      feature: 'clean, product-focused, generous white space, a small icon or badge visually representing the benefit next to the headline',
-      cta: 'confident call-to-action — a strong accent color block or button-style graphic, a "cash on delivery" / easy-ordering visual cue. No countdown timers, "limited stock", "offer expires", or other fabricated urgency graphics.'
+    const mood: Record<typeof input.style, string> = {
+      vibrant: 'rich, saturated, energetic but tasteful',
+      dark: 'dark, moody, premium, with soft highlights',
+      light: 'bright, airy, clean, soft pastel light'
     }
-    const sectionBriefs = input.sections
-      .map((s, i) => `${i + 1}. [${s.role.toUpperCase()}] Headline: "${s.headline}" — Supporting text: "${s.body}". Style: ${styleByRole[s.role]}`)
-      .join('\n')
-
-    const sourceImageCount = input.sourceImages.length
-    const useAllPhotosInstruction =
-      sourceImageCount > 1
-        ? `You have been given ${sourceImageCount} real product reference photos — draw on all of them across the different sections below (not just one of them) so the finished page shows the actual product, not an invented one.`
-        : `Use the attached product photo as the actual product shown throughout the image — do not invent a different-looking product.`
-
-    const prompt = `Create ONE single professional e-commerce marketing image: a complete long-scroll landing page for a cash-on-delivery product ad (the AliExpress/TikTok-ad style single-image funnel). Portrait/vertical orientation, a tall aspect ratio, with ALL of the sections below stacked top to bottom INSIDE THIS ONE IMAGE as one seamless, continuous composition — not separate panels, tiles, or a collage, and no visible seams/borders/gaps between sections.
-
-${useAllPhotosInstruction} Do not replace, redesign, or reinvent the product itself, only the background/composition/effects around it.
-
-Sections, in order top to bottom:
-${sectionBriefs}
-
-Overlay each section's headline and supporting text directly into the image at that section, cleanly and legibly, in one consistent modern sans-serif style used throughout the whole page.
-${input.instructions ? `\nAdditional instructions from the store owner (follow these closely): ${input.instructions}\n` : ''}
-High-quality advertising photography look throughout, no watermarks, no placeholder text other than what's specified above. Output exactly ONE image containing the entire page.`
-
-    const parts: Record<string, unknown>[] = [{ text: prompt }]
-    for (const image of input.sourceImages) {
-      parts.push({ inlineData: { mimeType: image.mimeType, data: image.base64 } })
+    const roleBrief: Record<typeof input.role, string> = {
+      hero: 'a dramatic, high-impact backdrop with depth and soft light, the visual centre clear and empty',
+      feature: 'a calm, minimal backdrop with generous empty space and gentle depth',
+      cta: 'a confident, warm backdrop with a clear empty centre'
     }
-    return this.requestImage(parts)
+    const prompt = `Create a background image for an e-commerce advertisement.
+
+Scene: ${input.sceneKeywords}. Style: ${mood[input.style]}. Colour palette: ${input.paletteHint}. Composition: ${roleBrief[input.role]}. Portrait orientation, 4:5.
+
+ABSOLUTE RULES: the image must contain NO text of any kind — no letters, numbers, words, signs, labels, captions, logos, watermarks, or symbols that look like writing. NO products, NO packaging, NO people or faces, NO hands. Only an empty, beautiful backdrop (surfaces, textures, light, soft shapes, bokeh, subtle props unrelated to any brand) where a product and text will be placed on top later. The centre and the upper third must stay uncluttered.${input.instructions ? `\nAdditional art direction from the store owner: ${input.instructions}` : ''}`
+    return this.requestImage([{ text: prompt }], '4:5')
   }
 
-  // Edits the already-generated full landing-page image in place — used
-  // when the admin regenerates ONE section (with or without instructions)
-  // without wanting to redo the whole page. The previous full image is the
-  // primary reference; the model is told to touch only the named section
-  // and leave the rest of the page pixel-for-pixel alone.
-  async editLandingPageImage(input: {
-    currentImage: InlineImage
-    targetSection: { role: 'hero' | 'feature' | 'cta'; headline: string; body: string }
-    instructions?: string
-    sourceImages: InlineImage[]
-  }): Promise<InlineImage> {
-    const sourceImageCount = input.sourceImages.length
-    const prompt = `The first attached image is a complete long-scroll e-commerce landing page (multiple sections stacked vertically in one image). Edit ONLY the section with the headline "${input.targetSection.headline}" (supporting text: "${input.targetSection.body}") — keep every other section, the overall layout, and the image's dimensions exactly unchanged.
-
-${input.instructions ? `Instructions for this section: "${input.instructions}"` : 'Give this section a fresh take, keeping its headline, supporting text, and role the same.'}
-
-The remaining attached image(s) are the real product photo(s) for reference — keep the product itself accurate to them.${sourceImageCount > 1 ? ` There are ${sourceImageCount} of them.` : ''} Output ONE image, same dimensions and orientation as the input, with only that one section changed.`
-
-    const parts: Record<string, unknown>[] = [
-      { text: prompt },
-      { inlineData: { mimeType: input.currentImage.mimeType, data: input.currentImage.base64 } }
-    ]
-    for (const image of input.sourceImages) {
-      parts.push({ inlineData: { mimeType: image.mimeType, data: image.base64 } })
+  // Vision check of a generated scene: reject anything with writing, logos,
+  // people/products, or visible distortion — those are exactly the defects that
+  // make an AI landing page look broken.
+  async checkScene(image: InlineImage): Promise<{ ok: boolean; reasons: string[] }> {
+    const prompt = `Inspect this generated background image strictly. It will be used behind headlines and a product photo, so it must be empty of content. Answer each question honestly:
+- containsText: is there ANY readable or pseudo-readable text, letters, numbers, logos, watermarks or writing-like marks?
+- containsProductOrPerson: is there a main product, packaging, a person, a face or hands?
+- looksBroken: are there obvious distortions, warped shapes, melted objects, strange artifacts, or severe noise?
+- tooBusy: is the centre or upper third cluttered so text would be hard to read?`
+    const schema = {
+      type: 'OBJECT',
+      properties: {
+        containsText: { type: 'BOOLEAN' },
+        containsProductOrPerson: { type: 'BOOLEAN' },
+        looksBroken: { type: 'BOOLEAN' },
+        tooBusy: { type: 'BOOLEAN' }
+      },
+      required: ['containsText', 'containsProductOrPerson', 'looksBroken', 'tooBusy']
     }
-    return this.requestImage(parts)
+    const result = await this.generateJson<{ containsText: boolean; containsProductOrPerson: boolean; looksBroken: boolean; tooBusy: boolean }>(
+      prompt, schema, [{ inlineData: { mimeType: image.mimeType, data: image.base64 } }], 0
+    )
+    const reasons: string[] = []
+    if (result.containsText) reasons.push('contains text or logos')
+    if (result.containsProductOrPerson) reasons.push('contains a product or person')
+    if (result.looksBroken) reasons.push('looks distorted')
+    if (result.tooBusy) reasons.push('too busy behind the text')
+    return { ok: reasons.length === 0, reasons }
   }
 }

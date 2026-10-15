@@ -122,6 +122,23 @@ async function sync(provider: ShippingCompanyProvider) {
   }
 }
 
+const syncingLocations = reactive<Record<string, boolean>>({})
+// The courier's own commune list: exact spellings and stop-desk availability,
+// used to check every address before dispatch.
+async function syncLocations(provider: ShippingCompanyProvider) {
+  syncingLocations[provider] = true
+  try {
+    const result = await api<{ communesCount: number; wilayasCount: number }>(`/admin/shipping-companies/${provider}/sync-locations`, { method: 'POST' })
+    await refresh()
+    toast.add({ title: `Synced ${result.communesCount} communes in ${result.wilayasCount} wilayas`, color: 'success' })
+  } catch (err) {
+    const data = (err as { data?: { message?: string } })?.data
+    toast.add({ title: 'Location sync failed', description: data?.message, color: 'error' })
+  } finally {
+    syncingLocations[provider] = false
+  }
+}
+
 async function loadTariffs(provider: ShippingCompanyProvider) {
   loadingTariffs[provider] = true
   try {
@@ -252,6 +269,7 @@ const lastSync = computed(() => {
                 <dt>API token</dt><dd>{{ c.hasApiToken ? 'Saved' : 'Not set' }}</dd>
                 <dt>Webhook</dt><dd>{{ c.webhookUrl ? (c.hasWebhookSecret ? 'Configured' : 'Secret missing') : 'Not available' }}</dd>
                 <dt>Tariffs</dt><dd>{{ c.lastSyncedAt ? `Synced ${new Date(c.lastSyncedAt).toLocaleDateString()}` : 'Never synced' }}</dd>
+                <dt>Communes</dt><dd>{{ c.locationsSyncedAt ? `${c.communesCount} synced` : 'Never synced' }}</dd>
               </dl>
             </div>
             <div class="foot">
@@ -277,6 +295,7 @@ const lastSync = computed(() => {
           </div>
           <p class="muted">{{ company.baseUrl }}</p>
           <p v-if="company.lastSyncedAt" class="muted">Tariffs last synced {{ new Date(company.lastSyncedAt).toLocaleString() }}</p>
+          <p v-if="company.locationsSyncedAt" class="muted">{{ company.communesCount }} communes synced {{ new Date(company.locationsSyncedAt).toLocaleString() }}</p>
         </div>
       </div>
 
@@ -324,6 +343,7 @@ const lastSync = computed(() => {
 
       <div v-if="company.isLinked" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
         <AdsButton :loading="syncing[company.provider]" appearance="default" icon="i-lucide-refresh-cw" @click="sync(company.provider)">Sync tariffs</AdsButton>
+        <AdsButton :loading="syncingLocations[company.provider]" appearance="default" icon="i-lucide-refresh-cw" @click="syncLocations(company.provider)">Sync communes</AdsButton>
         <AdsButton v-if="company.lastSyncedAt" appearance="default" icon="i-lucide-table" @click="toggleTariffs(company.provider)">
           {{ tariffsByProvider[company.provider] ? 'Hide tariffs' : 'View tariffs' }}
         </AdsButton>

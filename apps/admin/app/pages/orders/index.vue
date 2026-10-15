@@ -99,6 +99,21 @@ async function advance(orderId: string, currentState: OrderState) {
 }
 
 const bulkBusy = ref(false)
+const { isSuperAdmin, confirmDelete } = useDangerDelete()
+const auth = useAuthStore()
+async function bulkDelete() {
+  const ids = [...selected.value]
+  if (!ids.length || !confirmDelete(`Permanently delete ${ids.length} order${ids.length === 1 ? '' : 's'} with their items, shipments and reconciliation rows? Parcels already created at a courier are NOT cancelled there.`)) return
+  bulkBusy.value = true
+  const res = await run(() => api<{ deleted: string[]; failed: { id: string; reason: string }[] }>('/admin/orders/bulk-delete', { method: 'POST', body: { orderIds: ids } }), { errorFallback: 'Could not delete the orders' })
+  if (res) {
+    await run(async () => undefined, { success: `${res.deleted.length} order${res.deleted.length === 1 ? '' : 's'} deleted` })
+    if (res.failed.length) useToast().add({ title: `${res.failed.length} could not be deleted`, description: res.failed[0]!.reason, color: 'error' })
+  }
+  selected.value = new Set()
+  await loadWithFilters()
+  bulkBusy.value = false
+}
 async function bulkArchive() {
   bulkBusy.value = true
   const action = showArchived.value ? 'unarchive' : 'archive'
@@ -138,6 +153,7 @@ const carrier = (o: OrderListResponse['items'][number]) => o.shipment?.courier.n
 <template>
   <AdsPage title="Orders" :description="`${data?.total ?? 0} orders ${showArchived ? 'in the archive' : 'matching'}`">
     <template #actions>
+      <NuxtLink v-if="isSuperAdmin || auth.role === 'OpsManager'" to="/orders/activity" class="btn hide-sm"><AdsIcon name="i-lucide-history" />Activity</NuxtLink>
       <button class="btn hide-sm" type="button" @click="toggleArchivedView"><AdsIcon name="i-lucide-archive" />{{ showArchived ? 'Showing archived' : 'Show archived' }}</button>
     </template>
 
@@ -156,6 +172,7 @@ const carrier = (o: OrderListResponse['items'][number]) => o.shipment?.courier.n
       <div class="bulkbar" :class="{ on: selected.size > 0 }">
         <span class="grow">{{ selected.size }} selected</span>
         <button class="btn" type="button" :disabled="bulkBusy" @click="bulkArchive">{{ showArchived ? 'Unarchive' : 'Archive' }}</button>
+        <button v-if="isSuperAdmin" class="btn btn-danger" type="button" :disabled="bulkBusy" @click="bulkDelete"><AdsIcon name="i-lucide-trash-2" />Delete</button>
         <button class="btn" type="button" @click="selected = new Set()">Clear</button>
       </div>
 

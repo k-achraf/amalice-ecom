@@ -65,9 +65,12 @@ export type OrderState = z.infer<typeof OrderState>
 // exactly what a shared package exists to remove.
 export const VALID_TRANSITIONS: Record<OrderState, OrderState[]> = {
   PendingCallCenter: ['Confirmed', 'CallCenterNoAnswer', 'WrongNumber', 'Postponed', 'Cancelled'],
-  CallCenterNoAnswer: ['PendingCallCenter', 'Cancelled'],
-  WrongNumber: ['PendingCallCenter', 'Cancelled'],
-  Postponed: ['PendingCallCenter', 'Cancelled'],
+  // A retry that finally reaches the customer must be confirmable (or
+  // cancelled / re-postponed) directly — forcing a detour through
+  // PendingCallCenter made "Confirm" fail on every retry.
+  CallCenterNoAnswer: ['PendingCallCenter', 'Confirmed', 'WrongNumber', 'Postponed', 'Cancelled'],
+  WrongNumber: ['PendingCallCenter', 'Confirmed', 'CallCenterNoAnswer', 'Postponed', 'Cancelled'],
+  Postponed: ['PendingCallCenter', 'Confirmed', 'CallCenterNoAnswer', 'WrongNumber', 'Cancelled'],
   Cancelled: [],
   Confirmed: ['Packed', 'OnHold', 'CancelledShipping'],
   OnHold: ['Confirmed', 'Packed', 'CancelledShipping'],
@@ -83,6 +86,12 @@ export const VALID_TRANSITIONS: Record<OrderState, OrderState[]> = {
   Settled: [],
   CancelledShipping: []
 }
+
+// An order can only be handed to the courier / go out for delivery once a
+// Shipment exists for it — created through "Dispatch to courier" (API) or
+// recorded by hand ("Mark as sent"). Setting these states without one would
+// leave an order "in transit" that no courier has.
+export const STATES_REQUIRING_SHIPMENT: readonly OrderState[] = ['HandedToCourier', 'OutForDelivery']
 
 export function isValidTransition(from: OrderState, to: OrderState): boolean {
   return VALID_TRANSITIONS[from]?.includes(to) ?? false
@@ -502,13 +511,14 @@ export interface AdminOrderListItem {
   customer: { id: string; name: string | null; phone: string }
   address: { line1: string; line2: string | null; city: string; region: string; postalCode: string; country: string }
   items: AdminOrderLineItem[]
-  shipment?: { courier: { name: string } } | null
+  shipment?: { courier: { name: string }; trackingReference?: string | null; carrierConfirmedAt?: string | null } | null
   // See Order.isAbandoned's Prisma comment.
   isAbandoned: boolean
   // See FulfillmentMethodSchema's comment — dispatch requires this to be
   // ShippingCompany (with shippingCompanyName set) or Manual, never
   // Unassigned.
   fulfillmentMethod: FulfillmentMethod
+  shippingCompanyId: string | null
   shippingCompanyName: string | null
   // Free-text call-center notes — editable from the Call Center queue and
   // pushed to the Google Sheets integration's Notes column (see
@@ -524,6 +534,18 @@ export interface AdminOrderListItem {
   // reached. Null for legacy Postponed orders from before this field
   // existed, or for any order not currently Postponed.
   postponedUntil: string | null
+  // ---- Call-center work tracking (see Order's Prisma comment) ----
+  assignedToEmail: string | null
+  lockedUntil: string | null
+  skippedUntil: string | null
+  callAttemptsCount: number
+  lastCalledAt: string | null
+  // ---- Courier delivery details (see Order's Prisma comment) ----
+  deliveryNote: string | null
+  isFragile: boolean
+  gpsLink: string | null
+  courierOperation: 'Delivery' | 'Exchange'
+  exchangeProduct: string | null
   // See Order.archived's Prisma comment — always false unless the list was
   // explicitly queried with `archived=only`.
   archived: boolean
@@ -559,7 +581,7 @@ export interface AdminOrderDetail {
   // driverName/driverPhone are filled in from a courier webhook payload
   // when present (see DHD_WEBHOOK_EVENT_TO_STATE / DhdWebhookService) — null
   // until a courier's webhook actually reports a driver assignment.
-  shipment: { courier: { name: string }; trackingReference: string | null; courierStatus: string | null; driverName: string | null; driverPhone: string | null } | null
+  shipment: { courier: { name: string }; trackingReference: string | null; courierStatus: string | null; driverName: string | null; driverPhone: string | null; carrierConfirmedAt: string | null; carrierFeeCents: number | null; returnFeeCents: number | null; lastFailureReason: string | null; postponedTo: string | null } | null
   cashReconciliation: { expectedCents: number; collectedCents: number | null } | null
   // See Order.isAbandoned's Prisma comment.
   isAbandoned: boolean
@@ -570,6 +592,18 @@ export interface AdminOrderDetail {
   isDuplicate: boolean
   duplicateOfOrderId: string | null
   postponedUntil: string | null
+  // ---- Call-center work tracking (see Order's Prisma comment) ----
+  assignedToEmail: string | null
+  lockedUntil: string | null
+  skippedUntil: string | null
+  callAttemptsCount: number
+  lastCalledAt: string | null
+  // ---- Courier delivery details (see Order's Prisma comment) ----
+  deliveryNote: string | null
+  isFragile: boolean
+  gpsLink: string | null
+  courierOperation: 'Delivery' | 'Exchange'
+  exchangeProduct: string | null
   // See Order.archived's Prisma comment.
   archived: boolean
   archivedAt: string | null
@@ -591,6 +625,11 @@ export type UpdateOrderNotes = z.infer<typeof UpdateOrderNotesSchema>
 // by both AdminOrdersService.updatePrice (the real guard) and the admin UI
 // (so the edit control doesn't even render once it'd be rejected).
 export const PRICE_EDITABLE_STATES: readonly OrderState[] = ['PendingCallCenter', 'CallCenterNoAnswer', 'WrongNumber', 'Postponed']
+
+// The delivery address / customer details stay correctable until a shipment
+// exists (e.g. fixing a commune the courier doesn't recognise while the order is
+// being packed) — unlike the price, nothing downstream is quoted from them yet.
+export const ADDRESS_EDITABLE_STATES: readonly OrderState[] = [...PRICE_EDITABLE_STATES, 'Confirmed', 'OnHold', 'Packed']
 
 // Call-center price override — an agent negotiating on the confirmation
 // call needs to adjust either the shipping fee (e.g. a wilaya-rate
@@ -685,3 +724,9 @@ export const RecentOrderActivityResponseSchema = z.object({
   items: z.array(RecentOrderActivityItemSchema)
 })
 export type RecentOrderActivityResponse = z.infer<typeof RecentOrderActivityResponseSchema>
+
+// Permanent deletion of several orders at once (SuperAdmin only).
+export const BulkDeleteOrdersSchema = z.object({
+  orderIds: z.array(z.uuid()).min(1).max(200)
+})
+export type BulkDeleteOrders = z.infer<typeof BulkDeleteOrdersSchema>

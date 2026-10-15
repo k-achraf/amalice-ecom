@@ -221,6 +221,7 @@ enum LandingPageStatus {
 enum LandingPageImageProvider {
   Gemini
   Pollinations
+  Template
 }
 
 model ProductLandingPage {
@@ -249,6 +250,9 @@ model ProductLandingPage {
   // section's copy, source images, generated image, and per-section status,
   // so a single bad section can be regenerated without redoing the rest.
   sections      Json                     @default("[]")
+  // How the page is drawn (language, style, accent colour — see
+  // LandingDesignSchema in packages/shared) so copy edits re-render consistently.
+  design        Json                     @default("{}")
   errorMessage  String?                  @map("error_message")
   createdAt     DateTime                 @default(now()) @map("created_at")
   updatedAt     DateTime                 @updatedAt @map("updated_at")
@@ -507,6 +511,29 @@ model Order {
   // archived" survives any later edit made while un-archived again.
   archived             Boolean               @default(false)
   archivedAt           DateTime?             @map("archived_at")
+  // ---- Call-center work tracking ----
+  // assignedToId/lockedUntil: soft claim so two agents never get the same
+  // order from the drop queue (AdminCallCenterService.claimNext). The lock
+  // expires on its own (agent closed the tab) and is cleared when a call is
+  // logged. skippedUntil defers an order the agent skipped. callAttempts /
+  // lastCalledAt drive the progressive no-answer cooldown and the max-attempts
+  // flag (see packages/shared call-center.ts).
+  assignedToId         String?               @map("assigned_to_id")
+  assignedToEmail      String?               @map("assigned_to_email")
+  lockedUntil          DateTime?             @map("locked_until")
+  skippedUntil         DateTime?             @map("skipped_until")
+  callAttemptsCount    Int                   @default(0) @map("call_attempts_count")
+  lastCalledAt         DateTime?             @map("last_called_at")
+  callAttempts         CallAttempt[]
+  // ---- Courier delivery details (editable until a shipment exists) ----
+  // deliveryNote is sent to the courier as `remarque`; isFragile / gpsLink map
+  // to its `fragile` / `gps_link`. courierOperation + exchangeProduct select the
+  // courier's operation type (1 = Livraison, 2 = Échange / produit_a_recuperer).
+  deliveryNote         String?               @map("delivery_note")
+  isFragile            Boolean               @default(false) @map("is_fragile")
+  gpsLink              String?               @map("gps_link")
+  courierOperation     CourierOperation      @default(Delivery) @map("courier_operation")
+  exchangeProduct      String?               @map("exchange_product")
   items                OrderItem[]
   shipment             Shipment?
   cashReconciliation   CashReconciliation?
@@ -523,6 +550,45 @@ model Order {
   @@index([shippingCompanyId])
   @@index([archived])
   @@map("orders")
+}
+
+enum CourierOperation {
+  Delivery
+  Exchange
+}
+
+enum CallOutcome {
+  Confirmed
+  NoAnswer
+  WrongNumber
+  Postponed
+  Cancelled
+}
+
+// One row per logged phone call on an order (the call-center outcome buttons).
+// The source of truth for agent stats/reports — AuditLog only records state
+// changes, which can't represent a repeated "no answer" on an order that is
+// already in that state.
+model CallAttempt {
+  id             String      @id @default(uuid())
+  orderId        String      @map("order_id")
+  order          Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  agentId        String?     @map("agent_id")
+  agentEmail     String?     @map("agent_email")
+  outcome        CallOutcome
+  // State the order was in when the call was logged / state it moved to.
+  fromState      OrderState  @map("from_state")
+  toState        OrderState  @map("to_state")
+  note           String?
+  // Required for Cancelled (see CANCEL_REASONS in packages/shared).
+  reason         String?
+  postponedUntil DateTime?   @map("postponed_until")
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  @@index([orderId])
+  @@index([agentId, createdAt])
+  @@index([createdAt])
+  @@map("call_attempts")
 }
 
 enum FulfillmentMethod {
@@ -630,21 +696,37 @@ model ProductUpsell {
 }
 
 model Shipment {
-  id                String   @id @default(uuid())
-  orderId           String   @unique @map("order_id")
-  order             Order    @relation(fields: [orderId], references: [id])
-  courierId         String   @map("courier_id")
-  courier           Courier  @relation(fields: [courierId], references: [id])
-  trackingReference String?  @map("tracking_reference")
-  courierStatus     String?  @map("courier_status")
+  id                 String          @id @default(uuid())
+  orderId            String          @unique @map("order_id")
+  order              Order           @relation(fields: [orderId], references: [id])
+  courierId          String          @map("courier_id")
+  courier            Courier         @relation(fields: [courierId], references: [id])
+  trackingReference  String?         @map("tracking_reference")
+  courierStatus      String?         @map("courier_status")
   // Filled in from a courier webhook payload when the courier reports a
   // driver assignment (e.g. DHD's webhook `data.driver` object) — null
   // until then, and either can independently be blank/absent even once a
   // driver row exists (some couriers report a name without a phone, etc.).
-  driverName        String?  @map("driver_name")
-  driverPhone       String?  @map("driver_phone")
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  driverName         String?         @map("driver_name")
+  driverPhone        String?         @map("driver_phone")
+  // Set when the courier has accepted the shipment for pickup/transit (the
+  // "Expedier" / valid/order step, or implied by any later courier status).
+  // Until then the parcel exists at the courier but can still be edited or
+  // deleted; after it, it can't.
+  carrierConfirmedAt DateTime?       @map("carrier_confirmed_at")
+  // What the courier charges us for this parcel / for returning it (cents),
+  // from get/orders (tarif_prestation / tarif_retour).
+  carrierFeeCents    Int?            @map("carrier_fee_cents")
+  returnFeeCents     Int?            @map("return_fee_cents")
+  // Latest delivery-attempt detail from the courier's tracking history.
+  lastFailureReason  String?         @map("last_failure_reason")
+  postponedTo        DateTime?       @map("postponed_to")
+  deskInfo           Json?           @map("desk_info")
+  activity           Json?
+  lastSyncedAt       DateTime?       @map("last_synced_at")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+  shipmentEvents     ShipmentEvent[]
 
   @@index([courierId])
   @@map("shipments")
@@ -1043,27 +1125,76 @@ enum ShippingCompanyProvider {
 }
 
 model ShippingCompany {
-  id            String                  @id @default(uuid())
-  provider      ShippingCompanyProvider @unique
-  name          String
-  baseUrl       String                  @map("base_url")
-  apiToken      String?                 @map("api_token")
+  id                String                   @id @default(uuid())
+  provider          ShippingCompanyProvider  @unique
+  name              String
+  baseUrl           String                   @map("base_url")
+  apiToken          String?                  @map("api_token")
   // HMAC-SHA256 secret the provider's webhook config signs each inbound
   // request with — pasted in from whatever value the provider's own
   // platform generated/the admin set when configuring the webhook there
   // (see SetWebhookSecretSchema). Never generated on our side, since it has
   // to match exactly what the provider is actually signing with.
-  webhookSecret String?                 @map("webhook_secret")
-  isLinked      Boolean                 @default(false) @map("is_linked")
-  isDefault     Boolean                 @default(false) @map("is_default")
-  lastSyncedAt  DateTime?               @map("last_synced_at")
-  createdAt     DateTime                @default(now()) @map("created_at")
-  updatedAt     DateTime                @updatedAt @map("updated_at")
-  tariffs       ShippingCompanyTariff[]
-  orders        Order[]
-  webhookEvents CourierWebhookEvent[]
+  webhookSecret     String?                  @map("webhook_secret")
+  isLinked          Boolean                  @default(false) @map("is_linked")
+  isDefault         Boolean                  @default(false) @map("is_default")
+  lastSyncedAt      DateTime?                @map("last_synced_at")
+  // Last successful sync of the courier's wilaya/commune list (get/communes).
+  locationsSyncedAt DateTime?                @map("locations_synced_at")
+  createdAt         DateTime                 @default(now()) @map("created_at")
+  updatedAt         DateTime                 @updatedAt @map("updated_at")
+  communes          ShippingCompanyCommune[]
+  tariffs           ShippingCompanyTariff[]
+  orders            Order[]
+  webhookEvents     CourierWebhookEvent[]
 
   @@map("shipping_companies")
+}
+
+// The communes a courier actually delivers to, as spelled by that courier
+// (get/communes). An order is only accepted if its commune matches one of
+// these, and a stop desk can only be chosen where hasStopDesk is true.
+model ShippingCompanyCommune {
+  id                String          @id @default(uuid())
+  shippingCompanyId String          @map("shipping_company_id")
+  shippingCompany   ShippingCompany @relation(fields: [shippingCompanyId], references: [id], onDelete: Cascade)
+  wilayaId          String          @map("wilaya_id")
+  name              String
+  postalCode        String?         @map("postal_code")
+  hasStopDesk       Boolean         @default(false) @map("has_stop_desk")
+
+  @@unique([shippingCompanyId, wilayaId, name])
+  @@index([shippingCompanyId, wilayaId])
+  @@map("shipping_company_communes")
+}
+
+// The courier-side history of a parcel, kept permanently. Shipment.activity only
+// holds the latest snapshot and is overwritten on every sync; every status change,
+// delivery attempt (failed reason, postponement, driver, station) and remark the
+// courier reports is appended here once (deduplicated by dedupKey), so the order
+// timeline can show the full journey even after the courier archives the parcel.
+model ShipmentEvent {
+  id         String   @id @default(uuid())
+  shipmentId String   @map("shipment_id")
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  orderId    String   @map("order_id")
+  // 'courier-sync' | 'courier-refresh'
+  source     String
+  // 'status' (courier status changed) | 'activity' (delivery history entry) | 'remark' (driver/shop remark)
+  kind       String
+  code       String?
+  title      String
+  details    String?
+  station    String?
+  driver     String?
+  occurredAt DateTime @map("occurred_at")
+  dedupKey   String   @map("dedup_key")
+  raw        Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@unique([shipmentId, dedupKey])
+  @@index([orderId, occurredAt])
+  @@map("shipment_events")
 }
 
 // One row per inbound courier webhook delivery — audit log AND the

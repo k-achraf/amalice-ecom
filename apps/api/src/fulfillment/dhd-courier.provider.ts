@@ -60,15 +60,20 @@ export class DhdCourierProvider implements CourierProvider {
       nom_client: input.recipientName ?? '',
       telephone: input.recipientPhone,
       adresse: input.address.line2 ? `${input.address.line1}, ${input.address.line2}` : input.address.line1,
-      commune: input.address.city,
+      commune: input.courierCommune ?? input.address.city,
+      code_postal: input.courierPostalCode || undefined,
       code_wilaya: codeWilaya,
       // DHD's montant is whole DZD, not cents (see DhdOrderPayload's comment).
       montant: String(Math.round(input.codAmountCents / 100)),
-      remarque: input.notes,
+      remarque: input.notes?.slice(0, 255),
       produit: input.items?.map((i) => i.name).join(',') || undefined,
       stock: '0', // never DHD-warehoused stock — we ship our own picked parcel.
       quantite: input.items?.map((i) => String(i.quantity)).join(',') || undefined,
-      type: '1', // Livraison — the only DHD operation type this COD flow uses.
+      type: input.operation === 'Exchange' ? '2' : '1', // 1 = Livraison, 2 = Échange
+      produit_a_recuperer: input.operation === 'Exchange' ? (input.exchangeProduct ?? undefined) : undefined,
+      boutique: input.shopName || undefined,
+      fragile: input.fragile ? '1' : undefined,
+      gps_link: input.gpsLink || undefined,
       stop_desk: input.stopDesk ? '1' : '0',
       weight: input.weightGrams ? String(Math.max(0.1, input.weightGrams / 1000)) : undefined
     }

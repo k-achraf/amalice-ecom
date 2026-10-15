@@ -72,6 +72,7 @@ export type ProductLandingPageCountAggregateOutputType = {
   imageProvider: number
   finalImageUrl: number
   sections: number
+  design: number
   errorMessage: number
   createdAt: number
   updatedAt: number
@@ -125,6 +126,7 @@ export type ProductLandingPageCountAggregateInputType = {
   imageProvider?: true
   finalImageUrl?: true
   sections?: true
+  design?: true
   errorMessage?: true
   createdAt?: true
   updatedAt?: true
@@ -227,6 +229,7 @@ export type ProductLandingPageGroupByOutputType = {
   imageProvider: $Enums.LandingPageImageProvider
   finalImageUrl: string | null
   sections: runtime.JsonValue
+  design: runtime.JsonValue
   errorMessage: string | null
   createdAt: Date
   updatedAt: Date
@@ -265,6 +268,7 @@ export type ProductLandingPageWhereInput = {
   imageProvider?: Prisma.EnumLandingPageImageProviderFilter<"ProductLandingPage"> | $Enums.LandingPageImageProvider
   finalImageUrl?: Prisma.StringNullableFilter<"ProductLandingPage"> | string | null
   sections?: Prisma.JsonFilter<"ProductLandingPage">
+  design?: Prisma.JsonFilter<"ProductLandingPage">
   errorMessage?: Prisma.StringNullableFilter<"ProductLandingPage"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ProductLandingPage"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductLandingPage"> | Date | string
@@ -281,6 +285,7 @@ export type ProductLandingPageOrderByWithRelationInput = {
   imageProvider?: Prisma.SortOrder
   finalImageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   sections?: Prisma.SortOrder
+  design?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -301,6 +306,7 @@ export type ProductLandingPageWhereUniqueInput = Prisma.AtLeast<{
   imageProvider?: Prisma.EnumLandingPageImageProviderFilter<"ProductLandingPage"> | $Enums.LandingPageImageProvider
   finalImageUrl?: Prisma.StringNullableFilter<"ProductLandingPage"> | string | null
   sections?: Prisma.JsonFilter<"ProductLandingPage">
+  design?: Prisma.JsonFilter<"ProductLandingPage">
   errorMessage?: Prisma.StringNullableFilter<"ProductLandingPage"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ProductLandingPage"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductLandingPage"> | Date | string
@@ -317,6 +323,7 @@ export type ProductLandingPageOrderByWithAggregationInput = {
   imageProvider?: Prisma.SortOrder
   finalImageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   sections?: Prisma.SortOrder
+  design?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -340,6 +347,7 @@ export type ProductLandingPageScalarWhereWithAggregatesInput = {
   imageProvider?: Prisma.EnumLandingPageImageProviderWithAggregatesFilter<"ProductLandingPage"> | $Enums.LandingPageImageProvider
   finalImageUrl?: Prisma.StringNullableWithAggregatesFilter<"ProductLandingPage"> | string | null
   sections?: Prisma.JsonWithAggregatesFilter<"ProductLandingPage">
+  design?: Prisma.JsonWithAggregatesFilter<"ProductLandingPage">
   errorMessage?: Prisma.StringNullableWithAggregatesFilter<"ProductLandingPage"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ProductLandingPage"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ProductLandingPage"> | Date | string
@@ -354,6 +362,7 @@ export type ProductLandingPageCreateInput = {
   imageProvider?: $Enums.LandingPageImageProvider
   finalImageUrl?: string | null
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  design?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   errorMessage?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -370,6 +379,7 @@ export type ProductLandingPageUncheckedCreateInput = {
   imageProvider?: $Enums.LandingPageImageProvider
   finalImageUrl?: string | null
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  design?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   errorMessage?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -384,6 +394,7 @@ export type ProductLandingPageUpdateInput = {
   imageProvider?: Prisma.EnumLandingPageImageProviderFieldUpdateOperationsInput | $Enums.LandingPageImageProvider
   finalImageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  design?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -400,6 +411,7 @@ export type ProductLandingPageUncheckedUpdateInput = {
   imageProvider?: Prisma.EnumLandingPageImageProviderFieldUpdateOperationsInput | $Enums.LandingPageImageProvider
   finalImageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  design?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -415,6 +427,7 @@ export type ProductLandingPageCreateManyInput = {
   imageProvider?: $Enums.LandingPageImageProvider
   finalImageUrl?: string | null
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  design?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   errorMessage?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -429,6 +442,7 @@ export type ProductLandingPageUpdateManyMutationInput = {
   imageProvider?: Prisma.EnumLandingPageImageProviderFieldUpdateOperationsInput | $Enums.LandingPageImageProvider
   finalImageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  design?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -444,6 +458,7 @@ export type ProductLandingPageUncheckedUpdateManyInput = {
   imageProvider?: Prisma.EnumLandingPageImageProviderFieldUpdateOperationsInput | $Enums.LandingPageImageProvider
   finalImageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  design?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -474,6 +489,7 @@ export type ProductLandingPageCountOrderByAggregateInput = {
   imageProvider?: Prisma.SortOrder
   finalImageUrl?: Prisma.SortOrder
   sections?: Prisma.SortOrder
+  design?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -574,6 +590,7 @@ export type ProductLandingPageCreateWithoutProductInput = {
   imageProvider?: $Enums.LandingPageImageProvider
   finalImageUrl?: string | null
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  design?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   errorMessage?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -588,6 +605,7 @@ export type ProductLandingPageUncheckedCreateWithoutProductInput = {
   imageProvider?: $Enums.LandingPageImageProvider
   finalImageUrl?: string | null
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  design?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   errorMessage?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -632,6 +650,7 @@ export type ProductLandingPageScalarWhereInput = {
   imageProvider?: Prisma.EnumLandingPageImageProviderFilter<"ProductLandingPage"> | $Enums.LandingPageImageProvider
   finalImageUrl?: Prisma.StringNullableFilter<"ProductLandingPage"> | string | null
   sections?: Prisma.JsonFilter<"ProductLandingPage">
+  design?: Prisma.JsonFilter<"ProductLandingPage">
   errorMessage?: Prisma.StringNullableFilter<"ProductLandingPage"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ProductLandingPage"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductLandingPage"> | Date | string
@@ -646,6 +665,7 @@ export type ProductLandingPageCreateManyProductInput = {
   imageProvider?: $Enums.LandingPageImageProvider
   finalImageUrl?: string | null
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  design?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   errorMessage?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -660,6 +680,7 @@ export type ProductLandingPageUpdateWithoutProductInput = {
   imageProvider?: Prisma.EnumLandingPageImageProviderFieldUpdateOperationsInput | $Enums.LandingPageImageProvider
   finalImageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  design?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -674,6 +695,7 @@ export type ProductLandingPageUncheckedUpdateWithoutProductInput = {
   imageProvider?: Prisma.EnumLandingPageImageProviderFieldUpdateOperationsInput | $Enums.LandingPageImageProvider
   finalImageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  design?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -688,6 +710,7 @@ export type ProductLandingPageUncheckedUpdateManyWithoutProductInput = {
   imageProvider?: Prisma.EnumLandingPageImageProviderFieldUpdateOperationsInput | $Enums.LandingPageImageProvider
   finalImageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sections?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  design?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -705,6 +728,7 @@ export type ProductLandingPageSelect<ExtArgs extends runtime.Types.Extensions.In
   imageProvider?: boolean
   finalImageUrl?: boolean
   sections?: boolean
+  design?: boolean
   errorMessage?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -721,6 +745,7 @@ export type ProductLandingPageSelectCreateManyAndReturn<ExtArgs extends runtime.
   imageProvider?: boolean
   finalImageUrl?: boolean
   sections?: boolean
+  design?: boolean
   errorMessage?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -737,6 +762,7 @@ export type ProductLandingPageSelectUpdateManyAndReturn<ExtArgs extends runtime.
   imageProvider?: boolean
   finalImageUrl?: boolean
   sections?: boolean
+  design?: boolean
   errorMessage?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -753,12 +779,13 @@ export type ProductLandingPageSelectScalar = {
   imageProvider?: boolean
   finalImageUrl?: boolean
   sections?: boolean
+  design?: boolean
   errorMessage?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ProductLandingPageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "number" | "name" | "enabled" | "status" | "imageProvider" | "finalImageUrl" | "sections" | "errorMessage" | "createdAt" | "updatedAt", ExtArgs["result"]["productLandingPage"]>
+export type ProductLandingPageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "number" | "name" | "enabled" | "status" | "imageProvider" | "finalImageUrl" | "sections" | "design" | "errorMessage" | "createdAt" | "updatedAt", ExtArgs["result"]["productLandingPage"]>
 export type ProductLandingPageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
 }
@@ -784,6 +811,7 @@ export type $ProductLandingPagePayload<ExtArgs extends runtime.Types.Extensions.
     imageProvider: $Enums.LandingPageImageProvider
     finalImageUrl: string | null
     sections: runtime.JsonValue
+    design: runtime.JsonValue
     errorMessage: string | null
     createdAt: Date
     updatedAt: Date
@@ -1220,6 +1248,7 @@ export interface ProductLandingPageFieldRefs {
   readonly imageProvider: Prisma.FieldRef<"ProductLandingPage", 'LandingPageImageProvider'>
   readonly finalImageUrl: Prisma.FieldRef<"ProductLandingPage", 'String'>
   readonly sections: Prisma.FieldRef<"ProductLandingPage", 'Json'>
+  readonly design: Prisma.FieldRef<"ProductLandingPage", 'Json'>
   readonly errorMessage: Prisma.FieldRef<"ProductLandingPage", 'String'>
   readonly createdAt: Prisma.FieldRef<"ProductLandingPage", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ProductLandingPage", 'DateTime'>

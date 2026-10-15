@@ -1,7 +1,6 @@
 import { join, extname } from 'node:path'
 import * as fs from 'node:fs'
 import * as crypto from 'node:crypto'
-import sharp from 'sharp'
 
 // Same local-disk convention as admin/upload.controller.ts (UPLOADS_DIR,
 // served statically at /uploads/) — generated images are just another kind
@@ -51,45 +50,18 @@ export async function fetchImageAsInline(url: string): Promise<{ base64: string;
   return { base64: buffer.toString('base64'), mimeType: contentType.split(';')[0] }
 }
 
-// Vertically concatenates section images (each already includes its own
-// text/effects, baked in by the model) into one long landing-page image.
-// Sections may come back from Gemini at slightly different widths — resize
-// each to a common width before stacking so the seams line up cleanly.
-//
-// Output is WebP, not JPEG — this final image is the whole page's LCP
-// element (loaded eager/fetchpriority=high on /lp/:productSlug/:number) and a naive
-// vertical stack of 5-7 full-bleed sections at quality 88 JPEG routinely
-// landed several MB, which is exactly what made the page slow to load.
-// WebP at quality 78 is typically 25-35% smaller than equivalent-quality
-// JPEG for this kind of photographic+text content, with no visible
-// difference at web viewing sizes.
-export async function stitchSectionsVertically(sectionImageUrls: string[], targetWidth = 1024): Promise<string> {
-  const buffers = await Promise.all(
-    sectionImageUrls.map(async (url) => {
-      const path = join(process.cwd(), url.replace(/^\/uploads\//, 'uploads/'))
-      return sharp(path).resize({ width: targetWidth }).toBuffer()
-    })
-  )
+// Reads an image (local upload or external URL) as a raw buffer.
+export async function loadImageBuffer(url: string): Promise<Buffer> {
+  if (url.startsWith('/uploads/')) return fs.readFileSync(join(process.cwd(), url.replace(/^\//, '')))
+  const response = await fetch(url, { signal: AbortSignal.timeout(15_000) })
+  if (!response.ok) throw new Error(`Could not fetch image (${response.status}): ${url}`)
+  return Buffer.from(await response.arrayBuffer())
+}
 
-  const metas = await Promise.all(buffers.map((b) => sharp(b).metadata()))
-  const totalHeight = metas.reduce((sum, m) => sum + (m.height ?? 0), 0)
-
-  let offsetY = 0
-  const composite: { input: Buffer; top: number; left: number }[] = []
-  for (let i = 0; i < buffers.length; i++) {
-    composite.push({ input: buffers[i], top: offsetY, left: 0 })
-    offsetY += metas[i].height ?? 0
-  }
-
-  const finalBuffer = await sharp({
-    create: { width: targetWidth, height: totalHeight, channels: 3, background: '#ffffff' }
-  })
-    .composite(composite)
-    .webp({ quality: 78, effort: 4 })
-    .toBuffer()
-
+// Saves a buffer under /uploads and returns its public path.
+export function saveBuffer(buffer: Buffer, ext: '.webp' | '.png' | '.jpg'): string {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true })
-  const filename = `${crypto.randomUUID()}.webp`
-  fs.writeFileSync(join(UPLOADS_DIR, filename), finalBuffer)
+  const filename = `${crypto.randomUUID()}${ext}`
+  fs.writeFileSync(join(UPLOADS_DIR, filename), buffer)
   return `/uploads/${filename}`
 }

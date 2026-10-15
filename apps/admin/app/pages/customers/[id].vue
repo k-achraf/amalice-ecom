@@ -13,12 +13,28 @@ interface CustomerDetail {
 const route = useRoute()
 const id = route.params.id as string
 useHead({ title: 'Customer' })
+const api = useAdminApi()
+const { run } = useApiAction()
+const { isSuperAdmin, confirmDelete } = useDangerDelete()
 
 const { data: customer, pending, error } = await useAdminFetch<CustomerDetail>(`/admin/customers/${id}`, { key: `admin-customer-${id}` })
+
+// Permanent delete (SuperAdmin). A customer with orders is deleted together with them.
+async function deleteCustomer() {
+  if (!customer.value) return
+  const count = customer.value.orders?.length ?? 0
+  const label = customer.value.name ?? customer.value.phone
+  if (!confirmDelete(`Permanently delete ${label}${count ? ` AND their ${count} order${count === 1 ? '' : 's'} (items, shipments, reconciliation)` : ''}?`)) return
+  const res = await run(() => api(`/admin/customers/${id}`, { method: 'DELETE', query: count ? { withOrders: '1' } : {} }), { success: 'Customer deleted', errorFallback: 'Could not delete the customer' })
+  if (res !== undefined) await navigateTo('/customers')
+}
 </script>
 
 <template>
   <AdsPage :title="customer?.name ?? customer?.phone ?? 'Customer'" :description="customer?.name ? customer.phone : undefined">
+    <template v-if="isSuperAdmin && customer" #actions>
+      <button class="btn btn-danger" type="button" @click="deleteCustomer"><AdsIcon name="i-lucide-trash-2" />Delete</button>
+    </template>
     <template #breadcrumb>
       <NuxtLink to="/customers">Customers</NuxtLink><AdsIcon name="i-lucide-chevron-right" style="width: 14px; height: 14px" /><span>{{ customer?.name ?? customer?.phone ?? 'Customer' }}</span>
     </template>

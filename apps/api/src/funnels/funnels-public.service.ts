@@ -59,8 +59,15 @@ export class FunnelsPublicService {
     const landingStep = enabledSteps.find((s) => s.type === 'Landing')
     const rawLanding = (landingStep?.config as FunnelStepConfig | null)?.landing
     const parsed = rawLanding ? LandingSettingsSchema.safeParse(rawLanding) : null
-    // No landing step ("Quick order") → a compact page: photos, title, form.
-    const landing: LandingSettings = parsed?.success ? parsed.data : defaultLandingSettings(landingStep ? 'classic' : 'compact')
+    // No landing step ("Quick order") → a compact page: photos, title, form — and the
+    // product description right below the form, so a visitor can still read about
+    // the product before ordering.
+    const fallback = defaultLandingSettings(landingStep ? 'classic' : 'compact')
+    const landing: LandingSettings = parsed?.success
+      ? parsed.data
+      : landingStep
+        ? fallback
+        : { ...fallback, sections: [{ type: 'description', enabled: true }, ...fallback.sections.filter((x) => x.type !== 'description')] }
 
     let generatedImageUrl: string | null = null
     if (landing.generatedPageId) {

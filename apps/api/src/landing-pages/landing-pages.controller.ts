@@ -6,6 +6,9 @@ import {
   ImproveLandingPageDescriptionSchema,
   RegenerateLandingPageSectionSchema,
   UpdateLandingPageSchema,
+  UpdateLandingPageSectionSchema,
+  UpdateLandingPageDesignSchema,
+  GenerateLandingCopySchema,
   type PublicLandingPage
 } from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
@@ -21,6 +24,9 @@ class GenerateLandingPageDto extends createZodDto(GenerateLandingPageSchema) {}
 class UpdateLandingPageDto extends createZodDto(UpdateLandingPageSchema) {}
 class RegenerateLandingPageSectionDto extends createZodDto(RegenerateLandingPageSectionSchema) {}
 class ImproveLandingPageDescriptionDto extends createZodDto(ImproveLandingPageDescriptionSchema) {}
+class UpdateLandingPageSectionDto extends createZodDto(UpdateLandingPageSectionSchema) {}
+class UpdateLandingPageDesignDto extends createZodDto(UpdateLandingPageDesignSchema) {}
+class GenerateLandingCopyDto extends createZodDto(GenerateLandingCopySchema) {}
 
 interface AuthedRequest extends Request {
   user: AdminJwtPayload
@@ -96,6 +102,36 @@ export class LandingPagesController {
     return this.landingPages.regenerateSection(id, sectionId, actor, body.instructions)
   }
 
+  // Fix one section's wording by hand — re-drawn instantly, no AI call.
+  @Put('admin/landing-pages/:id/sections/:sectionId')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager')
+  updateSection(@Param('id') id: string, @Param('sectionId') sectionId: string, @Body() body: UpdateLandingPageSectionDto, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.landingPages.updateSection(id, sectionId, body, actor)
+  }
+
+  // Change style / accent colour — whole page re-drawn instantly, no AI call.
+  @Put('admin/landing-pages/:id/design')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager')
+  updateDesign(@Param('id') id: string, @Body() body: UpdateLandingPageDesignDto, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.landingPages.updateDesign(id, body, actor)
+  }
+
+  // AI-written headline / subheadline / button label for a funnel landing page.
+  @Post('admin/products/:productId/landing-copy')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager')
+  @Throttle({ default: { limit: 10, ttl: 5 * 60 * 1000 } })
+  suggestCopy(@Param('productId') productId: string, @Body() body: GenerateLandingCopyDto) {
+    return this.landingPages.suggestCopy(productId, body)
+  }
+
   @Put('admin/landing-pages/:id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -108,7 +144,7 @@ export class LandingPagesController {
   @Delete('admin/landing-pages/:id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('SuperAdmin', 'OpsManager')
+  @Roles('SuperAdmin')
   async remove(@Param('id') id: string, @Req() req: AuthedRequest) {
     const actor: AuditActor = { id: req.user.sub, email: req.user.email }
     await this.landingPages.remove(id, actor)

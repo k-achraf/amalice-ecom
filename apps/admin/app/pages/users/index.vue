@@ -31,6 +31,13 @@ async function createUser() {
   saving.value = false
 }
 
+const { confirmDelete } = useDangerDelete()
+async function deleteUser(user: AdminUser) {
+  if (!confirmDelete(`Permanently delete the admin account ${user.email}?`)) return
+  await run(() => api(`/admin/users/${user.id}`, { method: 'DELETE' }), { success: 'User deleted', errorFallback: 'Could not delete the user' })
+  await refresh()
+}
+
 async function toggle(user: AdminUser) {
   await run(() => api(`/admin/users/${user.id}/${user.active ? 'deactivate' : 'reactivate'}`, { method: 'POST' }), {
     success: user.active ? 'User deactivated' : 'User reactivated',
@@ -99,7 +106,7 @@ const visible = computed(() => {
                 </td>
                 <td>{{ u.roleName }}</td>
                 <td><span class="pill" :class="u.active ? 'active' : 'suspended'">{{ u.active ? 'Active' : 'Deactivated' }}</span></td>
-                <td class="num"><button v-if="u.email !== auth.user?.email" class="btn btn-sm" :class="{ 'btn-danger': u.active }" type="button" @click="toggle(u)">{{ u.active ? 'Deactivate' : 'Reactivate' }}</button></td>
+                <td class="num"><button v-if="u.email !== auth.user?.email" class="btn btn-sm" :class="{ 'btn-danger': u.active }" type="button" @click="toggle(u)">{{ u.active ? 'Deactivate' : 'Reactivate' }}</button><button v-if="u.email !== auth.user?.email" class="btn btn-sm btn-danger" type="button" style="margin-left: 6px" @click="deleteUser(u)"><AdsIcon name="i-lucide-trash-2" />Delete</button></td>
               </tr>
             </tbody>
           </table>

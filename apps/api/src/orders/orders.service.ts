@@ -122,6 +122,7 @@ export class OrdersService {
       where: {
         customerId,
         isAbandoned: false,
+        archived: false,
         createdAt: { gte: since },
         items: { some: { productId: { in: productIds } } }
       },

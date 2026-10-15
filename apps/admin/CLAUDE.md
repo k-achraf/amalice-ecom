@@ -25,6 +25,10 @@ The admin implements the design in `/design` (Leezil brand: Outfit, teal/ivory/b
 - Toasts: `useToast().add({ title, color })` (adapter in `composables/useToast.ts`) or `toast` from `vue-sonner`; `<Toaster>` is in `app.vue`.
 - `useAdminApi()` is deliberately typed as a plain `(url, opts) => Promise<T>` client — inferring full `$fetch` overloads against Nuxt's route types overflows TypeScript's stack.
 
+## Call center
+
+`pages/call-center/index.vue` (queues, paginated, search, 30 s refresh), `drop.vue` (server-claimed one-at-a-time dialer, shortcuts 1–5/S/N) and `reports.vue` (managers) all work an order through the shared `components/CallWorkspace.vue` — outcomes go to `POST /admin/orders/:id/call` (never the generic transition endpoint, which rejects same-state retries). Message templates / WhatsApp+SMS links and cancel reasons live in `packages/shared/src/call-center.ts`.
+
 ## Auth
 
 JWT access token TTL is 12h (set in `apps/api`) — this SPA has no silent-refresh flow, so a 401 just clears the session and bounces to `/login`. If you build a refresh flow, that TTL choice should be revisited.

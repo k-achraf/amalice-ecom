@@ -34,7 +34,8 @@ export class ShippingCompaniesService {
 
   private toView(
     provider: ShippingCompanyProvider,
-    row: { id: string; baseUrl: string; apiToken: string | null; webhookSecret: string | null; isLinked: boolean; isDefault: boolean; lastSyncedAt: Date | null } | null
+    row: { id: string; baseUrl: string; apiToken: string | null; webhookSecret: string | null; isLinked: boolean; isDefault: boolean; lastSyncedAt: Date | null; locationsSyncedAt: Date | null } | null,
+    communesCount = 0
   ): ShippingCompanyView {
     const catalog = PROVIDER_CATALOG[provider]
     return {
@@ -46,6 +47,8 @@ export class ShippingCompaniesService {
       isLinked: row?.isLinked ?? false,
       isDefault: row?.isDefault ?? false,
       lastSyncedAt: row?.lastSyncedAt?.toISOString() ?? null,
+      locationsSyncedAt: row?.locationsSyncedAt?.toISOString() ?? null,
+      communesCount,
       // Only buildable once the row (and its real id) exists — see
       // ShippingCompanyViewSchema's comment.
       webhookUrl: row?.id ? `${this.config.get('PUBLIC_API_URL', { infer: true })}/webhooks/${SHIPPING_COMPANY_WEBHOOK_SLUG[provider]}/${row.id}` : null,
@@ -56,9 +59,12 @@ export class ShippingCompaniesService {
   async list(): Promise<ShippingCompanyView[]> {
     const rows = await this.prisma.shippingCompany.findMany()
     const byProvider = new Map(rows.map((r) => [r.provider, r]))
-    return (Object.keys(PROVIDER_CATALOG) as ShippingCompanyProvider[]).map((provider) =>
-      this.toView(provider, byProvider.get(provider) ?? null)
-    )
+    const counts = await this.prisma.shippingCompanyCommune.groupBy({ by: ['shippingCompanyId'], _count: { _all: true } })
+    const countById = new Map(counts.map((c) => [c.shippingCompanyId, c._count._all]))
+    return (Object.keys(PROVIDER_CATALOG) as ShippingCompanyProvider[]).map((provider) => {
+      const row = byProvider.get(provider) ?? null
+      return this.toView(provider, row, row ? (countById.get(row.id) ?? 0) : 0)
+    })
   }
 
   // Every supported provider speaks the same Ecotrack API, so one client serves them all.
@@ -110,6 +116,14 @@ export class ShippingCompaniesService {
       metadata: { linked: true }
     })
 
+    // Best-effort: pull the courier's commune list right away so address
+    // checks work from the first order. A failure here must not undo the link.
+    const synced = await this.syncLocations(provider, null).then(() => true, () => false)
+    if (synced) {
+      const fresh = await this.prisma.shippingCompany.findUnique({ where: { provider } })
+      const count = await this.prisma.shippingCompanyCommune.count({ where: { shippingCompanyId: row.id } })
+      return this.toView(provider, fresh ?? row, count)
+    }
     return this.toView(provider, row)
   }
 
@@ -303,6 +317,40 @@ export class ShippingCompaniesService {
       deliveryPriceCents: r.deliveryPriceCents,
       deliveryStopdeskPriceCents: r.deliveryStopdeskPriceCents
     }))
+  }
+
+  // Pulls the courier's own wilaya/commune list (get/wilayas + get/communes):
+  // the exact spellings it accepts and where a stop desk exists. Orders are
+  // checked against this before dispatch, so a misspelled commune is caught
+  // while the agent is still on the phone with the customer, not when the
+  // courier rejects the parcel. Replaces the stored list atomically.
+  async syncLocations(provider: ShippingCompanyProvider, actor: AuditActor | null): Promise<{ communesCount: number; wilayasCount: number; locationsSyncedAt: string }> {
+    const company = await this.prisma.shippingCompany.findUnique({ where: { provider } })
+    if (!company?.isLinked || !company.apiToken) throw new BadRequestException(`Link ${PROVIDER_CATALOG[provider].name} before syncing locations.`)
+
+    const client = this.client(provider)
+    const communes = await client.getCommunes(company.baseUrl, company.apiToken)
+    if (!communes.length) throw new BadRequestException('The courier returned no communes.')
+    const wilayas = await client.getWilayas(company.baseUrl, company.apiToken).catch(() => [])
+    const active = new Set(wilayas.map((w) => String(w.wilaya_id)))
+
+    const rows = communes
+      .filter((c) => c.nom && c.wilaya_id != null && (active.size === 0 || active.has(String(c.wilaya_id))))
+      .map((c) => ({
+        shippingCompanyId: company.id,
+        wilayaId: String(c.wilaya_id),
+        name: c.nom,
+        postalCode: c.code_postal ? String(c.code_postal) : null,
+        hasStopDesk: Number(c.has_stop_desk) === 1
+      }))
+    const locationsSyncedAt = new Date()
+    await this.prisma.$transaction([
+      this.prisma.shippingCompanyCommune.deleteMany({ where: { shippingCompanyId: company.id } }),
+      this.prisma.shippingCompanyCommune.createMany({ data: rows, skipDuplicates: true }),
+      this.prisma.shippingCompany.update({ where: { id: company.id }, data: { locationsSyncedAt } })
+    ])
+    if (actor) await this.audit.log({ actor, action: 'Update', entity: 'ShippingCompany', entityId: provider, metadata: { syncedLocations: rows.length } })
+    return { communesCount: rows.length, wilayasCount: new Set(rows.map((r) => r.wilayaId)).size, locationsSyncedAt: locationsSyncedAt.toISOString() }
   }
 
   // Explicit, admin-triggered copy of synced tariffs into the live

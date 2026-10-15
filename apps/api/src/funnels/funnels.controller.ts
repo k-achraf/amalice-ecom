@@ -63,6 +63,7 @@ export class FunnelsController {
     return this.funnels.update(id, body, actorOf(req))
   }
 
+  @Roles('SuperAdmin')
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req: AuthedRequest) {
     return this.funnels.remove(id, actorOf(req))

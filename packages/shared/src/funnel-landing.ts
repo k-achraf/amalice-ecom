@@ -89,7 +89,7 @@ export const LANDING_TEMPLATES: LandingTemplate[] = [
     description: 'A small photo strip so the order form is on screen straight away.',
     bestFor: 'Impulse buys and warm traffic',
     layout: 'compact',
-    sections: ['benefits', 'guarantee'],
+    sections: ['description', 'benefits', 'guarantee'],
     defaults: { ctaLabel: 'اطلب الآن', accent: 'teal', urgency: false, addressField: 'optional' }
   },
   {
@@ -104,7 +104,7 @@ export const LANDING_TEMPLATES: LandingTemplate[] = [
   {
     id: 'image-page',
     name: 'Image page',
-    description: 'The same top, then the long AI-generated image from the product’s Landing Page tab.',
+    description: 'The same top, then a long page written and designed by AI — generate it right in the editor.',
     bestFor: 'Ads already built around a long image',
     layout: 'image',
     sections: ['guarantee'],

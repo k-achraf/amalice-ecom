@@ -2,6 +2,9 @@ import { Global, Module } from '@nestjs/common'
 import { AdminController } from './admin.controller'
 import { UploadController } from './upload.controller'
 import { AdminOrdersService } from './admin-orders.service'
+import { AdminCallCenterService } from './admin-call-center.service'
+import { AdminDeleteService } from './admin-delete.service'
+import { AdminOrderTimelineService } from './admin-order-timeline.service'
 import { AdminCatalogService } from './admin-catalog.service'
 import { AdminUsersService } from './admin-users.service'
 import { AdminStatsService } from './admin-stats.service'
@@ -20,7 +23,7 @@ import { LandingPagesModule } from '../landing-pages/landing-pages.module'
   // Gemini client the landing-page builder uses, rather than a second one.
   imports: [CommonModule, OrderItemsModule, AppsModule, LandingPagesModule],
   controllers: [AdminController, UploadController],
-  providers: [AdminOrdersService, AdminCatalogService, AdminUsersService, AdminStatsService, AdminProductManagementService, AdminShippingService],
-  exports: [AdminOrdersService, AdminCatalogService, AdminUsersService, AdminStatsService, AdminProductManagementService, AdminShippingService]
+  providers: [AdminOrdersService, AdminCallCenterService, AdminDeleteService, AdminOrderTimelineService, AdminCatalogService, AdminUsersService, AdminStatsService, AdminProductManagementService, AdminShippingService],
+  exports: [AdminOrdersService, AdminCallCenterService, AdminCatalogService, AdminUsersService, AdminStatsService, AdminProductManagementService, AdminShippingService]
 })
 export class AdminModule {}

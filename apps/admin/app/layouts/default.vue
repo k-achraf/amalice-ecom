@@ -84,13 +84,23 @@ function isActive(to: string) {
 // "Call center" badge = orders still waiting for a confirmation call.
 const callCount = ref(0)
 async function loadCounts() {
-  if (!auth.token || !['SuperAdmin', 'OpsManager', 'Finance', 'Warehouse'].includes(auth.role ?? '')) return
+  if (!auth.token) return
   try {
-    const s = await api<DashboardStats>('/admin/stats')
-    callCount.value = s.pendingCallCenterCount ?? 0
+    if (['SuperAdmin', 'OpsManager', 'Finance', 'Warehouse'].includes(auth.role ?? '')) {
+      const s = await api<DashboardStats>('/admin/stats')
+      callCount.value = s.pendingCallCenterCount ?? 0
+    } else if (['Support', 'CallCenterAgent'].includes(auth.role ?? '')) {
+      // Agents can't read the dashboard stats: use what is workable right now.
+      const s = await api<{ queue: { new: number; noAnswer: number; postponed: number } }>('/admin/call-center/stats')
+      callCount.value = s.queue.new + s.queue.noAnswer + s.queue.postponed
+    }
   } catch { /* badge is decorative */ }
 }
-onMounted(loadCounts)
+onMounted(() => {
+  loadCounts()
+  const t = setInterval(loadCounts, 60_000)
+  onBeforeUnmount(() => clearInterval(t))
+})
 
 const menuOpen = ref(false)
 watch(() => route.path, () => { menuOpen.value = false })

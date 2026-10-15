@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   NotFoundException,
   Param,
@@ -24,10 +25,15 @@ import {
   CreateProductUpsellSchema,
   UpdateProductUpsellSchema,
   UpdateOrderNotesSchema,
+  LogCallSchema,
+  BulkDeleteOrdersSchema,
+  CALL_CENTER_WORK_STATES,
   UpdateOrderPriceSchema,
   TransitionOrderSchema,
   UpdateOrderCustomerInfoSchema,
   OrderState,
+  TIMELINE_CATEGORIES,
+  type TimelineCategory,
   ProductListQuerySchema,
   GenerateProductContentSchema,
   type AdjustStock,
@@ -37,6 +43,9 @@ import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
 import { AdminCatalogService } from './admin-catalog.service'
 import { AdminOrdersService } from './admin-orders.service'
+import { AdminCallCenterService } from './admin-call-center.service'
+import { AdminDeleteService } from './admin-delete.service'
+import { AdminOrderTimelineService } from './admin-order-timeline.service'
 import { AdminStatsService } from './admin-stats.service'
 import { AdminUsersService } from './admin-users.service'
 import { AdminProductManagementService } from './admin-product-management.service'
@@ -64,6 +73,8 @@ class UpdateProductUpsellDto extends createZodDto(UpdateProductUpsellSchema) {}
 class UpdateOrderNotesDto extends createZodDto(UpdateOrderNotesSchema) {}
 class UpdateOrderPriceDto extends createZodDto(UpdateOrderPriceSchema) {}
 class TransitionOrderDto extends createZodDto(TransitionOrderSchema) {}
+class LogCallDto extends createZodDto(LogCallSchema) {}
+class BulkDeleteOrdersDto extends createZodDto(BulkDeleteOrdersSchema) {}
 class UpdateOrderCustomerInfoDto extends createZodDto(UpdateOrderCustomerInfoSchema) {}
 class ProductListQueryDto extends createZodDto(ProductListQuerySchema) {}
 class GenerateProductContentDto extends createZodDto(GenerateProductContentSchema) {}
@@ -83,6 +94,9 @@ function actorFrom(req: AuthedRequest): AuditActor {
 export class AdminController {
   constructor(
     private readonly orders: AdminOrdersService,
+    private readonly callCenter: AdminCallCenterService,
+    private readonly deleter: AdminDeleteService,
+    private readonly timeline: AdminOrderTimelineService,
     private readonly catalog: AdminCatalogService,
     private readonly usersSvc: AdminUsersService,
     private readonly stats: AdminStatsService,
@@ -124,10 +138,20 @@ export class AdminController {
     @Query('page') page: string = '1',
     @Query('pageSize') pageSize: string = '20',
     @Query('abandoned') abandoned: 'only' | 'exclude' | undefined,
-    @Query('archived') archived: 'only' | 'exclude' | undefined
+    @Query('archived') archived: 'only' | 'exclude' | undefined,
+    @Query('sort') sort: 'oldest' | 'followup' | undefined,
+    @Req() req: AuthedRequest
   ) {
+    // A CallCenterAgent only ever sees the call-center queues — this is the
+    // real boundary (hiding the Orders nav link is just UX).
+    const agentOnly = req.user.role === 'CallCenterAgent'
+    if (agentOnly && state && !CALL_CENTER_WORK_STATES.includes(state)) {
+      throw new ForbiddenException('Call-center agents can only list call-center orders')
+    }
     return this.orders.list({
       state,
+      states: agentOnly ? CALL_CENTER_WORK_STATES : undefined,
+      sort,
       search,
       courierId,
       from: fromIso ? new Date(fromIso) : undefined,
@@ -139,30 +163,105 @@ export class AdminController {
     })
   }
 
-  // Call Center's Drop Queue (ADM-11) — registered before orders/:id so
-  // "drop-queue" isn't swallowed as an :id param.
-  @Get('orders/drop-queue')
-  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
-  dropQueue(@Query('pageSize') pageSize: string = '100') {
-    return this.orders.dropQueue(Number(pageSize))
+  // ---- Order tracking -------------------------------------------------------
+  // Latest operations across all orders (status changes, edits, calls, courier
+  // events). Registered before orders/:id so "activity" isn't taken as an id.
+  @Get('orders/activity')
+  @Roles('SuperAdmin', 'OpsManager')
+  orderActivity(
+    @Query('before') before: string | undefined,
+    @Query('limit') limit: string = '50',
+    @Query('category') category: string | undefined,
+    @Query('actor') actor: string | undefined
+  ) {
+    const parsed = before ? new Date(before) : undefined
+    return this.timeline.activity({
+      before: parsed && !Number.isNaN(parsed.getTime()) ? parsed : undefined,
+      limit: Math.min(Math.max(Number(limit) || 50, 1), 200),
+      category: TIMELINE_CATEGORIES.includes(category as TimelineCategory) ? (category as TimelineCategory) : undefined,
+      actor: actor?.trim() || undefined
+    })
   }
 
-  // Drop Queue's stats cards — today's real Confirmed/No-answer/Wrong-number/
-  // Postponed/Cancelled counts across the whole call-center team, from
-  // AuditLog (see AdminOrdersService.todayCallCenterStats). Also registered
-  // before orders/:id for the same reason as drop-queue above.
-  @Get('orders/call-center-stats')
+  // Everything that happened to one order, oldest first, with milestones.
+  @Get('orders/:id/timeline')
+  @Roles('SuperAdmin', 'OpsManager', 'Finance', 'Support', 'Warehouse', 'CallCenterAgent')
+  orderTimeline(@Param('id') id: string, @Req() req: AuthedRequest) {
+    return this.timeline.timeline(id, req.user.role)
+  }
+
+  // ---- Call center -------------------------------------------------------
+  // Registered before orders/:id so these literal paths aren't swallowed as an :id.
+  @Post('call-center/claim-next')
   @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
-  callCenterStats() {
-    return this.orders.todayCallCenterStats()
+  claimNext(@Req() req: AuthedRequest) {
+    return this.callCenter.claimNext(actorFrom(req))
+  }
+
+  @Get('call-center/stats')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  callCenterStats(@Req() req: AuthedRequest) {
+    return this.callCenter.stats(actorFrom(req))
+  }
+
+  // Per-agent performance and conversion reporting: managers only.
+  @Get('call-center/report')
+  @Roles('SuperAdmin', 'OpsManager')
+  callCenterReport(@Query('from') fromIso: string | undefined, @Query('to') toIso: string | undefined) {
+    const to = toIso ? new Date(toIso) : new Date()
+    const from = fromIso ? new Date(fromIso) : new Date(to.getTime() - 7 * 24 * 3600 * 1000)
+    if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) throw new ForbiddenException('Invalid date range')
+    return this.callCenter.report(from, to)
+  }
+
+  @Post('orders/:id/call')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  logCall(@Param('id') id: string, @Body() body: LogCallDto, @Req() req: AuthedRequest) {
+    const manager = req.user.role === 'SuperAdmin' || req.user.role === 'OpsManager'
+    return this.callCenter.logCall(id, body, actorFrom(req), manager)
+  }
+
+  @Get('orders/:id/calls')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  orderCalls(@Param('id') id: string) {
+    return this.callCenter.calls(id)
+  }
+
+  @Get('orders/:id/customer-history')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  customerHistory(@Param('id') id: string) {
+    return this.callCenter.customerHistory(id)
+  }
+
+  @Post('orders/:id/lock')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  lockOrder(@Param('id') id: string, @Req() req: AuthedRequest) {
+    return this.callCenter.touchLock(id, actorFrom(req))
+  }
+
+  @Post('orders/:id/release')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  releaseOrder(@Param('id') id: string, @Req() req: AuthedRequest) {
+    return this.callCenter.release(id, actorFrom(req))
+  }
+
+  @Post('orders/:id/skip')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  skipOrder(@Param('id') id: string, @Req() req: AuthedRequest) {
+    return this.callCenter.skip(id, actorFrom(req))
   }
 
   // CallCenterAgent included: an order reached via their own Call Center/
   // Drop Queue pages links here for the full detail view.
   @Get('orders/:id')
   @Roles('SuperAdmin', 'OpsManager', 'Finance', 'Support', 'CallCenterAgent')
-  orderDetail(@Param('id') id: string) {
-    return this.orders.findOne(id)
+  async orderDetail(@Param('id') id: string, @Req() req: AuthedRequest) {
+    const order = await this.orders.findOne(id)
+    // Agents may open orders still in (or just confirmed out of) the call center.
+    if (req.user.role === 'CallCenterAgent' && !CALL_CENTER_WORK_STATES.includes(order.state) && order.state !== 'Confirmed') {
+      throw new ForbiddenException('This order is outside the call center')
+    }
+    return order
   }
 
   // Soft-hide (see Order.archived's Prisma comment) — scoped tighter than
@@ -188,7 +287,7 @@ export class AdminController {
   @Post('orders/:id/transition')
   @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
   transition(@Param('id') id: string, @Body() body: TransitionOrderDto, @Req() req: AuthedRequest) {
-    return this.orders.transition(id, body.to, actorFrom(req), body.postponedUntil)
+    return this.orders.transition(id, body.to, actorFrom(req), body.postponedUntil, req.user.role)
   }
 
   // Call-center notes — free text, same role set as transition() since it's
@@ -443,6 +542,39 @@ export class AdminController {
   @Roles('SuperAdmin')
   deleteAttribute(@Param('id') id: string, @Req() req: AuthedRequest) {
     return this.productMgmt.deleteAttribute(id, actorFrom(req))
+  }
+
+  // ---- Permanent deletion: SuperAdmin only ----------------------------------
+  // Real deletes (see AdminDeleteService) — every one is audit-logged with a
+  // snapshot. Everyone else can only archive/hide.
+  @Delete('orders/:id')
+  @Roles('SuperAdmin')
+  deleteOrder(@Param('id') id: string, @Req() req: AuthedRequest) {
+    return this.deleter.deleteOrder(id, actorFrom(req))
+  }
+
+  @Post('orders/bulk-delete')
+  @Roles('SuperAdmin')
+  bulkDeleteOrders(@Body() body: BulkDeleteOrdersDto, @Req() req: AuthedRequest) {
+    return this.deleter.deleteOrders(body.orderIds, actorFrom(req))
+  }
+
+  @Delete('products/:id')
+  @Roles('SuperAdmin')
+  deleteProduct(@Param('id') id: string, @Req() req: AuthedRequest) {
+    return this.deleter.deleteProduct(id, actorFrom(req))
+  }
+
+  @Delete('customers/:id')
+  @Roles('SuperAdmin')
+  deleteCustomer(@Param('id') id: string, @Query('withOrders') withOrders: string | undefined, @Req() req: AuthedRequest) {
+    return this.deleter.deleteCustomer(id, withOrders === '1' || withOrders === 'true', actorFrom(req))
+  }
+
+  @Delete('users/:id')
+  @Roles('SuperAdmin')
+  deleteAdminUser(@Param('id') id: string, @Req() req: AuthedRequest) {
+    return this.deleter.deleteAdminUser(id, actorFrom(req))
   }
 
   // ---- ADM-06 users & roles ----------------------------------------------

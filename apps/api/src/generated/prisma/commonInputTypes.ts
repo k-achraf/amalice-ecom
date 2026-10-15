@@ -352,6 +352,13 @@ export type DateTimeNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
 }
 
+export type EnumCourierOperationFilter<$PrismaModel = never> = {
+  equals?: $Enums.CourierOperation | Prisma.EnumCourierOperationFieldRefInput<$PrismaModel>
+  in?: $Enums.CourierOperation[] | Prisma.ListEnumCourierOperationFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CourierOperation[] | Prisma.ListEnumCourierOperationFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCourierOperationFilter<$PrismaModel> | $Enums.CourierOperation
+}
+
 export type EnumOrderStateWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.OrderState | Prisma.EnumOrderStateFieldRefInput<$PrismaModel>
   in?: $Enums.OrderState[] | Prisma.ListEnumOrderStateFieldRefInput<$PrismaModel>
@@ -394,6 +401,33 @@ export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
   _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
+}
+
+export type EnumCourierOperationWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CourierOperation | Prisma.EnumCourierOperationFieldRefInput<$PrismaModel>
+  in?: $Enums.CourierOperation[] | Prisma.ListEnumCourierOperationFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CourierOperation[] | Prisma.ListEnumCourierOperationFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCourierOperationWithAggregatesFilter<$PrismaModel> | $Enums.CourierOperation
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCourierOperationFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCourierOperationFilter<$PrismaModel>
+}
+
+export type EnumCallOutcomeFilter<$PrismaModel = never> = {
+  equals?: $Enums.CallOutcome | Prisma.EnumCallOutcomeFieldRefInput<$PrismaModel>
+  in?: $Enums.CallOutcome[] | Prisma.ListEnumCallOutcomeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CallOutcome[] | Prisma.ListEnumCallOutcomeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCallOutcomeFilter<$PrismaModel> | $Enums.CallOutcome
+}
+
+export type EnumCallOutcomeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CallOutcome | Prisma.EnumCallOutcomeFieldRefInput<$PrismaModel>
+  in?: $Enums.CallOutcome[] | Prisma.ListEnumCallOutcomeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CallOutcome[] | Prisma.ListEnumCallOutcomeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCallOutcomeWithAggregatesFilter<$PrismaModel> | $Enums.CallOutcome
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCallOutcomeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCallOutcomeFilter<$PrismaModel>
 }
 
 export type EnumProductOfferTypeFilter<$PrismaModel = never> = {
@@ -1073,6 +1107,13 @@ export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
 }
 
+export type NestedEnumCourierOperationFilter<$PrismaModel = never> = {
+  equals?: $Enums.CourierOperation | Prisma.EnumCourierOperationFieldRefInput<$PrismaModel>
+  in?: $Enums.CourierOperation[] | Prisma.ListEnumCourierOperationFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CourierOperation[] | Prisma.ListEnumCourierOperationFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCourierOperationFilter<$PrismaModel> | $Enums.CourierOperation
+}
+
 export type NestedEnumOrderStateWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.OrderState | Prisma.EnumOrderStateFieldRefInput<$PrismaModel>
   in?: $Enums.OrderState[] | Prisma.ListEnumOrderStateFieldRefInput<$PrismaModel>
@@ -1115,6 +1156,33 @@ export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
   _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumCourierOperationWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CourierOperation | Prisma.EnumCourierOperationFieldRefInput<$PrismaModel>
+  in?: $Enums.CourierOperation[] | Prisma.ListEnumCourierOperationFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CourierOperation[] | Prisma.ListEnumCourierOperationFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCourierOperationWithAggregatesFilter<$PrismaModel> | $Enums.CourierOperation
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCourierOperationFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCourierOperationFilter<$PrismaModel>
+}
+
+export type NestedEnumCallOutcomeFilter<$PrismaModel = never> = {
+  equals?: $Enums.CallOutcome | Prisma.EnumCallOutcomeFieldRefInput<$PrismaModel>
+  in?: $Enums.CallOutcome[] | Prisma.ListEnumCallOutcomeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CallOutcome[] | Prisma.ListEnumCallOutcomeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCallOutcomeFilter<$PrismaModel> | $Enums.CallOutcome
+}
+
+export type NestedEnumCallOutcomeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CallOutcome | Prisma.EnumCallOutcomeFieldRefInput<$PrismaModel>
+  in?: $Enums.CallOutcome[] | Prisma.ListEnumCallOutcomeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CallOutcome[] | Prisma.ListEnumCallOutcomeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCallOutcomeWithAggregatesFilter<$PrismaModel> | $Enums.CallOutcome
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCallOutcomeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCallOutcomeFilter<$PrismaModel>
 }
 
 export type NestedEnumProductOfferTypeFilter<$PrismaModel = never> = {

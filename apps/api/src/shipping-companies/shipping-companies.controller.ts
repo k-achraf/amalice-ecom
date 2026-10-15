@@ -55,6 +55,13 @@ export class ShippingCompaniesController {
     return this.shippingCompanies.setWebhookSecret(parseProvider(provider), body, actor)
   }
 
+  // Pulls the courier's own commune list (valid spellings + stop-desk availability).
+  @Post(':provider/sync-locations')
+  syncLocations(@Param('provider') provider: string, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.shippingCompanies.syncLocations(parseProvider(provider), actor)
+  }
+
   @Post(':provider/unlink')
   unlink(@Param('provider') provider: string, @Req() req: AuthedRequest) {
     const actor: AuditActor = { id: req.user.sub, email: req.user.email }

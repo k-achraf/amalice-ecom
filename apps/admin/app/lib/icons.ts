@@ -3,6 +3,11 @@
 import type { Component } from 'vue'
 import {
   AlertTriangle,
+  BarChart3,
+  Lock,
+  MessageCircle,
+  Users,
+  UserCheck,
   AlignCenter,
   AlignJustify,
   AlignLeft,
@@ -115,6 +120,11 @@ import {
 
 export const ICONS: Record<string, Component> = {
   'smartphone': Smartphone,
+  'bar-chart-3': BarChart3,
+  'lock': Lock,
+  'message-circle': MessageCircle,
+  'users': Users,
+  'user-check': UserCheck,
   'shield': Shield,
   'monitor': Monitor,
   'filter': Filter,

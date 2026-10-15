@@ -57,7 +57,8 @@ export type LandingPageStatus = (typeof LandingPageStatus)[keyof typeof LandingP
 
 export const LandingPageImageProvider = {
   Gemini: 'Gemini',
-  Pollinations: 'Pollinations'
+  Pollinations: 'Pollinations',
+  Template: 'Template'
 } as const
 
 export type LandingPageImageProvider = (typeof LandingPageImageProvider)[keyof typeof LandingPageImageProvider]
@@ -85,6 +86,25 @@ export const AttributeType = {
 } as const
 
 export type AttributeType = (typeof AttributeType)[keyof typeof AttributeType]
+
+
+export const CourierOperation = {
+  Delivery: 'Delivery',
+  Exchange: 'Exchange'
+} as const
+
+export type CourierOperation = (typeof CourierOperation)[keyof typeof CourierOperation]
+
+
+export const CallOutcome = {
+  Confirmed: 'Confirmed',
+  NoAnswer: 'NoAnswer',
+  WrongNumber: 'WrongNumber',
+  Postponed: 'Postponed',
+  Cancelled: 'Cancelled'
+} as const
+
+export type CallOutcome = (typeof CallOutcome)[keyof typeof CallOutcome]
 
 
 export const FulfillmentMethod = {

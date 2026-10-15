@@ -66,6 +66,7 @@ export const ModelName = {
   Review: 'Review',
   Courier: 'Courier',
   Order: 'Order',
+  CallAttempt: 'CallAttempt',
   OrderItem: 'OrderItem',
   ProductOffer: 'ProductOffer',
   ProductUpsell: 'ProductUpsell',
@@ -87,6 +88,8 @@ export const ModelName = {
   WilayaShippingRate: 'WilayaShippingRate',
   Commune: 'Commune',
   ShippingCompany: 'ShippingCompany',
+  ShippingCompanyCommune: 'ShippingCompanyCommune',
+  ShipmentEvent: 'ShipmentEvent',
   CourierWebhookEvent: 'CourierWebhookEvent',
   CourierWebhookLog: 'CourierWebhookLog',
   ShippingCompanyTariff: 'ShippingCompanyTariff',
@@ -194,6 +197,7 @@ export const ProductLandingPageScalarFieldEnum = {
   imageProvider: 'imageProvider',
   finalImageUrl: 'finalImageUrl',
   sections: 'sections',
+  design: 'design',
   errorMessage: 'errorMessage',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -323,11 +327,39 @@ export const OrderScalarFieldEnum = {
   duplicateOfOrderId: 'duplicateOfOrderId',
   archived: 'archived',
   archivedAt: 'archivedAt',
+  assignedToId: 'assignedToId',
+  assignedToEmail: 'assignedToEmail',
+  lockedUntil: 'lockedUntil',
+  skippedUntil: 'skippedUntil',
+  callAttemptsCount: 'callAttemptsCount',
+  lastCalledAt: 'lastCalledAt',
+  deliveryNote: 'deliveryNote',
+  isFragile: 'isFragile',
+  gpsLink: 'gpsLink',
+  courierOperation: 'courierOperation',
+  exchangeProduct: 'exchangeProduct',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
+
+
+export const CallAttemptScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  agentId: 'agentId',
+  agentEmail: 'agentEmail',
+  outcome: 'outcome',
+  fromState: 'fromState',
+  toState: 'toState',
+  note: 'note',
+  reason: 'reason',
+  postponedUntil: 'postponedUntil',
+  createdAt: 'createdAt'
+} as const
+
+export type CallAttemptScalarFieldEnum = (typeof CallAttemptScalarFieldEnum)[keyof typeof CallAttemptScalarFieldEnum]
 
 
 export const OrderItemScalarFieldEnum = {
@@ -381,6 +413,14 @@ export const ShipmentScalarFieldEnum = {
   courierStatus: 'courierStatus',
   driverName: 'driverName',
   driverPhone: 'driverPhone',
+  carrierConfirmedAt: 'carrierConfirmedAt',
+  carrierFeeCents: 'carrierFeeCents',
+  returnFeeCents: 'returnFeeCents',
+  lastFailureReason: 'lastFailureReason',
+  postponedTo: 'postponedTo',
+  deskInfo: 'deskInfo',
+  activity: 'activity',
+  lastSyncedAt: 'lastSyncedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -594,11 +634,44 @@ export const ShippingCompanyScalarFieldEnum = {
   isLinked: 'isLinked',
   isDefault: 'isDefault',
   lastSyncedAt: 'lastSyncedAt',
+  locationsSyncedAt: 'locationsSyncedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type ShippingCompanyScalarFieldEnum = (typeof ShippingCompanyScalarFieldEnum)[keyof typeof ShippingCompanyScalarFieldEnum]
+
+
+export const ShippingCompanyCommuneScalarFieldEnum = {
+  id: 'id',
+  shippingCompanyId: 'shippingCompanyId',
+  wilayaId: 'wilayaId',
+  name: 'name',
+  postalCode: 'postalCode',
+  hasStopDesk: 'hasStopDesk'
+} as const
+
+export type ShippingCompanyCommuneScalarFieldEnum = (typeof ShippingCompanyCommuneScalarFieldEnum)[keyof typeof ShippingCompanyCommuneScalarFieldEnum]
+
+
+export const ShipmentEventScalarFieldEnum = {
+  id: 'id',
+  shipmentId: 'shipmentId',
+  orderId: 'orderId',
+  source: 'source',
+  kind: 'kind',
+  code: 'code',
+  title: 'title',
+  details: 'details',
+  station: 'station',
+  driver: 'driver',
+  occurredAt: 'occurredAt',
+  dedupKey: 'dedupKey',
+  raw: 'raw',
+  createdAt: 'createdAt'
+} as const
+
+export type ShipmentEventScalarFieldEnum = (typeof ShipmentEventScalarFieldEnum)[keyof typeof ShipmentEventScalarFieldEnum]
 
 
 export const CourierWebhookEventScalarFieldEnum = {

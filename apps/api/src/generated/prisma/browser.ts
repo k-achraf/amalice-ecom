@@ -93,6 +93,11 @@ export type Courier = Prisma.CourierModel
  */
 export type Order = Prisma.OrderModel
 /**
+ * Model CallAttempt
+ * 
+ */
+export type CallAttempt = Prisma.CallAttemptModel
+/**
  * Model OrderItem
  * 
  */
@@ -197,6 +202,16 @@ export type Commune = Prisma.CommuneModel
  * 
  */
 export type ShippingCompany = Prisma.ShippingCompanyModel
+/**
+ * Model ShippingCompanyCommune
+ * 
+ */
+export type ShippingCompanyCommune = Prisma.ShippingCompanyCommuneModel
+/**
+ * Model ShipmentEvent
+ * 
+ */
+export type ShipmentEvent = Prisma.ShipmentEventModel
 /**
  * Model CourierWebhookEvent
  * 

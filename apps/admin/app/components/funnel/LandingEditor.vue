@@ -26,7 +26,9 @@ const props = defineProps<{
   landingPages: ProductLandingPage[]
   saving: boolean
 }>()
-const emit = defineEmits<{ save: [landing: LandingSettings] }>()
+const emit = defineEmits<{ save: [landing: LandingSettings]; 'pages-changed': [pages: ProductLandingPage[]] }>()
+const api = useAdminApi()
+const { run } = useApiAction()
 
 // Run through the schema so settings saved before newer options existed get their defaults.
 const saved = computed<LandingSettings | null>(() => {
@@ -61,13 +63,6 @@ function move(i: number, dir: -1 | 1) {
 }
 
 const pages = computed(() => props.landingPages.filter((p) => p.status === 'Completed' && p.finalImageUrl))
-const pageOptions = computed(() => [{ label: 'None', value: '' }, ...pages.value.map((p) => ({ label: `${p.name} (#${p.number})`, value: p.id }))])
-const pageId = computed({
-  get: () => draft.value?.generatedPageId ?? '',
-  set: (v: string) => {
-    if (draft.value) draft.value.generatedPageId = v || null
-  }
-})
 const generatedImage = computed(() => pages.value.find((p) => p.id === draft.value?.generatedPageId)?.finalImageUrl ?? null)
 const headline = computed({
   get: () => draft.value?.headline ?? '',
@@ -126,6 +121,31 @@ const urgencyText = computed({
     if (draft.value) draft.value.urgencyText = v || null
   }
 })
+
+// "Write with AI": headline, subheadline and button text from the product's own
+// content (validated server-side: right language, no invented numbers or promos).
+// It only fills the fields; nothing is saved until the admin presses Save.
+const writingCopy = ref(false)
+const copyWarnings = ref<string[]>([])
+async function writeCopy() {
+  if (!draft.value) return
+  writingCopy.value = true
+  const res = await run(() => api<{ headline: string; subheadline: string; ctaLabel: string; warnings: string[] }>(`/admin/products/${props.product.id}/landing-copy`, { method: 'POST', body: { language: 'ar' } }), { errorFallback: 'Could not write the copy' })
+  writingCopy.value = false
+  if (!res || !draft.value) return
+  draft.value.headline = res.headline
+  draft.value.subheadline = res.subheadline
+  draft.value.ctaLabel = res.ctaLabel
+  copyWarnings.value = res.warnings
+}
+
+// A page that just finished generating becomes the one shown, unless one is already chosen.
+function onGenerated(page: ProductLandingPage) {
+  if (draft.value && draft.value.templateId === 'image-page' && !draft.value.generatedPageId && page.finalImageUrl) draft.value.generatedPageId = page.id
+}
+function usePage(page: ProductLandingPage) {
+  if (draft.value) draft.value.generatedPageId = page.id
+}
 
 function discard() {
   draft.value = saved.value ? structuredClone(toRaw(saved.value)) : null
@@ -192,7 +212,11 @@ function save() {
         </section>
 
         <section class="card" aria-label="Content">
-          <div class="card-head"><h2>Content</h2></div>
+          <div class="card-head">
+            <h2>Content</h2>
+            <button class="btn btn-sm" type="button" :disabled="writingCopy" @click="writeCopy"><AdsIcon name="i-lucide-sparkles" />{{ writingCopy ? 'Writing…' : 'Write with AI' }}</button>
+          </div>
+          <p v-for="w in copyWarnings" :key="w" class="notice warn"><AdsIcon name="i-lucide-alert-triangle" /><span>{{ w }}</span></p>
           <AdsField label="Headline" :help="`Leave blank to use the product name (${product.name}).`"><AdsInput v-model="headline" placeholder="e.g. The neck fan that fits in your pocket" /></AdsField>
           <AdsField label="Subheadline"><AdsTextarea v-model="subheadline" :rows="2" placeholder="One supporting sentence" /></AdsField>
         </section>
@@ -259,11 +283,13 @@ function save() {
         </section>
 
         <section v-if="template?.layout === 'image'" class="card" aria-label="Generated page">
-          <div class="card-head"><h2>Generated page</h2></div>
-          <AdsField label="Long image" help="Built in the product’s Landing Page tab (AI generation).">
-            <AdsSelect v-model="pageId" :items="pageOptions" />
-          </AdsField>
-          <p v-if="!pages.length" class="muted">No finished generated page for this product yet. <NuxtLink :to="`/products/${product.id}`">Open the product</NuxtLink> and use its Landing Page tab.</p>
+          <div class="card-head"><h2>AI landing page</h2></div>
+          <LandingPageGenerator mode="funnel" :product="product" :selected-id="draft.generatedPageId ?? null" @change="(list: ProductLandingPage[]) => emit('pages-changed', list)" @select="usePage" @completed="onGenerated" />
+        </section>
+        <section v-else class="card" aria-label="AI landing page">
+          <div class="card-head"><h2>AI landing page</h2></div>
+          <p class="muted">Want a long page designed by AI (written copy, backgrounds and your real photos) below the order form? Switch to the Image page template and generate it right here.</p>
+          <button class="btn" type="button" style="align-self: flex-start" @click="pick('image-page')"><AdsIcon name="i-lucide-sparkles" />Use the Image page template</button>
         </section>
 
         <section class="card" aria-label="Sections">
