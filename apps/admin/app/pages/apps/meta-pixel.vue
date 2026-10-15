@@ -122,142 +122,101 @@ async function sendTestEvent() {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Meta Pixel">
-        <template #leading><UDashboardSidebarCollapse /></template>
-        <template #trailing>
-          <UButton to="/apps" variant="ghost" color="neutral" icon="i-lucide-arrow-left" size="sm">Apps</UButton>
-        </template>
-      </UDashboardNavbar>
+  <AdsPage title="Meta Pixel" description="Marketing app">
+    <template #actions>
+      <NuxtLink to="/apps" class="btn"><AdsIcon name="i-lucide-arrow-left" />Apps</NuxtLink>
     </template>
 
-    <template #body>
-      <div v-if="pending" class="py-24 text-center text-muted">Loading…</div>
-      <div v-else class="max-w-2xl space-y-8">
-        <div class="flex items-start gap-4">
-          <div class="flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <UIcon name="i-lucide-target" class="size-6" />
-          </div>
-          <div>
-            <h2 class="text-lg font-semibold text-highlighted">Meta Pixel</h2>
-            <p class="text-sm text-muted">Track page views, add-to-cart, and purchase events for Meta (Facebook/Instagram) ad retargeting and measurement.</p>
-          </div>
-        </div>
-
-        <section class="admin-kpi-card space-y-5 p-6">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="font-medium text-highlighted">Enable Meta Pixel</p>
-              <p class="text-sm text-muted">When on, the browser pixel script loads on every storefront page.</p>
-            </div>
-            <USwitch v-model="enabled" />
-          </div>
-
-          <UFormField label="Pixel ID" help="Find this in Meta Events Manager — a 15-16 digit number.">
-            <UInput v-model="pixelId" placeholder="1234567890123456" class="w-full max-w-sm" />
-          </UFormField>
-
-          <p v-if="enabled && !pixelId" class="flex items-center gap-1.5 text-sm text-warning">
-            <UIcon name="i-lucide-alert-triangle" class="size-4" />
-            Enabled but no Pixel ID set — nothing will be tracked yet.
-          </p>
-        </section>
-
-        <section class="admin-kpi-card space-y-5 p-6">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <p class="font-medium text-highlighted">Conversions API (server-side events)</p>
-              <p class="text-sm text-muted">
-                Sends Purchase events directly from our server to Meta, in addition to the browser pixel — recovers
-                orders the browser pixel misses (ad blockers, iOS privacy settings, Safari ITP) and dedupes
-                automatically against the browser event for the same order.
-              </p>
-            </div>
-            <USwitch v-model="capiEnabled" />
-          </div>
-
-          <UFormField label="Access token" :help="hasAccessToken ? 'A token is already saved — leave blank to keep it.' : 'A System User token from Meta Events Manager → Conversions API → Generate access token.'">
-            <div class="flex items-center gap-2">
-              <UInput
-                :model-value="accessTokenInput"
-                type="password"
-                autocomplete="new-password"
-                :placeholder="hasAccessToken ? '•••••••••••••••••••• (configured)' : 'EAAG…'"
-                class="w-full max-w-sm"
-                @update:model-value="setAccessToken($event as string)"
-              />
-              <UBadge v-if="hasAccessToken && !accessTokenInput && !clearAccessToken" color="success" variant="subtle" size="sm">Configured</UBadge>
-              <UButton
-                v-if="hasAccessToken && !clearAccessToken"
-                variant="link"
-                color="error"
-                size="sm"
-                @click="clearAccessToken = true; accessTokenInput = ''"
-              >
-                Remove
-              </UButton>
-              <UBadge v-if="clearAccessToken" color="warning" variant="subtle" size="sm">Will be removed on save</UBadge>
-            </div>
-          </UFormField>
-
-          <UFormField label="Test event code" help="From Meta Events Manager → Test Events — scopes events to the test stream instead of production reporting. Optional; remove once you're done testing.">
-            <UInput v-model="testEventCode" placeholder="TEST12345" class="w-full max-w-sm" />
-          </UFormField>
-
-          <p v-if="capiEnabled && (!pixelId || !hasAccessToken && !accessTokenInput)" class="flex items-center gap-1.5 text-sm text-warning">
-            <UIcon name="i-lucide-alert-triangle" class="size-4" />
-            Conversions API is on but needs both a Pixel ID and an access token to actually send events.
-          </p>
-        </section>
-
-        <section class="admin-kpi-card space-y-4 p-6">
-          <div>
-            <p class="font-medium text-highlighted">Send a test event</p>
-            <p class="text-sm text-muted">
-              Fires one real event at Meta using your saved Pixel ID and access token — watch it arrive in
-              <span class="font-medium text-highlighted">Events Manager → Test Events</span> to confirm the integration works.
-            </p>
-          </div>
-
-          <div class="flex flex-wrap items-end gap-3">
-            <UFormField label="Event">
-              <USelect v-model="testEventName" :items="[...testEventOptions]" class="w-44" />
-            </UFormField>
-            <UButton
-              :loading="sendingTestEvent"
-              :disabled="!canSendTestEvent"
-              color="primary"
-              variant="soft"
-              icon="i-lucide-send"
-              @click="sendTestEvent"
-            >
-              Send test event
-            </UButton>
-          </div>
-
-          <p v-if="dirty" class="text-xs text-muted">Save your changes first — test events use the saved configuration, not unsaved edits.</p>
-          <p v-else-if="!enabled" class="text-xs text-muted">Enable Meta Pixel above to send a test event.</p>
-          <p v-else-if="!pixelId || !hasAccessToken" class="text-xs text-muted">Set a Pixel ID and access token above to send a test event.</p>
-
-          <div v-if="testEventResult" class="rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-surface-tint)] p-3 text-sm">
-            <p class="font-medium text-highlighted">{{ testEventResult.eventsReceived }} event(s) received by Meta</p>
-            <p v-if="testEventResult.fbtraceId" class="tabular text-xs text-muted">fbtrace_id: {{ testEventResult.fbtraceId }}</p>
-            <p v-for="(m, i) in testEventResult.messages" :key="i" class="text-xs text-muted">{{ m }}</p>
-          </div>
-          <p v-if="testEventErrorMessage" class="flex items-center gap-1.5 text-sm text-error">
-            <UIcon name="i-lucide-circle-x" class="size-4" />
-            {{ testEventErrorMessage }}
-          </p>
-        </section>
-
-        <div class="sticky bottom-4 flex items-center justify-between rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] px-5 py-3 shadow-[var(--shadow-admin-md)]">
-          <p class="text-sm" :class="dirty ? 'text-highlighted' : 'text-muted'">
-            {{ dirty ? 'Unsaved changes.' : 'All changes saved.' }}
-          </p>
-          <UButton :loading="saving" :disabled="!dirty" color="primary" icon="i-lucide-check" @click="save">Save</UButton>
+    <div v-if="pending" class="empty">Loading…</div>
+    <div v-else class="stack" style="width: 100%; max-width: 760px; padding-bottom: 72px">
+      <div class="prod" style="align-items: flex-start">
+        <span class="app-logo" style="background: var(--teal); color: var(--ivory)" aria-hidden="true"><AdsIcon name="i-lucide-target" /></span>
+        <div class="grow">
+          <h2 style="font-size: 18px">Meta Pixel</h2>
+          <p class="muted">Track page views, add-to-cart, and purchase events for Meta (Facebook/Instagram) ad retargeting and measurement.</p>
         </div>
       </div>
-    </template>
-  </UDashboardPanel>
+
+      <section class="card" aria-label="Meta Pixel settings">
+        <div class="setting">
+          <div class="text"><b>Enable Meta Pixel</b><span>When on, the browser pixel script loads on every storefront page.</span></div>
+          <AdsSwitch v-model="enabled" aria-label="Enable Meta Pixel" />
+        </div>
+
+        <AdsField label="Pixel ID" help="Find this in Meta Events Manager — a 15-16 digit number.">
+          <AdsInput v-model="pixelId" placeholder="1234567890123456" style="max-width: 380px" />
+        </AdsField>
+
+        <p v-if="enabled && !pixelId" class="notice warn"><AdsIcon name="i-lucide-alert-triangle" /><span>Enabled but no Pixel ID set — nothing will be tracked yet.</span></p>
+      </section>
+
+      <section class="card" aria-label="Conversions API">
+        <div class="setting">
+          <div class="text">
+            <b>Conversions API (server-side events)</b>
+            <span>Sends Purchase events directly from our server to Meta, in addition to the browser pixel — recovers orders the browser pixel misses (ad blockers, iOS privacy settings, Safari ITP) and dedupes automatically against the browser event for the same order.</span>
+          </div>
+          <AdsSwitch v-model="capiEnabled" aria-label="Enable Conversions API" />
+        </div>
+
+        <AdsField label="Access token" :help="hasAccessToken ? 'A token is already saved — leave blank to keep it.' : 'A System User token from Meta Events Manager → Conversions API → Generate access token.'">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+            <AdsInput
+              :model-value="accessTokenInput"
+              type="password"
+              autocomplete="new-password"
+              :placeholder="hasAccessToken ? '•••••••••••••••••••• (configured)' : 'EAAG…'"
+              style="flex: 1 1 260px; max-width: 380px"
+              @update:model-value="setAccessToken($event as string)"
+            />
+            <span v-if="hasAccessToken && !accessTokenInput && !clearAccessToken" class="pill connected">Configured</span>
+            <button v-if="hasAccessToken && !clearAccessToken" class="btn btn-danger btn-sm" type="button" @click="clearAccessToken = true; accessTokenInput = ''">Remove</button>
+            <span v-if="clearAccessToken" class="pill new">Will be removed on save</span>
+          </div>
+        </AdsField>
+
+        <AdsField label="Test event code" help="From Meta Events Manager → Test Events — scopes events to the test stream instead of production reporting. Optional; remove once you're done testing.">
+          <AdsInput v-model="testEventCode" placeholder="TEST12345" style="max-width: 380px" />
+        </AdsField>
+
+        <p v-if="capiEnabled && (!pixelId || !hasAccessToken && !accessTokenInput)" class="notice warn"><AdsIcon name="i-lucide-alert-triangle" /><span>Conversions API is on but needs both a Pixel ID and an access token to actually send events.</span></p>
+      </section>
+
+      <section class="card" aria-label="Send a test event">
+        <div class="card-head"><h2>Send a test event</h2></div>
+        <p class="muted">
+          Fires one real event at Meta using your saved Pixel ID and access token — watch it arrive in
+          <b>Events Manager → Test Events</b> to confirm the integration works.
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px">
+          <AdsField label="Event">
+            <AdsSelect v-model="testEventName" :items="[...testEventOptions]" style="width: 190px" />
+          </AdsField>
+          <AdsButton appearance="default" :loading="sendingTestEvent" :disabled="!canSendTestEvent" icon="i-lucide-send" @click="sendTestEvent">
+            Send test event
+          </AdsButton>
+        </div>
+
+        <p v-if="dirty" class="muted">Save your changes first — test events use the saved configuration, not unsaved edits.</p>
+        <p v-else-if="!enabled" class="muted">Enable Meta Pixel above to send a test event.</p>
+        <p v-else-if="!pixelId || !hasAccessToken" class="muted">Set a Pixel ID and access token above to send a test event.</p>
+
+        <div v-if="testEventResult" class="notice">
+          <AdsIcon name="i-lucide-circle-check" />
+          <span>
+            <b>{{ testEventResult.eventsReceived }} event(s) received by Meta</b>
+            <template v-if="testEventResult.fbtraceId"><br><span class="mono">fbtrace_id: {{ testEventResult.fbtraceId }}</span></template>
+            <template v-for="(m, i) in testEventResult.messages" :key="i"><br>{{ m }}</template>
+          </span>
+        </div>
+        <p v-if="testEventErrorMessage" class="notice danger"><AdsIcon name="i-lucide-circle-x" /><span>{{ testEventErrorMessage }}</span></p>
+      </section>
+    </div>
+
+    <div class="savebar" :class="{ on: dirty }">
+      <span>Unsaved changes</span>
+      <AdsButton appearance="brass" :loading="saving" :disabled="!dirty" icon="i-lucide-check" @click="save">Save</AdsButton>
+    </div>
+  </AdsPage>
 </template>

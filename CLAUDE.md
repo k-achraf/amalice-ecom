@@ -7,9 +7,10 @@ Cash-on-delivery (COD) storefront + back-office platform, primarily serving the 
 | Path | What it is | Stack |
 |---|---|---|
 | `apps/storefront` | Customer-facing site, SSR, 100% RTL/Arabic, 15 selectable visual templates | Nuxt 4 |
-| `apps/admin` | Back-office SPA — orders, catalog, shipping, call center, reconciliation, apps/integrations | Nuxt 4 |
+| `apps/admin` | Back-office SPA — orders, catalog, shipping, call center, reconciliation, apps/integrations | Nuxt 4 + Tailwind v4, own components implementing `design/` (Leezil, no Nuxt UI) |
+| `apps/funnels` | Standalone funnel pages (landing + order form + upsells), own domain, fully separate from the storefront; zero-framework, built for speed | Node `http` + sharp |
 | `apps/api` | Backend API | NestJS 11 + Prisma 7 + Postgres |
-| `packages/ui` | Shared design system (Nuxt UI v4 theme, tokens, `StatusBadge`/`PriceDisplay`/`EmptyState`) | Nuxt module |
+| `packages/ui` | Storefront design system (Nuxt UI v4 theme, tokens, `StatusBadge`/`PriceDisplay`/`EmptyState`) — no longer used by the admin | Nuxt module |
 | `packages/shared` | Shared Zod schemas + derived TS types — the single source of truth for shapes crossing the API boundary | TS lib |
 
 Full architecture/roadmap: [`cod-platform-plan.md`](cod-platform-plan.md). Implementation backlog: [`tasks/README.md`](tasks/README.md). Production deployment (VPS, no Docker): [`DEPLOYMENT.md`](DEPLOYMENT.md).
@@ -37,6 +38,7 @@ Or run `./start.sh` (Linux/macOS, Git Bash on Windows) to do all of the above in
 
 Ports (fixed, don't collide):
 - Storefront — `http://localhost:3000`
+- Funnels — `http://localhost:3002` (standalone funnel pages, `apps/funnels`)
 - Admin — `http://localhost:3001`
 - API — `http://localhost:3333` (Swagger at `/docs`)
 
@@ -62,7 +64,7 @@ Scope to one package with `--filter`, e.g. `pnpm --filter storefront typecheck`.
 ## Cross-cutting conventions
 
 - **Zod is the schema source of truth.** Shapes that cross the API boundary (Order, Product, Customer, etc.) are defined once in `packages/shared/src/*.ts` and consumed by both `apps/api` (validation + Swagger via `nestjs-zod`) and the two Nuxt apps (client + SSR validation). Add a field there first, then thread it through — don't redeclare the same shape ad hoc in a controller or component.
-- **Design tokens live in `packages/ui`**, not per-app. Both Nuxt apps `extends: ['../../packages/ui']` in their `nuxt.config.ts` and inherit fonts/colors/shared components from it. Template-specific palettes in the storefront are a layer on top of this, not a replacement for it (see `apps/storefront/CLAUDE.md`).
+- **Design tokens live in `packages/ui`**, not per-app. The storefront `extends: ['../../packages/ui']` in its `nuxt.config.ts` and inherits fonts/colors/shared components from it; the admin implements `design/` with its own tokens (`apps/admin/app/assets/css/leezil.css`). Template-specific palettes in the storefront are a layer on top of this, not a replacement for it (see `apps/storefront/CLAUDE.md`).
 - **Prisma migration workflow** (`apps/api`): `npx prisma format` → `npx prisma migrate dev --name X` → `npx prisma generate`. Never hand-edit `apps/api/src/generated/` (Prisma client output) or a migration file after it's landed on another branch/environment.
 - **Env var naming must match exactly what the framework auto-maps.** The recurring bug in this repo: Nuxt only auto-maps `NUXT_PUBLIC_*`-prefixed vars to `runtimeConfig.public.*` (e.g. `NUXT_PUBLIC_API_BASE` → `apiBase`) — a var named `NUXT_PUBLIC_API_BASE_URL` is silently ignored, not an error. Check `runtimeConfig` in the relevant `nuxt.config.ts` before inventing a new env var name.
 - **`nuxt.config.ts` runs at BUILD time**, not runtime — anything read via `process.env` directly inside it (as opposed to via `runtimeConfig`) needs that var exported in the actual build shell, not just present in a `.env` file a process manager loads later. See `DEPLOYMENT.md` and `apps/storefront/CLAUDE.md`.
@@ -71,4 +73,4 @@ Scope to one package with `--filter`, e.g. `pnpm --filter storefront typecheck`.
 
 ## Skills
 
-`.agents/skills/` has two project skills encoding design-system conventions so the re-themed apps stay consistent: `polaris-design-language` (storefront) and `stripe-polaris-admin-theme` (admin). Check these before making visual changes to either app's chrome/tokens.
+`.agents/skills/` has `polaris-design-language` (storefront) — check it before visual changes to the storefront. `stripe-polaris-admin-theme` is obsolete: the admin now implements the Leezil design in `design/`, documented in `apps/admin/CLAUDE.md`.

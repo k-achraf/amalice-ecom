@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Storefront — Leezil Admin</title>
+  <link rel="icon" href="assets/img/leezil-icon-teal.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/pages/storefront.js" defer></script>
+</head>
+<body>
+<div class="app" data-page="storefront">
+  <main class="main">
+
+    <header class="page-head">
+      <div class="title">
+        <p>leezil.com</p>
+        <h1>Storefront</h1>
+      </div>
+      <a class="btn" href="#" id="view-store"><svg data-icon="external"></svg>View store</a>
+    </header>
+
+    <div class="tabs" role="tablist" aria-label="Storefront sections">
+      <button type="button" role="tab" aria-selected="true" data-tab="themes" id="tab-themes">Themes</button>
+      <button type="button" role="tab" aria-selected="false" data-tab="settings" id="tab-settings">Store settings</button>
+      <button type="button" role="tab" aria-selected="false" data-tab="checkout" id="tab-checkout">Order form</button>
+    </div>
+
+    <!-- Themes -->
+    <section id="panel-themes" role="tabpanel" aria-labelledby="tab-themes" class="stack">
+      <section class="card" aria-labelledby="cur-h" id="current-theme"></section>
+      <div class="card-head"><h2 style="font-size:16px">Theme library</h2><span class="muted">Free themes made for selling in Algeria</span></div>
+      <div class="cards-grid" id="theme-grid"></div>
+    </section>
+
+    <!-- Store settings -->
+    <form id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" class="split" hidden novalidate>
+      <div class="stack">
+        <section class="card" aria-labelledby="gen-h">
+          <div class="card-head"><h2 id="gen-h">General</h2></div>
+          <div class="grid-2">
+            <div class="field"><label for="s-name">Store name</label><input class="input" id="s-name" value="Leezil"></div>
+            <div class="field"><label for="s-tag">Tagline</label><input class="input" id="s-tag" value="Small things. Big style."></div>
+          </div>
+          <div class="grid-2">
+            <div class="field"><span class="label">Logo</span>
+              <div style="display:flex;gap:12px;align-items:center"><span class="thumb lg" style="background:var(--teal)"><img src="assets/img/leezil-logo-ivory.svg" alt="Current logo" style="width:44px"></span>
+              <label class="btn btn-sm">Replace<input type="file" accept="image/*" class="sr"></label></div></div>
+            <div class="field"><span class="label">Favicon</span>
+              <div style="display:flex;gap:12px;align-items:center"><span class="thumb lg" style="background:var(--white);border:1px solid var(--line-soft)"><img src="assets/img/leezil-icon-teal.svg" alt="Current favicon" style="width:26px"></span>
+              <label class="btn btn-sm">Replace<input type="file" accept="image/*" class="sr"></label></div></div>
+          </div>
+          <div class="grid-2">
+            <div class="field"><label for="s-mail">Contact email</label><input class="input" id="s-mail" value="hello@leezil.com"></div>
+            <div class="field"><label for="s-phone">Contact phone</label><input class="input" id="s-phone" value="+213 "></div>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="br-h">
+          <div class="card-head"><h2 id="br-h">Colours &amp; fonts</h2><span class="muted">Applied to the current theme</span></div>
+          <div class="grid-3">
+            <div class="field"><label for="c-primary">Primary</label><div class="color-field"><input type="color" id="c-primary" value="#18403F"><input class="input mono" value="#18403F" data-mirror="c-primary" aria-label="Primary colour hex"></div></div>
+            <div class="field"><label for="c-accent">Accent</label><div class="color-field"><input type="color" id="c-accent" value="#C9A35E"><input class="input mono" value="#C9A35E" data-mirror="c-accent" aria-label="Accent colour hex"></div></div>
+            <div class="field"><label for="c-bg">Background</label><div class="color-field"><input type="color" id="c-bg" value="#F1EDE2"><input class="input mono" value="#F1EDE2" data-mirror="c-bg" aria-label="Background colour hex"></div></div>
+          </div>
+          <div class="grid-2">
+            <div class="field"><label for="f-latin">Latin font</label><select class="select" id="f-latin"><option>Outfit</option><option>DM Sans</option><option>Manrope</option></select></div>
+            <div class="field"><label for="f-ar">Arabic font</label><select class="select" id="f-ar"><option>IBM Plex Sans Arabic</option><option>Cairo</option><option>Tajawal</option></select></div>
+          </div>
+          <div class="field"><label for="f-radius">Corner style</label><select class="select" id="f-radius"><option>Small (4px)</option><option>Square (0px)</option><option>Medium (8px)</option></select></div>
+        </section>
+
+        <section class="card" aria-labelledby="an-h">
+          <div class="card-head"><h2 id="an-h">Announcement bar</h2><label class="switch"><input type="checkbox" id="an-on" checked aria-label="Show announcement bar"><span></span></label></div>
+          <div class="field"><label for="an-text">Text</label><input class="input" id="an-text" value="Livraison vers les 58 wilayas · Paiement à la livraison"></div>
+          <div class="grid-2">
+            <div class="field"><label for="an-link">Link (optional)</label><input class="input" id="an-link" placeholder="/collections/new"></div>
+            <div class="field"><label for="an-style">Style</label><select class="select" id="an-style"><option>Teal</option><option>Brass</option><option>Pine</option></select></div>
+          </div>
+          <div id="an-preview" style="border-radius:var(--r);padding:10px;text-align:center;font-size:13px"></div>
+        </section>
+
+        <section class="card" aria-labelledby="so-h">
+          <div class="card-head"><h2 id="so-h">Social links</h2></div>
+          <div class="grid-2">
+            <div class="field"><label for="so-fb">Facebook</label><div class="input-group"><span class="addon">facebook.com/</span><input class="input" id="so-fb" value="leezil.dz"></div></div>
+            <div class="field"><label for="so-ig">Instagram</label><div class="input-group"><span class="addon">@</span><input class="input" id="so-ig" value="leezil.dz"></div></div>
+            <div class="field"><label for="so-tk">TikTok</label><div class="input-group"><span class="addon">@</span><input class="input" id="so-tk" value=""></div></div>
+            <div class="field"><label for="so-wa">WhatsApp</label><input class="input" id="so-wa" value="+213 "></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="stack">
+        <section class="card" aria-labelledby="la-h">
+          <div class="card-head"><h2 id="la-h">Language &amp; currency</h2></div>
+          <div class="field"><label for="l-def">Default language</label><select class="select" id="l-def"><option>Arabic</option><option selected>French</option><option>English</option></select></div>
+          <fieldset style="border:0;padding:0;margin:0"><legend class="strong" style="font-size:13px;margin-bottom:8px">Languages shown</legend>
+            <div class="stack" style="gap:8px"><label class="check"><input type="checkbox" checked><span>Arabic (right to left)</span></label><label class="check"><input type="checkbox" checked><span>French</span></label><label class="check"><input type="checkbox"><span>English</span></label></div>
+          </fieldset>
+          <div class="field"><label for="l-cur">Currency</label><select class="select" id="l-cur"><option>Algerian dinar (DA)</option></select></div>
+        </section>
+
+        <section class="card" aria-labelledby="st-h">
+          <div class="card-head"><h2 id="st-h">Store status</h2></div>
+          <div class="setting"><div class="text"><b>Store open</b><span>Turn off to show a “back soon” page.</span></div><label class="switch"><input type="checkbox" checked aria-label="Store open"><span></span></label></div>
+          <div class="setting"><div class="text"><b>Password protect</b><span>Only people with the password can see the store.</span></div><label class="switch"><input type="checkbox" aria-label="Password protect"><span></span></label></div>
+          <div class="setting"><div class="text"><b>Hide out-of-stock products</b></div><label class="switch"><input type="checkbox" checked aria-label="Hide out-of-stock products"><span></span></label></div>
+        </section>
+
+        <section class="card" aria-labelledby="dm-h">
+          <div class="card-head"><h2 id="dm-h">Domain</h2></div>
+          <div style="display:flex;align-items:center;gap:10px"><span class="grow strong">leezil.com</span><span class="pill connected">Connected</span></div>
+          <span class="muted">SSL certificate active · renews automatically</span>
+          <button class="btn btn-sm" type="button" style="align-self:flex-start">Manage domain</button>
+        </section>
+      </div>
+    </form>
+
+    <!-- Order form -->
+    <form id="panel-checkout" role="tabpanel" aria-labelledby="tab-checkout" class="split" hidden novalidate>
+      <section class="card" aria-labelledby="of-h">
+        <div class="card-head"><h2 id="of-h">Order form fields</h2><span class="muted">The form on the product page (cash on delivery)</span></div>
+        <div class="table-wrap">
+          <table style="min-width:520px">
+            <thead><tr><th>Field</th><th>Shown</th><th>Required</th></tr></thead>
+            <tbody id="fields-body"></tbody>
+          </table>
+        </div>
+        <div>
+          <div class="setting"><div class="text"><b>Block duplicate orders</b><span>Same phone and product within 24 hours.</span></div><label class="switch"><input type="checkbox" checked aria-label="Block duplicate orders"><span></span></label></div>
+          <div class="setting"><div class="text"><b>Show quantity offers</b><span>“Buy 2 and save 10%” from the product settings.</span></div><label class="switch"><input type="checkbox" checked aria-label="Show quantity offers"><span></span></label></div>
+          <div class="setting"><div class="text"><b>Check Algerian phone format</b><span>05, 06 or 07 followed by 8 digits.</span></div><label class="switch"><input type="checkbox" checked aria-label="Check phone format"><span></span></label></div>
+        </div>
+        <div class="field"><label for="ty">Thank-you message</label><textarea class="textarea" id="ty" style="min-height:80px">Merci ! Nous vous appellerons dans les prochaines heures pour confirmer votre commande.</textarea></div>
+      </section>
+
+      <section class="card" aria-labelledby="fp-h">
+        <div class="card-head"><h2 id="fp-h">Preview</h2></div>
+        <div id="form-preview" style="background:var(--ivory);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px"></div>
+      </section>
+    </form>
+
+  </main>
+</div>
+</body>
+</html>

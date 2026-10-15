@@ -13,6 +13,7 @@ NestJS 11 + Prisma 7 + Postgres backend. Feature-module-per-domain layout under 
 | `shipping-companies` | Carrier integrations (DHD API client), tariffs |
 | `reconciliation` | COD cash reconciliation |
 | `locations` | Wilaya/Commune reference data (Algeria) |
+| `funnels` | Product funnels (admin CRUD only): ordered steps created from a template in `packages/shared` (`FUNNEL_TEMPLATES`). Not served to the storefront yet |
 | `sourcing` | Product-sourcing research/tracking (separate from live catalog) |
 | `apps` | Third-party integrations: Meta Conversions API, TikTok Events API, Google Sheets |
 | `landing-pages` | AI-generated product landing pages (Gemini) |
@@ -24,6 +25,10 @@ NestJS 11 + Prisma 7 + Postgres backend. Feature-module-per-domain layout under 
 | `admin` | Admin-only cross-cutting endpoints (users, audit log) |
 | `prisma` | `PrismaService` wrapper |
 | `generated` | Prisma client output — **never hand-edit**, regenerate via `prisma generate` |
+
+## Dev server (`pnpm dev`)
+
+`pnpm dev` = `tsc --watch` + `scripts/dev-server.mjs`, a small supervisor (not `node --watch`, which never restarts a crashed process). It waits for Postgres and Redis from `.env` before booting, restarts the API when `dist/` is rebuilt, and restarts it after a crash. If the admin/storefront show `ERR_CONNECTION_REFUSED` on `:3333`, check that Docker is up (`docker compose up -d`) — the supervisor logs `waiting for Postgres/Redis` until it is.
 
 ## Env vars (`src/config`)
 

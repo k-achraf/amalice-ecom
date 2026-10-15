@@ -11,9 +11,10 @@
   },
   "dependencies": {
     "@amalice/shared": "workspace:*",
-    "@amalice/ui": "workspace:*",
-    "@nuxt/ui": "4.10.0",
+    "@fontsource-variable/outfit": "^5.3.0",
     "@pinia/nuxt": "1.0.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "@tanstack/vue-table": "^8.21.3",
     "@tiptap/core": "^3.28.0",
     "@tiptap/extension-image": "^3.28.0",
     "@tiptap/extension-link": "^3.28.0",
@@ -21,7 +22,14 @@
     "@tiptap/pm": "^3.28.0",
     "@tiptap/starter-kit": "^3.28.0",
     "@tiptap/vue-3": "^3.28.0",
+    "@vueuse/core": "^15.0.0",
+    "clsx": "^2.1.1",
+    "lucide-vue-next": "^1.0.0",
     "pinia": "4.0.2",
+    "reka-ui": "^2.11.0",
+    "tailwind-merge": "^3.7.0",
+    "tailwindcss": "4.3.3",
+    "vue-sonner": "^2.0.9",
     "zod": "4.4.3"
   },
   "devDependencies": {

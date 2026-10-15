@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import type { AdminProductDetail, Category, ProductLandingPage, GeneratedProductContent } from '@amalice/shared'
 import { offerTotalQuantity, offerPriceCents } from '@amalice/shared'
 
@@ -990,980 +991,963 @@ async function deleteUpsell(upsellId: string) {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar :title="product?.name ?? 'Edit product'">
-        <template #leading>
-          <UButton icon="i-lucide-arrow-left" color="neutral" variant="ghost" to="/inventory" />
-          <UDashboardSidebarCollapse />
-        </template>
-      </UDashboardNavbar>
-    </template>
+  <AdsPage :title="product?.name ?? 'Edit product'" wide>
+  <template #breadcrumb>
+    <NuxtLink to="/inventory">Products</NuxtLink><AdsIcon name="i-lucide-chevron-right" style="width: 14px; height: 14px" /><span>{{ product?.name ?? 'Edit product' }}</span>
+  </template>
+  <div v-if="pending" class="empty">Loading…</div>
+  <div v-else-if="!product" class="empty">Product not found.</div>
+  <div v-else class="stack" style="max-width: 900px">
+    <!-- Tabs -->
+    <AdsTabs
+      v-model="activeTab"
+      underline
+      :items="[
+        { label: 'Details', value: 'details', icon: 'i-lucide-file-text' },
+        { label: 'Content', value: 'content', icon: 'i-lucide-layout-list' },
+        { label: 'Variants', value: 'variants', icon: 'i-lucide-layers' },
+        { label: 'Images', value: 'images', icon: 'i-lucide-image' },
+        { label: 'Landing Page', value: 'landingPage', icon: 'i-lucide-sparkles' },
+        { label: 'Offers', value: 'offers', icon: 'i-lucide-tag' },
+        { label: 'Upsells', value: 'upsells', icon: 'i-lucide-plus-circle' },
+        { label: 'Inventory', value: 'inventory', icon: 'i-lucide-boxes' }
+      ]"
+    />
 
-    <template #body>
-      <div v-if="pending" class="py-24 text-center text-muted">Loading…</div>
-      <div v-else-if="!product" class="py-24 text-center text-muted">Product not found.</div>
-      <div v-else class="max-w-4xl space-y-6">
-        <!-- Tabs -->
-        <UTabs
-          v-model="activeTab"
-          :items="[
-            { label: 'Details', value: 'details', icon: 'i-lucide-file-text' },
-            { label: 'Content', value: 'content', icon: 'i-lucide-layout-list' },
-            { label: 'Variants', value: 'variants', icon: 'i-lucide-layers' },
-            { label: 'Images', value: 'images', icon: 'i-lucide-image' },
-            { label: 'Landing Page', value: 'landingPage', icon: 'i-lucide-sparkles' },
-            { label: 'Offers', value: 'offers', icon: 'i-lucide-tag' },
-            { label: 'Upsells', value: 'upsells', icon: 'i-lucide-plus-circle' },
-            { label: 'Inventory', value: 'inventory', icon: 'i-lucide-boxes' }
-          ]"
-        />
-
-        <!-- Details Tab -->
-        <div v-show="activeTab === 'details'" class="space-y-5">
-          <!-- Generate with AI — see the script section above generateProductContent
-               for the full contract. Draft only: nothing here is saved until
-               "Apply to form" is clicked and then the Save button below it. -->
-          <div class="admin-kpi-card space-y-4 p-6">
-            <div>
-              <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
-                <UIcon name="i-lucide-wand-2" class="size-4 text-primary" /> Generate with AI
-              </h3>
-              <p class="text-sm text-muted">
-                Paste everything you have about this product — title, description, specs, FAQ, all mixed together,
-                any language — and optionally pick a few photos below. A free AI model drafts a short,
-                conversion-focused name, description, key benefits, FAQ, and specifications from it.
-              </p>
-            </div>
-
-            <UFormField label="Raw content">
-              <UTextarea v-model="aiRawContent" placeholder="Paste everything you have about this product here…" :rows="6" class="w-full" />
-            </UFormField>
-
-            <UFormField v-if="product.images.length" label="Source photos (optional)">
-              <div class="grid grid-cols-4 gap-2 sm:grid-cols-6">
-                <button
-                  v-for="img in product.images"
-                  :key="img.id"
-                  type="button"
-                  class="relative aspect-square overflow-hidden rounded-md border-2 transition-colors"
-                  :class="aiSourceImages.includes(img.url) ? 'border-primary' : 'border-[var(--color-admin-border)]'"
-                  @click="toggleAiSourceImage(img.url)"
-                >
-                  <img :src="resolveImgUrl(img.url)" :alt="img.altText ?? ''" class="size-full object-cover" />
-                  <div v-if="aiSourceImages.includes(img.url)" class="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-primary text-white">
-                    <UIcon name="i-lucide-check" class="size-3" />
-                  </div>
-                </button>
-              </div>
-            </UFormField>
-
-            <UFormField label="Additional instructions (optional)">
-              <UTextarea v-model="aiInstructions" placeholder="e.g. target a younger audience, emphasize the 2-year warranty…" :rows="2" class="w-full" />
-            </UFormField>
-
-            <UButton :loading="generatingContent" :disabled="!aiRawContent.trim()" icon="i-lucide-sparkles" color="primary" @click="generateProductContent">
-              Generate
-            </UButton>
-
-            <div v-if="aiDraft" class="space-y-3 rounded-lg border border-[var(--color-admin-border)] p-4">
-              <div class="flex items-center justify-between gap-2">
-                <h4 class="text-sm font-medium text-highlighted">Draft</h4>
-                <div class="flex gap-2">
-                  <UButton size="xs" variant="ghost" color="neutral" label="Discard" @click="discardGeneratedContent" />
-                  <UButton size="xs" variant="solid" color="primary" icon="i-lucide-check" label="Apply to form" @click="applyGeneratedContent" />
-                </div>
-              </div>
-              <div>
-                <p class="text-xs font-bold uppercase text-muted">Name</p>
-                <p class="text-sm text-highlighted">{{ aiDraft.name }}</p>
-              </div>
-              <div>
-                <p class="text-xs font-bold uppercase text-muted">Description</p>
-                <p class="whitespace-pre-line text-sm text-highlighted">{{ aiDraft.description }}</p>
-              </div>
-              <div v-if="aiDraft.keyBenefits.length">
-                <p class="text-xs font-bold uppercase text-muted">Key benefits</p>
-                <ul class="list-inside list-disc text-sm text-highlighted">
-                  <li v-for="(b, i) in aiDraft.keyBenefits" :key="i">{{ b }}</li>
-                </ul>
-              </div>
-              <div v-if="aiDraft.faqs.length" class="space-y-1.5">
-                <p class="text-xs font-bold uppercase text-muted">FAQ</p>
-                <div v-for="(f, i) in aiDraft.faqs" :key="i" class="text-sm">
-                  <p class="font-medium text-highlighted">{{ f.question }}</p>
-                  <p class="text-muted">{{ f.answer }}</p>
-                </div>
-              </div>
-              <div v-if="aiDraft.specifications.length" class="space-y-1">
-                <p class="text-xs font-bold uppercase text-muted">Specifications</p>
-                <div v-for="(s, i) in aiDraft.specifications" :key="i" class="flex justify-between gap-3 text-sm">
-                  <span class="text-muted">{{ s.label }}</span>
-                  <span class="font-medium text-highlighted">{{ s.value }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="admin-kpi-card space-y-5 p-6">
-            <UFormField label="Name"><UInput v-model="product.name" class="w-full" /></UFormField>
-            <UFormField label="Slug"><UInput v-model="product.slug" class="w-full" /></UFormField>
-            <UFormField label="Description">
-              <RichTextEditor v-model="product.description" />
-            </UFormField>
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <UFormField label="Category">
-                <USelect
-                  v-model="product.categoryId"
-                  :items="[{ label: 'None', value: null }, ...(categories ?? []).map((c) => ({ label: c.name, value: c.id }))]"
-                  class="w-full"
-                />
-              </UFormField>
-              <UFormField label="Price (DZD)"><UInputNumber v-model="productPriceDzd" :min="0" class="w-full" /></UFormField>
-            </div>
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <UFormField label="Low-stock threshold"><UInputNumber v-model="product.lowStockThreshold" class="w-full" /></UFormField>
-              <div class="flex items-end gap-4 pb-1">
-                <UCheckbox v-model="product.featured" label="Featured" />
-                <UCheckbox v-model="product.bestSeller" label="Best seller" />
-              </div>
-            </div>
-            <div class="admin-kpi-card flex items-center justify-between gap-3 p-4">
-              <div class="min-w-0">
-                <p class="text-sm font-medium text-highlighted">Visible on storefront</p>
-                <p class="text-xs text-muted">
-                  Off hides this product from catalog, search, home sections, and other products' "related" — but its own product page
-                  and any AI landing pages keep working for anyone with the direct link. Use this for ad-only funnel products.
-                </p>
-              </div>
-              <USwitch :model-value="product.visible" :loading="savingVisible" @update:model-value="toggleVisible($event as boolean)" />
-            </div>
-            <div class="flex justify-end">
-              <UButton :loading="savingDetails" icon="i-lucide-save" color="primary" @click="saveDetails">Save details</UButton>
-            </div>
-          </div>
+    <!-- Details Tab -->
+    <div v-show="activeTab === 'details'" class="stack">
+      <!-- Generate with AI — see the script section above generateProductContent
+           for the full contract. Draft only: nothing here is saved until
+           "Apply to form" is clicked and then the Save button below it. -->
+      <div class="card">
+        <div>
+          <h2 style="display: flex; align-items: center; gap: 8px">
+            <AdsIcon name="i-lucide-wand-2" style="width: 18px; height: 18px; color: var(--teal)" /> Generate with AI
+          </h2>
+          <p class="muted">
+            Paste everything you have about this product — title, description, specs, FAQ, all mixed together,
+            any language — and optionally pick a few photos below. A free AI model drafts a short,
+            conversion-focused name, description, key benefits, FAQ, and specifications from it.
+          </p>
         </div>
 
-        <!-- Content Tab — optional richer-PDP sections (currently used by the
-             Impulse template's Key Benefits/FAQ/Specifications sections).
-             Empty by default; a template shows nothing rather than fabricate
-             copy when a section is left blank. -->
-        <div v-show="activeTab === 'content'" class="space-y-5">
-          <div class="admin-kpi-card space-y-4 p-6">
-            <div>
-              <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
-                <UIcon name="i-lucide-sparkles" class="size-4 text-primary" /> Key benefits
-              </h3>
-              <p class="text-sm text-muted">Short, customer-facing bullet points (e.g. "Waterproof up to 50m") — up to 8.</p>
-            </div>
-            <div v-for="(benefit, idx) in product.keyBenefits" :key="idx" class="flex items-center gap-2">
-              <UInput v-model="product.keyBenefits[idx]" placeholder="e.g. Waterproof up to 50m" class="flex-1" />
-              <UButton icon="i-lucide-trash-2" size="sm" variant="ghost" color="error" @click="removeBenefit(idx)" />
-            </div>
-            <UButton v-if="product.keyBenefits.length < 8" icon="i-lucide-plus" size="sm" variant="outline" color="neutral" label="Add benefit" @click="addBenefit" />
-          </div>
+        <AdsField label="Raw content">
+          <AdsTextarea v-model="aiRawContent" placeholder="Paste everything you have about this product here…" :rows="6" class="w-full" />
+        </AdsField>
 
-          <div class="admin-kpi-card space-y-4 p-6">
-            <div>
-              <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
-                <UIcon name="i-lucide-circle-help" class="size-4 text-primary" /> FAQ
-              </h3>
-              <p class="text-sm text-muted">Common questions about this product — payment, delivery, sizing, returns, etc.</p>
-            </div>
-            <div v-for="(faq, idx) in product.faqs" :key="idx" class="space-y-2 rounded-md border border-[var(--color-admin-border)] p-3">
-              <div class="flex items-start justify-between gap-2">
-                <UInput v-model="faq.question" placeholder="Question" class="flex-1" />
-                <UButton icon="i-lucide-trash-2" size="sm" variant="ghost" color="error" @click="removeFaq(idx)" />
-              </div>
-              <UTextarea v-model="faq.answer" placeholder="Answer" :rows="2" class="w-full" />
-            </div>
-            <UButton v-if="product.faqs.length < 20" icon="i-lucide-plus" size="sm" variant="outline" color="neutral" label="Add question" @click="addFaq" />
-          </div>
-
-          <div class="admin-kpi-card space-y-4 p-6">
-            <div>
-              <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
-                <UIcon name="i-lucide-list-checks" class="size-4 text-primary" /> Specifications
-              </h3>
-              <p class="text-sm text-muted">Technical spec-table rows (e.g. "Material" / "Stainless steel") — distinct from variant options.</p>
-            </div>
-            <div v-for="(spec, idx) in product.specifications" :key="idx" class="flex items-center gap-2">
-              <UInput v-model="spec.label" placeholder="Label (e.g. Material)" class="w-48" />
-              <UInput v-model="spec.value" placeholder="Value (e.g. Stainless steel)" class="flex-1" />
-              <UButton icon="i-lucide-trash-2" size="sm" variant="ghost" color="error" @click="removeSpecification(idx)" />
-            </div>
-            <UButton v-if="product.specifications.length < 30" icon="i-lucide-plus" size="sm" variant="outline" color="neutral" label="Add specification" @click="addSpecification" />
-          </div>
-
-          <div class="flex justify-end">
-            <UButton :loading="savingContent" icon="i-lucide-save" color="primary" @click="saveContent">Save content</UButton>
-          </div>
-        </div>
-
-        <!-- Variants Tab -->
-        <div v-show="activeTab === 'variants'" class="space-y-5">
-          <!-- Applied attributes -->
-          <div class="admin-kpi-card p-5">
-            <h3 class="mb-3 text-sm font-medium text-muted">Attributes this product varies on</h3>
-            <div v-if="product.attributes.length" class="mb-4 flex flex-wrap gap-2">
-              <UBadge v-for="attr in product.attributes" :key="attr.id" color="info" variant="subtle" class="flex items-center gap-1 py-1 pl-2 pr-1">
-                {{ attr.name }}
-                <button class="ml-1 rounded p-0.5 hover:bg-error/20" aria-label="Remove attribute" @click="removeAttribute(attr.id)">
-                  <UIcon name="i-lucide-x" class="size-3" />
-                </button>
-              </UBadge>
-            </div>
-            <p v-else class="mb-4 text-sm text-muted">No attributes applied. Add one below to enable variant creation.</p>
-            <div v-if="availableAttributes.length" class="flex items-center gap-2">
-              <span class="text-xs text-muted">Add:</span>
-              <UButton
-                v-for="attr in availableAttributes"
-                :key="attr.id"
-                size="xs"
-                variant="outline"
-                color="neutral"
-                :label="attr.name"
-                @click="applyAttribute(attr.id)"
-              />
-            </div>
-            <p v-else class="text-xs text-muted">All available attributes are applied (or none exist — create some in Settings).</p>
-          </div>
-
-          <!-- Variants table -->
-          <div class="admin-table-wrap">
-            <div class="flex items-center justify-between border-b border-[var(--color-admin-border)] p-4">
-              <h3 class="text-sm font-medium text-muted">Variants ({{ product.variants.length }})</h3>
-              <div v-if="product.attributes.length" class="flex gap-2">
-                <UButton
-                  icon="i-lucide-sparkles"
-                  size="xs"
-                  variant="outline"
-                  color="primary"
-                  label="Generate all"
-                  @click="openGenerate"
-                />
-                <UButton
-                  icon="i-lucide-plus"
-                  size="xs"
-                  color="primary"
-                  label="Add variant"
-                  @click="openCreateVariant"
-                />
-              </div>
-            </div>
-            <table v-if="product.variants.length" class="admin-table w-full text-sm">
-              <thead>
-                <tr>
-                  <th class="px-4 py-2.5 text-left">SKU</th>
-                  <th class="px-4 py-2.5 text-left">Options</th>
-                  <th class="px-4 py-2.5 text-right">Price</th>
-                  <th class="px-4 py-2.5 text-right">Stock</th>
-                  <th class="px-4 py-2.5 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="v in product.variants" :key="v.id">
-                  <td class="px-4 py-3 font-medium">{{ v.sku }}</td>
-                  <td class="px-4 py-3 text-muted">
-                    <UBadge v-for="opt in v.options" :key="opt.id" size="sm" color="neutral" variant="subtle" class="mr-1">
-                      {{ opt.attributeName }}: {{ opt.value }}
-                    </UBadge>
-                  </td>
-                  <td class="tabular px-4 py-3 text-right"><PriceDisplay :amount-cents="v.priceCents" /></td>
-                  <td class="tabular px-4 py-3 text-right">{{ v.stockQuantity }}</td>
-                  <td class="px-4 py-3 text-right">
-                    <UButton icon="i-lucide-pencil" size="xs" variant="ghost" color="neutral" @click="openEditVariant(v)" />
-                    <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="deleteVariant(v.id)" />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <p v-else-if="product.attributes.length" class="px-4 py-12 text-center text-sm text-muted">No variants yet. Click "Add variant" to create one.</p>
-            <p v-else class="px-4 py-12 text-center text-sm text-muted">Apply at least one attribute above before creating variants.</p>
-          </div>
-        </div>
-
-        <!-- Images Tab -->
-        <div v-show="activeTab === 'images'" class="space-y-5">
-          <!-- Upload from computer -->
-          <div class="admin-kpi-card p-5">
-            <h3 class="mb-3 text-sm font-medium text-muted">Upload from computer</h3>
-            <div class="flex items-center gap-3">
-              <UButton
-                icon="i-lucide-upload"
-                color="primary"
-                :loading="uploadingFile"
-                label="Choose image file"
-                @click="triggerFileUpload"
-              />
-              <p class="text-xs text-muted">JPG, PNG, WebP, GIF, SVG, AVIF — max 10 MB</p>
-              <input
-                ref="fileInput"
-                type="file"
-                accept="image/*"
-                class="hidden"
-                @change="onFileSelected"
-              />
-            </div>
-          </div>
-
-          <!-- Download from URL -->
-          <div class="admin-kpi-card p-5">
-            <h3 class="mb-3 text-sm font-medium text-muted">Download from URL</h3>
-            <p class="mb-3 text-xs text-muted">Paste an image URL — the server downloads and stores it locally so it won't break if the source goes offline.</p>
-            <div class="flex gap-3">
-              <UInput v-model="downloadUrlInput" placeholder="https://example.com/product.jpg" class="flex-1" />
-              <UInput v-model="newImageAlt" placeholder="Alt text (optional)" class="w-48" />
-              <UButton icon="i-lucide-download" :loading="downloadingUrl" color="primary" :disabled="!downloadUrlInput" @click="downloadAndAddImage">Download</UButton>
-            </div>
-          </div>
-
-          <!-- Direct link (external URL, not downloaded) -->
-          <div class="admin-kpi-card p-5">
-            <h3 class="mb-3 text-sm font-medium text-muted">Link external image</h3>
-            <p class="mb-3 text-xs text-muted">Use a remote URL directly (not copied to our server).</p>
-            <div class="flex gap-3">
-              <UInput v-model="newImageUrl" placeholder="https://…" class="flex-1" />
-              <UButton icon="i-lucide-link" :loading="savingImage" color="neutral" variant="outline" :disabled="!newImageUrl" @click="addImage">Link</UButton>
-            </div>
-          </div>
-          <div class="admin-table-wrap">
-            <div class="border-b border-[var(--color-admin-border)] p-4">
-              <h3 class="text-sm font-medium text-muted">Gallery ({{ product.images.length }}) — first image is the hero</h3>
-            </div>
-            <div class="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3 md:grid-cols-4">
-              <div v-for="(img, idx) in product.images" :key="img.id" class="group relative overflow-hidden rounded-lg border border-[var(--color-admin-border)]">
-                <img :src="resolveImgUrl(img.url)" :alt="img.altText ?? ''" class="aspect-square size-full object-cover" />
-                <div class="absolute inset-0 flex items-center justify-center gap-1 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                  <UButton icon="i-lucide-arrow-up" size="xs" variant="solid" color="neutral" :disabled="idx === 0" @click="moveImage(img.id, 'up')" />
-                  <UButton icon="i-lucide-arrow-down" size="xs" variant="solid" color="neutral" :disabled="idx === product.images.length - 1" @click="moveImage(img.id, 'down')" />
-                  <UButton icon="i-lucide-trash-2" size="xs" variant="solid" color="error" @click="deleteImage(img.id)" />
-                </div>
-                <UBadge v-if="idx === 0" size="sm" color="primary" variant="solid" class="absolute left-1 top-1">Hero</UBadge>
-              </div>
-            </div>
-            <p v-if="!product.images.length" class="px-4 py-12 text-center text-sm text-muted">No images yet.</p>
-          </div>
-        </div>
-
-        <!-- Landing Page Tab -->
-        <div v-show="activeTab === 'landingPage'" class="space-y-5">
-          <!-- Normal product page — always reachable, never affected by
-               landing pages below. -->
-          <div class="admin-kpi-card flex items-center justify-between gap-3 p-4">
-            <div class="min-w-0">
-              <p class="text-sm font-medium text-highlighted">Product page</p>
-              <a :href="productPageUrl" target="_blank" rel="noopener" class="truncate text-xs text-primary hover:underline">{{ productPageUrl }}</a>
-            </div>
-            <UButton icon="i-lucide-external-link" size="xs" variant="outline" color="neutral" label="View" :to="productPageUrl" target="_blank" />
-          </div>
-
-          <!-- Existing landing pages — a product can have several, each its
-               own URL, independently enabled. -->
-          <div v-if="landingPages.length" class="space-y-3">
-            <h3 class="text-sm font-medium text-muted">Landing pages ({{ landingPages.length }})</h3>
-            <div v-for="lp in landingPages" :key="lp.id" class="admin-kpi-card space-y-4 p-6">
-              <div class="flex flex-wrap items-start justify-between gap-3">
-                <div class="min-w-0">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <h4 class="font-medium text-highlighted">{{ lp.name }}</h4>
-                    <UBadge :color="sectionStatusColor[lp.status.toLowerCase()] ?? 'neutral'" variant="subtle">{{ lp.status }}</UBadge>
-                    <UBadge color="neutral" variant="outline">{{ lp.imageProvider }}</UBadge>
-                    <UIcon v-if="lp.status === 'Generating'" name="i-lucide-loader-circle" class="size-4 animate-spin text-muted" />
-                  </div>
-                  <div class="mt-1 flex items-center gap-1.5">
-                    <a :href="landingPageUrl(lp)" target="_blank" rel="noopener" class="truncate text-xs text-primary hover:underline">{{ landingPageUrl(lp) }}</a>
-                    <UButton icon="i-lucide-copy" size="2xs" variant="ghost" color="neutral" title="Copy URL" @click="copyLandingPageUrl(lp)" />
-                  </div>
-                </div>
-                <div class="flex shrink-0 items-center gap-2">
-                  <div v-if="lp.status === 'Completed'" class="flex items-center gap-1.5">
-                    <span class="text-xs text-muted">Live</span>
-                    <USwitch :model-value="lp.enabled" :loading="savingEnabledFor === lp.id" @update:model-value="toggleLandingPageEnabled(lp.id, $event as boolean)" />
-                  </div>
-                  <UButton
-                    icon="i-lucide-chevron-down"
-                    size="xs"
-                    variant="ghost"
-                    color="neutral"
-                    :class="expandedLandingPageId === lp.id && 'rotate-180'"
-                    @click="expandedLandingPageId = expandedLandingPageId === lp.id ? null : lp.id"
-                  />
-                  <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" :loading="deletingLandingPageId === lp.id" @click="deleteLandingPage(lp)" />
-                </div>
-              </div>
-
-              <p v-if="lp.errorMessage" class="flex items-start gap-1.5 text-sm text-error">
-                <UIcon name="i-lucide-alert-triangle" class="mt-0.5 size-4 shrink-0" />
-                {{ lp.errorMessage }}
-              </p>
-
-              <template v-if="expandedLandingPageId === lp.id">
-                <!-- Gemini composes the whole page in one image — there's no
-                     separate per-section image to preview, only the copy.
-                     "Regenerate"/"Edit" here edit that one section directly
-                     within the final image (see the API's editLandingPageImage). -->
-                <div v-if="lp.sections.length && lp.imageProvider === 'Gemini'" class="space-y-2">
-                  <div v-for="section in lp.sections" :key="section.id" class="space-y-1.5 rounded-md border border-[var(--color-admin-border)] p-2.5">
-                    <div class="flex items-start justify-between gap-2">
-                      <p class="min-w-0 flex-1 text-xs font-medium text-highlighted">
-                        <span class="uppercase text-muted">{{ section.role }}</span>
-                        <template v-if="section.headline"> — {{ section.headline }}</template>
-                        <span v-if="section.body" class="block text-muted">{{ section.body }}</span>
-                      </p>
-                      <UIcon
-                        v-if="section.status === 'generating' || section.status === 'failed'"
-                        :name="section.status === 'failed' ? 'i-lucide-circle-x' : 'i-lucide-loader-circle'"
-                        class="size-4 shrink-0 text-muted"
-                        :class="section.status === 'generating' && 'animate-spin'"
-                      />
-                    </div>
-                    <div class="flex gap-1">
-                      <UButton
-                        size="xs"
-                        variant="soft"
-                        color="neutral"
-                        icon="i-lucide-refresh-cw"
-                        block
-                        class="flex-1"
-                        :disabled="section.status === 'generating'"
-                        @click="regenerateSection(lp.id, section.id)"
-                      >
-                        Regenerate
-                      </UButton>
-                      <UButton
-                        size="xs"
-                        variant="soft"
-                        color="neutral"
-                        icon="i-lucide-pencil"
-                        title="Edit with instructions"
-                        :disabled="section.status === 'generating'"
-                        @click="toggleSectionEdit(section.id)"
-                      />
-                    </div>
-                    <div v-if="sectionEditOpenFor.has(section.id)" class="space-y-1.5">
-                      <UTextarea
-                        v-model="sectionEditInstructions[section.id]"
-                        placeholder="e.g. make the background blue, remove the price tag…"
-                        :rows="2"
-                        class="w-full text-xs"
-                      />
-                      <UButton
-                        size="xs"
-                        variant="solid"
-                        color="primary"
-                        icon="i-lucide-wand-2"
-                        block
-                        :disabled="section.status === 'generating' || !sectionEditInstructions[section.id]?.trim()"
-                        @click="regenerateSection(lp.id, section.id)"
-                      >
-                        {{ lp.finalImageUrl ? 'Edit this section' : 'Generate with instructions' }}
-                      </UButton>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Pollinations has no photo-editing ability, so each
-                     section really is its own separately generated image —
-                     unchanged, per-section thumbnail grid. -->
-                <div v-else-if="lp.sections.length" class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  <div v-for="section in lp.sections" :key="section.id" class="space-y-1.5 rounded-md border border-[var(--color-admin-border)] p-2">
-                    <button
-                      type="button"
-                      class="flex aspect-[3/4] w-full items-center justify-center overflow-hidden rounded bg-[var(--color-admin-surface-tint)]"
-                      :class="section.imageUrl && 'cursor-zoom-in'"
-                      :disabled="!section.imageUrl"
-                      @click="section.imageUrl && openLightbox(section.imageUrl)"
-                    >
-                      <img v-if="section.imageUrl" :src="resolveImgUrl(section.imageUrl)" class="size-full object-cover" />
-                      <UIcon
-                        v-else
-                        :name="section.status === 'failed' ? 'i-lucide-circle-x' : 'i-lucide-loader-circle'"
-                        class="size-6 text-muted"
-                        :class="section.status !== 'failed' && 'animate-spin'"
-                      />
-                    </button>
-                    <p class="line-clamp-2 text-xs font-medium text-highlighted">
-                      <span class="uppercase text-muted">{{ section.role }}</span>
-                      <template v-if="section.headline"> — {{ section.headline }}</template>
-                    </p>
-                    <div class="flex gap-1">
-                      <UButton
-                        size="xs"
-                        variant="soft"
-                        color="neutral"
-                        icon="i-lucide-refresh-cw"
-                        block
-                        class="flex-1"
-                        :disabled="section.status === 'generating'"
-                        @click="regenerateSection(lp.id, section.id)"
-                      >
-                        Regenerate
-                      </UButton>
-                      <UButton
-                        size="xs"
-                        variant="soft"
-                        color="neutral"
-                        icon="i-lucide-pencil"
-                        title="Edit with instructions"
-                        :disabled="section.status === 'generating'"
-                        @click="toggleSectionEdit(section.id)"
-                      />
-                    </div>
-                    <div v-if="sectionEditOpenFor.has(section.id)" class="space-y-1.5">
-                      <UTextarea
-                        v-model="sectionEditInstructions[section.id]"
-                        placeholder="e.g. make the background blue, remove the price tag…"
-                        :rows="2"
-                        class="w-full text-xs"
-                      />
-                      <UButton
-                        size="xs"
-                        variant="solid"
-                        color="primary"
-                        icon="i-lucide-wand-2"
-                        block
-                        :disabled="section.status === 'generating' || !sectionEditInstructions[section.id]?.trim()"
-                        @click="regenerateSection(lp.id, section.id)"
-                      >
-                        {{ section.imageUrl ? 'Edit image' : 'Generate with instructions' }}
-                      </UButton>
-                    </div>
-                  </div>
-                </div>
-
-                <div v-if="lp.finalImageUrl">
-                  <h4 class="mb-2 text-sm font-medium text-muted">Final long image</h4>
-                  <button type="button" class="cursor-zoom-in" @click="openLightbox(lp.finalImageUrl)">
-                    <img :src="resolveImgUrl(lp.finalImageUrl)" class="w-full max-w-sm rounded-md border border-[var(--color-admin-border)]" />
-                  </button>
-                </div>
-              </template>
-            </div>
-          </div>
-
-          <div class="admin-kpi-card space-y-5 p-6">
-            <div>
-              <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
-                <UIcon name="i-lucide-sparkles" class="size-4 text-primary" /> Generate a new landing page
-              </h3>
-              <p class="text-sm text-muted">
-                Turns this product's photos and description into a long-scroll marketing image — a hero section, a
-                few feature highlights, and a call-to-action. Gemini composes the entire page in a single generation
-                using your real photos; Pollinations (free) generates each section separately and stitches them
-                together. Publishes at its own URL, separate from the normal product page above — generate as many
-                as you like (different angles for different ad campaigns).
-              </p>
-            </div>
-
-            <UFormField label="Name" help="To tell multiple landing pages apart later — e.g. “TikTok angle”. Its URL is assigned automatically (/lp/product-slug/1, /2, ...).">
-              <UInput v-model="landingPageName" placeholder="Landing Page" class="w-full" />
-            </UFormField>
-
-            <UFormField
-              label="Description to generate from"
-              help="Its own text, separate from the product's description — prefilled from the product's description, key benefits, specifications, and FAQ combined, so there's as much detail as possible to draft from. Editing or improving it here never changes the product itself."
+        <AdsField v-if="product.images.length" label="Source photos (optional)">
+          <div class="grid grid-cols-4 gap-2 sm:grid-cols-6">
+            <button
+              v-for="img in product.images"
+              :key="img.id"
+              type="button"
+              class="relative aspect-square overflow-hidden rounded-md border-2 transition-colors"
+              :class="aiSourceImages.includes(img.url) ? 'border-primary' : 'border-[var(--color-admin-border)]'"
+              @click="toggleAiSourceImage(img.url)"
             >
-              <UTextarea v-model="landingPageDescription" class="w-full" :rows="6" />
-              <UButton
-                class="mt-2"
-                size="xs"
-                variant="soft"
-                color="neutral"
-                icon="i-lucide-wand-2"
-                :loading="improvingLandingPageDescription"
-                :disabled="!landingPageDescription.trim()"
-                @click="improveLandingPageDescription"
-              >
-                Improve with AI
-              </UButton>
-            </UFormField>
-
-            <UFormField label="Additional instructions (optional)" help="Art-direction or copy steer on top of the description — e.g. “target a younger audience”, “use a beach background”, “emphasize the 2-year warranty”.">
-              <UTextarea v-model="landingPageInstructions" placeholder="Any specific direction for the copy or visuals…" class="w-full" :rows="2" />
-            </UFormField>
-
-            <UFormField label="Source images" help="Pick 1–10 of this product's photos — the AI uses the real product shown in these, not an invented one.">
-              <div v-if="product.images.length" class="grid grid-cols-4 gap-2 sm:grid-cols-6">
-                <button
-                  v-for="img in product.images"
-                  :key="img.id"
-                  type="button"
-                  class="relative aspect-square overflow-hidden rounded-md border-2 transition-colors"
-                  :class="selectedSourceImages.includes(img.url) ? 'border-primary' : 'border-[var(--color-admin-border)]'"
-                  @click="toggleSourceImage(img.url)"
-                >
-                  <img :src="resolveImgUrl(img.url)" :alt="img.altText ?? ''" class="size-full object-cover" />
-                  <div v-if="selectedSourceImages.includes(img.url)" class="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-primary text-white">
-                    <UIcon name="i-lucide-check" class="size-3" />
-                  </div>
-                </button>
+              <img :src="resolveImgUrl(img.url)" :alt="img.altText ?? ''" class="size-full object-cover" />
+              <div v-if="aiSourceImages.includes(img.url)" class="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-primary text-white">
+                <AdsIcon name="i-lucide-check" class="size-3" />
               </div>
-              <p v-else class="text-sm text-muted">Add product photos in the Images tab first.</p>
-            </UFormField>
-
-            <UFormField label="Image provider" help="Gemini edits your real product photos and draws its own text, but needs Google Cloud billing enabled. Pollinations is free with no billing step, but generates a generic product-style image (not your real photos) and adds text separately.">
-              <div class="flex gap-2">
-                <button
-                  type="button"
-                  class="flex-1 rounded-md border-2 px-3 py-2 text-left text-sm transition-colors"
-                  :class="imageProvider === 'Gemini' ? 'border-primary bg-primary/5' : 'border-[var(--color-admin-border)]'"
-                  @click="selectImageProvider('Gemini')"
-                >
-                  <span class="font-medium">Gemini (Nano Banana)</span>
-                  <span class="block text-xs text-muted">Best quality — needs billing</span>
-                </button>
-                <button
-                  type="button"
-                  class="flex-1 rounded-md border-2 px-3 py-2 text-left text-sm transition-colors"
-                  :class="imageProvider === 'Pollinations' ? 'border-primary bg-primary/5' : 'border-[var(--color-admin-border)]'"
-                  @click="selectImageProvider('Pollinations')"
-                >
-                  <span class="font-medium">Pollinations</span>
-                  <span class="block text-xs text-muted">Free, no billing needed</span>
-                </button>
-              </div>
-            </UFormField>
-
-            <UFormField label="Number of sections">
-              <USelect v-model="sectionCount" :items="[3, 4, 5, 6, 7]" class="w-32" />
-            </UFormField>
-
-            <UButton
-              :loading="generatingLandingPage"
-              :disabled="!product.images.length"
-              color="primary"
-              icon="i-lucide-sparkles"
-              @click="generateLandingPage"
-            >
-              Generate landing page
-            </UButton>
+            </button>
           </div>
-        </div>
+        </AdsField>
 
-        <!-- Offers Tab -->
-        <div v-show="activeTab === 'offers'" class="space-y-5">
-          <div class="admin-kpi-card space-y-5 p-6">
-            <div>
-              <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
-                <UIcon name="i-lucide-tag" class="size-4 text-primary" /> Offers
-              </h3>
-              <p class="text-sm text-muted">
-                Quantity-based promos shown on the product page — the customer picks an offer card, which sets the
-                quantity for them and locks in that price.
-              </p>
-            </div>
+        <AdsField label="Additional instructions (optional)">
+          <AdsTextarea v-model="aiInstructions" placeholder="e.g. target a younger audience, emphasize the 2-year warranty…" :rows="2" class="w-full" />
+        </AdsField>
 
-            <div v-if="product.offers.length" class="space-y-2">
-              <div
-                v-for="offer in product.offers"
-                :key="offer.id"
-                class="flex items-center justify-between gap-3 rounded-md border border-[var(--color-admin-border)] p-3"
-              >
-                <div>
-                  <p class="text-sm font-medium text-highlighted">{{ offerSummary(offer) }}</p>
-                  <p class="text-xs text-muted">{{ offerTypeOptions.find(t => t.value === offer.type)?.label }}</p>
-                </div>
-                <div class="flex items-center gap-2">
-                  <USwitch
-                    :model-value="offer.enabled"
-                    :disabled="savingOfferId === offer.id"
-                    @update:model-value="toggleOfferEnabled(offer.id, $event as boolean)"
-                  />
-                  <UButton
-                    icon="i-lucide-trash-2"
-                    color="error"
-                    variant="ghost"
-                    size="sm"
-                    :disabled="savingOfferId === offer.id"
-                    @click="deleteOffer(offer.id)"
-                  />
-                </div>
-              </div>
-            </div>
-            <p v-else class="text-sm text-muted">No offers yet.</p>
-          </div>
+        <AdsButton :loading="generatingContent" :disabled="!aiRawContent.trim()" icon="i-lucide-sparkles" color="primary" @click="generateProductContent">
+          Generate
+        </AdsButton>
 
-          <!-- ADM-13 — for products only ever sold in fixed lots (wholesale
-               packs of e.g. 40 or 80 units, never a single unit): require the
-               customer to pick one of the offers above instead of using the
-               normal free-quantity stepper. Reuses the offers system as the
-               sole way to set quantity rather than an optional promo. -->
-          <div class="admin-kpi-card space-y-3 p-6">
-            <div class="flex items-center justify-between gap-3">
-              <div>
-                <h4 class="text-sm font-medium text-highlighted">Sell only in fixed quantities</h4>
-                <p class="text-sm text-muted">
-                  Hides the free-quantity stepper on the product page — the customer must pick one of the offers
-                  above (e.g. "40 units", "80 units") to buy at all. The first enabled offer is pre-selected by default.
-                </p>
-              </div>
-              <USwitch
-                :model-value="product.requireOfferSelection"
-                :loading="savingRequireOffer"
-                @update:model-value="toggleRequireOfferSelection($event as boolean)"
-              />
-            </div>
-            <div v-if="product.requireOfferSelection && !product.offers.some(o => o.enabled)" class="flex items-center gap-2 rounded-md bg-warning/10 px-3 py-2 text-sm text-warning">
-              <UIcon name="i-lucide-alert-triangle" class="size-4 shrink-0" />
-              No enabled offers yet — this product currently can't be bought at all. Add at least one offer above.
+        <div v-if="aiDraft" class="space-y-3 rounded-lg border border-[var(--color-admin-border)] p-4">
+          <div class="flex items-center justify-between gap-2">
+            <h3 style="font-size: 15px">Draft</h3>
+            <div class="flex gap-2">
+              <AdsButton size="xs" variant="ghost" color="neutral" label="Discard" @click="discardGeneratedContent" />
+              <AdsButton size="xs" variant="solid" color="primary" icon="i-lucide-check" label="Apply to form" @click="applyGeneratedContent" />
             </div>
           </div>
-
-          <div class="admin-kpi-card space-y-4 p-6">
-            <h4 class="text-sm font-medium text-highlighted">Add an offer</h4>
-
-            <UFormField label="Type">
-              <USelect v-model="newOffer.type" :items="offerTypeOptions" value-key="value" label-key="label" class="w-full" />
-            </UFormField>
-
-            <UFormField :label="newOffer.type === 'BuyXGetYFree' ? 'Paid quantity' : 'Required quantity'">
-              <UInputNumber v-model="newOffer.requiredQuantity" :min="1" class="w-32" />
-            </UFormField>
-
-            <UFormField v-if="newOffer.type === 'BuyXGetYFree'" label="Free quantity">
-              <UInputNumber v-model="newOffer.freeQuantity" :min="1" class="w-32" />
-            </UFormField>
-
-            <UFormField v-if="newOffer.type === 'FixedBundlePrice'" label="Bundle price (DZD)" help="Total price for the required quantity.">
-              <UInputNumber v-model="newOfferBundlePriceDzd" :min="0" class="w-40" />
-            </UFormField>
-
-            <p v-if="newOffer.type === 'FreeShipping'" class="text-sm text-muted">
-              Display-only — there's no shipping-fee concept yet, so this shows a badge but doesn't change the order total.
-            </p>
-
-            <UButton :loading="creatingOffer" color="primary" icon="i-lucide-plus" @click="createOffer">
-              Add offer
-            </UButton>
+          <div>
+            <p class="text-xs font-bold uppercase text-muted">Name</p>
+            <p class="text-sm text-highlighted">{{ aiDraft.name }}</p>
           </div>
-        </div>
-
-        <!-- Upsells Tab -->
-        <div v-show="activeTab === 'upsells'" class="space-y-5">
-          <div class="admin-kpi-card space-y-5 p-6">
-            <div>
-              <h3 class="mb-1 flex items-center gap-2 font-medium text-highlighted">
-                <UIcon name="i-lucide-plus-circle" class="size-4 text-primary" /> Upsells
-              </h3>
-              <p class="text-sm text-muted">
-                Products suggested to a customer right after they place an order for this one — shown on a one-click
-                "add this?" page before the order confirmation. Set a special price to sweeten the offer, or leave it
-                blank to use the product's normal price.
-              </p>
-            </div>
-
-            <div v-if="upsells.length" class="space-y-2">
-              <div
-                v-for="u in upsells"
-                :key="u.id"
-                class="flex items-center justify-between gap-3 rounded-md border border-[var(--color-admin-border)] p-3"
-              >
-                <div>
-                  <p class="text-sm font-medium text-highlighted">{{ u.upsellProduct.name }}</p>
-                  <p class="text-xs text-muted">
-                    {{ formatDzd(u.priceCentsOverride ?? u.upsellProduct.priceCents) }}
-                    <span v-if="u.priceCentsOverride != null">(normally {{ formatDzd(u.upsellProduct.priceCents) }})</span>
-                  </p>
-                </div>
-                <div class="flex items-center gap-2">
-                  <USwitch
-                    :model-value="u.enabled"
-                    :disabled="savingUpsellId === u.id"
-                    @update:model-value="toggleUpsellEnabled(u.id, $event as boolean)"
-                  />
-                  <UButton
-                    icon="i-lucide-trash-2"
-                    color="error"
-                    variant="ghost"
-                    size="sm"
-                    :disabled="savingUpsellId === u.id"
-                    @click="deleteUpsell(u.id)"
-                  />
-                </div>
-              </div>
-            </div>
-            <p v-else class="text-sm text-muted">No upsells configured yet.</p>
+          <div>
+            <p class="text-xs font-bold uppercase text-muted">Description</p>
+            <p class="whitespace-pre-line text-sm text-highlighted">{{ aiDraft.description }}</p>
           </div>
-
-          <div class="admin-kpi-card space-y-4 p-6">
-            <h4 class="text-sm font-medium text-highlighted">Add an upsell</h4>
-
-            <UFormField label="Suggested product">
-              <USelect
-                v-model="newUpsellProductId"
-                :items="otherProducts.map(p => ({ label: p.name, value: p.id }))"
-                placeholder="Choose a product…"
-                class="w-full"
-              />
-            </UFormField>
-
-            <UFormField label="Special price (DZD)" help="Leave blank to offer it at its normal price.">
-              <UInputNumber v-model="newUpsellPriceOverrideDzd" :min="0" class="w-40" />
-            </UFormField>
-
-            <UButton :loading="creatingUpsell" color="primary" icon="i-lucide-plus" @click="createUpsell">
-              Add upsell
-            </UButton>
+          <div v-if="aiDraft.keyBenefits.length">
+            <p class="text-xs font-bold uppercase text-muted">Key benefits</p>
+            <ul class="list-inside list-disc text-sm text-highlighted">
+              <li v-for="(b, i) in aiDraft.keyBenefits" :key="i">{{ b }}</li>
+            </ul>
           </div>
-        </div>
-
-        <!-- Inventory Tab -->
-        <div v-show="activeTab === 'inventory'" class="space-y-5">
-          <div class="admin-kpi-card p-6">
-            <h3 class="mb-4 text-sm font-medium text-muted">Current stock: <span class="tabular text-lg font-bold text-highlighted">{{ product.stockQuantity }}</span></h3>
-            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <UFormField label="Change (+/-)">
-                <UInputNumber v-model="adjustDelta" class="w-full" />
-              </UFormField>
-              <UFormField label="Reason">
-                <USelect v-model="adjustReason" :items="['Restock', 'Correction', 'Damage', 'Sale', 'Return']" class="w-full" />
-              </UFormField>
-              <UFormField label="Note">
-                <UInput v-model="adjustNote" placeholder="Optional…" class="w-full" />
-              </UFormField>
+          <div v-if="aiDraft.faqs.length" class="space-y-1.5">
+            <p class="text-xs font-bold uppercase text-muted">FAQ</p>
+            <div v-for="(f, i) in aiDraft.faqs" :key="i" class="text-sm">
+              <p class="font-medium text-highlighted">{{ f.question }}</p>
+              <p class="text-muted">{{ f.answer }}</p>
             </div>
-            <p class="mt-3 text-sm text-muted">New stock: <span class="tabular font-medium">{{ product.stockQuantity + adjustDelta }}</span></p>
-            <div class="mt-4 flex justify-end">
-              <UButton :loading="savingAdjust" color="primary" @click="saveAdjust">Save adjustment</UButton>
+          </div>
+          <div v-if="aiDraft.specifications.length" class="space-y-1">
+            <p class="text-xs font-bold uppercase text-muted">Specifications</p>
+            <div v-for="(s, i) in aiDraft.specifications" :key="i" class="flex justify-between gap-3 text-sm">
+              <span class="text-muted">{{ s.label }}</span>
+              <span class="font-medium text-highlighted">{{ s.value }}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Variant modal -->
-      <UModal v-model:open="showVariantModalBool">
-        <template #content>
-          <div v-if="editingVariant" class="space-y-4 p-6">
-            <h3 class="text-lg font-semibold">{{ editingVariant.id ? 'Edit' : 'New' }} variant</h3>
-            <UFormField label="SKU"><UInput v-model="editingVariant.sku" class="w-full" /></UFormField>
-            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <UFormField label="Price (DZD)"><UInputNumber v-model="editingVariantPriceDzd" :min="0" class="w-full" /></UFormField>
-              <UFormField label="Stock"><UInputNumber v-model="editingVariant.stockQuantity" class="w-full" /></UFormField>
-            </div>
-            <!-- Option selectors: one per applied attribute, rendered by type -->
-            <div v-for="attr in product?.attributes" :key="attr.id" class="space-y-2">
-              <p class="text-sm font-medium">{{ attr.name }} <span class="text-xs text-muted">({{ attr.type }})</span></p>
-              <div class="flex flex-wrap gap-2">
-                <button
-                  v-for="opt in attr.options"
-                  :key="opt.id"
-                  type="button"
-                  class="flex items-center gap-1.5 rounded-lg border-2 px-3 py-1.5 text-sm transition-colors"
-                  :class="editingVariant.optionIds.includes(opt.id) ? 'border-primary bg-primary/5 text-primary' : 'border-[var(--color-admin-border)] text-muted hover:border-primary/40'"
-                  @click="editingVariant.optionIds = editingVariant.optionIds.includes(opt.id) ? editingVariant.optionIds.filter((x) => x !== opt.id) : [...editingVariant.optionIds, opt.id]"
-                >
-                  <!-- Color: hex swatch -->
-                  <span v-if="attr.type === 'Color' && opt.colorHex" class="size-4 rounded-full border border-current/20" :style="{ backgroundColor: opt.colorHex }" />
-                  <!-- Swatch: image thumbnail -->
-                  <img v-if="attr.type === 'Swatch' && opt.displayValue" :src="opt.displayValue" :alt="opt.value" class="size-5 rounded object-cover" />
-                  <!-- Size: bold uppercase -->
-                  <span v-if="attr.type === 'Size'" class="font-bold uppercase">{{ opt.value }}</span>
-                  <!-- Boolean: icon -->
-                  <UIcon v-else-if="attr.type === 'Boolean'" :name="opt.value === 'Yes' ? 'i-lucide-check' : 'i-lucide-x'" class="size-4" />
-                  <!-- Measurement: value + unit -->
-                  <span v-else-if="attr.type === 'Measurement'">{{ opt.value }}<span v-if="opt.displayValue" class="text-muted"> {{ opt.displayValue }}</span></span>
-                  <!-- Text / Number (default) -->
-                  <span v-else>{{ opt.value }}</span>
-                </button>
-              </div>
-            </div>
-            <div class="flex justify-end gap-2">
-              <UButton color="neutral" variant="ghost" label="Cancel" @click="showVariantModalBool = false" />
-              <UButton :loading="savingVariant" label="Save variant" color="primary" @click="saveVariant" />
-            </div>
-          </div>
-        </template>
-      </UModal>
-
-      <!-- Generate variants modal — Cartesian product preview -->
-      <UModal v-model:open="showGenerateBool">
-        <template #content>
-          <div class="space-y-4 p-6">
-            <div class="flex items-center justify-between">
-              <h3 class="text-lg font-semibold">Generate variants</h3>
-              <UBadge color="primary" variant="subtle">{{ generatingCount }} combinations</UBadge>
-            </div>
-            <p class="text-sm text-muted">
-              All combinations from the product's applied attributes. Edit SKU, price, and stock for each,
-              remove any you don't want, then click "Create all" to add the rest in bulk.
-            </p>
-
-            <!-- Preview table -->
-            <div v-if="generatedVariants.length" class="max-h-96 overflow-y-auto rounded-lg border border-[var(--color-admin-border)]">
-              <table class="w-full text-sm">
-                <thead class="sticky top-0 bg-[var(--color-admin-surface)]">
-                  <tr>
-                    <th class="px-3 py-2 text-left">Combination</th>
-                    <th class="px-3 py-2 text-left">SKU</th>
-                    <th class="px-3 py-2 text-right">Price</th>
-                    <th class="px-3 py-2 text-right">Stock</th>
-                    <th class="px-3 py-2"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(gv, i) in generatedVariants" :key="i" class="border-t border-[var(--color-admin-border)]">
-                    <td class="px-3 py-2">
-                      <div class="flex items-center gap-1.5">
-                        <span
-                          v-for="sw in gv.colorSwatches"
-                          :key="sw.value"
-                          class="size-3 rounded-full border border-current/20"
-                          :style="{ backgroundColor: sw.colorHex ?? undefined }"
-                        />
-                        {{ gv.label }}
-                      </div>
-                    </td>
-                    <td class="px-3 py-2"><UInput v-model="gv.sku" size="xs" class="w-32" /></td>
-                    <td class="px-3 py-2">
-                      <UInputNumber
-                        :model-value="gv.priceCents / 100"
-                        :min="0"
-                        size="xs"
-                        class="w-24"
-                        @update:model-value="(v) => (gv.priceCents = Math.round((Number(v) || 0) * 100))"
-                      />
-                    </td>
-                    <td class="px-3 py-2"><UInputNumber v-model="gv.stockQuantity" size="xs" class="w-20" /></td>
-                    <td class="px-3 py-2 text-right">
-                      <UButton icon="i-lucide-x" size="xs" variant="ghost" color="error" title="Remove" @click="removeGeneratedVariant(i)" />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <p v-else class="rounded-lg border border-dashed border-[var(--color-admin-border)] px-4 py-8 text-center text-sm text-muted">
-              All combinations removed. Click "Regenerate" to start over.
-            </p>
-
-            <div class="flex items-center justify-between">
-              <UButton size="xs" variant="ghost" color="neutral" icon="i-lucide-rotate-ccw" label="Regenerate" @click="openGenerate" />
-              <div class="flex gap-2">
-                <UButton color="neutral" variant="ghost" label="Cancel" @click="showGenerateBool = false" />
-                <UButton :disabled="!generatedVariants.length" :loading="generating" icon="i-lucide-check" label="Create all" color="primary" @click="createGeneratedVariants" />
-              </div>
-            </div>
-          </div>
-        </template>
-      </UModal>
-
-      <!-- Lightbox — full-size preview for any landing-page section/final
-           image (see openLightbox in the Landing Page tab's script). -->
-      <UModal :open="!!lightboxUrl" :ui="{ content: 'max-w-4xl' }" @update:open="(v: boolean) => { if (!v) lightboxUrl = null }">
-        <template #content>
-          <div class="relative">
-            <UButton
-              icon="i-lucide-x"
-              size="sm"
-              variant="solid"
-              color="neutral"
-              class="absolute right-2 top-2 z-10"
-              @click="lightboxUrl = null"
+      <div class="card">
+        <AdsField label="Name"><AdsInput v-model="product.name" class="w-full" /></AdsField>
+        <AdsField label="Slug"><AdsInput v-model="product.slug" class="w-full" /></AdsField>
+        <AdsField label="Description">
+          <RichTextEditor v-model="product.description" />
+        </AdsField>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <AdsField label="Category">
+            <AdsSelect
+              v-model="product.categoryId"
+              :items="[{ label: 'None', value: null }, ...(categories ?? []).map((c) => ({ label: c.name, value: c.id }))]"
+              class="w-full"
             />
-            <img v-if="lightboxUrl" :src="lightboxUrl" class="max-h-[85vh] w-full rounded-lg object-contain" />
+          </AdsField>
+          <AdsField label="Price (DZD)"><AdsNumberInput v-model="productPriceDzd" :min="0" class="w-full" /></AdsField>
+        </div>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <AdsField label="Low-stock threshold"><AdsNumberInput v-model="product.lowStockThreshold" class="w-full" /></AdsField>
+          <div class="flex items-end gap-4 pb-1">
+            <AdsCheckbox v-model="product.featured" label="Featured" />
+            <AdsCheckbox v-model="product.bestSeller" label="Best seller" />
           </div>
-        </template>
-      </UModal>
+        </div>
+        <div class="card" style="flex-direction: row; align-items: center; justify-content: space-between">
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-highlighted">Visible on storefront</p>
+            <p class="muted">
+              Off hides this product from catalog, search, home sections, and other products' "related" — but its own product page
+              and any AI landing pages keep working for anyone with the direct link. Use this for ad-only funnel products.
+            </p>
+          </div>
+          <AdsSwitch :model-value="product.visible" :loading="savingVisible" @update:model-value="toggleVisible($event as boolean)" />
+        </div>
+        <div class="flex justify-end">
+          <AdsButton :loading="savingDetails" icon="i-lucide-save" color="primary" @click="saveDetails">Save details</AdsButton>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Tab — optional richer-PDP sections (currently used by the
+         Impulse template's Key Benefits/FAQ/Specifications sections).
+         Empty by default; a template shows nothing rather than fabricate
+         copy when a section is left blank. -->
+    <div v-show="activeTab === 'content'" class="stack">
+      <div class="card">
+        <div>
+          <h2 style="display: flex; align-items: center; gap: 8px">
+            <AdsIcon name="i-lucide-sparkles" style="width: 18px; height: 18px; color: var(--teal)" /> Key benefits
+          </h2>
+          <p class="muted">Short, customer-facing bullet points (e.g. "Waterproof up to 50m") — up to 8.</p>
+        </div>
+        <div v-for="(benefit, idx) in product.keyBenefits" :key="idx" class="flex items-center gap-2">
+          <AdsInput v-model="product.keyBenefits[idx]" placeholder="e.g. Waterproof up to 50m" class="flex-1" />
+          <AdsButton icon="i-lucide-trash-2" size="sm" variant="ghost" color="error" @click="removeBenefit(idx)" />
+        </div>
+        <AdsButton v-if="product.keyBenefits.length < 8" icon="i-lucide-plus" size="sm" variant="outline" color="neutral" label="Add benefit" @click="addBenefit" />
+      </div>
+
+      <div class="card">
+        <div>
+          <h2 style="display: flex; align-items: center; gap: 8px">
+            <AdsIcon name="i-lucide-circle-help" style="width: 18px; height: 18px; color: var(--teal)" /> FAQ
+          </h2>
+          <p class="muted">Common questions about this product — payment, delivery, sizing, returns, etc.</p>
+        </div>
+        <div v-for="(faq, idx) in product.faqs" :key="idx" class="space-y-2 rounded-md border border-[var(--color-admin-border)] p-3">
+          <div class="flex items-start justify-between gap-2">
+            <AdsInput v-model="faq.question" placeholder="Question" class="flex-1" />
+            <AdsButton icon="i-lucide-trash-2" size="sm" variant="ghost" color="error" @click="removeFaq(idx)" />
+          </div>
+          <AdsTextarea v-model="faq.answer" placeholder="Answer" :rows="2" class="w-full" />
+        </div>
+        <AdsButton v-if="product.faqs.length < 20" icon="i-lucide-plus" size="sm" variant="outline" color="neutral" label="Add question" @click="addFaq" />
+      </div>
+
+      <div class="card">
+        <div>
+          <h2 style="display: flex; align-items: center; gap: 8px">
+            <AdsIcon name="i-lucide-list-checks" style="width: 18px; height: 18px; color: var(--teal)" /> Specifications
+          </h2>
+          <p class="muted">Technical spec-table rows (e.g. "Material" / "Stainless steel") — distinct from variant options.</p>
+        </div>
+        <div v-for="(spec, idx) in product.specifications" :key="idx" class="flex items-center gap-2">
+          <AdsInput v-model="spec.label" placeholder="Label (e.g. Material)" class="w-48" />
+          <AdsInput v-model="spec.value" placeholder="Value (e.g. Stainless steel)" class="flex-1" />
+          <AdsButton icon="i-lucide-trash-2" size="sm" variant="ghost" color="error" @click="removeSpecification(idx)" />
+        </div>
+        <AdsButton v-if="product.specifications.length < 30" icon="i-lucide-plus" size="sm" variant="outline" color="neutral" label="Add specification" @click="addSpecification" />
+      </div>
+
+      <div class="flex justify-end">
+        <AdsButton :loading="savingContent" icon="i-lucide-save" color="primary" @click="saveContent">Save content</AdsButton>
+      </div>
+    </div>
+
+    <!-- Variants Tab -->
+    <div v-show="activeTab === 'variants'" class="stack">
+      <!-- Applied attributes -->
+      <div class="card">
+        <h2>Attributes this product varies on</h2>
+        <div v-if="product.attributes.length" class="mb-4 flex flex-wrap gap-2">
+          <AdsBadge v-for="attr in product.attributes" :key="attr.id" color="info" variant="subtle" class="flex items-center gap-1 py-1 pl-2 pr-1">
+            {{ attr.name }}
+            <button class="ml-1 rounded p-0.5 hover:bg-error/20" aria-label="Remove attribute" @click="removeAttribute(attr.id)">
+              <AdsIcon name="i-lucide-x" class="size-3" />
+            </button>
+          </AdsBadge>
+        </div>
+        <p v-else class="mb-4 text-sm text-muted">No attributes applied. Add one below to enable variant creation.</p>
+        <div v-if="availableAttributes.length" class="flex items-center gap-2">
+          <span class="muted">Add:</span>
+          <AdsButton
+            v-for="attr in availableAttributes"
+            :key="attr.id"
+            size="xs"
+            variant="outline"
+            color="neutral"
+            :label="attr.name"
+            @click="applyAttribute(attr.id)"
+          />
+        </div>
+        <p v-else class="muted">All available attributes are applied (or none exist — create some in Settings).</p>
+      </div>
+
+      <!-- Variants table -->
+      <div class="card">
+        <div class="card-head">
+          <h2>Variants ({{ product.variants.length }})</h2>
+          <div v-if="product.attributes.length" class="flex gap-2">
+            <AdsButton
+              icon="i-lucide-sparkles"
+              size="xs"
+              variant="outline"
+              color="primary"
+              label="Generate all"
+              @click="openGenerate"
+            />
+            <AdsButton
+              icon="i-lucide-plus"
+              size="xs"
+              color="primary"
+              label="Add variant"
+              @click="openCreateVariant"
+            />
+          </div>
+        </div>
+        <div class="table-wrap" v-if="product.variants.length"><table style="min-width: 520px">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Options</th>
+              <th class="num">Price</th>
+              <th class="num">Stock</th>
+              <th class="num">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="v in product.variants" :key="v.id">
+              <td class="strong">{{ v.sku }}</td>
+              <td class="muted">
+                <AdsBadge v-for="opt in v.options" :key="opt.id" size="sm" color="neutral" variant="subtle" class="mr-1">
+                  {{ opt.attributeName }}: {{ opt.value }}
+                </AdsBadge>
+              </td>
+              <td class="num"><AdsPrice :amount-cents="v.priceCents" /></td>
+              <td class="num">{{ v.stockQuantity }}</td>
+              <td class="num">
+                <AdsButton icon="i-lucide-pencil" size="xs" variant="ghost" color="neutral" @click="openEditVariant(v)" />
+                <AdsButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="deleteVariant(v.id)" />
+              </td>
+            </tr>
+          </tbody>
+        </table></div>
+        <p v-else-if="product.attributes.length" class="empty">No variants yet. Click "Add variant" to create one.</p>
+        <p v-else class="empty">Apply at least one attribute above before creating variants.</p>
+      </div>
+    </div>
+
+    <!-- Images Tab -->
+    <div v-show="activeTab === 'images'" class="stack">
+      <!-- Upload from computer -->
+      <div class="card">
+        <h2>Upload from computer</h2>
+        <div class="flex items-center gap-3">
+          <AdsButton
+            icon="i-lucide-upload"
+            color="primary"
+            :loading="uploadingFile"
+            label="Choose image file"
+            @click="triggerFileUpload"
+          />
+          <p class="muted">JPG, PNG, WebP, GIF, SVG, AVIF — max 10 MB</p>
+          <input
+            ref="fileInput"
+            type="file"
+            accept="image/*"
+            class="hidden"
+            @change="onFileSelected"
+          />
+        </div>
+      </div>
+
+      <!-- Download from URL -->
+      <div class="card">
+        <h2>Download from URL</h2>
+        <p class="muted">Paste an image URL — the server downloads and stores it locally so it won't break if the source goes offline.</p>
+        <div class="flex gap-3">
+          <AdsInput v-model="downloadUrlInput" placeholder="https://example.com/product.jpg" class="flex-1" />
+          <AdsInput v-model="newImageAlt" placeholder="Alt text (optional)" class="w-48" />
+          <AdsButton icon="i-lucide-download" :loading="downloadingUrl" color="primary" :disabled="!downloadUrlInput" @click="downloadAndAddImage">Download</AdsButton>
+        </div>
+      </div>
+
+      <!-- Direct link (external URL, not downloaded) -->
+      <div class="card">
+        <h2>Link external image</h2>
+        <p class="muted">Use a remote URL directly (not copied to our server).</p>
+        <div class="flex gap-3">
+          <AdsInput v-model="newImageUrl" placeholder="https://…" class="flex-1" />
+          <AdsButton icon="i-lucide-link" :loading="savingImage" color="neutral" variant="outline" :disabled="!newImageUrl" @click="addImage">Link</AdsButton>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <h2>Gallery ({{ product.images.length }}) — first image is the hero</h2>
+        </div>
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+          <div v-for="(img, idx) in product.images" :key="img.id" class="group relative overflow-hidden rounded-lg border border-[var(--color-admin-border)]">
+            <img :src="resolveImgUrl(img.url)" :alt="img.altText ?? ''" class="aspect-square size-full object-cover" />
+            <div class="absolute inset-0 flex items-center justify-center gap-1 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+              <AdsButton icon="i-lucide-arrow-up" size="xs" variant="solid" color="neutral" :disabled="idx === 0" @click="moveImage(img.id, 'up')" />
+              <AdsButton icon="i-lucide-arrow-down" size="xs" variant="solid" color="neutral" :disabled="idx === product.images.length - 1" @click="moveImage(img.id, 'down')" />
+              <AdsButton icon="i-lucide-trash-2" size="xs" variant="solid" color="error" @click="deleteImage(img.id)" />
+            </div>
+            <AdsBadge v-if="idx === 0" size="sm" color="primary" variant="solid" class="absolute left-1 top-1">Hero</AdsBadge>
+          </div>
+        </div>
+        <p v-if="!product.images.length" class="empty">No images yet.</p>
+      </div>
+    </div>
+
+    <!-- Landing Page Tab -->
+    <div v-show="activeTab === 'landingPage'" class="stack">
+      <!-- Normal product page — always reachable, never affected by
+           landing pages below. -->
+      <div class="card" style="flex-direction: row; align-items: center; justify-content: space-between">
+        <div class="min-w-0">
+          <p class="text-sm font-medium text-highlighted">Product page</p>
+          <a :href="productPageUrl" target="_blank" rel="noopener" class="truncate text-xs text-primary hover:underline">{{ productPageUrl }}</a>
+        </div>
+        <AdsButton icon="i-lucide-external-link" size="xs" variant="outline" color="neutral" label="View" :to="productPageUrl" target="_blank" />
+      </div>
+
+      <!-- Existing landing pages — a product can have several, each its
+           own URL, independently enabled. -->
+      <div v-if="landingPages.length" class="space-y-3">
+        <h2>Landing pages ({{ landingPages.length }})</h2>
+        <div v-for="lp in landingPages" :key="lp.id" class="card">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <h4 class="font-medium text-highlighted">{{ lp.name }}</h4>
+                <AdsBadge :color="sectionStatusColor[lp.status.toLowerCase()] ?? 'neutral'" variant="subtle">{{ lp.status }}</AdsBadge>
+                <AdsBadge color="neutral" variant="outline">{{ lp.imageProvider }}</AdsBadge>
+                <AdsIcon v-if="lp.status === 'Generating'" name="i-lucide-loader-circle" class="size-4 animate-spin text-muted" />
+              </div>
+              <div class="mt-1 flex items-center gap-1.5">
+                <a :href="landingPageUrl(lp)" target="_blank" rel="noopener" class="truncate text-xs text-primary hover:underline">{{ landingPageUrl(lp) }}</a>
+                <AdsButton icon="i-lucide-copy" size="2xs" variant="ghost" color="neutral" title="Copy URL" @click="copyLandingPageUrl(lp)" />
+              </div>
+            </div>
+            <div class="flex shrink-0 items-center gap-2">
+              <div v-if="lp.status === 'Completed'" class="flex items-center gap-1.5">
+                <span class="muted">Live</span>
+                <AdsSwitch :model-value="lp.enabled" :loading="savingEnabledFor === lp.id" @update:model-value="toggleLandingPageEnabled(lp.id, $event as boolean)" />
+              </div>
+              <AdsButton
+                icon="i-lucide-chevron-down"
+                size="xs"
+                variant="ghost"
+                color="neutral"
+                :class="expandedLandingPageId === lp.id && 'rotate-180'"
+                @click="expandedLandingPageId = expandedLandingPageId === lp.id ? null : lp.id"
+              />
+              <AdsButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" :loading="deletingLandingPageId === lp.id" @click="deleteLandingPage(lp)" />
+            </div>
+          </div>
+
+          <p v-if="lp.errorMessage" class="flex items-start gap-1.5 text-sm text-error">
+            <AdsIcon name="i-lucide-alert-triangle" class="mt-0.5 size-4 shrink-0" />
+            {{ lp.errorMessage }}
+          </p>
+
+          <template v-if="expandedLandingPageId === lp.id">
+            <!-- Gemini composes the whole page in one image — there's no
+                 separate per-section image to preview, only the copy.
+                 "Regenerate"/"Edit" here edit that one section directly
+                 within the final image (see the API's editLandingPageImage). -->
+            <div v-if="lp.sections.length && lp.imageProvider === 'Gemini'" class="space-y-2">
+              <div v-for="section in lp.sections" :key="section.id" class="space-y-1.5 rounded-md border border-[var(--color-admin-border)] p-2.5">
+                <div class="flex items-start justify-between gap-2">
+                  <p class="min-w-0 flex-1 text-xs font-medium text-highlighted">
+                    <span class="uppercase text-muted">{{ section.role }}</span>
+                    <template v-if="section.headline"> — {{ section.headline }}</template>
+                    <span v-if="section.body" class="block text-muted">{{ section.body }}</span>
+                  </p>
+                  <AdsIcon
+                    v-if="section.status === 'generating' || section.status === 'failed'"
+                    :name="section.status === 'failed' ? 'i-lucide-circle-x' : 'i-lucide-loader-circle'"
+                    class="size-4 shrink-0 text-muted"
+                    :class="section.status === 'generating' && 'animate-spin'"
+                  />
+                </div>
+                <div class="flex gap-1">
+                  <AdsButton
+                    size="xs"
+                    variant="soft"
+                    color="neutral"
+                    icon="i-lucide-refresh-cw"
+                    block
+                    class="flex-1"
+                    :disabled="section.status === 'generating'"
+                    @click="regenerateSection(lp.id, section.id)"
+                  >
+                    Regenerate
+                  </AdsButton>
+                  <AdsButton
+                    size="xs"
+                    variant="soft"
+                    color="neutral"
+                    icon="i-lucide-pencil"
+                    title="Edit with instructions"
+                    :disabled="section.status === 'generating'"
+                    @click="toggleSectionEdit(section.id)"
+                  />
+                </div>
+                <div v-if="sectionEditOpenFor.has(section.id)" class="space-y-1.5">
+                  <AdsTextarea
+                    v-model="sectionEditInstructions[section.id]"
+                    placeholder="e.g. make the background blue, remove the price tag…"
+                    :rows="2"
+                    class="w-full text-xs"
+                  />
+                  <AdsButton
+                    size="xs"
+                    variant="solid"
+                    color="primary"
+                    icon="i-lucide-wand-2"
+                    block
+                    :disabled="section.status === 'generating' || !sectionEditInstructions[section.id]?.trim()"
+                    @click="regenerateSection(lp.id, section.id)"
+                  >
+                    {{ lp.finalImageUrl ? 'Edit this section' : 'Generate with instructions' }}
+                  </AdsButton>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pollinations has no photo-editing ability, so each
+                 section really is its own separately generated image —
+                 unchanged, per-section thumbnail grid. -->
+            <div v-else-if="lp.sections.length" class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div v-for="section in lp.sections" :key="section.id" class="space-y-1.5 rounded-md border border-[var(--color-admin-border)] p-2">
+                <button
+                  type="button"
+                  class="flex aspect-[3/4] w-full items-center justify-center overflow-hidden rounded bg-[var(--color-admin-surface-tint)]"
+                  :class="section.imageUrl && 'cursor-zoom-in'"
+                  :disabled="!section.imageUrl"
+                  @click="section.imageUrl && openLightbox(section.imageUrl)"
+                >
+                  <img v-if="section.imageUrl" :src="resolveImgUrl(section.imageUrl)" class="size-full object-cover" />
+                  <AdsIcon
+                    v-else
+                    :name="section.status === 'failed' ? 'i-lucide-circle-x' : 'i-lucide-loader-circle'"
+                    class="size-6 text-muted"
+                    :class="section.status !== 'failed' && 'animate-spin'"
+                  />
+                </button>
+                <p class="line-clamp-2 text-xs font-medium text-highlighted">
+                  <span class="uppercase text-muted">{{ section.role }}</span>
+                  <template v-if="section.headline"> — {{ section.headline }}</template>
+                </p>
+                <div class="flex gap-1">
+                  <AdsButton
+                    size="xs"
+                    variant="soft"
+                    color="neutral"
+                    icon="i-lucide-refresh-cw"
+                    block
+                    class="flex-1"
+                    :disabled="section.status === 'generating'"
+                    @click="regenerateSection(lp.id, section.id)"
+                  >
+                    Regenerate
+                  </AdsButton>
+                  <AdsButton
+                    size="xs"
+                    variant="soft"
+                    color="neutral"
+                    icon="i-lucide-pencil"
+                    title="Edit with instructions"
+                    :disabled="section.status === 'generating'"
+                    @click="toggleSectionEdit(section.id)"
+                  />
+                </div>
+                <div v-if="sectionEditOpenFor.has(section.id)" class="space-y-1.5">
+                  <AdsTextarea
+                    v-model="sectionEditInstructions[section.id]"
+                    placeholder="e.g. make the background blue, remove the price tag…"
+                    :rows="2"
+                    class="w-full text-xs"
+                  />
+                  <AdsButton
+                    size="xs"
+                    variant="solid"
+                    color="primary"
+                    icon="i-lucide-wand-2"
+                    block
+                    :disabled="section.status === 'generating' || !sectionEditInstructions[section.id]?.trim()"
+                    @click="regenerateSection(lp.id, section.id)"
+                  >
+                    {{ section.imageUrl ? 'Edit image' : 'Generate with instructions' }}
+                  </AdsButton>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="lp.finalImageUrl">
+              <h3 style="font-size: 15px">Final long image</h3>
+              <button type="button" class="cursor-zoom-in" @click="openLightbox(lp.finalImageUrl)">
+                <img :src="resolveImgUrl(lp.finalImageUrl)" class="w-full max-w-sm rounded-md border border-[var(--color-admin-border)]" />
+              </button>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <div class="card">
+        <div>
+          <h2 style="display: flex; align-items: center; gap: 8px">
+            <AdsIcon name="i-lucide-sparkles" style="width: 18px; height: 18px; color: var(--teal)" /> Generate a new landing page
+          </h2>
+          <p class="muted">
+            Turns this product's photos and description into a long-scroll marketing image — a hero section, a
+            few feature highlights, and a call-to-action. Gemini composes the entire page in a single generation
+            using your real photos; Pollinations (free) generates each section separately and stitches them
+            together. Publishes at its own URL, separate from the normal product page above — generate as many
+            as you like (different angles for different ad campaigns).
+          </p>
+        </div>
+
+        <AdsField label="Name" help="To tell multiple landing pages apart later — e.g. “TikTok angle”. Its URL is assigned automatically (/lp/product-slug/1, /2, ...).">
+          <AdsInput v-model="landingPageName" placeholder="Landing Page" class="w-full" />
+        </AdsField>
+
+        <AdsField
+          label="Description to generate from"
+          help="Its own text, separate from the product's description — prefilled from the product's description, key benefits, specifications, and FAQ combined, so there's as much detail as possible to draft from. Editing or improving it here never changes the product itself."
+        >
+          <AdsTextarea v-model="landingPageDescription" class="w-full" :rows="6" />
+          <AdsButton
+            class="mt-2"
+            size="xs"
+            variant="soft"
+            color="neutral"
+            icon="i-lucide-wand-2"
+            :loading="improvingLandingPageDescription"
+            :disabled="!landingPageDescription.trim()"
+            @click="improveLandingPageDescription"
+          >
+            Improve with AI
+          </AdsButton>
+        </AdsField>
+
+        <AdsField label="Additional instructions (optional)" help="Art-direction or copy steer on top of the description — e.g. “target a younger audience”, “use a beach background”, “emphasize the 2-year warranty”.">
+          <AdsTextarea v-model="landingPageInstructions" placeholder="Any specific direction for the copy or visuals…" class="w-full" :rows="2" />
+        </AdsField>
+
+        <AdsField label="Source images" help="Pick 1–10 of this product's photos — the AI uses the real product shown in these, not an invented one.">
+          <div v-if="product.images.length" class="grid grid-cols-4 gap-2 sm:grid-cols-6">
+            <button
+              v-for="img in product.images"
+              :key="img.id"
+              type="button"
+              class="relative aspect-square overflow-hidden rounded-md border-2 transition-colors"
+              :class="selectedSourceImages.includes(img.url) ? 'border-primary' : 'border-[var(--color-admin-border)]'"
+              @click="toggleSourceImage(img.url)"
+            >
+              <img :src="resolveImgUrl(img.url)" :alt="img.altText ?? ''" class="size-full object-cover" />
+              <div v-if="selectedSourceImages.includes(img.url)" class="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-primary text-white">
+                <AdsIcon name="i-lucide-check" class="size-3" />
+              </div>
+            </button>
+          </div>
+          <p v-else class="muted">Add product photos in the Images tab first.</p>
+        </AdsField>
+
+        <AdsField label="Image provider" help="Gemini edits your real product photos and draws its own text, but needs Google Cloud billing enabled. Pollinations is free with no billing step, but generates a generic product-style image (not your real photos) and adds text separately.">
+          <div class="flex gap-2">
+            <button
+              type="button"
+              class="flex-1 rounded-md border-2 px-3 py-2 text-left text-sm transition-colors"
+              :class="imageProvider === 'Gemini' ? 'border-primary bg-primary/5' : 'border-[var(--color-admin-border)]'"
+              @click="selectImageProvider('Gemini')"
+            >
+              <span class="font-medium">Gemini (Nano Banana)</span>
+              <span class="block text-xs text-muted">Best quality — needs billing</span>
+            </button>
+            <button
+              type="button"
+              class="flex-1 rounded-md border-2 px-3 py-2 text-left text-sm transition-colors"
+              :class="imageProvider === 'Pollinations' ? 'border-primary bg-primary/5' : 'border-[var(--color-admin-border)]'"
+              @click="selectImageProvider('Pollinations')"
+            >
+              <span class="font-medium">Pollinations</span>
+              <span class="block text-xs text-muted">Free, no billing needed</span>
+            </button>
+          </div>
+        </AdsField>
+
+        <AdsField label="Number of sections">
+          <AdsSelect v-model="sectionCount" :items="[3, 4, 5, 6, 7]" class="w-32" />
+        </AdsField>
+
+        <AdsButton
+          :loading="generatingLandingPage"
+          :disabled="!product.images.length"
+          color="primary"
+          icon="i-lucide-sparkles"
+          @click="generateLandingPage"
+        >
+          Generate landing page
+        </AdsButton>
+      </div>
+    </div>
+
+    <!-- Offers Tab -->
+    <div v-show="activeTab === 'offers'" class="stack">
+      <div class="card">
+        <div>
+          <h2 style="display: flex; align-items: center; gap: 8px">
+            <AdsIcon name="i-lucide-tag" style="width: 18px; height: 18px; color: var(--teal)" /> Offers
+          </h2>
+          <p class="muted">
+            Quantity-based promos shown on the product page — the customer picks an offer card, which sets the
+            quantity for them and locks in that price.
+          </p>
+        </div>
+
+        <div v-if="product.offers.length" class="space-y-2">
+          <div
+            v-for="offer in product.offers"
+            :key="offer.id"
+            class="flex items-center justify-between gap-3 rounded-md border border-[var(--color-admin-border)] p-3"
+          >
+            <div>
+              <p class="text-sm font-medium text-highlighted">{{ offerSummary(offer) }}</p>
+              <p class="muted">{{ offerTypeOptions.find(t => t.value === offer.type)?.label }}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <AdsSwitch
+                :model-value="offer.enabled"
+                :disabled="savingOfferId === offer.id"
+                @update:model-value="toggleOfferEnabled(offer.id, $event as boolean)"
+              />
+              <AdsButton
+                icon="i-lucide-trash-2"
+                color="error"
+                variant="ghost"
+                size="sm"
+                :disabled="savingOfferId === offer.id"
+                @click="deleteOffer(offer.id)"
+              />
+            </div>
+          </div>
+        </div>
+        <p v-else class="muted">No offers yet.</p>
+      </div>
+
+      <!-- ADM-13 — for products only ever sold in fixed lots (wholesale
+           packs of e.g. 40 or 80 units, never a single unit): require the
+           customer to pick one of the offers above instead of using the
+           normal free-quantity stepper. Reuses the offers system as the
+           sole way to set quantity rather than an optional promo. -->
+      <div class="card">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <h3 style="font-size: 15px">Sell only in fixed quantities</h3>
+            <p class="muted">
+              Hides the free-quantity stepper on the product page — the customer must pick one of the offers
+              above (e.g. "40 units", "80 units") to buy at all. The first enabled offer is pre-selected by default.
+            </p>
+          </div>
+          <AdsSwitch
+            :model-value="product.requireOfferSelection"
+            :loading="savingRequireOffer"
+            @update:model-value="toggleRequireOfferSelection($event as boolean)"
+          />
+        </div>
+        <div v-if="product.requireOfferSelection && !product.offers.some(o => o.enabled)" class="flex items-center gap-2 rounded-md bg-warning/10 px-3 py-2 text-sm text-warning">
+          <AdsIcon name="i-lucide-alert-triangle" class="size-4 shrink-0" />
+          No enabled offers yet — this product currently can't be bought at all. Add at least one offer above.
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 15px">Add an offer</h3>
+
+        <AdsField label="Type">
+          <AdsSelect v-model="newOffer.type" :items="offerTypeOptions" value-key="value" label-key="label" class="w-full" />
+        </AdsField>
+
+        <AdsField :label="newOffer.type === 'BuyXGetYFree' ? 'Paid quantity' : 'Required quantity'">
+          <AdsNumberInput v-model="newOffer.requiredQuantity" :min="1" class="w-32" />
+        </AdsField>
+
+        <AdsField v-if="newOffer.type === 'BuyXGetYFree'" label="Free quantity">
+          <AdsNumberInput v-model="newOffer.freeQuantity" :min="1" class="w-32" />
+        </AdsField>
+
+        <AdsField v-if="newOffer.type === 'FixedBundlePrice'" label="Bundle price (DZD)" help="Total price for the required quantity.">
+          <AdsNumberInput v-model="newOfferBundlePriceDzd" :min="0" class="w-40" />
+        </AdsField>
+
+        <p v-if="newOffer.type === 'FreeShipping'" class="muted">
+          Display-only — there's no shipping-fee concept yet, so this shows a badge but doesn't change the order total.
+        </p>
+
+        <AdsButton :loading="creatingOffer" color="primary" icon="i-lucide-plus" @click="createOffer">
+          Add offer
+        </AdsButton>
+      </div>
+    </div>
+
+    <!-- Upsells Tab -->
+    <div v-show="activeTab === 'upsells'" class="stack">
+      <div class="card">
+        <div>
+          <h2 style="display: flex; align-items: center; gap: 8px">
+            <AdsIcon name="i-lucide-plus-circle" style="width: 18px; height: 18px; color: var(--teal)" /> Upsells
+          </h2>
+          <p class="muted">
+            Products suggested to a customer right after they place an order for this one — shown on a one-click
+            "add this?" page before the order confirmation. Set a special price to sweeten the offer, or leave it
+            blank to use the product's normal price.
+          </p>
+        </div>
+
+        <div v-if="upsells.length" class="space-y-2">
+          <div
+            v-for="u in upsells"
+            :key="u.id"
+            class="flex items-center justify-between gap-3 rounded-md border border-[var(--color-admin-border)] p-3"
+          >
+            <div>
+              <p class="text-sm font-medium text-highlighted">{{ u.upsellProduct.name }}</p>
+              <p class="muted">
+                {{ formatDzd(u.priceCentsOverride ?? u.upsellProduct.priceCents) }}
+                <span v-if="u.priceCentsOverride != null">(normally {{ formatDzd(u.upsellProduct.priceCents) }})</span>
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <AdsSwitch
+                :model-value="u.enabled"
+                :disabled="savingUpsellId === u.id"
+                @update:model-value="toggleUpsellEnabled(u.id, $event as boolean)"
+              />
+              <AdsButton
+                icon="i-lucide-trash-2"
+                color="error"
+                variant="ghost"
+                size="sm"
+                :disabled="savingUpsellId === u.id"
+                @click="deleteUpsell(u.id)"
+              />
+            </div>
+          </div>
+        </div>
+        <p v-else class="muted">No upsells configured yet.</p>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 15px">Add an upsell</h3>
+
+        <AdsField label="Suggested product">
+          <AdsSelect
+            v-model="newUpsellProductId"
+            :items="otherProducts.map(p => ({ label: p.name, value: p.id }))"
+            placeholder="Choose a product…"
+            class="w-full"
+          />
+        </AdsField>
+
+        <AdsField label="Special price (DZD)" help="Leave blank to offer it at its normal price.">
+          <AdsNumberInput v-model="newUpsellPriceOverrideDzd" :min="0" class="w-40" />
+        </AdsField>
+
+        <AdsButton :loading="creatingUpsell" color="primary" icon="i-lucide-plus" @click="createUpsell">
+          Add upsell
+        </AdsButton>
+      </div>
+    </div>
+
+    <!-- Inventory Tab -->
+    <div v-show="activeTab === 'inventory'" class="stack">
+      <div class="card">
+        <h2>Current stock: <span class="tabular text-lg font-bold text-highlighted">{{ product.stockQuantity }}</span></h2>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <AdsField label="Change (+/-)">
+            <AdsNumberInput v-model="adjustDelta" class="w-full" />
+          </AdsField>
+          <AdsField label="Reason">
+            <AdsSelect v-model="adjustReason" :items="['Restock', 'Correction', 'Damage', 'Sale', 'Return']" class="w-full" />
+          </AdsField>
+          <AdsField label="Note">
+            <AdsInput v-model="adjustNote" placeholder="Optional…" class="w-full" />
+          </AdsField>
+        </div>
+        <p class="mt-3 text-sm text-muted">New stock: <span class="tabular font-medium">{{ product.stockQuantity + adjustDelta }}</span></p>
+        <div class="mt-4 flex justify-end">
+          <AdsButton :loading="savingAdjust" color="primary" @click="saveAdjust">Save adjustment</AdsButton>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Variant modal -->
+  <AdsDialog v-model:open="showVariantModalBool" :title="`${editingVariant?.id ? 'Edit' : 'New'} variant`">
+      <template v-if="editingVariant">
+        <AdsField label="SKU"><AdsInput v-model="editingVariant.sku" class="w-full" /></AdsField>
+        <div class="grid-2">
+          <AdsField label="Price (DZD)"><AdsNumberInput v-model="editingVariantPriceDzd" :min="0" class="w-full" /></AdsField>
+          <AdsField label="Stock"><AdsNumberInput v-model="editingVariant.stockQuantity" class="w-full" /></AdsField>
+        </div>
+        <!-- Option selectors: one per applied attribute, rendered by type -->
+        <div v-for="attr in product?.attributes" :key="attr.id" class="stack" style="gap: 8px">
+          <b style="font-size: 14px">{{ attr.name }} <span class="muted">({{ attr.type }})</span></b>
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="opt in attr.options"
+              :key="opt.id"
+              type="button"
+              class="tag"
+              style="cursor: pointer; padding: 6px 10px"
+              :style="editingVariant.optionIds.includes(opt.id) ? 'background: var(--teal); color: var(--ivory); border-color: var(--teal)' : ''"
+              :aria-pressed="editingVariant.optionIds.includes(opt.id)"
+              @click="editingVariant.optionIds = editingVariant.optionIds.includes(opt.id) ? editingVariant.optionIds.filter((x) => x !== opt.id) : [...editingVariant.optionIds, opt.id]"
+            >
+              <!-- Color: hex swatch -->
+              <span v-if="attr.type === 'Color' && opt.colorHex" class="size-4 rounded-full border border-current/20" :style="{ backgroundColor: opt.colorHex }" />
+              <!-- Swatch: image thumbnail -->
+              <img v-if="attr.type === 'Swatch' && opt.displayValue" :src="opt.displayValue" :alt="opt.value" class="size-5 rounded object-cover" />
+              <!-- Size: bold uppercase -->
+              <span v-if="attr.type === 'Size'" class="font-bold uppercase">{{ opt.value }}</span>
+              <!-- Boolean: icon -->
+              <AdsIcon v-else-if="attr.type === 'Boolean'" :name="opt.value === 'Yes' ? 'i-lucide-check' : 'i-lucide-x'" class="size-4" />
+              <!-- Measurement: value + unit -->
+              <span v-else-if="attr.type === 'Measurement'">{{ opt.value }}<span v-if="opt.displayValue" class="text-muted"> {{ opt.displayValue }}</span></span>
+              <!-- Text / Number (default) -->
+              <span v-else>{{ opt.value }}</span>
+            </button>
+          </div>
+        </div>
+      </template>
+    <template #footer>
+      <button class="btn" type="button" @click="showVariantModalBool = false">Cancel</button>
+      <AdsButton :loading="savingVariant" label="Save variant" @click="saveVariant">Save variant</AdsButton>
     </template>
-  </UDashboardPanel>
+  </AdsDialog>
+
+  <!-- Generate variants modal — Cartesian product preview -->
+  <AdsDialog v-model:open="showGenerateBool" title="Generate variants" width="lg">
+        <div><span class="pill shipping">{{ generatingCount }} combinations</span></div>
+        <p class="muted">
+          All combinations from the product's applied attributes. Edit SKU, price, and stock for each,
+          remove any you don't want, then click "Create all" to add the rest in bulk.
+        </p>
+
+        <!-- Preview table -->
+        <div v-if="generatedVariants.length" style="max-height: 384px; overflow-y: auto">
+          <div class="table-wrap"><table style="min-width: 520px">
+            <thead>
+              <tr>
+                <th>Combination</th>
+                <th>SKU</th>
+                <th class="num">Price</th>
+                <th class="num">Stock</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(gv, i) in generatedVariants" :key="i">
+                <td>
+                  <div class="flex items-center gap-1.5">
+                    <span
+                      v-for="sw in gv.colorSwatches"
+                      :key="sw.value"
+                      class="size-3 rounded-full border border-current/20"
+                      :style="{ backgroundColor: sw.colorHex ?? undefined }"
+                    />
+                    {{ gv.label }}
+                  </div>
+                </td>
+                <td><AdsInput v-model="gv.sku" size="xs" class="w-32" /></td>
+                <td>
+                  <AdsNumberInput
+                    :model-value="gv.priceCents / 100"
+                    :min="0"
+                    size="xs"
+                    class="w-24"
+                    @update:model-value="(v) => (gv.priceCents = Math.round((Number(v) || 0) * 100))"
+                  />
+                </td>
+                <td><AdsNumberInput v-model="gv.stockQuantity" size="xs" class="w-20" /></td>
+                <td class="num">
+                  <AdsButton icon="i-lucide-x" size="xs" variant="ghost" color="error" title="Remove" @click="removeGeneratedVariant(i)" />
+                </td>
+              </tr>
+            </tbody>
+          </table></div>
+        </div>
+        <p v-else class="empty">
+          All combinations removed. Click "Regenerate" to start over.
+        </p>
+
+    <template #footer>
+      <AdsButton appearance="subtle" size="sm" icon="i-lucide-rotate-ccw" label="Regenerate" style="margin-right: auto" @click="openGenerate" />
+      <button class="btn" type="button" @click="showGenerateBool = false">Cancel</button>
+      <AdsButton :disabled="!generatedVariants.length" :loading="generating" icon="i-lucide-check" label="Create all" @click="createGeneratedVariants" />
+    </template>
+  </AdsDialog>
+
+  <!-- Lightbox — full-size preview for any landing-page section/final
+       image (see openLightbox in the Landing Page tab's script). -->
+  <AdsModal :open="!!lightboxUrl" :ui="{ content: 'max-w-4xl' }" @update:open="(v: boolean) => { if (!v) lightboxUrl = null }">
+    <template #content>
+      <div class="relative">
+        <AdsButton
+          icon="i-lucide-x"
+          size="sm"
+          variant="solid"
+          color="neutral"
+          class="absolute right-2 top-2 z-10"
+          @click="lightboxUrl = null"
+        />
+        <img v-if="lightboxUrl" :src="lightboxUrl" class="max-h-[85vh] w-full rounded-lg object-contain" />
+      </div>
+    </template>
+  </AdsModal>
+</AdsPage>
 </template>

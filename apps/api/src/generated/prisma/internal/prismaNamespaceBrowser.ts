@@ -97,7 +97,9 @@ export const ModelName = {
   SourcedProductCompetitor: 'SourcedProductCompetitor',
   ProductAdTest: 'ProductAdTest',
   ProductSourcingRequest: 'ProductSourcingRequest',
-  PageViewEvent: 'PageViewEvent'
+  PageViewEvent: 'PageViewEvent',
+  Funnel: 'Funnel',
+  FunnelStep: 'FunnelStep'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -772,6 +774,35 @@ export const PageViewEventScalarFieldEnum = {
 } as const
 
 export type PageViewEventScalarFieldEnum = (typeof PageViewEventScalarFieldEnum)[keyof typeof PageViewEventScalarFieldEnum]
+
+
+export const FunnelScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  templateId: 'templateId',
+  status: 'status',
+  productId: 'productId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FunnelScalarFieldEnum = (typeof FunnelScalarFieldEnum)[keyof typeof FunnelScalarFieldEnum]
+
+
+export const FunnelStepScalarFieldEnum = {
+  id: 'id',
+  funnelId: 'funnelId',
+  position: 'position',
+  type: 'type',
+  name: 'name',
+  enabled: 'enabled',
+  config: 'config',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FunnelStepScalarFieldEnum = (typeof FunnelStepScalarFieldEnum)[keyof typeof FunnelStepScalarFieldEnum]
 
 
 export const SortOrder = {

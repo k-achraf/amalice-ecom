@@ -251,7 +251,29 @@ export const PageViewType = {
   Home: 'Home',
   Product: 'Product',
   LandingPage: 'LandingPage',
+  Funnel: 'Funnel',
   Other: 'Other'
 } as const
 
 export type PageViewType = (typeof PageViewType)[keyof typeof PageViewType]
+
+
+export const FunnelStatus = {
+  Draft: 'Draft',
+  Live: 'Live',
+  Paused: 'Paused'
+} as const
+
+export type FunnelStatus = (typeof FunnelStatus)[keyof typeof FunnelStatus]
+
+
+export const FunnelStepType = {
+  Landing: 'Landing',
+  OrderForm: 'OrderForm',
+  OrderBump: 'OrderBump',
+  Upsell: 'Upsell',
+  Downsell: 'Downsell',
+  ThankYou: 'ThankYou'
+} as const
+
+export type FunnelStepType = (typeof FunnelStepType)[keyof typeof FunnelStepType]

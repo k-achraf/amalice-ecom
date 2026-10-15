@@ -4,20 +4,43 @@
     {
       "name": "admin",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "admin", "dev"],
+      "runtimeArgs": [
+        "--filter",
+        "admin",
+        "dev"
+      ],
       "port": 3001
     },
     {
       "name": "api",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "api", "dev"],
+      "runtimeArgs": [
+        "--filter",
+        "api",
+        "dev"
+      ],
       "port": 3333
     },
     {
       "name": "storefront",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "storefront", "dev"],
+      "runtimeArgs": [
+        "--filter",
+        "storefront",
+        "dev"
+      ],
       "port": 3000,
+      "autoPort": true
+    },
+    {
+      "name": "funnels",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "funnels",
+        "dev"
+      ],
+      "port": 3002,
       "autoPort": true
     }
   ]

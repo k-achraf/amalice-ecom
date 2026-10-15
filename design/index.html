@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Overview — Leezil Admin</title>
+  <link rel="icon" href="assets/img/leezil-icon-teal.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/pages/overview.js" defer></script>
+</head>
+<body>
+<div class="app" data-page="overview">
+  <main class="main">
+
+    <header class="page-head">
+      <div class="title">
+        <p>Good morning, Achraf</p>
+        <h1>Overview</h1>
+      </div>
+      <label class="search"><svg data-icon="search"></svg><span class="sr">Search</span><input type="search" placeholder="Search orders, products…"></label>
+      <button class="btn hide-sm" type="button"><svg data-icon="calendar"></svg>Last 30 days</button>
+      <button class="icon-btn hide-sm" type="button" aria-label="Notifications, 3 new"><svg data-icon="bell"></svg><span class="ping"></span></button>
+      <button class="avatar-btn hide-sm" type="button" aria-label="Account">AK</button>
+    </header>
+
+    <section class="kpis" aria-label="Key figures">
+      <div class="kpi dark">
+        <span class="label">Revenue</span>
+        <span class="value"><span id="kpi-revenue">—</span> <small>DA</small></span>
+        <span class="meta"><span class="delta brass" id="kpi-revenue-delta">—</span>vs previous 30 days</span>
+      </div>
+      <div class="kpi">
+        <span class="label">Orders</span>
+        <span class="value">342</span>
+        <span class="meta"><span class="delta">+8.1%</span>vs previous 30 days</span>
+      </div>
+      <div class="kpi">
+        <span class="label">Average order value</span>
+        <span class="value">3,651 <small>DA</small></span>
+        <span class="meta"><span class="delta">+4.6%</span>vs previous 30 days</span>
+      </div>
+      <div class="kpi">
+        <span class="label">Delivery success rate</span>
+        <span class="value">87.4%</span>
+        <span class="meta"><span class="delta down">−1.2%</span>16 parcels returned</span>
+      </div>
+    </section>
+
+    <div class="row stretch">
+      <section class="card wide" aria-labelledby="rev-h">
+        <div class="card-head">
+          <div style="flex-grow:1">
+            <h2 id="rev-h">Revenue</h2>
+            <p class="muted" style="margin:4px 0 0">Daily sales in DA · 12 Sep – 11 Oct</p>
+          </div>
+          <div class="legend"><span><span class="ln"></span>This period</span><span><span class="ln dash"></span>Previous period</span></div>
+        </div>
+        <div class="chart" id="revenue-chart"></div>
+        <div class="x-axis" aria-hidden="true"><span>12 Sep</span><span>19 Sep</span><span>26 Sep</span><span>3 Oct</span><span>11 Oct</span></div>
+      </section>
+
+      <section class="card narrow" aria-labelledby="st-h">
+        <div class="card-head"><h2 id="st-h">Orders by status</h2><a href="orders.html">View all</a></div>
+        <div class="stackbar" id="status-bar" aria-hidden="true"></div>
+        <ul class="list" id="status-list"></ul>
+        <a href="call-center.html" class="btn btn-primary" style="margin-top:auto" id="confirm-cta">Confirm new orders</a>
+      </section>
+    </div>
+
+    <div class="row">
+      <section class="card wide" aria-labelledby="ro-h">
+        <div class="card-head"><h2 id="ro-h">Recent orders</h2><a href="orders.html">See all orders</a></div>
+        <div class="table-wrap">
+          <table style="min-width:600px">
+            <thead><tr><th>Order</th><th>Customer</th><th>Wilaya</th><th class="num">Total</th><th>Status</th></tr></thead>
+            <tbody id="recent-orders"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="stack narrow">
+        <section class="card" aria-labelledby="tp-h">
+          <h2 id="tp-h" style="font-size:18px">Top products</h2>
+          <div class="stack" id="top-products" style="gap:14px"></div>
+        </section>
+        <section class="card alert-card" aria-labelledby="ls-h" style="gap:12px">
+          <div style="display:flex;align-items:center;gap:10px"><svg data-icon="alert" style="color:#C9A35E"></svg><h2 id="ls-h" style="font-size:18px">Low stock</h2></div>
+          <p style="margin:0;font-size:14px;line-height:1.6;opacity:.9">These products will run out within a week at the current pace.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px" id="low-stock-tags"></div>
+          <a href="products.html">Restock products</a>
+        </section>
+      </div>
+    </div>
+
+    <section class="card" aria-labelledby="wl-h">
+      <div class="card-head"><h2 id="wl-h">Sales by wilaya</h2><span class="muted">Share of revenue</span></div>
+      <div class="bars" id="wilaya-bars"></div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

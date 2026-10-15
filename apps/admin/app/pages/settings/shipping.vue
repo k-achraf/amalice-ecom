@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import type { WilayaShippingRate } from '@amalice/shared'
 
 // Per-wilaya delivery pricing — home delivery and desk (courier office
@@ -92,103 +93,133 @@ async function save() {
     saving.value = false
   }
 }
+
+// ---- Design chrome: filters, selection, price check, save bar ----
+const zoneFilter = ref('all')
+const search = ref('')
+const selected = ref<Set<string>>(new Set())
+const shown = computed(() => {
+  const q = search.value.trim().toLowerCase()
+  return rows.value.filter((r) => {
+    const on = r.homeDeliveryEnabled || r.deskDeliveryEnabled
+    return (zoneFilter.value === 'all' || (zoneFilter.value === 'on' ? on : !on)) && (!q || r.wilayaName.toLowerCase().includes(q))
+  })
+})
+function toggleAll(on: boolean) { selected.value = on ? new Set(shown.value.map((r) => r.wilayaId)) : new Set() }
+function toggleOne(id: string, on: boolean) {
+  const next = new Set(selected.value)
+  if (on) next.add(id)
+  else next.delete(id)
+  selected.value = next
+}
+function setSelected(on: boolean) {
+  for (const r of rows.value) if (selected.value.has(r.wilayaId)) { r.homeDeliveryEnabled = on; r.deskDeliveryEnabled = on }
+}
+function priceCents(v: string) {
+  const n = Number(v.replace(/[^\d.]/g, ''))
+  return v.trim() === '' || Number.isNaN(n) ? null : Math.round(n * 100)
+}
+const previewWilaya = ref<string | undefined>(undefined)
+const previewRow = computed(() => rows.value.find((r) => r.wilayaId === (previewWilaya.value ?? rows.value[0]?.wilayaId)) ?? null)
+// The save bar appears once the editable copy differs from what the server returned.
+const dirty = computed(() => !!rates.value && JSON.stringify(rows.value) !== JSON.stringify(rates.value))
+function discard() { if (rates.value) rows.value = rates.value.map((r) => ({ ...r })) }
+
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Shipping rates">
-        <template #leading>
-          <UDashboardSidebarCollapse />
-        </template>
-        <template #right>
-          <UButton :loading="saving" icon="i-lucide-save" @click="save">Save changes</UButton>
-        </template>
-      </UDashboardNavbar>
-    </template>
+  <AdsPage title="Shipping rates" description="What customers pay for delivery, by wilaya">
+    <div v-if="pending" class="empty">Loading…</div>
+    <template v-else>
+      <section class="kpis" aria-label="Coverage">
+        <AdsKpiCard label="Wilayas served" :value="enabledCount" color="dark" :meta="`of ${rows.length} wilayas`" />
+        <AdsKpiCard label="Home delivery" :value="rows.filter((r) => r.homeDeliveryEnabled).length" meta="wilayas enabled" />
+        <AdsKpiCard label="Stop desk" :value="rows.filter((r) => r.deskDeliveryEnabled).length" meta="wilayas enabled" />
+        <AdsKpiCard label="Not served" :value="rows.length - enabledCount" color="warning" meta="Both delivery types off" />
+      </section>
 
-    <template #body>
-      <div v-if="pending" class="py-24 text-center text-muted">Loading…</div>
-      <div v-else class="max-w-4xl space-y-6">
-        <div class="admin-kpi-card space-y-1 p-6">
-          <h2 class="font-medium text-highlighted">Home &amp; desk delivery, per wilaya</h2>
-          <p class="text-sm text-muted">
-            Each wilaya's home delivery (to the door) and desk delivery (courier office pickup) can be priced and
-            enabled independently — leave both off to make a wilaya unavailable for delivery entirely.
-            <span class="font-medium text-highlighted">{{ enabledCount }} of {{ rows.length }}</span> wilayas currently have at least one option enabled.
-          </p>
-        </div>
-
-        <div class="admin-kpi-card space-y-3 p-6">
-          <h3 class="text-sm font-medium text-muted">Quick fill</h3>
-          <div class="flex flex-wrap items-end gap-3">
-            <UFormField label="Home delivery price (DZD)">
-              <UInputNumber v-model="bulkHomePriceDzd" :min="0" class="w-40" />
-            </UFormField>
-            <UButton variant="outline" color="neutral" @click="applyHomeToEnabled">Apply to enabled rows</UButton>
-            <UFormField label="Desk delivery price (DZD)">
-              <UInputNumber v-model="bulkDeskPriceDzd" :min="0" class="w-40" />
-            </UFormField>
-            <UButton variant="outline" color="neutral" @click="applyDeskToEnabled">Apply to enabled rows</UButton>
+      <div class="split">
+        <section class="card" aria-label="Rates by wilaya">
+          <div class="card-head">
+            <AdsTabs v-model="zoneFilter" :items="[{ label: `All ${rows.length}`, value: 'all' }, { label: 'Served', value: 'on' }, { label: 'Not served', value: 'off' }]" />
+            <AdsSearch v-model="search" soft placeholder="Wilaya" label="Search wilaya" />
           </div>
-          <p class="text-xs text-muted">Toggle a wilaya's delivery type on below first, then use quick fill to price every enabled row at once.</p>
-        </div>
-
-        <div class="admin-kpi-card space-y-3 p-6">
-          <h3 class="text-sm font-medium text-muted">Bulk enable / disable</h3>
-          <div class="flex flex-wrap gap-3">
-            <UButton variant="outline" color="neutral" icon="i-lucide-check-check" @click="setAllEnabled('home', true)">Enable home delivery — all wilayas</UButton>
-            <UButton variant="outline" color="neutral" icon="i-lucide-x" @click="setAllEnabled('home', false)">Disable home delivery — all wilayas</UButton>
-            <UButton variant="outline" color="neutral" icon="i-lucide-check-check" @click="setAllEnabled('desk', true)">Enable desk delivery — all wilayas</UButton>
-            <UButton variant="outline" color="neutral" icon="i-lucide-x" @click="setAllEnabled('desk', false)">Disable desk delivery — all wilayas</UButton>
+          <div class="bulkbar" :class="{ on: selected.size > 0 }">
+            <span class="grow">{{ selected.size }} selected</span>
+            <button class="btn" type="button" @click="setSelected(true)">Enable</button>
+            <button class="btn" type="button" @click="setSelected(false)">Disable</button>
           </div>
-        </div>
+          <div class="table-wrap">
+            <table style="min-width: 640px">
+              <thead>
+                <tr>
+                  <th style="width: 28px"><input type="checkbox" aria-label="Select all wilayas" :checked="shown.length > 0 && shown.every((r) => selected.has(r.wilayaId))" @change="toggleAll(($event.target as HTMLInputElement).checked)"></th>
+                  <th>Wilaya</th><th>Home delivery</th><th>Stop desk</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in shown" :key="row.wilayaId" :style="!row.homeDeliveryEnabled && !row.deskDeliveryEnabled ? 'opacity: .55' : undefined">
+                  <td><input type="checkbox" :aria-label="`Select ${row.wilayaName}`" :checked="selected.has(row.wilayaId)" @change="toggleOne(row.wilayaId, ($event.target as HTMLInputElement).checked)"></td>
+                  <td class="strong">{{ row.wilayaName }}</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 10px">
+                      <AdsSwitch v-model="row.homeDeliveryEnabled" :aria-label="`Home delivery to ${row.wilayaName}`" />
+                      <div class="input-group" style="width: 130px">
+                        <input class="input sm" inputmode="numeric" :disabled="!row.homeDeliveryEnabled" :value="row.homeDeliveryPriceCents == null ? '' : row.homeDeliveryPriceCents / 100" :aria-label="`Home delivery price for ${row.wilayaName}`" @input="row.homeDeliveryPriceCents = priceCents(($event.target as HTMLInputElement).value)"><span class="addon">DA</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 10px">
+                      <AdsSwitch v-model="row.deskDeliveryEnabled" :aria-label="`Stop desk delivery to ${row.wilayaName}`" />
+                      <div class="input-group" style="width: 130px">
+                        <input class="input sm" inputmode="numeric" :disabled="!row.deskDeliveryEnabled" :value="row.deskDeliveryPriceCents == null ? '' : row.deskDeliveryPriceCents / 100" :aria-label="`Stop desk price for ${row.wilayaName}`" @input="row.deskDeliveryPriceCents = priceCents(($event.target as HTMLInputElement).value)"><span class="addon">DA</span>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
 
-        <div class="admin-kpi-card overflow-hidden">
-          <table class="w-full text-sm">
-            <thead class="border-b border-[var(--color-admin-border)] text-left text-xs uppercase tracking-wide text-muted">
-              <tr>
-                <th class="px-4 py-3 font-medium">Wilaya</th>
-                <th class="px-4 py-3 font-medium">Home delivery</th>
-                <th class="px-4 py-3 font-medium">Desk delivery</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-[var(--color-admin-border)]">
-              <tr v-for="row in rows" :key="row.wilayaId">
-                <td class="px-4 py-2.5 font-medium text-highlighted">{{ row.wilayaName }}</td>
-                <td class="px-4 py-2.5">
-                  <div class="flex items-center gap-2">
-                    <USwitch v-model="row.homeDeliveryEnabled" />
-                    <UInputNumber
-                      :model-value="row.homeDeliveryPriceCents == null ? null : row.homeDeliveryPriceCents / 100"
-                      :min="0"
-                      :disabled="!row.homeDeliveryEnabled"
-                      size="sm"
-                      class="w-32"
-                      placeholder="DZD"
-                      @update:model-value="(v) => (row.homeDeliveryPriceCents = v == null ? null : Math.round(Number(v) * 100))"
-                    />
-                  </div>
-                </td>
-                <td class="px-4 py-2.5">
-                  <div class="flex items-center gap-2">
-                    <USwitch v-model="row.deskDeliveryEnabled" />
-                    <UInputNumber
-                      :model-value="row.deskDeliveryPriceCents == null ? null : row.deskDeliveryPriceCents / 100"
-                      :min="0"
-                      :disabled="!row.deskDeliveryEnabled"
-                      size="sm"
-                      class="w-32"
-                      placeholder="DZD"
-                      @update:model-value="(v) => (row.deskDeliveryPriceCents = v == null ? null : Math.round(Number(v) * 100))"
-                    />
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="stack">
+          <section class="card" aria-labelledby="qf-h">
+            <div class="card-head"><h2 id="qf-h">Quick fill</h2></div>
+            <p class="card-sub">Toggle a wilaya's delivery type on first, then price every enabled row at once.</p>
+            <div class="field"><label class="label">Home delivery price</label><div class="input-group"><AdsNumberInput v-model="bulkHomePriceDzd" :min="0" /><span class="addon">DA</span></div></div>
+            <button class="btn" type="button" @click="applyHomeToEnabled">Apply to enabled home rows</button>
+            <div class="field"><label class="label">Stop desk price</label><div class="input-group"><AdsNumberInput v-model="bulkDeskPriceDzd" :min="0" /><span class="addon">DA</span></div></div>
+            <button class="btn" type="button" @click="applyDeskToEnabled">Apply to enabled desk rows</button>
+          </section>
+
+          <section class="card" aria-labelledby="be-h">
+            <div class="card-head"><h2 id="be-h">Enable / disable everywhere</h2></div>
+            <div class="setting" style="padding-top: 0"><div class="text"><b>Home delivery</b><span>All wilayas</span></div><div style="display: flex; gap: 6px"><button class="btn btn-sm" type="button" @click="setAllEnabled('home', true)">On</button><button class="btn btn-sm" type="button" @click="setAllEnabled('home', false)">Off</button></div></div>
+            <div class="setting" style="padding-bottom: 0"><div class="text"><b>Stop desk</b><span>All wilayas</span></div><div style="display: flex; gap: 6px"><button class="btn btn-sm" type="button" @click="setAllEnabled('desk', true)">On</button><button class="btn btn-sm" type="button" @click="setAllEnabled('desk', false)">Off</button></div></div>
+          </section>
+
+          <section class="card" aria-labelledby="pv-h">
+            <div class="card-head"><h2 id="pv-h">Check a price</h2></div>
+            <div class="field"><label class="label">Wilaya</label><AdsSelect v-model="previewWilaya" :options="rows.map((r) => ({ label: r.wilayaName, value: r.wilayaId }))" /></div>
+            <div class="totals">
+              <template v-if="previewRow">
+                <div v-if="!previewRow.homeDeliveryEnabled && !previewRow.deskDeliveryEnabled"><span>Delivery to {{ previewRow.wilayaName }} is turned off.</span></div>
+                <template v-else>
+                  <div><span>Home delivery</span><b>{{ previewRow.homeDeliveryEnabled && previewRow.homeDeliveryPriceCents != null ? `${previewRow.homeDeliveryPriceCents / 100} DA` : 'Not available' }}</b></div>
+                  <div><span>Stop desk</span><b>{{ previewRow.deskDeliveryEnabled && previewRow.deskDeliveryPriceCents != null ? `${previewRow.deskDeliveryPriceCents / 100} DA` : 'Not available' }}</b></div>
+                </template>
+              </template>
+            </div>
+          </section>
         </div>
       </div>
     </template>
-  </UDashboardPanel>
+  </AdsPage>
+
+  <div class="savebar" :class="{ on: dirty }">
+    <span>Shipping rates changed</span>
+    <button class="btn" type="button" @click="discard">Discard</button>
+    <button class="btn btn-brass" type="button" :disabled="saving" @click="save">Save</button>
+  </div>
 </template>

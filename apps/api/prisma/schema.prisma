@@ -176,6 +176,7 @@ model Product {
   upsellsOffered        ProductUpsell[]      @relation("UpsellTrigger")
   upsellsAsTarget       ProductUpsell[]      @relation("UpsellTarget")
   googleSheets          ProductGoogleSheet[]
+  funnels               Funnel[]
   // Reverse of SourcedProduct.linkedProductId — the research/ad-testing
   // candidate this product came from, when it went through that pipeline
   // rather than being created directly.
@@ -1445,6 +1446,7 @@ enum PageViewType {
   Home
   Product
   LandingPage
+  Funnel
   Other
 }
 
@@ -1460,4 +1462,60 @@ model PageViewEvent {
   @@index([entityId])
   @@index([visitorId])
   @@map("page_view_events")
+}
+
+// Product funnels (admin-only slice) — an ordered path for a product:
+// landing → order form → upsell → thank-you. `templateId` records which
+// starting layout from packages/shared's FUNNEL_TEMPLATES it was created from
+// (a static code catalog, not a table). The storefront does not render funnels
+// yet; status only reflects what the admin intends.
+enum FunnelStatus {
+  Draft
+  Live
+  Paused
+}
+
+enum FunnelStepType {
+  Landing
+  OrderForm
+  OrderBump
+  Upsell
+  Downsell
+  ThankYou
+}
+
+model Funnel {
+  id         String       @id @default(uuid())
+  name       String
+  slug       String       @unique
+  templateId String       @map("template_id")
+  status     FunnelStatus @default(Draft)
+  productId  String       @map("product_id")
+  product    Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  steps      FunnelStep[]
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+
+  @@index([productId])
+  @@index([status])
+  @@map("funnels")
+}
+
+model FunnelStep {
+  id        String         @id @default(uuid())
+  funnelId  String         @map("funnel_id")
+  funnel    Funnel         @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+  position  Int
+  type      FunnelStepType
+  name      String
+  enabled   Boolean        @default(true)
+  // FunnelStepConfig (packages/shared/src/funnel.ts): offerProductId,
+  // priceCentsOverride, headline. Kept as JSON so new step types can add
+  // settings without a migration.
+  config    Json           @default("{}")
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+
+  @@index([funnelId, position])
+  @@map("funnel_steps")
 }

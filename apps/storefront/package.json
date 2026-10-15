@@ -16,8 +16,11 @@
   "dependencies": {
     "@amalice/shared": "workspace:*",
     "@amalice/ui": "workspace:*",
+    "@nuxt/fonts": "0.14.0",
+    "@nuxt/icon": "2.3.1",
     "@nuxt/image": "^2.0.0",
     "@nuxt/ui": "4.10.0",
+    "@nuxtjs/color-mode": "4.0.1",
     "@nuxtjs/sitemap": "^8.2.2",
     "@pinia/nuxt": "1.0.1",
     "isomorphic-dompurify": "^3.20.0",

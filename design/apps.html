@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Apps — Leezil Admin</title>
+  <link rel="icon" href="assets/img/leezil-icon-teal.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/pages/apps.js" defer></script>
+</head>
+<body>
+<div class="app" data-page="apps">
+  <main class="main">
+
+    <header class="page-head">
+      <div class="title">
+        <p>Add tracking, messaging and sales tools to your store</p>
+        <h1>Apps</h1>
+      </div>
+      <label class="search"><svg data-icon="search"></svg><span class="sr">Search apps</span><input type="search" id="app-search" placeholder="Search apps"></label>
+    </header>
+
+    <div class="tabs" role="tablist" aria-label="Apps view">
+      <button type="button" role="tab" aria-selected="true" data-view="all">All apps</button>
+      <button type="button" role="tab" aria-selected="false" data-view="installed" id="installed-tab">Installed</button>
+    </div>
+
+    <div class="chips" id="app-cats" role="tablist" aria-label="Category" style="flex-grow:0"></div>
+
+    <div class="cards-grid" id="app-grid"></div>
+
+  </main>
+</div>
+</body>
+</html>

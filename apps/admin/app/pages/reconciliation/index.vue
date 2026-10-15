@@ -204,180 +204,117 @@ async function resolve(entryId: string) {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Cash Reconciliation">
-        <template #leading><UDashboardSidebarCollapse /></template>
-        <template #right><UButton icon="i-lucide-upload" size="sm" label="Import batch" @click="showImport = true" /></template>
-      </UDashboardNavbar>
+  <AdsPage title="Cash reconciliation" description="Match courier remittances against collected cash">
+    <template #actions>
+      <button class="btn btn-primary" type="button" @click="showImport = true"><AdsIcon name="i-lucide-upload" />Import batch</button>
     </template>
-    <template #body>
-      <div class="space-y-8">
-        <!-- Discrepancy queue (FIN-04) -->
-        <section v-if="discrepancies?.length">
-          <h2 class="mb-3 text-sm font-medium text-muted">Discrepancies (sorted by delta)</h2>
-          <div class="admin-table-wrap">
-            <table class="admin-table w-full text-sm">
-              <thead>
-                <tr>
-                  <th class="px-4 py-2.5 text-left">Courier ref</th>
-                  <th class="px-4 py-2.5 text-right">Expected</th>
-                  <th class="px-4 py-2.5 text-right">Collected</th>
-                  <th class="px-4 py-2.5 text-right">Delta</th>
-                  <th class="px-4 py-2.5 text-left">Resolve</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="e in discrepancies" :key="e.id">
-                  <td class="tabular px-4 py-3">{{ e.courierRef }}</td>
-                  <td class="tabular px-4 py-3 text-right"><PriceDisplay v-if="e.expectedCents != null" :amount-cents="e.expectedCents" /><template v-else>—</template></td>
-                  <td class="tabular px-4 py-3 text-right"><PriceDisplay :amount-cents="e.collectedCents" /></td>
-                  <td class="tabular px-4 py-3 text-right" :class="e.deltaCents && e.deltaCents !== 0 ? 'text-error font-medium' : 'text-warning'">
-                    <PriceDisplay v-if="e.deltaCents != null" :amount-cents="e.deltaCents" /><template v-else>unmatched</template>
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex gap-1">
-                      <UInput v-model="resolveNotes[e.id]" placeholder="reason…" size="xs" class="w-40" @keyup.enter="resolve(e.id)" />
-                      <UButton size="xs" :loading="resolving === e.id" :disabled="!resolveNotes[e.id]?.trim()" label="Resolve" @click="resolve(e.id)" />
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-        <EmptyState
-          v-else-if="!pending"
-          icon="i-lucide-check-circle-2"
-          title="No open discrepancies"
-          description="Every matched batch's entries are either matched or already resolved."
-        />
 
-        <!-- Batches (FIN-01/03) -->
-        <section>
-          <h2 class="mb-3 text-sm font-medium text-muted">Remittance batches</h2>
-          <div class="admin-table-wrap">
-            <table class="admin-table w-full text-sm">
-              <thead>
-                <tr>
-                  <th class="w-8 px-4 py-2.5"></th>
-                  <th class="px-4 py-2.5 text-left">Reference</th>
-                  <th class="px-4 py-2.5 text-left">Courier</th>
-                  <th class="px-4 py-2.5 text-left">Period</th>
-                  <th class="px-4 py-2.5 text-right">Total</th>
-                  <th class="px-4 py-2.5 text-left">Status</th>
-                  <th class="px-4 py-2.5 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="pending"><td colspan="7" class="px-4 py-12 text-center text-muted">Loading…</td></tr>
-                <tr v-else-if="!batches?.items.length"><td colspan="7" class="px-4 py-12 text-center text-muted">No batches yet. Click "Import batch" to bring in a courier's remittance report.</td></tr>
-                <template v-for="b in batches?.items" :key="b.id">
-                  <tr class="cursor-pointer" @click="toggleEntries(b.id)">
-                    <td class="px-4 py-3 text-muted">
-                      <UIcon :name="entriesByBatch[b.id] ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'" class="size-4" />
-                    </td>
-                    <td class="px-4 py-3 font-medium">{{ b.reference }}</td>
-                    <td class="px-4 py-3 text-muted">{{ b.courierName ?? '—' }}</td>
-                    <td class="px-4 py-3 text-xs text-muted">{{ b.periodStart?.slice(0, 10) }} → {{ b.periodEnd?.slice(0, 10) }}</td>
-                    <td class="tabular px-4 py-3 text-right"><PriceDisplay :amount-cents="b.totalCents" /></td>
-                    <td class="px-4 py-3"><UBadge :color="statusColor[b.status]" variant="subtle">{{ b.status }}</UBadge></td>
-                    <td class="px-4 py-3 text-right" @click.stop>
-                      <UButton
-                        v-if="b.status === 'Imported' || b.status === 'Discrepancy'"
-                        size="xs"
-                        variant="soft"
-                        color="primary"
-                        label="Auto-match"
-                        @click="runMatch(b.id)"
-                      />
-                    </td>
-                  </tr>
-                  <tr v-if="entriesByBatch[b.id] || loadingEntries[b.id]">
-                    <td colspan="7" class="bg-[var(--color-admin-surface-tint)] px-4 py-3">
-                      <p v-if="loadingEntries[b.id]" class="text-sm text-muted">Loading entries…</p>
-                      <p v-else-if="!entriesByBatch[b.id]?.length" class="text-sm text-muted">This batch has no entries.</p>
-                      <table v-else class="w-full text-xs">
-                        <thead class="text-left uppercase tracking-wide text-muted">
-                          <tr>
-                            <th class="py-1.5 pe-3">Courier ref</th>
-                            <th class="py-1.5 pe-3 text-right">Expected</th>
-                            <th class="py-1.5 pe-3 text-right">Collected</th>
-                            <th class="py-1.5 pe-3">Status</th>
-                            <th class="py-1.5">Note</th>
-                          </tr>
-                        </thead>
-                        <tbody class="divide-y divide-[var(--color-admin-border)]">
-                          <tr v-for="entry in entriesByBatch[b.id]" :key="entry.id">
-                            <td class="tabular py-1.5 pe-3">{{ entry.courierRef }}</td>
-                            <td class="tabular py-1.5 pe-3 text-right"><PriceDisplay v-if="entry.expectedCents != null" :amount-cents="entry.expectedCents" /><span v-else class="text-muted">—</span></td>
-                            <td class="tabular py-1.5 pe-3 text-right"><PriceDisplay :amount-cents="entry.collectedCents" /></td>
-                            <td class="py-1.5 pe-3"><UBadge :color="entryStatusColor[entry.status]" variant="subtle" size="sm">{{ entry.status }}</UBadge></td>
-                            <td class="py-1.5 text-muted">{{ entry.resolutionNote ?? '—' }}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </td>
-                  </tr>
-                </template>
-              </tbody>
-            </table>
-          </div>
-
-          <AdminPagination
-            class="mt-3"
-            :total="batches?.total ?? 0"
-            :page="currentPage"
-            :page-size="currentPageSize"
-            item-label="batches"
-            @update:page="goToPage"
-            @update:page-size="changePageSize"
-          />
-        </section>
+    <!-- Discrepancy queue (FIN-04) -->
+    <section v-if="discrepancies?.length" class="card" aria-label="Discrepancies">
+      <div class="card-head"><h2>Discrepancies</h2><span class="muted">Sorted by delta</span></div>
+      <div class="table-wrap">
+        <table style="min-width: 760px">
+          <thead><tr><th>Courier ref</th><th class="num">Expected</th><th class="num">Collected</th><th class="num">Delta</th><th>Resolve</th></tr></thead>
+          <tbody>
+            <tr v-for="e in discrepancies" :key="e.id">
+              <td class="mono">{{ e.courierRef }}</td>
+              <td class="num"><AdsPrice v-if="e.expectedCents != null" :amount-cents="e.expectedCents" /><template v-else>—</template></td>
+              <td class="num"><AdsPrice :amount-cents="e.collectedCents" /></td>
+              <td class="num strong" :style="{ color: e.deltaCents && e.deltaCents !== 0 ? 'var(--danger-fg)' : 'var(--warn-fg)' }">
+                <AdsPrice v-if="e.deltaCents != null" :amount-cents="e.deltaCents" /><template v-else>unmatched</template>
+              </td>
+              <td>
+                <div style="display: flex; gap: 6px; align-items: center">
+                  <AdsInput v-model="resolveNotes[e.id]" placeholder="Reason…" size="sm" style="width: 170px" @keyup.enter="resolve(e.id)" />
+                  <AdsButton size="sm" :loading="resolving === e.id" :disabled="!resolveNotes[e.id]?.trim()" label="Resolve" @click="resolve(e.id)" />
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+    </section>
+    <AdsEmptyState
+      v-else-if="!pending"
+      icon="i-lucide-check-circle-2"
+      title="No open discrepancies"
+      description="Every matched batch's entries are either matched or already resolved."
+    />
 
-      <!-- Import modal -->
-      <UModal v-model:open="showImport">
-        <template #content>
-          <div class="space-y-4 p-6">
-            <h3 class="text-lg font-semibold">Import remittance batch</h3>
-            <p class="text-sm text-muted">Paste the courier's own remittance report — one order per line, amounts in DZD.</p>
+    <!-- Batches (FIN-01/03) -->
+    <section class="card" aria-label="Remittance batches">
+      <div class="card-head"><h2>Remittance batches</h2></div>
+      <div class="table-wrap">
+        <table style="min-width: 820px">
+          <thead><tr><th style="width: 32px"><span class="sr">Expand</span></th><th>Reference</th><th>Courier</th><th>Period</th><th class="num">Total</th><th>Status</th><th class="num">Action</th></tr></thead>
+          <tbody>
+            <tr v-if="pending"><td colspan="7" class="empty">Loading…</td></tr>
+            <tr v-else-if="!batches?.items.length"><td colspan="7" class="empty">No batches yet. Click “Import batch” to bring in a courier's remittance report.</td></tr>
+            <template v-for="b in batches?.items" v-else :key="b.id">
+              <tr class="clickable" @click="toggleEntries(b.id)">
+                <td><AdsIcon :name="entriesByBatch[b.id] ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'" style="width: 16px; height: 16px; color: var(--text-2)" /></td>
+                <td class="strong">{{ b.reference }}</td>
+                <td class="muted">{{ b.courierName ?? '—' }}</td>
+                <td class="muted mono">{{ b.periodStart?.slice(0, 10) }} → {{ b.periodEnd?.slice(0, 10) }}</td>
+                <td class="num"><AdsPrice :amount-cents="b.totalCents" /></td>
+                <td><AdsBadge :color="statusColor[b.status]" variant="subtle">{{ b.status }}</AdsBadge></td>
+                <td class="num" @click.stop>
+                  <AdsButton v-if="b.status === 'Imported' || b.status === 'Discrepancy'" appearance="default" size="sm" label="Auto-match" @click="runMatch(b.id)" />
+                </td>
+              </tr>
+              <tr v-if="entriesByBatch[b.id] || loadingEntries[b.id]">
+                <td colspan="7" style="background: var(--ivory)">
+                  <p v-if="loadingEntries[b.id]" class="muted">Loading entries…</p>
+                  <p v-else-if="!entriesByBatch[b.id]?.length" class="muted">This batch has no entries.</p>
+                  <table v-else style="min-width: 560px">
+                    <thead><tr><th>Courier ref</th><th class="num">Expected</th><th class="num">Collected</th><th>Status</th><th>Note</th></tr></thead>
+                    <tbody>
+                      <tr v-for="entry in entriesByBatch[b.id]" :key="entry.id">
+                        <td class="mono">{{ entry.courierRef }}</td>
+                        <td class="num"><AdsPrice v-if="entry.expectedCents != null" :amount-cents="entry.expectedCents" /><span v-else class="muted">—</span></td>
+                        <td class="num"><AdsPrice :amount-cents="entry.collectedCents" /></td>
+                        <td><AdsBadge :color="entryStatusColor[entry.status]" variant="subtle">{{ entry.status }}</AdsBadge></td>
+                        <td class="muted">{{ entry.resolutionNote ?? '—' }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+      <AdsPagination :total="batches?.total ?? 0" :page="currentPage" :page-size="currentPageSize" item-label="batches" @update:page="goToPage" @update:page-size="changePageSize" />
+    </section>
 
-            <UFormField label="Courier" required>
-              <USelect
-                v-model="courierId"
-                :items="(couriers ?? []).map((c) => ({ label: c.name, value: c.id }))"
-                placeholder="Select a courier…"
-                class="w-full"
-              />
-              <p v-if="!couriers?.length" class="mt-1 text-xs text-warning">
-                No couriers yet — a courier only appears here once its first shipment has been dispatched.
-              </p>
-            </UFormField>
-            <UFormField label="Reference" required>
-              <UInput v-model="reference" placeholder="e.g. MAY-2026-001" class="w-full" />
-            </UFormField>
-            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <UFormField label="Period start"><UInput v-model="periodStart" type="datetime-local" class="w-full" /></UFormField>
-              <UFormField label="Period end"><UInput v-model="periodEnd" type="datetime-local" class="w-full" /></UFormField>
-            </div>
-            <p v-if="new Date(periodStart) > new Date(periodEnd)" class="text-xs text-error">Period start must be before period end.</p>
+    <!-- Import modal -->
+    <AdsDialog v-model:open="showImport" title="Import remittance batch" description="Paste the courier's own remittance report — one order per line, amounts in DZD.">
+      <AdsField label="Courier" required>
+        <AdsSelect v-model="courierId" :items="(couriers ?? []).map((c) => ({ label: c.name, value: c.id }))" placeholder="Select a courier…" />
+        <p v-if="!couriers?.length" class="muted" style="color: var(--warn-fg)">
+          No couriers yet — a courier only appears here once its first shipment has been dispatched.
+        </p>
+      </AdsField>
+      <AdsField label="Reference" required>
+        <AdsInput v-model="reference" placeholder="e.g. MAY-2026-001" />
+      </AdsField>
+      <div class="grid-2">
+        <AdsField label="Period start"><AdsInput v-model="periodStart" type="datetime-local" /></AdsField>
+        <AdsField label="Period end"><AdsInput v-model="periodEnd" type="datetime-local" /></AdsField>
+      </div>
+      <p v-if="new Date(periodStart) > new Date(periodEnd)" style="color: var(--danger-fg); font-size: 12px">Period start must be before period end.</p>
 
-            <UFormField label="Rows (one per line: courierRef,amount in DZD)">
-              <UTextarea v-model="importRows" :rows="6" class="w-full tabular" placeholder="FS-DEMO-1001,2500&#10;FS-DEMO-1002,8900" />
-            </UFormField>
-            <p class="text-xs" :class="parsedRows.invalidCount ? 'text-warning' : 'text-muted'">
-              {{ parsedRows.valid.length }} row{{ parsedRows.valid.length === 1 ? '' : 's' }} parsed
-              <template v-if="parsedRows.invalidCount">· {{ parsedRows.invalidCount }} line{{ parsedRows.invalidCount === 1 ? '' : 's' }} skipped (expected "ref,amount")</template>
-            </p>
-
-            <div class="flex justify-end gap-2">
-              <UButton color="neutral" variant="ghost" label="Cancel" @click="showImport = false" />
-              <UButton :loading="saving" :disabled="!canImport" label="Import" @click="runImport" />
-            </div>
-          </div>
-        </template>
-      </UModal>
-    </template>
-  </UDashboardPanel>
+      <AdsField label="Rows (one per line: courierRef,amount in DZD)">
+        <AdsTextarea v-model="importRows" :rows="6" class="mono" placeholder="FS-DEMO-1001,2500&#10;FS-DEMO-1002,8900" />
+      </AdsField>
+      <p class="muted" :style="parsedRows.invalidCount ? 'color: var(--warn-fg)' : ''">
+        {{ parsedRows.valid.length }} row{{ parsedRows.valid.length === 1 ? '' : 's' }} parsed
+        <template v-if="parsedRows.invalidCount">· {{ parsedRows.invalidCount }} line{{ parsedRows.invalidCount === 1 ? '' : 's' }} skipped (expected “ref,amount”)</template>
+      </p>
+      <template #footer>
+        <button class="btn" type="button" @click="showImport = false">Cancel</button>
+        <AdsButton :loading="saving" :disabled="!canImport" label="Import" @click="runImport" />
+      </template>
+    </AdsDialog>
+  </AdsPage>
 </template>

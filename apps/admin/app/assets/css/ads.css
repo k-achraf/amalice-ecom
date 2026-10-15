@@ -1,0 +1,138 @@
+/*
+ * Admin stylesheet entry (Tailwind v4 compiles per CSS entry).
+ *  - leezil.css: the Leezil brand tokens + shared classes, ported verbatim from design/.
+ *  - this file: Tailwind theme aliases (bg-ads-surface, text-ads-subtle, ...) onto
+ *    those tokens, plus a compat layer for older page templates.
+ * Admin-only — never imported by the storefront.
+ */
+@import "tailwindcss";
+@import "@fontsource-variable/outfit";
+@import "./leezil.css";
+
+@theme {
+  --font-sans: "Outfit Variable", "Outfit", system-ui, sans-serif;
+}
+
+:root {
+  /* Semantic aliases onto the Leezil brand tokens in leezil.css, so Tailwind
+     classes written against the ads-* names pick up the brand palette. */
+  --ads-canvas: var(--ivory);
+  --ads-surface: var(--white);
+  --ads-sunken: var(--ivory);
+  --ads-hover: var(--hover);
+  --ads-pressed: var(--ivory);
+  --ads-selected: var(--ivory);
+  --ads-selected-hover: var(--mist);
+  --ads-text: var(--pine);
+  --ads-subtle: var(--text-2);
+  --ads-subtlest: var(--text-2);
+  --ads-disabled: var(--sage-light);
+  --ads-border: var(--line);
+  --ads-border-soft: var(--line-soft);
+  --ads-border-input: var(--line);
+  --ads-focus: var(--teal);
+  --ads-primary: var(--teal);
+  --ads-primary-hover: var(--pine);
+  --ads-primary-pressed: var(--pine);
+  --ads-danger: var(--danger);
+  --ads-danger-hover: var(--danger-fg);
+  --ads-danger-pressed: var(--danger-fg);
+  --ads-success: var(--teal);
+  --ads-warning: var(--warn-fg);
+  --ads-nav: var(--teal);
+  --ads-overlay: rgb(14 41 40 / 0.5);
+  --ads-shadow-raised: none;
+  --ads-shadow-overlay: 0 12px 32px rgb(14 41 40 / 0.18);
+}
+
+@theme inline {
+  --color-ads-canvas: var(--ads-canvas);
+  --color-ads-surface: var(--ads-surface);
+  --color-ads-sunken: var(--ads-sunken);
+  --color-ads-hover: var(--ads-hover);
+  --color-ads-pressed: var(--ads-pressed);
+  --color-ads-selected: var(--ads-selected);
+  --color-ads-selected-hover: var(--ads-selected-hover);
+  --color-ads-text: var(--ads-text);
+  --color-ads-subtle: var(--ads-subtle);
+  --color-ads-subtlest: var(--ads-subtlest);
+  --color-ads-disabled: var(--ads-disabled);
+  --color-ads-border: var(--ads-border);
+  --color-ads-input: var(--ads-border-input);
+  --color-ads-focus: var(--ads-focus);
+  --color-ads-primary: var(--ads-primary);
+  --color-ads-primary-hover: var(--ads-primary-hover);
+  --color-ads-primary-pressed: var(--ads-primary-pressed);
+  --color-ads-danger: var(--ads-danger);
+  --color-ads-danger-hover: var(--ads-danger-hover);
+  --color-ads-danger-pressed: var(--ads-danger-pressed);
+  --color-ads-nav: var(--ads-nav);
+  --color-ads-overlay: var(--ads-overlay);
+  --color-brass: var(--brass);
+  --color-teal: var(--teal);
+  --color-pine: var(--pine);
+  --color-ivory: var(--ivory);
+  --color-mist: var(--mist);
+  --color-sage: var(--sage);
+  --shadow-ads-raised: var(--ads-shadow-raised);
+  --shadow-ads-overlay: var(--ads-shadow-overlay);
+  /* Legacy semantic names still used by page templates (text-muted, bg-elevated, ...). */
+  --color-muted: var(--ads-subtlest);
+  --color-toned: var(--ads-subtle);
+  --color-highlighted: var(--ads-text);
+  --color-elevated: var(--ads-hover);
+  --color-primary: var(--ads-primary);
+  --color-secondary: var(--ads-subtle);
+  --color-error: var(--ads-danger);
+  --color-success: var(--ads-success);
+  --color-warning: var(--ads-warning);
+  --color-info: var(--ads-primary);
+  --radius-ads: 6px;
+  --radius-ads-lg: 8px;
+}
+
+/* The layout root and portaled overlays carry .ads-root. */
+.ads-root {
+  background: var(--ads-canvas);
+  color: var(--ads-text);
+  line-height: normal;
+}
+.ads-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@utility border-default { border-color: var(--line); }
+@utility divide-default { & > :not(:last-child) { border-color: var(--line); } }
+@utility tabular { font-variant-numeric: tabular-nums; }
+
+/* ---- Compatibility layer: older page templates still use these names. ---- */
+:root {
+  --color-admin-bg: var(--ivory);
+  --color-admin-surface: var(--white);
+  --color-admin-surface-tint: var(--ivory);
+  --color-admin-border: var(--line-soft);
+  --color-admin-border-strong: var(--line);
+  --color-admin-row-hover: var(--hover);
+  --color-admin-row-selected: var(--ivory);
+  --color-admin-text-secondary: var(--text-2);
+  --radius-admin: 8px;
+  --shadow-admin-md: none;
+}
+@layer components {
+  .admin-kpi-card { background: var(--white); border-radius: var(--r-lg); }
+  a.admin-kpi-card:hover, .admin-kpi-card.is-interactive:hover { background: var(--hover); }
+  .admin-table-wrap { background: var(--white); border-radius: var(--r-lg); padding: 8px 20px; overflow-x: auto; }
+  .admin-table { width: 100%; }
+  .admin-table th, .admin-table td { white-space: nowrap; }
+  .admin-icon-chip { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--r); flex-shrink: 0; background: var(--mist); color: var(--teal); }
+  .admin-icon-chip-warning { background: var(--warn-bg); color: var(--warn-fg); }
+  .admin-icon-chip-error { background: var(--danger-bg); color: var(--danger-fg); }
+  .admin-icon-chip-success { background: var(--ok-bg); color: var(--teal); }
+  .admin-hero-band { background: var(--teal); color: var(--ivory); border-radius: var(--r-lg); }
+  .admin-surface { background: var(--ivory); color: var(--pine); min-height: 100vh; }
+}
+
+@layer components {
+  /* Underline tabs: the -1px active-border overlap otherwise creates a stray vertical scrollbar. */
+  .tabs { overflow-y: hidden; }
+}

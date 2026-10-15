@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import { CALL_CENTER_STATE_TO_ORDER_STATE, formatPhoneLocal, PRICE_EDITABLE_STATES, SHIPPING_STATE_TO_ORDER_STATE, type AdminOrderDetail, type OrderState, type ShippingCompanyView } from '@amalice/shared'
+import { CALL_CENTER_STATE_TO_ORDER_STATE, formatPhoneLocal, ORDER_STATE_LABELS, PRICE_EDITABLE_STATES, SHIPPING_STATE_TO_ORDER_STATE, type AdminOrderDetail, type OrderState, type ShippingCompanyView } from '@amalice/shared'
 import { VALID_TRANSITIONS } from '~/composables/order-transitions'
+import { toast } from 'vue-sonner'
+
+
 
 // Orders states that can still take an added item — mirrors
 // OrderItemsService.canAddOrderItems server-side (kept in sync by hand
@@ -13,7 +16,6 @@ const id = route.params.id as string
 useHead({ title: `Order ${id.slice(0, 8)}` })
 
 const api = useAdminApi()
-const toast = useToast()
 const { run } = useApiAction()
 const { data: order, pending, error, refresh } = await useAdminFetch<AdminOrderDetail>(`/admin/orders/${id}`, { key: `admin-order-${id}` })
 
@@ -22,7 +24,7 @@ const transitioning = ref<OrderState | null>(null)
 async function transition(to: OrderState, postponedUntil?: string) {
   transitioning.value = to
   await run(() => api(`/admin/orders/${id}/transition`, { method: 'POST', body: { to, postponedUntil } }), {
-    success: `Order moved to ${to}`,
+    success: `Order moved to ${ORDER_STATE_LABELS[to] ?? to}`,
     errorFallback: 'Could not update the order'
   })
   await refresh()
@@ -88,7 +90,7 @@ async function savePrice() {
   const shippingCents = Math.round(editShippingDzd.value * 100)
   const totalCents = Math.round(editTotalDzd.value * 100)
   if (!Number.isFinite(shippingCents) || !Number.isFinite(totalCents) || shippingCents < 0 || totalCents < 0) {
-    toast.add({ title: 'Enter valid amounts', color: 'warning' })
+    toast.warning('Enter valid amounts')
     return
   }
   savingPrice.value = true
@@ -249,7 +251,7 @@ const manualTrackingReference = ref('')
 const dispatchingManual = ref(false)
 async function dispatchManual() {
   if (!manualTrackingReference.value.trim()) {
-    toast.add({ title: 'Enter a tracking reference', color: 'warning' })
+    toast.warning('Enter a tracking reference')
     return
   }
   dispatchingManual.value = true
@@ -373,7 +375,7 @@ function variantLabelFor(v: ProductVariantOption) {
 
 async function submitAddItem() {
   if (!selectedProductId.value) {
-    toast.add({ title: 'Pick a product', color: 'warning' })
+    toast.warning('Pick a product')
     return
   }
   addingItem.value = true
@@ -389,515 +391,276 @@ async function submitAddItem() {
       }
     })
     showAddItem.value = false
-    toast.add({ title: 'Item added to order', color: 'success' })
+    toast.success('Item added to order')
   } catch (err) {
     const data = (err as { data?: { message?: string } })?.data
-    toast.add({ title: 'Failed to add item', description: data?.message, color: 'error' })
+    toast.error('Failed to add item', { description: data?.message })
   } finally {
     addingItem.value = false
   }
 }
+// Progress steps (design: `.steps`): the happy path; terminal negative states replace the last step's label.
+const STEP_LIST = ['Awaiting call', 'Confirmed', 'Packed', 'Out for delivery', 'Delivered']
+const STATE_POS: Partial<Record<OrderState, number>> = {
+  PendingCallCenter: 0, CallCenterNoAnswer: 0, WrongNumber: 0, Postponed: 0, OnHold: 0, Confirmed: 1, Packed: 2, HandedToCourier: 3, OutForDelivery: 3,
+  Delivered: 4, CashCollected: 4, Reconciled: 4, Settled: 4
+}
+const steps = computed(() => {
+  const st = order.value?.state
+  const pos = st ? STATE_POS[st] : undefined
+  if (pos !== undefined) return { list: STEP_LIST, pos: pos === 4 ? 5 : pos, final: '' }
+  return { list: STEP_LIST, pos: 4, final: st ? ORDER_STATE_LABELS[st] : '' }
+})
+function initials(name: string | null) {
+  return (name ?? '?').split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()
+}
+
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar :title="`Order ${id.slice(0, 8)}`">
-        <template #leading>
-          <UButton icon="i-lucide-arrow-left" color="neutral" variant="ghost" to="/orders" />
-          <UDashboardSidebarCollapse />
-        </template>
-        <template v-if="order" #right>
-          <UButton
-            :icon="order.archived ? 'i-lucide-archive-restore' : 'i-lucide-archive'"
-            size="sm"
-            color="neutral"
-            variant="outline"
-            :loading="archiving"
-            @click="toggleArchive"
-          >
-            {{ order.archived ? 'Unarchive' : 'Archive' }}
-          </UButton>
-        </template>
-      </UDashboardNavbar>
+  <AdsPage :title="`#${id.slice(0, 8)}`" :description="order ? `${fmtDateTime(order.createdAt)} · ${order.items.reduce((n, i) => n + i.quantity, 0)} item(s) · Cash on delivery` : undefined">
+    <template #breadcrumb>
+      <NuxtLink to="/orders">Orders</NuxtLink><AdsIcon name="i-lucide-chevron-right" style="width: 14px; height: 14px" /><span>#{{ id.slice(0, 8) }}</span>
+    </template>
+    <template v-if="order" #title-extra>
+      <AdsOrderStatus :state="CALL_CENTER_STATE_TO_ORDER_STATE[order.callCenterState]" />
+      <AdsOrderStatus v-if="order.shippingState" :state="SHIPPING_STATE_TO_ORDER_STATE[order.shippingState]" />
+    </template>
+    <template v-if="order" #actions>
+      <button class="btn" type="button" :disabled="archiving" @click="toggleArchive"><AdsIcon :name="order.archived ? 'i-lucide-archive-restore' : 'i-lucide-archive'" />{{ order.archived ? 'Unarchive' : 'Archive' }}</button>
     </template>
 
-    <template #body>
-      <div v-if="pending" class="py-24 text-center text-muted">Loading…</div>
-      <EmptyState v-else-if="error" icon="i-lucide-package-x" title="Order not found" />
-      <div v-else-if="order" class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <!-- Main column: items + status actions -->
-        <div class="space-y-6 lg:col-span-2">
-          <div v-if="order.archived" class="admin-kpi-card flex items-center gap-3 border-l-4 border-l-neutral-400 p-4">
-            <UIcon name="i-lucide-archive" class="size-5 shrink-0 text-muted" />
-            <p class="text-sm text-muted">
-              This order is archived — hidden from Orders, Call Center, Fulfillment, and Shipping. Click "Unarchive" above to restore it.
+    <div v-if="pending" class="empty">Loading…</div>
+    <AdsEmptyState v-else-if="error" icon="i-lucide-package-x" title="Order not found" description="It may have been removed, or the link is wrong.">
+      <NuxtLink to="/orders" class="btn" style="margin-top: 8px">Back to orders</NuxtLink>
+    </AdsEmptyState>
+
+    <template v-else-if="order">
+      <AdsBanner v-if="order.archived">This order is archived: hidden from Orders, Call Center, Fulfillment and Shipping. Use "Unarchive" to restore it.</AdsBanner>
+      <AdsBanner v-if="order.isDuplicate" tone="warning">
+        Possible duplicate: same customer and at least one shared product within the last 2 days.
+        <NuxtLink v-if="order.duplicateOfOrderId" :to="`/orders/${order.duplicateOfOrderId}`" style="font-weight: 600">View the earlier order</NuxtLink>
+      </AdsBanner>
+
+      <section class="card" aria-label="Order progress" style="gap: 12px">
+        <div class="steps">
+          <div v-for="(s, i) in steps.list" :key="s" :class="i < steps.pos ? 'done' : i === steps.pos ? 'current' : ''">{{ i === steps.list.length - 1 && steps.final ? steps.final : s }}</div>
+        </div>
+      </section>
+
+      <div class="split">
+        <div class="stack">
+          <section class="card flush" aria-labelledby="it-h">
+            <div class="card-head">
+              <h2 id="it-h">Items</h2>
+              <button v-if="ADD_ITEM_STATES.includes(order.state)" class="btn btn-sm" type="button" @click="openAddItem"><AdsIcon name="i-lucide-plus" />Add item</button>
+            </div>
+            <div class="table-wrap">
+              <table style="min-width: 520px">
+                <thead><tr><th style="padding-left: 20px">Product</th><th class="num">Price</th><th class="num">Qty</th><th class="num" style="padding-right: 20px">Total</th></tr></thead>
+                <tbody>
+                  <tr v-for="item in order.items" :key="item.id">
+                    <td style="padding-left: 20px">
+                      <div class="prod">
+                        <span class="thumb"><AdsIcon name="i-lucide-package" /></span>
+                        <span>
+                          <span class="strong">{{ item.product.name }}</span>
+                          <AdsLozenge v-if="item.isUpsell" tone="vip" style="margin-left: 6px">Upsell</AdsLozenge>
+                          <AdsLozenge v-if="item.offerId" tone="confirmed" style="margin-left: 6px">Offer</AdsLozenge>
+                          <span class="sub">{{ item.variantLabel ?? 'Default' }}</span>
+                        </span>
+                      </div>
+                    </td>
+                    <td class="num"><AdsPrice :amount-cents="item.unitPriceCents" /></td>
+                    <td class="num">× {{ item.quantity }}</td>
+                    <td class="num strong" style="padding-right: 20px"><AdsPrice :amount-cents="item.lineTotalCents" /></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div style="padding: 16px 20px">
+              <div class="totals">
+                <div><span>Subtotal</span><span><AdsPrice :amount-cents="itemsSubtotalCents" /></span></div>
+                <div><span>Delivery<template v-if="order.shippingType"> · {{ shippingTypeLabel[order.shippingType] }}</template> · {{ order.address.region }}</span><span><AdsPrice :amount-cents="order.shippingPriceCents" /></span></div>
+                <div class="grand"><span>To collect on delivery</span><span><AdsPrice :amount-cents="order.totalCents" /></span></div>
+              </div>
+              <!-- Price override: only while the order hasn't been confirmed (see PRICE_EDITABLE_STATES). -->
+              <button v-if="PRICE_EDITABLE_STATES.includes(order.state)" class="btn btn-sm" type="button" style="margin-top: 12px" @click="openPriceEditor"><AdsIcon name="i-lucide-pencil" />Edit price / shipping fee</button>
+            </div>
+          </section>
+
+          <!-- Shipping assignment: required before dispatch; never defaults to any company. -->
+          <section v-if="!order.shipment" class="card" aria-labelledby="dl-h">
+            <div class="card-head"><h2 id="dl-h">Delivery</h2></div>
+            <p class="muted" style="line-height: 1.5">
+              <template v-if="order.fulfillmentMethod === 'Unassigned'">Assign a shipping company or manual (in-house) delivery before this order can be dispatched.</template>
+              <template v-else>Assigned to <b>{{ order.fulfillmentMethod === 'Manual' ? 'manual delivery' : order.shippingCompanyName }}</b>. Reassign below if needed.</template>
             </p>
-          </div>
-
-          <div v-if="order.isDuplicate" class="admin-kpi-card flex items-center gap-3 border-l-4 border-l-red-500 p-4">
-            <UIcon name="i-lucide-copy-x" class="size-5 shrink-0 text-red-500" />
-            <p class="text-sm">
-              This looks like a possible duplicate — same customer and at least one shared product within the last 2 days.
-              <NuxtLink v-if="order.duplicateOfOrderId" :to="`/orders/${order.duplicateOfOrderId}`" class="font-medium text-primary hover:underline">
-                View the earlier order
-              </NuxtLink>
-            </p>
-          </div>
-
-          <div class="admin-kpi-card p-5">
-            <div class="mb-4 flex items-center justify-between">
-              <div>
-                <p class="text-sm text-muted">Total due (COD)</p>
-                <PriceDisplay :amount-cents="order.totalCents" class="text-2xl font-semibold" />
-              </div>
-              <div class="flex flex-wrap items-center gap-1.5">
-                <StatusBadge :state="CALL_CENTER_STATE_TO_ORDER_STATE[order.callCenterState]" />
-                <StatusBadge v-if="order.shippingState" :state="SHIPPING_STATE_TO_ORDER_STATE[order.shippingState]" />
+            <div class="grid-2">
+              <div class="field"><label class="label">Shipping company</label><AdsSelect v-model="selectedCompanyId" :options="companyOptions" placeholder="Choose a shipping company…" /></div>
+              <div class="field" style="justify-content: flex-end; flex-direction: row; gap: 8px; align-items: flex-end">
+                <button class="btn btn-primary" type="button" :disabled="!selectedCompanyId || assigning" @click="assignCompany">Assign company</button>
+                <button class="btn" type="button" :disabled="assigning" @click="assignManual"><AdsIcon name="i-lucide-user" />Own driver</button>
               </div>
             </div>
+            <p v-if="!companyOptions.length" class="hint muted">No shipping companies linked yet. Link one under Shipping companies, or use manual delivery.</p>
 
-            <div class="mb-2 flex items-center justify-between">
-              <h3 class="text-sm font-medium text-muted">Items</h3>
-              <UButton
-                v-if="ADD_ITEM_STATES.includes(order.state)"
-                size="xs"
-                variant="outline"
-                color="neutral"
-                icon="i-lucide-plus"
-                @click="openAddItem"
-              >
-                Add item
-              </UButton>
-            </div>
-            <ul class="divide-y divide-[var(--color-admin-border)]">
-              <li v-for="item in order.items" :key="item.id" class="flex items-center justify-between py-3">
-                <div>
-                  <div class="flex items-center gap-2">
-                    <NuxtLink :to="`/inventory`" class="font-medium hover:underline">{{ item.product.name }}</NuxtLink>
-                    <UBadge v-if="item.isUpsell" color="primary" variant="subtle" size="sm">Upsell</UBadge>
-                    <UBadge v-if="item.offerId" color="success" variant="subtle" size="sm">Offer</UBadge>
-                  </div>
-                  <p v-if="item.variantLabel" class="text-xs text-muted">{{ item.variantLabel }}</p>
-                  <p class="text-xs text-muted">Qty {{ item.quantity }} × <PriceDisplay :amount-cents="item.unitPriceCents" /></p>
-                </div>
-                <PriceDisplay :amount-cents="item.lineTotalCents" class="tabular font-medium" />
-              </li>
-            </ul>
-
-            <!-- Price breakdown — subtotal is derived (no stored column, see
-                 itemsSubtotalCents above); shipping and total come straight
-                 from the order record. -->
-            <div class="mt-3 space-y-1.5 border-t border-[var(--color-admin-border)] pt-3 text-sm">
-              <div class="flex items-center justify-between">
-                <span class="text-muted">Items subtotal</span>
-                <PriceDisplay :amount-cents="itemsSubtotalCents" class="tabular" />
+            <template v-if="order.state === 'Packed' && order.fulfillmentMethod !== 'Unassigned'">
+              <hr class="divider">
+              <button v-if="order.fulfillmentMethod === 'ShippingCompany'" class="btn btn-primary" type="button" style="align-self: flex-start" :disabled="shipmentActing === 'dispatch'" @click="dispatchToCourier"><AdsIcon name="i-lucide-truck" />Dispatch to courier</button>
+              <p v-if="order.fulfillmentMethod === 'ShippingCompany'" class="muted" style="line-height: 1.5">Or, if this shipment was arranged directly with the courier instead of through our API, record it manually:</p>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <input v-model="manualTrackingReference" class="input" style="max-width: 280px" placeholder="Tracking reference">
+                <button class="btn" type="button" :disabled="dispatchingManual || !manualTrackingReference.trim()" @click="dispatchManual"><AdsIcon name="i-lucide-package-check" />{{ order.fulfillmentMethod === 'Manual' ? 'Hand to delivery driver' : 'Dispatch manually' }}</button>
               </div>
-              <div class="flex items-center justify-between">
-                <span class="text-muted">Shipping<template v-if="order.shippingType"> — {{ shippingTypeLabel[order.shippingType] }}</template></span>
-                <PriceDisplay :amount-cents="order.shippingPriceCents" class="tabular" />
-              </div>
-              <div class="flex items-center justify-between border-t border-[var(--color-admin-border)] pt-1.5 font-semibold">
-                <span>Total due (COD)</span>
-                <PriceDisplay :amount-cents="order.totalCents" class="tabular" />
-              </div>
-            </div>
+            </template>
+          </section>
 
-            <!-- Call-center price override — only while the order hasn't been
-                 confirmed yet; once Confirmed, packing/shipping/reconciliation
-                 all key off these numbers as fixed (see PRICE_EDITABLE_STATES). -->
-            <UButton
-              v-if="PRICE_EDITABLE_STATES.includes(order.state)"
-              icon="i-lucide-pencil"
-              size="xs"
-              variant="outline"
-              color="neutral"
-              class="mt-3"
-              label="Edit price / shipping fee"
-              @click="openPriceEditor"
-            />
-          </div>
-
-          <!-- Manual transition: the UI only offers valid next states, making an
-               illegal transition impossible to submit (server re-validates). -->
-          <div v-if="VALID_TRANSITIONS[order.state]?.length" class="admin-kpi-card p-5">
-            <h3 class="mb-3 text-sm font-medium text-muted">Advance status</h3>
-            <div class="flex flex-wrap gap-2">
-              <UButton
-                v-for="next in VALID_TRANSITIONS[order.state]"
-                :key="next"
-                :color="next === 'Cancelled' ? 'error' : 'primary'"
-                :variant="next === 'Cancelled' ? 'outline' : 'solid'"
-                :loading="transitioning === next"
-                :label="next"
-                size="sm"
-                @click="next === 'Postponed' ? openPostpone() : transition(next)"
-              />
-            </div>
-            <p class="mt-3 text-xs text-muted">Only valid transitions are shown. The server re-validates each one.</p>
-          </div>
-
-          <!-- Notes — free text per order, shared with the call-center pages and
-               mirrored into the Google Sheets integration (see GoogleSheetsService). -->
-          <div class="admin-kpi-card p-5">
-            <div class="mb-2 flex items-center justify-between">
-              <h3 class="text-sm font-medium text-muted">Notes</h3>
-              <UButton
-                icon="i-lucide-sticky-note"
-                size="xs"
-                variant="outline"
-                color="neutral"
-                :label="order.notes ? 'Edit note' : 'Add note'"
-                @click="openNotes"
-              />
-            </div>
-            <p v-if="order.notes" class="whitespace-pre-wrap text-sm text-muted">{{ order.notes }}</p>
-            <p v-else class="text-sm text-muted">No notes yet.</p>
-          </div>
-
-          <!-- Shipping assignment — required before dispatch; never defaults
-               to any particular company (see FulfillmentService's comments
-               on assignShippingCompany/assignManual/createShipmentForOrder). -->
-          <div v-if="!order.shipment" class="admin-kpi-card p-5">
-            <h3 class="mb-3 text-sm font-medium text-muted">Shipping</h3>
-            <p v-if="order.fulfillmentMethod === 'Unassigned'" class="mb-3 text-xs text-muted">
-              Assign a shipping company or manual (in-house) delivery before this order can be dispatched.
-            </p>
-            <p v-else class="mb-3 text-sm">
-              Assigned to
-              <span class="font-medium text-highlighted">{{ order.fulfillmentMethod === 'Manual' ? 'Manual delivery' : order.shippingCompanyName }}</span>
-              — reassign below if needed.
-            </p>
-            <div class="flex flex-wrap items-center gap-2">
-              <USelect
-                v-model="selectedCompanyId"
-                :items="companyOptions"
-                placeholder="Choose a shipping company…"
-                class="w-56"
-              />
-              <UButton
-                size="sm"
-                :loading="assigning"
-                :disabled="!selectedCompanyId"
-                label="Assign company"
-                @click="assignCompany"
-              />
-              <UButton
-                size="sm"
-                color="neutral"
-                variant="outline"
-                icon="i-lucide-user"
-                :loading="assigning"
-                label="Manual delivery (own driver)"
-                @click="assignManual"
-              />
-            </div>
-            <p v-if="!companyOptions.length" class="mt-2 text-xs text-muted">
-              No shipping companies linked yet — link one under Settings → Shipping Companies, or use manual delivery.
-            </p>
-
-            <div v-if="order.state === 'Packed' && order.fulfillmentMethod !== 'Unassigned'" class="mt-4 flex flex-col gap-3">
-              <UButton
-                v-if="order.fulfillmentMethod === 'ShippingCompany'"
-                icon="i-lucide-truck"
-                size="sm"
-                class="self-start"
-                :loading="shipmentActing === 'dispatch'"
-                label="Dispatch to courier"
-                @click="dispatchToCourier"
-              />
-              <p v-if="order.fulfillmentMethod === 'ShippingCompany'" class="text-xs text-muted">
-                Or, if this shipment was arranged directly with the courier (phone/portal) instead of through our API, record it manually below:
-              </p>
-              <div class="flex flex-wrap items-center gap-2">
-                <UInput
-                  v-model="manualTrackingReference"
-                  placeholder="Tracking reference"
-                  class="w-56"
-                />
-                <UButton
-                  icon="i-lucide-package-check"
-                  size="sm"
-                  color="neutral"
-                  variant="outline"
-                  :loading="dispatchingManual"
-                  :disabled="!manualTrackingReference.trim()"
-                  :label="order.fulfillmentMethod === 'Manual' ? 'Hand to delivery driver' : 'Dispatch manually'"
-                  @click="dispatchManual"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Shipment / fulfillment -->
-          <div v-if="order.shipment" class="admin-kpi-card p-5">
-            <h3 class="mb-3 text-sm font-medium text-muted">Shipment</h3>
-            <dl class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-              <div><dt class="text-muted">Courier</dt><dd>{{ order.shipment.courier.name }}</dd></div>
-              <div><dt class="text-muted">Tracking ref</dt><dd class="tabular">{{ order.shipment.trackingReference ?? '— (manual delivery)' }}</dd></div>
-              <div><dt class="text-muted">Courier status</dt><dd>{{ order.shipment.courierStatus ?? '—' }}</dd></div>
-              <!-- Filled in from a courier webhook payload (e.g. DHD's
-                   state-webhooks driver field) once assigned — see
-                   DhdWebhookService. -->
-              <div v-if="order.shipment.driverName || order.shipment.driverPhone">
-                <dt class="text-muted">Driver</dt>
-                <dd>
-                  {{ order.shipment.driverName || '—' }}
-                  <a v-if="order.shipment.driverPhone" :href="`tel:${order.shipment.driverPhone}`" class="tabular text-primary hover:underline">{{ order.shipment.driverPhone }}</a>
-                </dd>
-              </div>
-            </dl>
-            <div class="mt-4 flex flex-wrap gap-2">
-              <!-- The rest of DHD's "Commandes" actions (see FulfillmentService)
-                   — only meaningful for a real courier tracking reference,
-                   not a manual delivery. -->
-              <template v-if="order.shipment.trackingReference">
-                <UButton
-                  icon="i-lucide-package-check"
-                  size="sm"
-                  color="primary"
-                  variant="soft"
-                  :loading="shipmentActing === 'pickup'"
-                  label="Request pickup"
-                  @click="requestPickup"
-                />
-                <UButton
-                  icon="i-lucide-file-down"
-                  size="sm"
-                  color="neutral"
-                  variant="soft"
-                  :loading="shipmentActing === 'label'"
-                  label="Download label"
-                  @click="downloadLabel"
-                />
+          <section v-else class="card" aria-labelledby="sh-h">
+            <div class="card-head"><h2 id="sh-h">Shipment</h2><AdsLozenge v-if="order.shipment.trackingReference" tone="connected">Tracking active</AdsLozenge></div>
+            <dl class="details">
+              <dt>Courier</dt><dd>{{ order.shipment.courier.name }}</dd>
+              <dt>Tracking ref</dt><dd class="mono">{{ order.shipment.trackingReference ?? '— (manual delivery)' }}</dd>
+              <dt>Courier status</dt><dd>{{ order.shipment.courierStatus ?? '—' }}</dd>
+              <template v-if="order.shipment.driverName || order.shipment.driverPhone">
+                <dt>Driver</dt><dd>{{ order.shipment.driverName || '—' }} <a v-if="order.shipment.driverPhone" :href="`tel:${order.shipment.driverPhone}`" class="mono">{{ order.shipment.driverPhone }}</a></dd>
               </template>
-              <UButton
-                icon="i-lucide-x"
-                size="sm"
-                color="error"
-                variant="soft"
-                :loading="shipmentActing === 'cancel'"
-                label="Cancel shipment"
-                @click="cancelShipment"
-              />
+            </dl>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <template v-if="order.shipment.trackingReference">
+                <button class="btn" type="button" :disabled="shipmentActing === 'pickup'" @click="requestPickup"><AdsIcon name="i-lucide-package-check" />Request pickup</button>
+                <button class="btn" type="button" :disabled="shipmentActing === 'label'" @click="downloadLabel"><AdsIcon name="i-lucide-file-down" />Download label</button>
+              </template>
+              <button class="btn btn-danger" type="button" :disabled="shipmentActing === 'cancel'" @click="cancelShipment"><AdsIcon name="i-lucide-x" />Cancel shipment</button>
             </div>
-          </div>
+          </section>
+
+          <section class="card" aria-labelledby="tl-h">
+            <div class="card-head"><h2 id="tl-h">Activity</h2><button class="btn btn-sm" type="button" @click="openNotes"><AdsIcon name="i-lucide-sticky-note" />{{ order.notes ? 'Edit note' : 'Add note' }}</button></div>
+            <p v-if="order.notes" style="white-space: pre-wrap; line-height: 1.6">{{ order.notes }}</p>
+            <p v-else class="muted">No notes yet.</p>
+            <ol class="timeline">
+              <li v-if="order.postponedUntil" class="current"><span class="dot" /><div><b>Postponed</b><span>Follow up {{ fmtDateTime(order.postponedUntil) }}</span></div></li>
+              <li class="done"><span class="dot" /><div><b>Last update</b><span>{{ fmtDateTime(order.updatedAt) }}</span></div></li>
+              <li class="done"><span class="dot" /><div><b>Order placed</b><span>{{ fmtDateTime(order.createdAt) }} · Customer</span></div></li>
+            </ol>
+          </section>
         </div>
 
-        <!-- Side column: customer + address -->
-        <div class="space-y-6">
-          <div class="admin-kpi-card p-5">
-            <div class="mb-3 flex items-center justify-between">
-              <h3 class="text-sm font-medium text-muted">Customer</h3>
-              <UButton
-                v-if="PRICE_EDITABLE_STATES.includes(order.state)"
-                icon="i-lucide-pencil"
-                size="xs"
-                variant="link"
-                color="neutral"
-                label="Edit"
-                @click="openCustomerEditor"
-              />
+        <div class="stack">
+          <!-- Manual transition: only valid next states are offered (server re-validates). -->
+          <section v-if="VALID_TRANSITIONS[order.state]?.length" id="action-card" class="card" aria-labelledby="ac-h">
+            <div class="card-head"><h2 id="ac-h">Next step</h2></div>
+            <div class="stack" style="gap: 8px">
+              <p class="muted" style="line-height: 1.5">Only valid transitions are offered; the server re-validates each one.</p>
+              <button
+                v-for="(next, i) in VALID_TRANSITIONS[order.state]"
+                :key="next"
+                class="btn btn-block"
+                :class="next === 'Cancelled' ? 'btn-danger' : i === 0 ? 'btn-primary' : ''"
+                type="button"
+                :disabled="transitioning === next"
+                @click="next === 'Postponed' ? openPostpone() : transition(next)"
+              >{{ ORDER_STATE_LABELS[next as OrderState] ?? next }}</button>
             </div>
-            <NuxtLink :to="`/customers/${order.customer.id}`" class="block font-medium hover:underline">
-              {{ order.customer.name ?? '—' }}
-            </NuxtLink>
-            <p class="tabular text-sm text-muted">{{ order.customer.phone }}</p>
-          </div>
+          </section>
 
-          <div class="admin-kpi-card p-5">
-            <div class="mb-3 flex items-center justify-between">
-              <h3 class="text-sm font-medium text-muted">Delivery address</h3>
-              <UButton
-                v-if="PRICE_EDITABLE_STATES.includes(order.state)"
-                icon="i-lucide-pencil"
-                size="xs"
-                variant="link"
-                color="neutral"
-                label="Edit"
-                @click="openCustomerEditor"
-              />
+          <section class="card" aria-labelledby="cu-h">
+            <div class="card-head">
+              <h2 id="cu-h">Customer</h2>
+              <NuxtLink :to="`/customers/${order.customer.id}`">View profile</NuxtLink>
             </div>
-            <address class="text-sm not-italic leading-relaxed text-muted">
-              {{ order.address.line1 || '-' }}<br />
-              <span v-if="order.address.line2">{{ order.address.line2 }}<br /></span>
-              {{ order.address.city || '-' }}, {{ order.address.region || '-' }}<br />
-              {{ order.address.country || '-' }}
-            </address>
-            <div v-if="order.shippingType" class="mt-3 space-y-1 border-t border-[var(--color-admin-border)] pt-3 text-sm">
-              <div class="flex items-center justify-between"><span class="text-muted">Wilaya</span><span>{{ order.address.region || '-' }}</span></div>
-              <div class="flex items-center justify-between"><span class="text-muted">City / commune</span><span>{{ order.address.city || '-' }}</span></div>
-              <div class="flex items-center justify-between"><span class="text-muted">Shipping method</span><span>{{ shippingTypeLabel[order.shippingType] }}</span></div>
-              <div class="flex items-center justify-between"><span class="text-muted">Shipping price</span><PriceDisplay :amount-cents="order.shippingPriceCents" /></div>
+            <div style="display: flex; gap: 12px; align-items: center">
+              <span class="initials dark">{{ initials(order.customer.name) }}</span>
+              <div class="grow"><b style="font-weight: 600">{{ order.customer.name ?? '—' }}</b><span class="muted" style="display: block">{{ order.customer.phone }}</span></div>
+              <button v-if="PRICE_EDITABLE_STATES.includes(order.state)" class="btn btn-sm btn-ghost" type="button" @click="openCustomerEditor"><AdsIcon name="i-lucide-pencil" />Edit</button>
             </div>
-          </div>
+            <a class="btn" :href="`tel:${order.customer.phone}`"><AdsIcon name="i-lucide-phone" />{{ order.customer.phone }}</a>
+          </section>
 
-          <div class="admin-kpi-card p-5">
-            <h3 class="mb-3 text-sm font-medium text-muted">Timeline</h3>
-            <p class="text-sm text-muted">Created {{ fmtDateTime(order.createdAt) }}</p>
-            <p class="text-sm text-muted">Last update {{ fmtDateTime(order.updatedAt) }}</p>
-            <div v-if="order.cashReconciliation" class="mt-3 space-y-1 border-t border-[var(--color-admin-border)] pt-3 text-sm">
-              <div class="flex items-center justify-between"><span class="text-muted">Expected cash</span><PriceDisplay :amount-cents="order.cashReconciliation.expectedCents" /></div>
-              <div v-if="order.cashReconciliation.collectedCents != null" class="flex items-center justify-between text-success">
-                <span>Collected</span><PriceDisplay :amount-cents="order.cashReconciliation.collectedCents" />
-              </div>
-              <p v-else class="text-muted">Not yet reconciled</p>
+          <section class="card" aria-labelledby="ad-h">
+            <div class="card-head">
+              <h2 id="ad-h">Shipping address</h2>
+              <button v-if="PRICE_EDITABLE_STATES.includes(order.state)" class="btn btn-sm btn-ghost" type="button" @click="openCustomerEditor"><AdsIcon name="i-lucide-pencil" />Edit</button>
             </div>
-          </div>
+            <dl class="details">
+              <dt>Wilaya</dt><dd>{{ order.address.region || '—' }}</dd>
+              <dt>Commune</dt><dd>{{ order.address.city || '—' }}</dd>
+              <dt>Address</dt><dd>{{ order.address.line1 || '—' }}<template v-if="order.address.line2">, {{ order.address.line2 }}</template></dd>
+              <dt>Type</dt><dd>{{ order.shippingType ? shippingTypeLabel[order.shippingType] : '—' }}</dd>
+            </dl>
+          </section>
+
+          <section v-if="order.cashReconciliation" class="card" aria-labelledby="cash-h">
+            <div class="card-head"><h2 id="cash-h">Cash</h2></div>
+            <dl class="details">
+              <dt>Expected</dt><dd><AdsPrice :amount-cents="order.cashReconciliation.expectedCents" /></dd>
+              <dt>Collected</dt><dd v-if="order.cashReconciliation.collectedCents != null"><AdsPrice :amount-cents="order.cashReconciliation.collectedCents" /></dd><dd v-else class="muted">Not yet reconciled</dd>
+            </dl>
+          </section>
         </div>
       </div>
     </template>
-  </UDashboardPanel>
+  </AdsPage>
 
-  <!-- Add item modal (upsells system: call-center/admin manual add) -->
-  <UModal v-model:open="showAddItem">
-    <template #content>
-      <div class="space-y-4 p-6">
-        <h3 class="text-lg font-semibold">Add item to order</h3>
-
-        <UFormField label="Product">
-          <USelect
-            v-model="selectedProductId"
-            :items="productOptions.map(p => ({ label: p.name, value: p.id }))"
-            placeholder="Choose a product…"
-            class="w-full"
-          />
-        </UFormField>
-
-        <UFormField v-if="productVariants.length" label="Variant">
-          <USelect
-            v-model="selectedVariantId"
-            :items="productVariants.map(v => ({ label: variantLabelFor(v), value: v.id }))"
-            placeholder="Choose a variant…"
-            class="w-full"
-          />
-        </UFormField>
-
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <UFormField label="Quantity">
-            <UInputNumber v-model="addQuantity" :min="1" class="w-full" />
-          </UFormField>
-          <UFormField label="Price override (DZD)" help="Blank = normal price">
-            <UInputNumber v-model="addPriceOverrideDzd" :min="0" class="w-full" />
-          </UFormField>
-        </div>
-
-        <div class="flex items-center justify-between rounded-md border border-[var(--color-admin-border)] p-3">
-          <div>
-            <p class="text-sm font-medium text-highlighted">Mark as upsell</p>
-            <p class="text-xs text-muted">Flags this line as added via the upsells system, not the original order.</p>
-          </div>
-          <USwitch v-model="addAsUpsell" />
-        </div>
-
-        <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="ghost" @click="showAddItem = false">Cancel</UButton>
-          <UButton :loading="addingItem" color="primary" icon="i-lucide-plus" @click="submitAddItem">Add item</UButton>
-        </div>
-      </div>
+  <!-- Add item (upsells system: call-center/admin manual add) -->
+  <AdsDialog v-model:open="showAddItem" title="Add item to order">
+    <AdsField label="Product"><AdsSelect v-model="selectedProductId" :options="productOptions.map((p) => ({ label: p.name, value: p.id }))" placeholder="Choose a product…" /></AdsField>
+    <AdsField v-if="productVariants.length" label="Variant"><AdsSelect v-model="selectedVariantId" :options="productVariants.map((v) => ({ label: variantLabelFor(v), value: v.id }))" placeholder="Choose a variant…" /></AdsField>
+    <div class="grid-2">
+      <AdsField label="Quantity"><AdsNumberInput v-model="addQuantity" :min="1" /></AdsField>
+      <AdsField label="Price override (DZD)" help="Blank = normal price"><AdsNumberInput v-model="addPriceOverrideDzd" :min="0" /></AdsField>
+    </div>
+    <div class="setting" style="padding: 0; border: 0">
+      <div class="text"><b>Mark as upsell</b><span>Flags this line as added via the upsells system, not the original order.</span></div>
+      <AdsSwitch v-model="addAsUpsell" aria-label="Mark as upsell" />
+    </div>
+    <template #footer>
+      <button class="btn" type="button" @click="showAddItem = false">Cancel</button>
+      <button class="btn btn-primary" type="button" :disabled="addingItem" @click="submitAddItem">Add item</button>
     </template>
-  </UModal>
+  </AdsDialog>
 
-  <!-- Call-center price override modal (ADM-12) -->
-  <UModal v-model:open="priceModalOpen">
-    <template #content>
-      <div class="space-y-4 p-6">
-        <h3 class="text-lg font-semibold">Edit price / shipping fee</h3>
-        <p class="text-sm text-muted">Only available before the order is confirmed — call-center's negotiation window.</p>
-
-        <UFormField label="Shipping fee (DZD)">
-          <UInputNumber v-model="editShippingDzd" :min="0" class="w-full" />
-        </UFormField>
-        <UFormField label="Total due — COD (DZD)" help="Overrides the total directly; the items subtotal itself isn't editable here.">
-          <UInputNumber v-model="editTotalDzd" :min="0" class="w-full" />
-        </UFormField>
-
-        <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="ghost" @click="priceModalOpen = false">Cancel</UButton>
-          <UButton :loading="savingPrice" color="primary" icon="i-lucide-check" @click="savePrice">Save</UButton>
-        </div>
-      </div>
+  <!-- Call-center price override (ADM-12) -->
+  <AdsDialog v-model:open="priceModalOpen" title="Edit price / shipping fee" description="Only available before the order is confirmed: the call-center negotiation window." width="sm">
+    <AdsField label="Shipping fee (DZD)"><AdsNumberInput v-model="editShippingDzd" :min="0" /></AdsField>
+    <AdsField label="Total due, COD (DZD)" help="Overrides the total directly; the items subtotal itself isn't editable here."><AdsNumberInput v-model="editTotalDzd" :min="0" /></AdsField>
+    <template #footer>
+      <button class="btn" type="button" @click="priceModalOpen = false">Cancel</button>
+      <button class="btn btn-primary" type="button" :disabled="savingPrice" @click="savePrice">Save</button>
     </template>
-  </UModal>
+  </AdsDialog>
 
-  <!-- Notes modal -->
-  <UModal v-model:open="notesModalOpen">
-    <template #content>
-      <div class="space-y-4 p-6">
-        <h3 class="text-lg font-semibold">Order note</h3>
-        <UTextarea v-model="notesText" :rows="5" placeholder="Notes for this order…" class="w-full" autofocus />
-        <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="ghost" @click="notesModalOpen = false">Cancel</UButton>
-          <UButton :loading="savingNotes" color="primary" icon="i-lucide-check" @click="saveNotes">Save</UButton>
-        </div>
-      </div>
+  <AdsDialog v-model:open="notesModalOpen" title="Order note" width="sm">
+    <AdsTextarea v-model="notesText" :rows="5" placeholder="Notes for this order…" />
+    <template #footer>
+      <button class="btn" type="button" @click="notesModalOpen = false">Cancel</button>
+      <button class="btn btn-primary" type="button" :disabled="savingNotes" @click="saveNotes">Save</button>
     </template>
-  </UModal>
+  </AdsDialog>
 
-  <!-- Postpone date picker -->
-  <UModal v-model:open="postponeModalOpen">
-    <template #content>
-      <div class="space-y-4 p-6">
-        <h3 class="text-lg font-semibold">Postpone — pick a follow-up date</h3>
-        <p class="text-sm text-muted">The order stays out of the queues until this date/time is reached.</p>
-        <UFormField label="Follow up at">
-          <UInput v-model="postponeDate" type="datetime-local" class="w-full" />
-        </UFormField>
-        <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="ghost" @click="postponeModalOpen = false">Cancel</UButton>
-          <UButton :disabled="!postponeDate" :loading="transitioning === 'Postponed'" color="primary" icon="i-lucide-check" @click="confirmPostpone">Postpone</UButton>
-        </div>
-      </div>
+  <AdsDialog v-model:open="postponeModalOpen" title="Postpone: pick a follow-up date" description="The order stays out of the queues until this date/time is reached." width="sm">
+    <AdsField label="Follow up at"><AdsInput v-model="postponeDate" type="datetime-local" /></AdsField>
+    <template #footer>
+      <button class="btn" type="button" @click="postponeModalOpen = false">Cancel</button>
+      <button class="btn btn-primary" type="button" :disabled="!postponeDate || transitioning === 'Postponed'" @click="confirmPostpone">Postpone</button>
     </template>
-  </UModal>
+  </AdsDialog>
 
-  <!-- Customer / delivery info editor -->
-  <UModal v-model:open="customerModalOpen">
-    <template #content>
-      <div class="space-y-4 p-6">
-        <h3 class="text-lg font-semibold">Edit customer / delivery info</h3>
-        <div class="grid grid-cols-2 gap-3">
-          <UFormField label="Name">
-            <UInput v-model="editCustomerName" class="w-full" />
-          </UFormField>
-          <UFormField label="Phone">
-            <UInput v-model="editCustomerPhone" class="w-full" />
-          </UFormField>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <UFormField label="Wilaya">
-            <USelectMenu
-              v-model="editWilayaId"
-              :items="wilayaOptions.map(w => ({ label: w.name, value: w.id }))"
-              value-key="value"
-              class="w-full"
-            />
-          </UFormField>
-          <UFormField label="Commune">
-            <USelectMenu
-              v-model="editCommuneName"
-              :items="communeOptions.map(c => ({ label: c.name, value: c.name }))"
-              value-key="value"
-              :disabled="!editWilayaId"
-              class="w-full"
-            />
-          </UFormField>
-        </div>
-        <UFormField label="Address line">
-          <UInput v-model="editAddressLine1" class="w-full" />
-        </UFormField>
-        <UFormField label="Shipping method">
-          <URadioGroup
-            v-model="editShippingType"
-            orientation="horizontal"
-            :items="[{ label: 'Home delivery', value: 'Home' }, { label: 'Desk pickup', value: 'Desk' }]"
-          />
-        </UFormField>
-        <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="ghost" @click="customerModalOpen = false">Cancel</UButton>
-          <UButton :loading="savingCustomer" color="primary" icon="i-lucide-check" @click="saveCustomer">Save</UButton>
-        </div>
-      </div>
+  <AdsDialog v-model:open="customerModalOpen" title="Edit customer / delivery info">
+    <div class="grid-2">
+      <AdsField label="Name"><AdsInput v-model="editCustomerName" /></AdsField>
+      <AdsField label="Phone"><AdsInput v-model="editCustomerPhone" /></AdsField>
+    </div>
+    <div class="grid-2">
+      <AdsField label="Wilaya"><AdsSelect :model-value="editWilayaId" :options="wilayaOptions.map((w) => ({ label: w.name, value: w.id }))" placeholder="Choose a wilaya…" @update:model-value="(v) => (editWilayaId = v ? String(v) : undefined)" /></AdsField>
+      <AdsField label="Commune"><AdsSelect :model-value="editCommuneName || undefined" :options="communeOptions.map((c) => ({ label: c.name, value: c.name }))" placeholder="Choose a commune…" :disabled="!editWilayaId" @update:model-value="(v) => (editCommuneName = String(v))" /></AdsField>
+    </div>
+    <AdsField label="Address line"><AdsInput v-model="editAddressLine1" /></AdsField>
+    <AdsField label="Shipping method"><AdsRadioGroup :model-value="editShippingType" :options="[{ label: 'Home delivery', value: 'Home' }, { label: 'Stop desk', value: 'Desk' }]" @update:model-value="(v) => (editShippingType = v as 'Home' | 'Desk')" /></AdsField>
+    <template #footer>
+      <button class="btn" type="button" @click="customerModalOpen = false">Cancel</button>
+      <button class="btn btn-primary" type="button" :disabled="savingCustomer" @click="saveCustomer">Save</button>
     </template>
-  </UModal>
+  </AdsDialog>
 </template>

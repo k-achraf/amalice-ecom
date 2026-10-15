@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orders — Leezil Admin</title>
+  <link rel="icon" href="assets/img/leezil-icon-teal.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/pages/orders.js" defer></script>
+</head>
+<body>
+<div class="app" data-page="orders">
+  <main class="main">
+
+    <header class="page-head">
+      <div class="title">
+        <p>342 orders in the last 30 days</p>
+        <h1>Orders</h1>
+      </div>
+      <button class="btn hide-sm" type="button"><svg data-icon="download"></svg>Export CSV</button>
+      <button class="btn hide-sm" type="button"><svg data-icon="print"></svg>Print shipping labels</button>
+      <button class="btn btn-primary" type="button"><svg data-icon="plus"></svg>Create order</button>
+    </header>
+
+    <section class="card" aria-label="Orders list" style="padding-bottom:16px">
+      <div class="card-head">
+        <div class="chips" id="order-tabs" role="tablist" aria-label="Filter by status"></div>
+        <label class="search soft"><svg data-icon="search"></svg><span class="sr">Search orders</span><input type="search" id="orders-search" placeholder="Order #, name or phone"></label>
+      </div>
+      <div class="bulkbar" id="bulkbar"><span id="bulk-count" class="grow">0 selected</span><button class="btn" type="button" data-bulk="Orders marked as confirmed">Mark confirmed</button><button class="btn" type="button" data-bulk="Orders sent to the shipping company">Send to shipping</button><button class="btn" type="button" data-bulk="Labels ready to print">Print labels</button></div>
+      <div class="table-wrap">
+        <table style="min-width:900px">
+          <thead>
+            <tr>
+              <th style="width:28px"><input type="checkbox" id="select-all" aria-label="Select all orders"></th>
+              <th>Order</th><th>Customer</th><th>Wilaya</th><th>Carrier</th><th>Items</th><th class="num">Total</th><th>Status</th><th><span class="sr">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="orders-body"></tbody>
+        </table>
+      </div>
+      <div class="table-foot">
+        <span id="orders-foot"></span>
+        <button class="btn btn-sm" type="button">Previous</button>
+        <button class="btn btn-sm" type="button">Next</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

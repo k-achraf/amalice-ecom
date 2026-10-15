@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Abandoned carts — Leezil Admin</title>
+  <link rel="icon" href="assets/img/leezil-icon-teal.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/pages/abandoned-carts.js" defer></script>
+</head>
+<body>
+<div class="app" data-page="abandoned-carts">
+  <main class="main">
+
+    <header class="page-head">
+      <div class="title">
+        <p>Visitors who started an order but didn't finish</p>
+        <h1>Abandoned carts</h1>
+      </div>
+      <select class="select" aria-label="Period" style="width:auto"><option>Last 7 days</option><option>Last 30 days</option><option>Today</option></select>
+      <button class="btn hide-sm" type="button" id="export-btn"><svg data-icon="download"></svg>Export</button>
+    </header>
+
+    <section class="kpis" aria-label="Recovery figures" id="cart-kpis"></section>
+
+    <div class="split">
+      <section class="card" aria-label="Carts">
+        <div class="card-head">
+          <div class="chips" id="cart-tabs" role="tablist" aria-label="Filter by status"></div>
+          <label class="search soft"><svg data-icon="search"></svg><span class="sr">Search carts</span><input type="search" id="cart-search" placeholder="Name or phone"></label>
+        </div>
+        <div class="table-wrap">
+          <table style="min-width:860px">
+            <thead><tr><th>Customer</th><th>Products</th><th class="num">Value</th><th>Left at</th><th>Status</th><th><span class="sr">Actions</span></th></tr></thead>
+            <tbody id="cart-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="stack">
+        <section class="card" aria-labelledby="f-h">
+          <div class="card-head"><h2 id="f-h">Where visitors leave</h2></div>
+          <div id="funnel" class="stack" style="gap:12px"></div>
+        </section>
+
+        <section class="card" aria-labelledby="r-h" id="reminder-card">
+          <div class="card-head"><h2 id="r-h">Automatic reminder</h2><label class="switch"><input type="checkbox" id="auto-on" checked aria-label="Automatic reminder on"><span></span></label></div>
+          <p class="card-sub">Sends a message to carts that have a phone number.</p>
+          <div class="field"><label for="r-chan">Send by</label><select class="select" id="r-chan"><option>WhatsApp</option><option>SMS</option></select></div>
+          <div class="field"><label for="r-delay">Send after</label><select class="select" id="r-delay"><option>30 minutes</option><option selected>1 hour</option><option>3 hours</option><option>24 hours</option></select></div>
+          <div class="field"><label for="r-msg">Message</label><textarea class="textarea" id="r-msg" style="min-height:110px">Salam {name}, votre {product} vous attend chez Leezil. Finalisez votre commande ici : {link} — paiement à la livraison.</textarea><span class="hint">Variables: {name}, {product}, {link}, {total}</span></div>
+          <div class="field"><label for="r-code">Discount to include</label><select class="select" id="r-code"><option>None</option><option>Free delivery</option><option>5% off</option><option>10% off</option></select></div>
+          <button class="btn btn-primary" type="button" id="save-reminder">Save reminder</button>
+        </section>
+      </div>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

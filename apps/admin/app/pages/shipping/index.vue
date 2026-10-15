@@ -67,125 +67,91 @@ async function sendMockStatus() {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Shipping">
-        <template #leading><UDashboardSidebarCollapse /></template>
-      </UDashboardNavbar>
-    </template>
-    <template #body>
-      <div class="space-y-8">
-        <section>
-          <h2 class="mb-3 text-sm font-medium text-muted">With courier</h2>
-          <div class="admin-table-wrap">
-            <table class="admin-table w-full text-sm">
-              <thead>
-                <tr><th class="px-4 py-2.5 text-left">Order</th><th class="px-4 py-2.5 text-left">Products</th><th class="px-4 py-2.5 text-left">Customer</th><th class="px-4 py-2.5 text-left">Status</th><th class="px-4 py-2.5 text-right">Advance</th></tr>
-              </thead>
-              <tbody>
-                <tr v-if="!withCourier?.items.length"><td colspan="5" class="px-4 py-12 text-center text-muted">Nothing with a courier yet.</td></tr>
-                <tr v-for="o in withCourier?.items" :key="o.id">
-                  <td class="px-4 py-3"><NuxtLink :to="`/orders/${o.id}`" class="tabular text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink></td>
-                  <td class="px-4 py-3"><OrderLineItemsInline :items="o.items" compact class="max-w-64" /></td>
-                  <td class="px-4 py-3">
-                    <span class="inline-flex items-center gap-1.5">
-                      {{ o.customer.name ?? '—' }}
-                      <UIcon v-if="o.notes" name="i-lucide-sticky-note" class="size-3.5 shrink-0 text-muted" :title="o.notes" />
-                    </span>
-                  </td>
-                  <td class="px-4 py-3"><StatusBadge :state="o.state" /></td>
-                  <td class="px-4 py-3 text-right">
-                    <UButton v-for="next in VALID_TRANSITIONS[o.state]" :key="next" size="xs" variant="soft" class="ml-2" :loading="acting === `${o.id}:${next}`" :label="`→ ${next}`" @click="transition(o.id, next)" />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section>
-          <h2 class="mb-3 text-sm font-medium text-muted">Out for delivery</h2>
-          <div class="admin-table-wrap">
-            <table class="admin-table w-full text-sm">
-              <thead>
-                <tr><th class="px-4 py-2.5 text-left">Order</th><th class="px-4 py-2.5 text-left">Products</th><th class="px-4 py-2.5 text-left">Customer</th><th class="px-4 py-2.5 text-left">Status</th><th class="px-4 py-2.5 text-right">Advance</th></tr>
-              </thead>
-              <tbody>
-                <tr v-if="!outForDelivery?.items.length"><td colspan="5" class="px-4 py-12 text-center text-muted">Nothing out for delivery.</td></tr>
-                <tr v-for="o in outForDelivery?.items" :key="o.id">
-                  <td class="px-4 py-3"><NuxtLink :to="`/orders/${o.id}`" class="tabular text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink></td>
-                  <td class="px-4 py-3"><OrderLineItemsInline :items="o.items" compact class="max-w-64" /></td>
-                  <td class="px-4 py-3">
-                    <span class="inline-flex items-center gap-1.5">
-                      {{ o.customer.name ?? '—' }}
-                      <UIcon v-if="o.notes" name="i-lucide-sticky-note" class="size-3.5 shrink-0 text-muted" :title="o.notes" />
-                    </span>
-                  </td>
-                  <td class="px-4 py-3"><StatusBadge :state="o.state" /></td>
-                  <td class="px-4 py-3 text-right">
-                    <UButton
-                      v-for="next in VALID_TRANSITIONS[o.state]"
-                      :key="next"
-                      size="xs"
-                      variant="soft"
-                      :color="next === 'DeliveryFailed' ? 'error' : 'primary'"
-                      class="ml-2"
-                      :loading="acting === `${o.id}:${next}`"
-                      :label="`→ ${next}`"
-                      @click="transition(o.id, next)"
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section v-if="failed?.items.length || returned?.items.length">
-          <h2 class="mb-3 text-sm font-medium text-muted">Delivery issues</h2>
-          <div class="admin-table-wrap">
-            <table class="admin-table w-full text-sm">
-              <thead>
-                <tr><th class="px-4 py-2.5 text-left">Order</th><th class="px-4 py-2.5 text-left">Products</th><th class="px-4 py-2.5 text-left">Customer</th><th class="px-4 py-2.5 text-left">Status</th><th class="px-4 py-2.5 text-right">Advance</th></tr>
-              </thead>
-              <tbody>
-                <tr v-for="o in [...(failed?.items ?? []), ...(returned?.items ?? [])]" :key="o.id">
-                  <td class="px-4 py-3"><NuxtLink :to="`/orders/${o.id}`" class="tabular text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink></td>
-                  <td class="px-4 py-3"><OrderLineItemsInline :items="o.items" compact class="max-w-64" /></td>
-                  <td class="px-4 py-3">
-                    <span class="inline-flex items-center gap-1.5">
-                      {{ o.customer.name ?? '—' }}
-                      <UIcon v-if="o.notes" name="i-lucide-sticky-note" class="size-3.5 shrink-0 text-muted" :title="o.notes" />
-                    </span>
-                  </td>
-                  <td class="px-4 py-3"><StatusBadge :state="o.state" /></td>
-                  <td class="px-4 py-3 text-right">
-                    <UButton v-for="next in VALID_TRANSITIONS[o.state]" :key="next" size="xs" variant="soft" class="ml-2" :loading="acting === `${o.id}:${next}`" :label="`→ ${next}`" @click="transition(o.id, next)" />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- Dev-only mock status driver -->
-        <section class="admin-kpi-card p-5">
-          <h3 class="mb-1 text-sm font-medium text-muted">Mock courier status (dev only)</h3>
-          <p class="mb-3 text-xs text-muted">Simulates courier webhook updates against the MockCourierProvider. Not a production route.</p>
-          <div class="flex flex-wrap items-end gap-3">
-            <UFormField label="Tracking ref"><UInput v-model="mockRef" placeholder="FS-DEMO-1001" class="tabular w-44" /></UFormField>
-            <UFormField label="Status">
-              <USelect
-                v-model="mockStatus"
-                :items="['picked_up', 'in_transit', 'out_for_delivery', 'delivered', 'delivery_failed', 'returned']"
-                class="w-44"
-              />
-            </UFormField>
-            <UButton size="sm" label="Send" @click="sendMockStatus" />
-          </div>
-          <p v-if="mockResult" class="mt-3 text-xs tabular text-muted">{{ mockResult }}</p>
-        </section>
+  <AdsPage title="Shipping" description="Orders with a courier, out for delivery, or needing attention">
+    <section class="card" aria-label="With courier">
+      <div class="card-head"><h2>With courier</h2></div>
+      <div class="table-wrap">
+        <table style="min-width: 760px">
+          <thead><tr><th>Order</th><th>Products</th><th>Customer</th><th>Status</th><th class="num">Advance</th></tr></thead>
+          <tbody>
+            <tr v-if="!withCourier?.items.length"><td colspan="5" class="empty">Nothing with a courier yet.</td></tr>
+            <tr v-for="o in withCourier?.items" :key="o.id">
+              <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
+              <td><OrderLineItemsInline :items="o.items" compact /></td>
+              <td>
+                {{ o.customer.name ?? '—' }}
+                <AdsIcon v-if="o.notes" name="i-lucide-sticky-note" style="width: 14px; height: 14px; vertical-align: -2px; margin-left: 4px; color: var(--text-2)" :title="o.notes" />
+              </td>
+              <td><AdsOrderStatus :state="o.state" /></td>
+              <td class="num" style="white-space: nowrap">
+                <AdsButton v-for="next in VALID_TRANSITIONS[o.state]" :key="next" size="sm" :appearance="next === 'DeliveryFailed' ? 'danger' : 'default'" style="margin-left: 6px" :loading="acting === `${o.id}:${next}`" :label="`→ ${next}`" @click="transition(o.id, next)" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-    </template>
-  </UDashboardPanel>
+    </section>
+
+    <section class="card" aria-label="Out for delivery">
+      <div class="card-head"><h2>Out for delivery</h2></div>
+      <div class="table-wrap">
+        <table style="min-width: 760px">
+          <thead><tr><th>Order</th><th>Products</th><th>Customer</th><th>Status</th><th class="num">Advance</th></tr></thead>
+          <tbody>
+            <tr v-if="!outForDelivery?.items.length"><td colspan="5" class="empty">Nothing out for delivery.</td></tr>
+            <tr v-for="o in outForDelivery?.items" :key="o.id">
+              <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
+              <td><OrderLineItemsInline :items="o.items" compact /></td>
+              <td>
+                {{ o.customer.name ?? '—' }}
+                <AdsIcon v-if="o.notes" name="i-lucide-sticky-note" style="width: 14px; height: 14px; vertical-align: -2px; margin-left: 4px; color: var(--text-2)" :title="o.notes" />
+              </td>
+              <td><AdsOrderStatus :state="o.state" /></td>
+              <td class="num" style="white-space: nowrap">
+                <AdsButton v-for="next in VALID_TRANSITIONS[o.state]" :key="next" size="sm" :appearance="next === 'DeliveryFailed' ? 'danger' : 'default'" style="margin-left: 6px" :loading="acting === `${o.id}:${next}`" :label="`→ ${next}`" @click="transition(o.id, next)" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" v-if="failed?.items.length || returned?.items.length" aria-label="Delivery issues">
+      <div class="card-head"><h2>Delivery issues</h2></div>
+      <div class="table-wrap">
+        <table style="min-width: 760px">
+          <thead><tr><th>Order</th><th>Products</th><th>Customer</th><th>Status</th><th class="num">Advance</th></tr></thead>
+          <tbody>
+            
+            <tr v-for="o in [...(failed?.items ?? []), ...(returned?.items ?? [])]" :key="o.id">
+              <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
+              <td><OrderLineItemsInline :items="o.items" compact /></td>
+              <td>
+                {{ o.customer.name ?? '—' }}
+                <AdsIcon v-if="o.notes" name="i-lucide-sticky-note" style="width: 14px; height: 14px; vertical-align: -2px; margin-left: 4px; color: var(--text-2)" :title="o.notes" />
+              </td>
+              <td><AdsOrderStatus :state="o.state" /></td>
+              <td class="num" style="white-space: nowrap">
+                <AdsButton v-for="next in VALID_TRANSITIONS[o.state]" :key="next" size="sm" :appearance="next === 'DeliveryFailed' ? 'danger' : 'default'" style="margin-left: 6px" :loading="acting === `${o.id}:${next}`" :label="`→ ${next}`" @click="transition(o.id, next)" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Dev-only mock status driver -->
+    <section class="card" aria-label="Mock courier status">
+      <div class="card-head"><h2>Mock courier status</h2><span class="pill neutral">Dev only</span></div>
+      <p class="muted">Simulates courier webhook updates against the MockCourierProvider. Not a production route.</p>
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px">
+        <AdsField label="Tracking ref"><AdsInput v-model="mockRef" placeholder="FS-DEMO-1001" style="width: 190px" /></AdsField>
+        <AdsField label="Status">
+          <AdsSelect v-model="mockStatus" :items="['picked_up', 'in_transit', 'out_for_delivery', 'delivered', 'delivery_failed', 'returned']" style="width: 190px" />
+        </AdsField>
+        <AdsButton appearance="default" @click="sendMockStatus">Send</AdsButton>
+      </div>
+      <p v-if="mockResult" class="mono muted">{{ mockResult }}</p>
+    </section>
+  </AdsPage>
 </template>

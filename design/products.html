@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Products — Leezil Admin</title>
+  <link rel="icon" href="assets/img/leezil-icon-teal.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/pages/products.js" defer></script>
+</head>
+<body>
+<div class="app" data-page="products">
+  <main class="main">
+
+    <header class="page-head">
+      <div class="title">
+        <p>Catalogue and inventory</p>
+        <h1>Products</h1>
+      </div>
+      <button class="btn hide-sm" type="button" id="import-btn"><svg data-icon="upload"></svg>Import CSV</button>
+      <button class="btn hide-sm" type="button" id="export-btn"><svg data-icon="download"></svg>Export</button>
+      <a class="btn btn-primary" href="product-edit.html"><svg data-icon="plus"></svg>Add product</a>
+    </header>
+
+    <section class="kpis" aria-label="Inventory summary" id="product-kpis"></section>
+
+    <section class="card" aria-label="Product list">
+      <div class="card-head">
+        <div class="chips" id="cat-tabs" role="tablist" aria-label="Filter by category"></div>
+        <select class="select sm" id="status-filter" aria-label="Filter by status" style="width:auto">
+          <option value="">All statuses</option>
+          <option>Active</option>
+          <option>Draft</option>
+          <option value="low">Low stock</option>
+          <option value="out">Out of stock</option>
+        </select>
+        <label class="search soft"><svg data-icon="search"></svg><span class="sr">Search products</span><input type="search" id="products-search" placeholder="Name or SKU"></label>
+      </div>
+      <div class="bulkbar" id="bulkbar"><span id="bulk-count" class="grow">0 selected</span><button class="btn" type="button" data-bulk="Products set to active">Set active</button><button class="btn" type="button" data-bulk="Products set to draft">Set draft</button><button class="btn" type="button" data-bulk="Products moved to trash">Delete</button></div>
+      <div class="table-wrap">
+        <table style="min-width:980px">
+          <thead><tr>
+            <th style="width:28px"><input type="checkbox" id="select-all" aria-label="Select all products"></th>
+            <th>Product</th><th>Category</th><th class="num">Price</th><th>Stock</th><th class="num">Variants</th><th class="num">Sold (30d)</th><th>Status</th><th><span class="sr">Actions</span></th>
+          </tr></thead>
+          <tbody id="products-body"></tbody>
+        </table>
+      </div>
+      <div class="table-foot"><span id="products-foot"></span></div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

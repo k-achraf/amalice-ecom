@@ -1,41 +1,108 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from '@nuxt/ui'
-import type { AdminRoleName } from '@amalice/shared'
+import type { Component } from 'vue'
+import type { AdminRoleName, DashboardStats } from '@amalice/shared'
+import { Filter, SearchCode, PackageCheck, Receipt, History, Server, FileWarning, Truck } from 'lucide-vue-next'
 
 const auth = useAuthStore()
-const colorMode = useColorMode()
+const route = useRoute()
+const config = useRuntimeConfig()
+const api = useAdminApi()
 
-// ADM-01 — role-filtered nav. Client-side hiding is UX only; the server
-// re-checks every route via JwtAuthGuard + RolesGuard (plan §ADM-02). Each
-// item lists the roles allowed to see it; a Warehouse user sees only
-// inventory, per plan §8's role table.
-const allLinks: (NavigationMenuItem & { roles: AdminRoleName[] })[] = [
-  { label: 'Dashboard', icon: 'i-lucide-layout-dashboard', to: '/', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Warehouse'] },
-  { label: 'Orders', icon: 'i-lucide-package', to: '/orders', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Support'] },
-  { label: 'Call Center', icon: 'i-lucide-phone-call', to: '/call-center', roles: ['SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent'] },
-  { label: 'Abandoned Carts', icon: 'i-lucide-shopping-cart', to: '/abandoned-carts', roles: ['SuperAdmin', 'OpsManager', 'Support'] },
-  { label: 'Inventory', icon: 'i-lucide-boxes', to: '/inventory', roles: ['SuperAdmin', 'OpsManager', 'Warehouse'] },
-  { label: 'Customers', icon: 'i-lucide-users', to: '/customers', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Support'] },
-  { label: 'Reconciliation', icon: 'i-lucide-receipt', to: '/reconciliation', roles: ['SuperAdmin', 'Finance'] },
-  { label: 'Fulfillment', icon: 'i-lucide-package-check', to: '/fulfillment', roles: ['SuperAdmin', 'OpsManager'] },
-  { label: 'Shipping', icon: 'i-lucide-truck', to: '/shipping', roles: ['SuperAdmin', 'OpsManager'] },
-  { label: 'Product Sourcing', icon: 'i-lucide-search-code', to: '/sourcing', roles: ['SuperAdmin', 'OpsManager'] },
-  { label: 'Users & Roles', icon: 'i-lucide-user-cog', to: '/users', roles: ['SuperAdmin'] },
-  { label: 'Apps', icon: 'i-lucide-layout-grid', to: '/apps', roles: ['SuperAdmin'] },
-  { label: 'Storefront', icon: 'i-lucide-palette', to: '/settings/storefront', roles: ['SuperAdmin'] },
-  { label: 'Attributes', icon: 'i-lucide-layers', to: '/settings/attributes', roles: ['SuperAdmin'] },
-  { label: 'Shipping Rates', icon: 'i-lucide-map-pinned', to: '/settings/shipping', roles: ['SuperAdmin', 'OpsManager'] },
-  { label: 'Shipping Companies', icon: 'i-lucide-plug', to: '/settings/shipping-companies', roles: ['SuperAdmin', 'OpsManager'] },
-  { label: 'Audit Log', icon: 'i-lucide-history', to: '/audit-log', roles: ['SuperAdmin', 'Finance', 'OpsManager'] },
-  { label: 'Server Performance', icon: 'i-lucide-server', to: '/server-performance', roles: ['SuperAdmin'] },
-  { label: 'Server Logs', icon: 'i-lucide-file-warning', to: '/logs', roles: ['SuperAdmin'] }
+// ADM-01: role-filtered nav. Client-side hiding is UX only; the server re-checks every
+// route via JwtAuthGuard + RolesGuard (plan §ADM-02). Groups/labels follow design/ (app.js NAV);
+// pages the design doesn't have (fulfillment, sourcing, reconciliation, logs...) sit in the
+// closest group. `design` icons come from the design's own set, the rest are lucide.
+interface NavItem { label: string; to: string; roles: AdminRoleName[]; design?: string; icon?: Component; short?: string; count?: 'calls' }
+interface NavGroup { title: string; items: NavItem[] }
+
+const groups: NavGroup[] = [
+  {
+    title: 'Store',
+    items: [
+      { label: 'Overview', design: 'overview', to: '/', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Warehouse'], short: 'Home' },
+      { label: 'Orders', design: 'orders', to: '/orders', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Support'] },
+      { label: 'Call center', design: 'headset', to: '/call-center', roles: ['SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent'], count: 'calls', short: 'Calls' },
+      { label: 'Abandoned carts', design: 'cart', to: '/abandoned-carts', roles: ['SuperAdmin', 'OpsManager', 'Support'] },
+      { label: 'Customers', design: 'customers', to: '/customers', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Support'] }
+    ]
+  },
+  {
+    title: 'Catalogue',
+    items: [
+      { label: 'Products', design: 'products', to: '/inventory', roles: ['SuperAdmin', 'OpsManager', 'Warehouse'] },
+      { label: 'Attributes & options', design: 'layers', to: '/settings/attributes', roles: ['SuperAdmin'] },
+      { label: 'Funnels', icon: Filter, to: '/funnels', roles: ['SuperAdmin', 'OpsManager'] },
+      { label: 'Product sourcing', icon: SearchCode, to: '/sourcing', roles: ['SuperAdmin', 'OpsManager'] }
+    ]
+  },
+  {
+    title: 'Fulfilment',
+    items: [
+      { label: 'Fulfillment', icon: PackageCheck, to: '/fulfillment', roles: ['SuperAdmin', 'OpsManager'] },
+      { label: 'Shipments', icon: Truck, to: '/shipping', roles: ['SuperAdmin', 'OpsManager'] },
+      { label: 'Reconciliation', icon: Receipt, to: '/reconciliation', roles: ['SuperAdmin', 'Finance'] }
+    ]
+  },
+  {
+    title: 'Shipping',
+    items: [
+      { label: 'Shipping rates', design: 'rates', to: '/settings/shipping', roles: ['SuperAdmin', 'OpsManager'] },
+      { label: 'Shipping companies', design: 'delivery', to: '/settings/shipping-companies', roles: ['SuperAdmin', 'OpsManager'] }
+    ]
+  },
+  {
+    title: 'Online store',
+    items: [
+      { label: 'Storefront', design: 'store', to: '/settings/storefront', roles: ['SuperAdmin'] },
+      { label: 'Apps', design: 'apps', to: '/apps', roles: ['SuperAdmin'] }
+    ]
+  },
+  {
+    title: 'Admin',
+    items: [
+      { label: 'Users & roles', design: 'shield', to: '/users', roles: ['SuperAdmin'] },
+      { label: 'Audit log', icon: History, to: '/audit-log', roles: ['SuperAdmin', 'Finance', 'OpsManager'] },
+      { label: 'Server performance', icon: Server, to: '/server-performance', roles: ['SuperAdmin'] },
+      { label: 'Server logs', icon: FileWarning, to: '/logs', roles: ['SuperAdmin'] }
+    ]
+  }
 ]
 
-const links = computed<NavigationMenuItem[]>(() =>
-  allLinks
-    .filter((l) => auth.role && l.roles.includes(auth.role))
-    .map(({ roles: _roles, ...item }) => item)
+const visibleGroups = computed(() =>
+  groups
+    .map((g) => ({ ...g, items: g.items.filter((i) => auth.role && i.roles.includes(auth.role)) }))
+    .filter((g) => g.items.length)
 )
+// Mobile tab bar: the design's four quick tabs (whatever the role can see) + More.
+const QUICK = ['/', '/orders', '/call-center', '/inventory']
+const tabItems = computed(() => visibleGroups.value.flatMap((g) => g.items).filter((i) => QUICK.includes(i.to)))
+
+function isActive(to: string) {
+  return to === '/' ? route.path === '/' : route.path === to || route.path.startsWith(`${to}/`)
+}
+
+// "Call center" badge = orders still waiting for a confirmation call.
+const callCount = ref(0)
+async function loadCounts() {
+  if (!auth.token || !['SuperAdmin', 'OpsManager', 'Finance', 'Warehouse'].includes(auth.role ?? '')) return
+  try {
+    const s = await api<DashboardStats>('/admin/stats')
+    callCount.value = s.pendingCallCenterCount ?? 0
+  } catch { /* badge is decorative */ }
+}
+onMounted(loadCounts)
+
+const menuOpen = ref(false)
+watch(() => route.path, () => { menuOpen.value = false })
+onMounted(() => {
+  const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') menuOpen.value = false }
+  document.addEventListener('keydown', esc)
+  onBeforeUnmount(() => document.removeEventListener('keydown', esc))
+})
+
+const storefrontHost = computed(() => {
+  try { return new URL(config.public.storefrontBase).host } catch { return config.public.storefrontBase }
+})
 
 async function logout() {
   auth.clear()
@@ -44,59 +111,50 @@ async function logout() {
 </script>
 
 <template>
-  <div class="admin-surface">
-    <UDashboardGroup storage="local" storage-key="amalice-admin-sidebar">
-      <UDashboardSidebar collapsible resizable :ui="{ footer: 'border-t border-default' }">
-        <template #header="{ collapsed }">
-          <NuxtLink to="/" class="flex items-center gap-2">
-            <span v-if="!collapsed" class="truncate text-lg font-semibold text-highlighted">Amalice Admin</span>
-            <UIcon v-else name="i-lucide-package" class="mx-auto size-5 text-primary" />
+  <div class="app">
+    <aside id="sidebar" class="sidebar" :class="{ open: menuOpen }">
+      <NuxtLink to="/" aria-label="Leezil admin home"><img class="logo" src="/img/leezil-logo-ivory.svg" alt="Leezil"></NuxtLink>
+      <nav class="nav" aria-label="Main">
+        <template v-for="g in visibleGroups" :key="g.title">
+          <span class="nav-label">{{ g.title }}</span>
+          <NuxtLink v-for="item in g.items" :key="item.to" :to="item.to" :class="{ active: isActive(item.to) }" :aria-current="isActive(item.to) ? 'page' : undefined">
+            <AdsDesignIcon v-if="item.design" :name="item.design" />
+            <component :is="item.icon" v-else class="i" />
+            <span>{{ item.label }}</span>
+            <span v-if="item.count === 'calls' && callCount" class="count">{{ callCount }}</span>
           </NuxtLink>
         </template>
+      </nav>
+      <div class="store-card">
+        <div class="live"><i />Store is online</div>
+        <div style="font-size: 15px; font-weight: 600">{{ storefrontHost }}</div>
+        <a :href="config.public.storefrontBase" target="_blank" rel="noopener">View storefront<AdsDesignIcon name="external" style="width: 14px; height: 14px" /></a>
+        <div style="border-top: 1px solid rgba(241, 237, 226, 0.18); padding-top: 10px; display: flex; align-items: center; gap: 8px">
+          <span style="min-width: 0; flex-grow: 1; font-size: 13px">
+            <b style="display: block; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ auth.user?.email }}</b>
+            <span style="opacity: 0.7; font-size: 12px">{{ auth.role }}</span>
+          </span>
+          <button class="icon-btn sm" type="button" style="background: transparent; color: var(--ivory); border-color: rgba(241, 237, 226, 0.25)" aria-label="Sign out" title="Sign out" @click="logout"><AdsDesignIcon name="logout" style="width: 16px; height: 16px" /></button>
+        </div>
+      </div>
+    </aside>
+    <div class="scrim" :class="{ on: menuOpen }" @click="menuOpen = false" />
 
-        <template #default="{ collapsed }">
-          <UNavigationMenu :collapsed="collapsed" :items="links" orientation="vertical" />
-        </template>
+    <div class="mobile-bar">
+      <button class="icon-btn" type="button" aria-label="Open menu" aria-controls="sidebar" @click="menuOpen = true"><AdsDesignIcon name="menu" /></button>
+      <img src="/img/leezil-icon-teal.svg" alt="">
+      <span class="grow">Leezil Admin</span>
+    </div>
 
-        <template #footer="{ collapsed }">
-          <!-- User chip + logout -->
-          <div v-if="!collapsed" class="px-2 pb-2">
-            <UDropdownMenu
-              :items="[
-                [{ label: auth.user?.email, disabled: true }],
-                [{ label: `${auth.role}`, disabled: true }],
-                [{ label: 'Sign out', icon: 'i-lucide-log-out', onSelect: logout }]
-              ]"
-            >
-              <UButton color="neutral" variant="ghost" block class="justify-start">
-                <UIcon name="i-lucide-user" class="size-4" />
-                <span class="truncate">{{ auth.user?.email }}</span>
-              </UButton>
-            </UDropdownMenu>
-          </div>
-          <UButton
-            v-else
-            icon="i-lucide-log-out"
-            color="neutral"
-            variant="ghost"
-            square
-            block
-            @click="logout"
-          />
-
-          <UButton
-            :icon="colorMode.value === 'dark' ? 'i-lucide-sun' : 'i-lucide-moon'"
-            :label="collapsed ? undefined : colorMode.value === 'dark' ? 'Light mode' : 'Dark mode'"
-            color="neutral"
-            variant="ghost"
-            :block="!collapsed"
-            :square="collapsed"
-            @click="colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'"
-          />
-        </template>
-      </UDashboardSidebar>
-
+    <main class="main">
       <slot />
-    </UDashboardGroup>
+    </main>
+
+    <nav class="tabbar" aria-label="Quick">
+      <NuxtLink v-for="item in tabItems" :key="item.to" :to="item.to" :class="{ active: isActive(item.to) }" :aria-current="isActive(item.to) ? 'page' : undefined">
+        <span><AdsDesignIcon :name="item.design!" /></span>{{ item.short ?? item.label }}
+      </NuxtLink>
+      <button type="button" aria-controls="sidebar" @click="menuOpen = true"><span><AdsDesignIcon name="menu" /></span>More</button>
+    </nav>
   </div>
 </template>

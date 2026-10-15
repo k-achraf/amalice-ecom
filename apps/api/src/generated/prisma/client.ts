@@ -274,3 +274,13 @@ export type ProductSourcingRequest = Prisma.ProductSourcingRequestModel
  * 
  */
 export type PageViewEvent = Prisma.PageViewEventModel
+/**
+ * Model Funnel
+ * 
+ */
+export type Funnel = Prisma.FunnelModel
+/**
+ * Model FunnelStep
+ * 
+ */
+export type FunnelStep = Prisma.FunnelStepModel

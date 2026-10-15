@@ -4,7 +4,7 @@ Zod schemas + derived TS types — the single source of truth for any shape cros
 
 ## Structure
 
-One file per domain in `src/`, all re-exported from `src/index.ts`: `order`, `product`, `customer`, `shipment`, `auth`, `catalog`, `reconciliation`, `store-settings`, `location` (Wilaya/Commune), `apps` (integration registry), `landing-page`, `offer`, `shipping`, `shipping-company`, `upsell`, `google-sheets`, `sourcing`, `server-performance`.
+One file per domain in `src/`, all re-exported from `src/index.ts`: `order`, `product`, `customer`, `shipment`, `auth`, `catalog`, `reconciliation`, `store-settings`, `location` (Wilaya/Commune), `apps` (integration registry), `landing-page`, `offer`, `shipping`, `shipping-company`, `upsell`, `google-sheets`, `sourcing`, `server-performance`, `funnel` (funnel/step schemas + the static `FUNNEL_TEMPLATES` catalog — add a template there and its id to `FUNNEL_TEMPLATE_IDS`), `funnel-landing` (landing-page settings of a funnel's Landing step + the static `LANDING_TEMPLATES` catalog — add one there and its id to `LANDING_TEMPLATE_IDS`; the admin preview and the future storefront renderer both key off its `layout`).
 
 ## Conventions
 

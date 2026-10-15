@@ -1,11 +1,16 @@
+import tailwindcss from '@tailwindcss/vite'
+
 export default defineNuxtConfig({
-  extends: ['../../packages/ui'],
+  // The admin no longer extends packages/ui (that layer is Nuxt UI-based and
+  // storefront-only now). Design tokens live in ads.css; components in
+  // app/components/ads.
   modules: ['@pinia/nuxt'],
-  // admin.css is the DS-09 Polaris×Stripe override layer — imported AFTER the
-  // shared layer's main.css (pulled in transitively via `extends`) so it wins
-  // on equal specificity. Admin-scoped only; the storefront doesn't import it.
-  css: ['~/assets/css/admin.css'],
+  css: ['~/assets/css/ads.css'],
+  // Outfit is self-hosted via @fontsource-variable/outfit (imported in ads.css);
+  // no font module: @nuxt/fonts' dev handler 500s on stale font URLs.
   ssr: false,
+  // SPA shell paints a spinner instead of a blank white page while the bundle loads.
+  spaLoadingTemplate: true,
   compatibilityDate: '2026-07-17',
   devServer: { port: 3001 },
   // RichTextEditor.vue imports these Tiptap packages directly (it builds the
@@ -16,8 +21,11 @@ export default defineNuxtConfig({
   // surface as odd module-identity mismatches on first visit. Pre-bundling
   // them here keeps everything in one pass.
   vite: {
+    plugins: [tailwindcss()],
     optimizeDeps: {
-      include: ['@tiptap/core', '@tiptap/vue-3', '@tiptap/starter-kit', '@tiptap/extension-image', '@tiptap/extension-link']
+      // Pre-bundle everything up front: a dep Vite discovers mid-session triggers a
+      // re-optimize + full reload, which shows up as a blank page / 504 'Outdated Optimize Dep'.
+      include: ['reka-ui', 'lucide-vue-next', '@tanstack/vue-table', 'vue-sonner', 'class-variance-authority', 'clsx', 'tailwind-merge', '@tiptap/core', '@tiptap/vue-3', '@tiptap/starter-kit', '@tiptap/extension-image', '@tiptap/extension-link']
     }
   },
   runtimeConfig: {
@@ -32,13 +40,19 @@ export default defineNuxtConfig({
       // without NUXT_PUBLIC_STOREFRONT_BASE set in the shell would otherwise
       // silently ship localhost links to real admins. Override for local
       // dev via NUXT_PUBLIC_STOREFRONT_BASE=http://localhost:3000.
-      storefrontBase: 'https://amalice.shop'
+      storefrontBase: 'https://amalice.shop',
+      // Base URL of the standalone funnels site (apps/funnels), used to build the public link of a
+      // funnel: <funnelsBase>/f/<slug>. Same build-time caveat as above; override with
+      // NUXT_PUBLIC_FUNNELS_BASE (local dev default: http://localhost:3002).
+      funnelsBase: 'http://localhost:3002'
     }
   },
   app: {
     head: {
-      titleTemplate: '%s · Amalice Admin',
-      title: 'Amalice Admin'
+      htmlAttrs: { lang: 'en' },
+      link: [{ rel: 'icon', href: '/img/leezil-icon-teal.svg', type: 'image/svg+xml' }],
+      titleTemplate: '%s — Leezil Admin',
+      title: 'Leezil Admin'
     }
   }
 })

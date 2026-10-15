@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { formatPhoneLocal, type OrderListResponse } from '@amalice/shared'
+import { toast } from 'vue-sonner'
 
 // Stage 1 of the order pipeline: a human agent calls the customer to confirm
 // a real order before anything gets picked. Two queues, same as
@@ -143,204 +144,174 @@ function fmtDate(iso: string) {
 function addressLine(o: { address: { line1: string; city: string; region: string } }) {
   return `${o.address.line1}, ${o.address.city}, ${o.address.region}`
 }
+// ---- Design workspace: one queue tab at a time, one order selected, call outcomes as buttons ----
+type QueueState = 'PendingCallCenter' | 'CallCenterNoAnswer' | 'WrongNumber' | 'Postponed'
+const tab = ref<QueueState>('PendingCallCenter')
+const queues = computed<Record<QueueState, OrderListResponse['items']>>(() => ({
+  PendingCallCenter: pendingQueue.value?.items ?? [],
+  CallCenterNoAnswer: noAnswerQueue.value?.items ?? [],
+  WrongNumber: wrongNumberQueue.value?.items ?? [],
+  Postponed: postponedQueue.value?.items ?? []
+}))
+const counts = computed(() => ({
+  PendingCallCenter: pendingQueue.value?.total ?? queues.value.PendingCallCenter.length,
+  CallCenterNoAnswer: noAnswerQueue.value?.total ?? queues.value.CallCenterNoAnswer.length,
+  WrongNumber: wrongNumberQueue.value?.total ?? queues.value.WrongNumber.length,
+  Postponed: postponedQueue.value?.total ?? queues.value.Postponed.length
+}))
+const tabs = computed(() => [
+  { label: 'Waiting', value: 'PendingCallCenter', count: counts.value.PendingCallCenter },
+  { label: 'No answer', value: 'CallCenterNoAnswer', count: counts.value.CallCenterNoAnswer },
+  { label: 'Wrong number', value: 'WrongNumber', count: counts.value.WrongNumber },
+  { label: 'Postponed', value: 'Postponed', count: counts.value.Postponed }
+])
+const list = computed(() => queues.value[tab.value])
+const selectedId = ref<string | null>(null)
+watch([list, tab], () => {
+  if (!list.value.some((o) => o.id === selectedId.value)) selectedId.value = list.value[0]?.id ?? null
+}, { immediate: true })
+const current = computed(() => list.value.find((o) => o.id === selectedId.value) ?? null)
+const callNote = ref('')
+watch(current, (o) => { callNote.value = '' }, { immediate: true })
+
+function initials(name: string | null) {
+  return (name ?? '?').split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()
+}
+function waited(iso: string) {
+  const m = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000))
+  return m < 60 ? `${m} min` : m < 1440 ? `${Math.round(m / 60)} h` : `${Math.round(m / 1440)} d`
+}
+async function copyPhone(phone: string) {
+  try { await navigator.clipboard.writeText(phone); toast.success('Number copied') } catch { toast.error('Could not copy') }
+}
+// A typed call note is saved with the outcome (mirrored to the Google Sheets Notes column).
+async function outcome(to: 'Confirmed' | 'CallCenterNoAnswer' | 'WrongNumber' | 'Cancelled' | 'PendingCallCenter') {
+  const o = current.value
+  if (!o) return
+  const note = callNote.value.trim()
+  if (note && note !== (o.notes ?? '')) {
+    await run(() => api(`/admin/orders/${o.id}/notes`, { method: 'PATCH', body: { notes: note } }), { errorFallback: 'Could not save the call note' })
+  }
+  await act(o.id, to)
+}
+
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Call Center">
-        <template #leading><UDashboardSidebarCollapse /></template>
-        <template #right>
-          <UButton to="/call-center/drop" icon="i-lucide-zap" color="primary" aria-label="Drop Queue">
-            <span class="hidden sm:inline">Drop Queue</span>
-          </UButton>
+  <AdsPage title="Call center" description="Orders waiting for phone confirmation">
+    <template #actions>
+      <NuxtLink to="/call-center/drop" class="btn"><AdsIcon name="i-lucide-zap" />Drop queue</NuxtLink>
+    </template>
+
+    <section class="kpis" aria-label="Queues">
+      <AdsKpiCard label="Waiting for a call" :value="counts.PendingCallCenter" color="dark" :meta="pendingQueue?.items.length ? `Oldest: ${waited(pendingQueue.items[pendingQueue.items.length - 1]!.createdAt)}` : 'Queue is clear'" />
+      <AdsKpiCard label="No answer" :value="counts.CallCenterNoAnswer" meta="Retry later" />
+      <AdsKpiCard label="Wrong number" :value="counts.WrongNumber" color="error" meta="Needs a corrected number" />
+      <AdsKpiCard label="Postponed" :value="counts.Postponed" color="warning" meta="Customer asked for a later call" />
+    </section>
+
+    <div class="split queue-left">
+      <section class="card flush" aria-labelledby="q-h">
+        <div class="card-head"><h2 id="q-h">Queue <small>{{ list.length }} orders</small></h2></div>
+        <div style="padding: 10px 12px; border-bottom: 1px solid var(--line-soft)">
+          <AdsTabs v-model="tab" :items="tabs" />
+        </div>
+        <div v-if="pending" class="empty">Loading…</div>
+        <div v-else-if="!list.length" class="empty">Nothing here. Good job.</div>
+        <div v-else class="queue" role="list">
+          <button v-for="o in list" :key="o.id" type="button" class="queue-item" role="listitem" :aria-current="o.id === selectedId" @click="selectedId = o.id">
+            <span class="initials">{{ initials(o.customer.name) }}</span>
+            <span class="meta">
+              <b>{{ o.customer.name ?? o.customer.phone }}</b>
+              <span>#{{ o.id.slice(0, 8) }} · {{ o.address.region }} · <AdsPrice :amount-cents="o.totalCents" /></span>
+              <span>{{ o.notes ?? 'No call note' }}</span>
+            </span>
+            <span class="side"><span class="muted">{{ waited(o.createdAt) }}</span><span v-if="o.isDuplicate" class="pill returned">Duplicate?</span></span>
+          </button>
+        </div>
+      </section>
+
+      <section class="card" aria-label="Current call">
+        <div v-if="!current" class="empty" style="padding: 60px 20px">
+          <AdsIcon name="i-lucide-check" style="width: 32px; height: 32px; color: var(--teal); display: block; margin: 0 auto" />
+          <h2 style="font-size: 18px; margin-top: 10px; color: var(--pine)">Queue is empty</h2>
+          <p>Every order in this tab has been called.</p>
+        </div>
+
+        <template v-else>
+          <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap">
+            <span class="initials lg">{{ initials(current.customer.name) }}</span>
+            <div class="grow">
+              <h2 style="font-size: 20px">{{ current.customer.name ?? 'No name given' }}</h2>
+              <span class="muted">Order <NuxtLink :to="`/orders/${current.id}`">#{{ current.id.slice(0, 8) }}</NuxtLink> · {{ fmtDate(current.createdAt) }}</span>
+            </div>
+            <div style="text-align: right"><div class="phone-big mono">{{ formatPhoneLocal(current.customer.phone) }}</div><span class="muted">{{ current.address.region }}</span></div>
+          </div>
+
+          <div style="display: flex; gap: 8px; flex-wrap: wrap">
+            <a class="btn btn-primary" :href="`tel:${current.customer.phone}`"><AdsIcon name="i-lucide-phone-call" />Call now</a>
+            <button class="btn" type="button" @click="copyPhone(current.customer.phone)"><AdsIcon name="i-lucide-copy" />Copy number</button>
+            <button class="btn" type="button" @click="openPriceEditor(current)"><AdsIcon name="i-lucide-pencil" />Edit price</button>
+          </div>
+
+          <div v-if="current.isDuplicate" class="notice warn"><AdsIcon name="i-lucide-copy-x" /><span>Possible duplicate: same customer and product within the last 2 days.</span></div>
+          <div v-if="current.notes" class="notice warn"><AdsIcon name="i-lucide-sticky-note" /><span>{{ current.notes }}</span></div>
+
+          <div class="grid-2" style="align-items: start">
+            <div class="stack" style="gap: 12px">
+              <h3 style="font-size: 14px">Order</h3>
+              <div class="stack" style="gap: 10px">
+                <div v-for="it in current.items" :key="it.id" class="prod">
+                  <span class="thumb"><AdsIcon name="i-lucide-package" /></span>
+                  <span class="grow">{{ it.product.name }}<span class="muted" style="display: block; font-size: 12px">{{ it.variantLabel ?? 'Default' }} · <AdsPrice :amount-cents="it.unitPriceCents" /></span></span>
+                  <b>× {{ it.quantity }}</b>
+                </div>
+              </div>
+              <div class="totals">
+                <div><span>Delivery<template v-if="current.shippingType"> ({{ current.shippingType === 'Home' ? 'Home' : 'Stop desk' }})</template></span><span><AdsPrice :amount-cents="current.shippingPriceCents" /></span></div>
+                <div class="grand"><span>To collect</span><span><AdsPrice :amount-cents="current.totalCents" /></span></div>
+              </div>
+            </div>
+            <div class="stack" style="gap: 12px">
+              <h3 style="font-size: 14px">Check the delivery details</h3>
+              <dl class="details">
+                <dt>Wilaya</dt><dd>{{ current.address.region }}</dd>
+                <dt>Commune</dt><dd>{{ current.address.city }}</dd>
+                <dt>Address</dt><dd>{{ current.address.line1 }}</dd>
+                <dt>Delivery</dt><dd>{{ current.shippingType === 'Home' ? 'Home' : current.shippingType === 'Desk' ? 'Stop desk' : '—' }}</dd>
+              </dl>
+              <NuxtLink :to="`/orders/${current.id}`" class="btn btn-sm" style="align-self: flex-start"><AdsIcon name="i-lucide-pencil" />Edit in the order page</NuxtLink>
+            </div>
+          </div>
+
+          <div class="field"><label class="label" for="ws-note">Call note</label><input id="ws-note" v-model="callNote" class="input" placeholder="e.g. Wants delivery after 17:00"></div>
+          <div class="outcomes" role="group" aria-label="Call result" style="grid-template-columns: repeat(auto-fit, minmax(110px, 1fr))">
+            <button class="outcome ok" type="button" :disabled="!!acting" @click="outcome('Confirmed')"><AdsIcon name="i-lucide-check" />Confirmed</button>
+            <button class="outcome" type="button" :disabled="!!acting" @click="outcome('CallCenterNoAnswer')"><AdsIcon name="i-lucide-phone-missed" />No answer</button>
+            <button class="outcome" type="button" :disabled="!!acting" @click="openPostpone(current.id)"><AdsIcon name="i-lucide-clock" />Call back later</button>
+            <button class="outcome" type="button" :disabled="!!acting" @click="outcome('WrongNumber')"><AdsIcon name="i-lucide-phone-off" />Wrong number</button>
+            <button class="outcome bad" type="button" :disabled="!!acting" @click="outcome('Cancelled')"><AdsIcon name="i-lucide-x" />Cancelled</button>
+          </div>
+          <button v-if="tab !== 'PendingCallCenter'" class="btn btn-sm" type="button" style="align-self: flex-start" :disabled="!!acting" @click="outcome('PendingCallCenter')">Move back to the call queue</button>
         </template>
-      </UDashboardNavbar>
+      </section>
+    </div>
+  </AdsPage>
+
+  <AdsDialog v-model:open="postponeModalOpen" title="Call back later" description="The order stays out of the queues until this date/time is reached." width="sm">
+    <AdsField label="Follow up at"><AdsInput v-model="postponeDate" type="datetime-local" /></AdsField>
+    <template #footer>
+      <button class="btn" type="button" @click="postponeModalOpen = false">Cancel</button>
+      <button class="btn btn-primary" type="button" :disabled="!postponeDate" @click="confirmPostpone">Postpone</button>
     </template>
-    <template #body>
-      <div class="space-y-8">
-        <!-- Awaiting a confirmation call -->
-        <section>
-          <h2 class="mb-3 text-sm font-medium text-muted">Awaiting confirmation call</h2>
-          <div v-if="pending" class="admin-kpi-card px-4 py-12 text-center text-muted">Loading…</div>
-          <EmptyState
-            v-else-if="!pendingQueue?.items.length"
-            icon="i-lucide-phone-call"
-            title="Queue is empty"
-            description="Every new order has been called."
-          />
-          <div v-else class="space-y-3">
-            <div v-for="o in pendingQueue.items" :key="o.id" class="admin-kpi-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-              <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-center gap-2">
-                  <NuxtLink :to="`/orders/${o.id}`" class="tabular font-medium text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink>
-                  <UBadge v-if="o.isDuplicate" color="error" variant="subtle" size="sm" title="Same customer + product within the last 2 days">Possible Duplicate</UBadge>
-                  <span class="text-sm text-muted">{{ fmtDate(o.createdAt) }}</span>
-                </div>
-                <div class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <span class="font-medium text-highlighted">{{ o.customer.name ?? 'No name given' }}</span>
-                  <a :href="`tel:${o.customer.phone}`" class="tabular flex items-center gap-1 text-sm text-primary hover:underline">
-                    <UIcon name="i-lucide-phone" class="size-3.5" />{{ formatPhoneLocal(o.customer.phone) }}
-                  </a>
-                </div>
-                <p class="mt-1 text-sm text-muted">{{ addressLine(o) }}</p>
-                <p class="mt-1 text-sm text-muted">{{ o.items.length }} item{{ o.items.length === 1 ? '' : 's' }} · <PriceDisplay :amount-cents="o.totalCents" class="tabular font-medium text-highlighted" /> COD</p>
-                <OrderLineItemsInline :items="o.items" class="mt-2" />
-                <p v-if="o.notes" class="mt-1 flex items-start gap-1 text-sm text-muted"><UIcon name="i-lucide-sticky-note" class="mt-0.5 size-3.5 shrink-0" />{{ o.notes }}</p>
-              </div>
-              <div class="flex shrink-0 flex-wrap gap-2">
-                <UButton icon="i-lucide-check" size="sm" color="primary" :loading="acting === `${o.id}:Confirmed`" label="Confirm" @click="act(o.id, 'Confirmed')" />
-                <UButton icon="i-lucide-phone-missed" size="sm" color="warning" variant="outline" :loading="acting === `${o.id}:CallCenterNoAnswer`" label="No answer" @click="act(o.id, 'CallCenterNoAnswer')" />
-                <UButton icon="i-lucide-phone-off" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:WrongNumber`" label="Wrong number" @click="act(o.id, 'WrongNumber')" />
-                <UButton icon="i-lucide-calendar-clock" size="sm" color="warning" variant="outline" :loading="acting === `${o.id}:Postponed`" label="Postpone" @click="openPostpone(o.id)" />
-                <UButton icon="i-lucide-x" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:Cancelled`" label="Cancel" @click="act(o.id, 'Cancelled')" />
-                <UButton icon="i-lucide-sticky-note" size="sm" color="neutral" variant="ghost" :label="o.notes ? 'Edit note' : 'Add note'" @click="openNotes(o)" />
-                <UButton icon="i-lucide-pencil" size="sm" color="neutral" variant="ghost" label="Edit price" @click="openPriceEditor(o)" />
-              </div>
-            </div>
-          </div>
-        </section>
+  </AdsDialog>
 
-        <!-- No answer — needs a retry call -->
-        <section v-if="noAnswerQueue?.items.length">
-          <h2 class="mb-3 text-sm font-medium text-muted">No answer — needs a retry call</h2>
-          <div class="space-y-3">
-            <div v-for="o in noAnswerQueue.items" :key="o.id" class="admin-kpi-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-              <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-center gap-2">
-                  <NuxtLink :to="`/orders/${o.id}`" class="tabular font-medium text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink>
-                  <UBadge v-if="o.isDuplicate" color="error" variant="subtle" size="sm" title="Same customer + product within the last 2 days">Possible Duplicate</UBadge>
-                  <StatusBadge :state="o.state" />
-                </div>
-                <div class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <span class="font-medium text-highlighted">{{ o.customer.name ?? 'No name given' }}</span>
-                  <a :href="`tel:${o.customer.phone}`" class="tabular flex items-center gap-1 text-sm text-primary hover:underline">
-                    <UIcon name="i-lucide-phone" class="size-3.5" />{{ formatPhoneLocal(o.customer.phone) }}
-                  </a>
-                </div>
-                <p class="mt-1 text-sm text-muted">{{ addressLine(o) }}</p>
-                <OrderLineItemsInline :items="o.items" class="mt-2" />
-                <p v-if="o.notes" class="mt-1 flex items-start gap-1 text-sm text-muted"><UIcon name="i-lucide-sticky-note" class="mt-0.5 size-3.5 shrink-0" />{{ o.notes }}</p>
-              </div>
-              <div class="flex shrink-0 flex-wrap gap-2">
-                <UButton icon="i-lucide-phone-call" size="sm" color="primary" variant="outline" :loading="acting === `${o.id}:PendingCallCenter`" label="Retry call" @click="act(o.id, 'PendingCallCenter')" />
-                <UButton icon="i-lucide-x" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:Cancelled`" label="Cancel" @click="act(o.id, 'Cancelled')" />
-                <UButton icon="i-lucide-sticky-note" size="sm" color="neutral" variant="ghost" :label="o.notes ? 'Edit note' : 'Add note'" @click="openNotes(o)" />
-                <UButton icon="i-lucide-pencil" size="sm" color="neutral" variant="ghost" label="Edit price" @click="openPriceEditor(o)" />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Wrong number — needs a corrected number before retrying -->
-        <section v-if="wrongNumberQueue?.items.length">
-          <h2 class="mb-3 text-sm font-medium text-muted">Wrong number</h2>
-          <div class="space-y-3">
-            <div v-for="o in wrongNumberQueue.items" :key="o.id" class="admin-kpi-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-              <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-center gap-2">
-                  <NuxtLink :to="`/orders/${o.id}`" class="tabular font-medium text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink>
-                  <UBadge v-if="o.isDuplicate" color="error" variant="subtle" size="sm" title="Same customer + product within the last 2 days">Possible Duplicate</UBadge>
-                  <StatusBadge :state="o.state" />
-                </div>
-                <div class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <span class="font-medium text-highlighted">{{ o.customer.name ?? 'No name given' }}</span>
-                  <a :href="`tel:${o.customer.phone}`" class="tabular flex items-center gap-1 text-sm text-primary hover:underline">
-                    <UIcon name="i-lucide-phone" class="size-3.5" />{{ formatPhoneLocal(o.customer.phone) }}
-                  </a>
-                </div>
-                <p class="mt-1 text-sm text-muted">{{ addressLine(o) }}</p>
-                <OrderLineItemsInline :items="o.items" class="mt-2" />
-                <p v-if="o.notes" class="mt-1 flex items-start gap-1 text-sm text-muted"><UIcon name="i-lucide-sticky-note" class="mt-0.5 size-3.5 shrink-0" />{{ o.notes }}</p>
-              </div>
-              <div class="flex shrink-0 flex-wrap gap-2">
-                <UButton icon="i-lucide-phone-call" size="sm" color="primary" variant="outline" :loading="acting === `${o.id}:PendingCallCenter`" label="Retry call" @click="act(o.id, 'PendingCallCenter')" />
-                <UButton icon="i-lucide-x" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:Cancelled`" label="Cancel" @click="act(o.id, 'Cancelled')" />
-                <UButton icon="i-lucide-sticky-note" size="sm" color="neutral" variant="ghost" :label="o.notes ? 'Edit note' : 'Add note'" @click="openNotes(o)" />
-                <UButton icon="i-lucide-pencil" size="sm" color="neutral" variant="ghost" label="Edit price" @click="openPriceEditor(o)" />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Postponed — customer asked to be contacted later -->
-        <section v-if="postponedQueue?.items.length">
-          <h2 class="mb-3 text-sm font-medium text-muted">Postponed</h2>
-          <div class="space-y-3">
-            <div v-for="o in postponedQueue.items" :key="o.id" class="admin-kpi-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-              <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-center gap-2">
-                  <NuxtLink :to="`/orders/${o.id}`" class="tabular font-medium text-primary hover:underline">{{ o.id.slice(0, 8) }}</NuxtLink>
-                  <UBadge v-if="o.isDuplicate" color="error" variant="subtle" size="sm" title="Same customer + product within the last 2 days">Possible Duplicate</UBadge>
-                  <StatusBadge :state="o.state" />
-                </div>
-                <div class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <span class="font-medium text-highlighted">{{ o.customer.name ?? 'No name given' }}</span>
-                  <a :href="`tel:${o.customer.phone}`" class="tabular flex items-center gap-1 text-sm text-primary hover:underline">
-                    <UIcon name="i-lucide-phone" class="size-3.5" />{{ formatPhoneLocal(o.customer.phone) }}
-                  </a>
-                </div>
-                <p class="mt-1 text-sm text-muted">{{ addressLine(o) }}</p>
-                <OrderLineItemsInline :items="o.items" class="mt-2" />
-                <p v-if="o.notes" class="mt-1 flex items-start gap-1 text-sm text-muted"><UIcon name="i-lucide-sticky-note" class="mt-0.5 size-3.5 shrink-0" />{{ o.notes }}</p>
-              </div>
-              <div class="flex shrink-0 flex-wrap gap-2">
-                <UButton icon="i-lucide-phone-call" size="sm" color="primary" variant="outline" :loading="acting === `${o.id}:PendingCallCenter`" label="Contact now" @click="act(o.id, 'PendingCallCenter')" />
-                <UButton icon="i-lucide-x" size="sm" color="error" variant="outline" :loading="acting === `${o.id}:Cancelled`" label="Cancel" @click="act(o.id, 'Cancelled')" />
-                <UButton icon="i-lucide-sticky-note" size="sm" color="neutral" variant="ghost" :label="o.notes ? 'Edit note' : 'Add note'" @click="openNotes(o)" />
-                <UButton icon="i-lucide-pencil" size="sm" color="neutral" variant="ghost" label="Edit price" @click="openPriceEditor(o)" />
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
+  <AdsDialog v-model:open="priceModalOpen" title="Edit price / shipping fee" description="Call-center negotiation window: only before the order is confirmed." width="sm">
+    <AdsField label="Shipping fee (DZD)"><AdsNumberInput v-model="editShippingDzd" :min="0" /></AdsField>
+    <AdsField label="Total due, COD (DZD)"><AdsNumberInput v-model="editTotalDzd" :min="0" /></AdsField>
+    <template #footer>
+      <button class="btn" type="button" @click="priceModalOpen = false">Cancel</button>
+      <button class="btn btn-primary" type="button" :disabled="savingPrice" @click="savePrice">Save</button>
     </template>
-  </UDashboardPanel>
-
-  <UModal v-model:open="notesModalOpen">
-    <template #content>
-      <div class="space-y-4 p-6">
-        <h3 class="text-lg font-semibold">Call-center note</h3>
-        <UTextarea v-model="notesText" :rows="5" placeholder="Notes for this order…" class="w-full" autofocus />
-        <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="ghost" @click="notesModalOpen = false">Cancel</UButton>
-          <UButton :loading="savingNotes" color="primary" icon="i-lucide-check" @click="saveNotes">Save</UButton>
-        </div>
-      </div>
-    </template>
-  </UModal>
-
-  <UModal v-model:open="priceModalOpen">
-    <template #content>
-      <div class="space-y-4 p-6">
-        <h3 class="text-lg font-semibold">Edit price / shipping fee</h3>
-        <UFormField label="Shipping fee (DZD)">
-          <UInputNumber v-model="editShippingDzd" :min="0" class="w-full" />
-        </UFormField>
-        <UFormField label="Total due — COD (DZD)" help="Overrides the total directly; the items subtotal itself isn't editable here.">
-          <UInputNumber v-model="editTotalDzd" :min="0" class="w-full" />
-        </UFormField>
-        <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="ghost" @click="priceModalOpen = false">Cancel</UButton>
-          <UButton :loading="savingPrice" color="primary" icon="i-lucide-check" @click="savePrice">Save</UButton>
-        </div>
-      </div>
-    </template>
-  </UModal>
-
-  <UModal v-model:open="postponeModalOpen">
-    <template #content>
-      <div class="space-y-4 p-6">
-        <h3 class="text-lg font-semibold">Postpone — pick a follow-up date</h3>
-        <p class="text-sm text-muted">The order stays out of the queues until this date/time is reached.</p>
-        <UFormField label="Follow up at">
-          <UInput v-model="postponeDate" type="datetime-local" class="w-full" />
-        </UFormField>
-        <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="ghost" @click="postponeModalOpen = false">Cancel</UButton>
-          <UButton :disabled="!postponeDate" color="primary" icon="i-lucide-check" @click="confirmPostpone">Postpone</UButton>
-        </div>
-      </div>
-    </template>
-  </UModal>
+  </AdsDialog>
 </template>

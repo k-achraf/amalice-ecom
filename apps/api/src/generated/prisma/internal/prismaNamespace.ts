@@ -430,7 +430,9 @@ export const ModelName = {
   SourcedProductCompetitor: 'SourcedProductCompetitor',
   ProductAdTest: 'ProductAdTest',
   ProductSourcingRequest: 'ProductSourcingRequest',
-  PageViewEvent: 'PageViewEvent'
+  PageViewEvent: 'PageViewEvent',
+  Funnel: 'Funnel',
+  FunnelStep: 'FunnelStep'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -446,7 +448,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "sourcedProductVideoCreative" | "sourcedProductCompetitor" | "productAdTest" | "productSourcingRequest" | "pageViewEvent"
+    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "sourcedProductVideoCreative" | "sourcedProductCompetitor" | "productAdTest" | "productSourcingRequest" | "pageViewEvent" | "funnel" | "funnelStep"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3928,6 +3930,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Funnel: {
+      payload: Prisma.$FunnelPayload<ExtArgs>
+      fields: Prisma.FunnelFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FunnelFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FunnelFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelPayload>
+        }
+        findFirst: {
+          args: Prisma.FunnelFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FunnelFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelPayload>
+        }
+        findMany: {
+          args: Prisma.FunnelFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelPayload>[]
+        }
+        create: {
+          args: Prisma.FunnelCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelPayload>
+        }
+        createMany: {
+          args: Prisma.FunnelCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FunnelCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelPayload>[]
+        }
+        delete: {
+          args: Prisma.FunnelDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelPayload>
+        }
+        update: {
+          args: Prisma.FunnelUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelPayload>
+        }
+        deleteMany: {
+          args: Prisma.FunnelDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FunnelUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FunnelUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelPayload>[]
+        }
+        upsert: {
+          args: Prisma.FunnelUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelPayload>
+        }
+        aggregate: {
+          args: Prisma.FunnelAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFunnel>
+        }
+        groupBy: {
+          args: Prisma.FunnelGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FunnelGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FunnelCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FunnelCountAggregateOutputType> | number
+        }
+      }
+    }
+    FunnelStep: {
+      payload: Prisma.$FunnelStepPayload<ExtArgs>
+      fields: Prisma.FunnelStepFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FunnelStepFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelStepPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FunnelStepFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelStepPayload>
+        }
+        findFirst: {
+          args: Prisma.FunnelStepFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelStepPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FunnelStepFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelStepPayload>
+        }
+        findMany: {
+          args: Prisma.FunnelStepFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelStepPayload>[]
+        }
+        create: {
+          args: Prisma.FunnelStepCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelStepPayload>
+        }
+        createMany: {
+          args: Prisma.FunnelStepCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FunnelStepCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelStepPayload>[]
+        }
+        delete: {
+          args: Prisma.FunnelStepDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelStepPayload>
+        }
+        update: {
+          args: Prisma.FunnelStepUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelStepPayload>
+        }
+        deleteMany: {
+          args: Prisma.FunnelStepDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FunnelStepUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FunnelStepUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelStepPayload>[]
+        }
+        upsert: {
+          args: Prisma.FunnelStepUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelStepPayload>
+        }
+        aggregate: {
+          args: Prisma.FunnelStepAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFunnelStep>
+        }
+        groupBy: {
+          args: Prisma.FunnelStepGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FunnelStepGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FunnelStepCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FunnelStepCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -4625,6 +4775,35 @@ export const PageViewEventScalarFieldEnum = {
 export type PageViewEventScalarFieldEnum = (typeof PageViewEventScalarFieldEnum)[keyof typeof PageViewEventScalarFieldEnum]
 
 
+export const FunnelScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  templateId: 'templateId',
+  status: 'status',
+  productId: 'productId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FunnelScalarFieldEnum = (typeof FunnelScalarFieldEnum)[keyof typeof FunnelScalarFieldEnum]
+
+
+export const FunnelStepScalarFieldEnum = {
+  id: 'id',
+  funnelId: 'funnelId',
+  position: 'position',
+  type: 'type',
+  name: 'name',
+  enabled: 'enabled',
+  config: 'config',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FunnelStepScalarFieldEnum = (typeof FunnelStepScalarFieldEnum)[keyof typeof FunnelStepScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -5079,6 +5258,34 @@ export type ListEnumPageViewTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
 
 
 /**
+ * Reference to a field of type 'FunnelStatus'
+ */
+export type EnumFunnelStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FunnelStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'FunnelStatus[]'
+ */
+export type ListEnumFunnelStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FunnelStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'FunnelStepType'
+ */
+export type EnumFunnelStepTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FunnelStepType'>
+    
+
+
+/**
+ * Reference to a field of type 'FunnelStepType[]'
+ */
+export type ListEnumFunnelStepTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FunnelStepType[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -5248,6 +5455,8 @@ export type GlobalOmitConfig = {
   productAdTest?: Prisma.ProductAdTestOmit
   productSourcingRequest?: Prisma.ProductSourcingRequestOmit
   pageViewEvent?: Prisma.PageViewEventOmit
+  funnel?: Prisma.FunnelOmit
+  funnelStep?: Prisma.FunnelStepOmit
 }
 
 /* Types for Logging */

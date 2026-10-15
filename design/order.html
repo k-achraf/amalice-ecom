@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Order — Leezil Admin</title>
+  <link rel="icon" href="assets/img/leezil-icon-teal.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/pages/order.js" defer></script>
+</head>
+<body>
+<div class="app" data-page="order">
+  <main class="main">
+
+    <header class="page-head">
+      <div class="title">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="orders.html">Orders</a><svg data-icon="chevron" style="width:14px;height:14px"></svg><span id="crumb-id"></span></nav>
+        <h1 id="order-title"></h1>
+        <p id="order-sub" style="margin-top:4px"></p>
+      </div>
+      <a class="btn hide-sm" id="prev-order" href="#" aria-label="Previous order"><svg data-icon="back"></svg></a>
+      <a class="btn hide-sm" id="next-order" href="#" aria-label="Next order"><svg data-icon="chevron"></svg></a>
+      <button class="btn" type="button" id="print-btn"><svg data-icon="print"></svg>Print label</button>
+    </header>
+
+    <section class="card" aria-label="Order progress" style="gap:12px">
+      <div class="steps" id="steps"></div>
+    </section>
+
+    <div class="split">
+      <div class="stack">
+        <section class="card flush" aria-labelledby="it-h">
+          <div class="card-head"><h2 id="it-h">Items</h2><button class="btn btn-sm" type="button" id="edit-items"><svg data-icon="edit"></svg>Edit items</button></div>
+          <div class="table-wrap">
+            <table style="min-width:520px">
+              <thead><tr><th style="padding-left:20px">Product</th><th class="num">Price</th><th class="num">Qty</th><th class="num" style="padding-right:20px">Total</th></tr></thead>
+              <tbody id="items"></tbody>
+            </table>
+          </div>
+          <div style="padding:16px 20px">
+            <div class="totals" id="totals"></div>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="dl-h">
+          <div class="card-head"><h2 id="dl-h">Delivery</h2><span id="tracking-pill"></span></div>
+          <div class="grid-2">
+            <div class="field"><label for="carrier">Shipping company</label><select class="select" id="carrier"></select></div>
+            <div class="field"><label for="dtype">Delivery type</label><select class="select" id="dtype"><option>Home</option><option>Stop desk</option></select></div>
+            <div class="field"><label for="tracking">Tracking number</label><input class="input" id="tracking" placeholder="Created when sent to the shipping company" readonly></div>
+            <div class="field"><label for="weight">Parcel weight</label><div class="input-group"><input class="input" id="weight" value="0.5"><span class="addon">kg</span></div></div>
+          </div>
+          <div class="setting" style="padding-bottom:0"><div class="text"><b>Allow the customer to open the parcel</b><span>The courier lets the customer check the product before paying.</span></div><label class="switch"><input type="checkbox" checked aria-label="Allow opening the parcel"><span></span></label></div>
+        </section>
+
+        <section class="card" aria-labelledby="tl-h">
+          <div class="card-head"><h2 id="tl-h">Activity</h2></div>
+          <form id="note-form" style="display:flex;gap:8px">
+            <label class="sr" for="note">Add a note</label>
+            <input class="input" id="note" placeholder="Add a note for the team…">
+            <button class="btn" type="submit">Add</button>
+          </form>
+          <ol class="timeline" id="timeline"></ol>
+        </section>
+      </div>
+
+      <div class="stack">
+        <section class="card" aria-labelledby="ac-h" id="action-card">
+          <div class="card-head"><h2 id="ac-h">Next step</h2></div>
+          <div id="actions" class="stack" style="gap:8px"></div>
+        </section>
+
+        <section class="card" aria-labelledby="cu-h">
+          <div class="card-head"><h2 id="cu-h">Customer</h2><a href="customers.html">View profile</a></div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <span class="initials dark" id="cu-ini"></span>
+            <div class="grow"><b id="cu-name" style="font-weight:600"></b><span class="muted" style="display:block" id="cu-meta"></span></div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <a class="btn grow" id="call-btn" href="#"><svg data-icon="phone"></svg><span id="cu-phone"></span></a>
+            <a class="icon-btn" href="#" aria-label="Send a WhatsApp message"><svg data-icon="message"></svg></a>
+          </div>
+          <div id="risk"></div>
+        </section>
+
+        <section class="card" aria-labelledby="ad-h">
+          <div class="card-head"><h2 id="ad-h">Shipping address</h2><button class="btn btn-sm btn-ghost" type="button" id="edit-addr"><svg data-icon="edit"></svg>Edit</button></div>
+          <dl class="details" id="address"></dl>
+        </section>
+
+        <section class="card" aria-labelledby="src-h">
+          <div class="card-head"><h2 id="src-h">Order source</h2></div>
+          <dl class="details" id="source"></dl>
+        </section>
+      </div>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

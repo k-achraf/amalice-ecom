@@ -172,465 +172,397 @@ const showFieldModalBool = computed({
   get: () => showFieldModal.value,
   set: (v) => { if (!v) { showFieldModal.value = false; editingField.value = null } }
 })
+
+// ---- Design chrome: tabs, discard, header links ----
+const tab = ref('themes')
+const config = useRuntimeConfig()
+const storefrontBase = config.public.storefrontBase
+const storefrontHost = (() => { try { return new URL(storefrontBase).host } catch { return storefrontBase } })()
+function discard() {
+  if (!settings.value) return
+  selectedTemplate.value = settings.value.activeTemplate
+  storeName.value = settings.value.storeName
+  announcementText.value = settings.value.announcementText ?? ''
+  displayCart.value = settings.value.displayCart ?? true
+  leadFormFields.value = settings.value.leadFormConfig && settings.value.leadFormConfig.length > 0 ? settings.value.leadFormConfig.map((f) => ({ ...f })) : [...DEFAULT_LEAD_FORM_FIELDS]
+  abandonedCartDelaySeconds.value = settings.value.abandonedCartDelaySeconds ?? 60
+}
+
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Storefront">
-        <template #leading><UDashboardSidebarCollapse /></template>
-      </UDashboardNavbar>
+  <AdsPage title="Storefront" :description="storefrontHost">
+    <template #actions>
+      <a class="btn" :href="storefrontBase" target="_blank" rel="noopener"><AdsDesignIcon name="external" />View store</a>
     </template>
 
-    <template #body>
-      <div v-if="pending" class="py-24 text-center text-muted">Loading…</div>
-      <div v-else-if="settingsError" class="py-24 text-center">
-        <p class="text-error">Failed to load storefront settings.</p>
-        <p class="mt-1 text-sm text-muted">{{ settingsError.message }}</p>
-      </div>
-      <div v-else class="max-w-4xl space-y-10">
-        <!-- Template picker -->
-        <section class="space-y-4">
-          <div>
-            <h2 class="text-lg font-semibold text-highlighted">Storefront template</h2>
-            <p class="text-sm text-muted">Each template has its own visual identity — color, shadow, radius, and type, not just layout.</p>
-          </div>
+    <div v-if="pending" class="empty">Loading…</div>
+    <div v-else-if="settingsError" class="empty"><p style="color: var(--danger-fg)">Failed to load storefront settings.</p><p>{{ settingsError.message }}</p></div>
+    <template v-else>
+      <AdsTabs v-model="tab" underline :items="[{ label: 'Themes', value: 'themes' }, { label: 'Store settings', value: 'settings' }, { label: 'Order form', value: 'checkout' }]" />
 
-          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <button
-              v-for="tpl in STORE_TEMPLATES"
-              :key="tpl"
-              type="button"
-              class="admin-kpi-card group overflow-hidden text-left transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-admin-md)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              :class="selectedTemplate === tpl ? 'ring-2 ring-primary' : ''"
-              @click="selectedTemplate = tpl"
-            >
-              <!-- SVG preview mockup — a stylized representation of the template's home -->
-              <div class="aspect-[4/3] overflow-hidden border-b border-[var(--color-admin-border)] bg-[var(--color-admin-bg)] p-3">
-                <!-- Minimal preview: clean grid + thin header -->
-                <svg v-if="tpl === 'minimal'" viewBox="0 0 200 150" class="size-full" preserveAspectRatio="xMidYMid meet">
-                  <rect x="0" y="0" width="200" height="20" fill="#e5e7eb" />
-                  <rect x="60" y="70" width="80" height="14" rx="2" fill="#1a1a1a" />
-                  <rect x="70" y="90" width="60" height="6" rx="1" fill="#9ca3af" />
-                  <rect x="75" y="108" width="50" height="14" rx="3" fill="#1a1a1a" />
-                  <rect x="20" y="128" width="35" height="6" fill="#d1d5db" />
-                  <rect x="83" y="128" width="35" height="6" fill="#d1d5db" />
-                  <rect x="145" y="128" width="35" height="6" fill="#d1d5db" />
-                </svg>
-                <!-- Editorial preview: full-bleed dark hero + bold type -->
-                <svg v-else-if="tpl === 'editorial'" viewBox="0 0 200 150" class="size-full" preserveAspectRatio="xMidYMid meet">
-                  <rect x="0" y="0" width="200" height="95" fill="#1a1a1a" />
-                  <rect x="20" y="30" width="160" height="22" rx="1" fill="#ffffff" />
-                  <rect x="40" y="60" width="120" height="8" fill="#9ca3af" />
-                  <rect x="70" y="76" width="60" height="10" rx="2" fill="#ffffff" />
-                  <rect x="15" y="108" width="52" height="32" rx="2" fill="#d1d5db" />
-                  <rect x="74" y="108" width="52" height="32" rx="2" fill="#d1d5db" />
-                  <rect x="133" y="108" width="52" height="32" rx="2" fill="#d1d5db" />
-                </svg>
-                <!-- Boutique preview: sparse, refined, narrow -->
-                <svg v-else-if="tpl === 'boutique'" viewBox="0 0 200 150" class="size-full" preserveAspectRatio="xMidYMid meet">
-                  <rect x="0" y="0" width="200" height="150" fill="#ffffff" />
-                  <rect x="80" y="34" width="40" height="5" fill="#9ca3af" />
-                  <rect x="55" y="48" width="90" height="10" fill="#1a1a1a" />
-                  <rect x="65" y="66" width="70" height="5" fill="#9ca3af" />
-                  <rect x="70" y="84" width="60" height="9" fill="none" stroke="#1a1a1a" stroke-width="1" />
-                  <rect x="30" y="112" width="50" height="26" fill="#e5e7eb" />
-                  <rect x="120" y="112" width="50" height="26" fill="#e5e7eb" />
-                </svg>
-                <!-- Promify preview: glassy header + blue hero + card grid -->
-                <svg v-else-if="tpl === 'promify'" viewBox="0 0 200 150" class="size-full" preserveAspectRatio="xMidYMid meet">
-                  <rect x="0" y="0" width="200" height="150" fill="#f9fafb" />
-                  <rect x="0" y="0" width="200" height="14" fill="#ffffff" />
-                  <rect x="8" y="4" width="6" height="6" rx="1" fill="#0074c7" />
-                  <circle cx="184" cy="7" r="2.5" fill="#d1d5db" />
-                  <circle cx="192" cy="7" r="2.5" fill="#d1d5db" />
-                  <!-- Hero band with blue gradient feel -->
-                  <rect x="0" y="14" width="200" height="48" fill="#0074c7" />
-                  <rect x="14" y="26" width="60" height="8" rx="1" fill="#ffffff" />
-                  <rect x="14" y="40" width="80" height="4" fill="#ffffff" opacity="0.7" />
-                  <rect x="14" y="50" width="28" height="6" rx="1" fill="#ffffff" />
-                  <!-- Decorative circle -->
-                  <circle cx="165" cy="38" r="14" fill="#ffffff" opacity="0.15" />
-                  <!-- Product card grid -->
-                  <rect x="14" y="76" width="40" height="44" rx="3" fill="#ffffff" stroke="#e5e7eb" />
-                  <rect x="18" y="80" width="32" height="20" rx="1" fill="#bae0fd" />
-                  <rect x="18" y="104" width="20" height="3" rx="1" fill="#1f2937" />
-                  <rect x="18" y="110" width="12" height="3" rx="1" fill="#0074c7" />
-                  <rect x="62" y="76" width="40" height="44" rx="3" fill="#ffffff" stroke="#e5e7eb" />
-                  <rect x="66" y="80" width="32" height="20" rx="1" fill="#bae0fd" />
-                  <rect x="66" y="104" width="20" height="3" rx="1" fill="#1f2937" />
-                  <rect x="66" y="110" width="12" height="3" rx="1" fill="#0074c7" />
-                  <rect x="110" y="76" width="40" height="44" rx="3" fill="#ffffff" stroke="#e5e7eb" />
-                  <rect x="114" y="80" width="32" height="20" rx="1" fill="#bae0fd" />
-                  <rect x="114" y="104" width="20" height="3" rx="1" fill="#1f2937" />
-                  <rect x="114" y="110" width="12" height="3" rx="1" fill="#0074c7" />
-                  <rect x="158" y="76" width="40" height="44" rx="3" fill="#ffffff" stroke="#e5e7eb" />
-                  <rect x="162" y="80" width="32" height="20" rx="1" fill="#bae0fd" />
-                  <rect x="162" y="104" width="20" height="3" rx="1" fill="#1f2937" />
-                  <rect x="162" y="110" width="12" height="3" rx="1" fill="#0074c7" />
-                </svg>
-                <!-- Nova preview: neubrutalist — thick borders, hard offset shadow, lime accent -->
-                <svg v-else-if="tpl === 'nova'" viewBox="0 0 200 150" class="size-full" preserveAspectRatio="xMidYMid meet">
-                  <rect x="0" y="0" width="200" height="150" fill="#ffffff" />
-                  <rect x="0" y="0" width="200" height="18" fill="#ffffff" stroke="#000000" stroke-width="2" />
-                  <rect x="8" y="5" width="30" height="8" fill="#000000" />
-                  <!-- Headline block with hard offset shadow -->
-                  <rect x="18" y="34" width="90" height="14" fill="#000000" />
-                  <rect x="14" y="30" width="90" height="14" fill="#ccff00" stroke="#000000" stroke-width="2" />
-                  <rect x="14" y="52" width="70" height="6" fill="#d1d5db" />
-                  <!-- CTA button with offset shadow -->
-                  <rect x="18" y="68" width="46" height="16" fill="#000000" />
-                  <rect x="14" y="64" width="46" height="16" fill="#ccff00" stroke="#000000" stroke-width="2" />
-                  <!-- Sticker badge -->
-                  <rect x="150" y="20" width="40" height="14" fill="#ff3d6e" stroke="#000000" stroke-width="2" rx="7" transform="rotate(-6 170 27)" />
-                  <!-- Product card grid, hard shadows -->
-                  <rect x="16" y="100" width="50" height="42" fill="#000000" />
-                  <rect x="12" y="96" width="50" height="42" fill="#ffffff" stroke="#000000" stroke-width="2" />
-                  <rect x="76" y="100" width="50" height="42" fill="#000000" />
-                  <rect x="72" y="96" width="50" height="42" fill="#ffffff" stroke="#000000" stroke-width="2" />
-                  <rect x="136" y="100" width="50" height="42" fill="#000000" />
-                  <rect x="132" y="96" width="50" height="42" fill="#ffffff" stroke="#000000" stroke-width="2" />
-                </svg>
-                <!-- Atelier preview: velvet header/hero + rose-gold accent + rounded cards -->
-                <svg v-else-if="tpl === 'atelier'" viewBox="0 0 200 150" class="size-full" preserveAspectRatio="xMidYMid meet">
-                  <rect x="0" y="0" width="200" height="150" fill="#faf3ef" />
-                  <!-- Velvet hero band -->
-                  <rect x="0" y="0" width="200" height="66" fill="#12211c" />
-                  <circle cx="170" cy="24" r="18" fill="none" stroke="#b76e79" stroke-width="1" opacity="0.5" />
-                  <circle cx="170" cy="24" r="10" fill="#b76e79" opacity="0.85" />
-                  <rect x="14" y="18" width="70" height="10" rx="5" fill="#faf3ef" />
-                  <rect x="14" y="34" width="90" height="5" fill="#b76e79" opacity="0.7" />
-                  <rect x="14" y="46" width="44" height="12" rx="6" fill="#b76e79" />
-                  <!-- Rounded product cards on cream surface -->
-                  <rect x="14" y="80" width="50" height="50" rx="10" fill="#12211c" />
-                  <rect x="14" y="130" width="50" height="6" rx="3" fill="#e8d5cb" />
-                  <rect x="74" y="80" width="50" height="50" rx="10" fill="#12211c" />
-                  <rect x="74" y="130" width="50" height="6" rx="3" fill="#e8d5cb" />
-                  <rect x="134" y="80" width="50" height="50" rx="10" fill="#12211c" />
-                  <rect x="134" y="130" width="50" height="6" rx="3" fill="#e8d5cb" />
-                </svg>
-                <!-- Drop preview: black surface, red-orange accent, condensed streetwear -->
-                <svg v-else-if="tpl === 'drop'" viewBox="0 0 200 150" class="size-full" preserveAspectRatio="xMidYMid meet">
-                  <rect x="0" y="0" width="200" height="150" fill="#0a0a0a" />
-                  <rect x="0" y="0" width="200" height="16" fill="#0a0a0a" stroke="#ff3300" stroke-width="1" />
-                  <rect x="8" y="4" width="26" height="8" fill="#ffffff" />
-                  <rect x="14" y="30" width="150" height="18" fill="#ffffff" />
-                  <rect x="14" y="52" width="90" height="6" fill="#8a8a8a" />
-                  <rect x="14" y="68" width="60" height="16" fill="#ff3300" />
-                  <rect x="150" y="16" width="36" height="14" fill="#ff3300" transform="rotate(-6 168 23)" />
-                  <rect x="14" y="98" width="52" height="42" fill="#171717" stroke="#ff3300" stroke-width="1" />
-                  <rect x="74" y="98" width="52" height="42" fill="#171717" stroke="#ff3300" stroke-width="1" />
-                  <rect x="134" y="98" width="52" height="42" fill="#171717" stroke="#ff3300" stroke-width="1" />
-                </svg>
-                <!-- Bloom preview: airy blush surface, pink accent, rounded pill shapes -->
-                <svg v-else-if="tpl === 'bloom'" viewBox="0 0 200 150" class="size-full" preserveAspectRatio="xMidYMid meet">
-                  <rect x="0" y="0" width="200" height="150" fill="#fdf3f6" />
-                  <rect x="0" y="0" width="200" height="60" fill="#fbe4ec" />
-                  <rect x="20" y="18" width="110" height="14" rx="7" fill="#3a2a30" />
-                  <rect x="20" y="38" width="80" height="6" rx="3" fill="#c67a94" />
-                  <rect x="140" y="16" width="44" height="24" rx="12" fill="#ec6f9b" />
-                  <rect x="16" y="78" width="52" height="52" rx="16" fill="#ffffff" stroke="#f6c9d6" stroke-width="1" />
-                  <rect x="76" y="78" width="52" height="52" rx="16" fill="#ffffff" stroke="#f6c9d6" stroke-width="1" />
-                  <rect x="136" y="78" width="52" height="52" rx="16" fill="#ffffff" stroke="#f6c9d6" stroke-width="1" />
-                  <rect x="24" y="138" width="30" height="6" rx="3" fill="#ec6f9b" />
-                  <rect x="84" y="138" width="30" height="6" rx="3" fill="#ec6f9b" />
-                  <rect x="144" y="138" width="30" height="6" rx="3" fill="#ec6f9b" />
-                </svg>
-                <!-- Hearth preview: sandy linen surface, terracotta + sage, framed cards -->
-                <svg v-else-if="tpl === 'hearth'" viewBox="0 0 200 150" class="size-full" preserveAspectRatio="xMidYMid meet">
-                  <rect x="0" y="0" width="200" height="150" fill="#f4ede3" />
-                  <rect x="0" y="0" width="200" height="18" fill="#ece2d3" />
-                  <rect x="8" y="5" width="30" height="8" fill="#8a5a3f" />
-                  <rect x="16" y="34" width="130" height="14" rx="3" fill="#3f342a" />
-                  <rect x="16" y="54" width="90" height="6" rx="2" fill="#8f7e6a" />
-                  <rect x="16" y="70" width="50" height="16" rx="4" fill="#c1633d" />
-                  <rect x="16" y="98" width="56" height="42" fill="#ffffff" stroke="#d8c8b3" stroke-width="3" />
-                  <rect x="24" y="104" width="40" height="30" fill="#c1633d" opacity="0.8" />
-                  <rect x="80" y="98" width="56" height="42" fill="#ffffff" stroke="#d8c8b3" stroke-width="3" />
-                  <rect x="88" y="104" width="40" height="30" fill="#8a9a7b" opacity="0.85" />
-                  <rect x="144" y="98" width="44" height="42" fill="#ffffff" stroke="#d8c8b3" stroke-width="3" />
-                  <rect x="150" y="104" width="32" height="30" fill="#b89a78" opacity="0.85" />
-                </svg>
-                <!-- Volt preview: near-black surface, cyan accent, grid-line blueprint motif -->
-                <svg v-else-if="tpl === 'volt'" viewBox="0 0 200 150" class="size-full" preserveAspectRatio="xMidYMid meet">
-                  <rect x="0" y="0" width="200" height="150" fill="#050708" />
-                  <line x1="0" y1="30" x2="200" y2="30" stroke="#1c2a2c" stroke-width="1" />
-                  <line x1="0" y1="60" x2="200" y2="60" stroke="#1c2a2c" stroke-width="1" />
-                  <line x1="50" y1="0" x2="50" y2="150" stroke="#1c2a2c" stroke-width="1" />
-                  <line x1="150" y1="0" x2="150" y2="150" stroke="#1c2a2c" stroke-width="1" />
-                  <rect x="14" y="14" width="60" height="7" fill="#2fe6e6" />
-                  <rect x="14" y="34" width="140" height="14" rx="2" fill="#ffffff" />
-                  <rect x="14" y="54" width="90" height="5" fill="#7a8a8c" />
-                  <rect x="14" y="70" width="10" height="10" fill="none" stroke="#2fe6e6" stroke-width="1" />
-                  <rect x="30" y="70" width="60" height="10" fill="none" stroke="#2fe6e6" stroke-width="1" />
-                  <rect x="14" y="96" width="52" height="40" rx="2" fill="#0c1113" stroke="#1c2a2c" stroke-width="1" />
-                  <rect x="20" y="102" width="40" height="20" fill="#12181a" />
-                  <rect x="74" y="96" width="52" height="40" rx="2" fill="#0c1113" stroke="#1c2a2c" stroke-width="1" />
-                  <rect x="80" y="102" width="40" height="20" fill="#12181a" />
-                  <rect x="134" y="96" width="52" height="40" rx="2" fill="#0c1113" stroke="#2fe6e6" stroke-width="1" />
-                  <rect x="140" y="102" width="40" height="20" fill="#12181a" />
-                </svg>
-                <!-- Pulse preview: white surface, gradient-mesh violet/cyan blobs, rounded-2xl -->
-                <svg v-else-if="tpl === 'pulse'" viewBox="0 0 200 150" class="size-full" preserveAspectRatio="xMidYMid meet">
-                  <defs>
-                    <radialGradient id="pulseGrad" cx="30%" cy="20%" r="80%">
-                      <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.55" />
-                      <stop offset="100%" stop-color="#67e8f9" stop-opacity="0" />
-                    </radialGradient>
-                  </defs>
-                  <rect x="0" y="0" width="200" height="150" fill="#ffffff" />
-                  <rect x="0" y="0" width="200" height="70" fill="url(#pulseGrad)" />
-                  <rect x="16" y="20" width="130" height="14" rx="7" fill="#241b3f" />
-                  <rect x="16" y="40" width="90" height="6" rx="3" fill="#8b8399" />
-                  <rect x="16" y="54" width="60" height="16" rx="8" fill="#6d5ef5" />
-                  <rect x="14" y="86" width="52" height="46" rx="12" fill="#ffffff" stroke="#ece9fb" stroke-width="2" />
-                  <rect x="74" y="86" width="52" height="46" rx="12" fill="#ffffff" stroke="#ece9fb" stroke-width="2" />
-                  <rect x="134" y="86" width="52" height="46" rx="12" fill="#ffffff" stroke="#ece9fb" stroke-width="2" />
-                  <circle cx="40" cy="107" r="10" fill="#c4b8fb" />
-                  <circle cx="100" cy="107" r="10" fill="#8ee3ec" />
-                  <circle cx="160" cy="107" r="10" fill="#c4b8fb" />
-                </svg>
-                <!-- Lumière preview: stark black/white, crimson block, diagonal cut, oversized type -->
-                <svg v-else-if="tpl === 'lumiere'" viewBox="0 0 200 150" class="size-full" preserveAspectRatio="xMidYMid meet">
-                  <rect x="0" y="0" width="200" height="150" fill="#ffffff" />
-                  <polygon points="0,0 130,0 90,150 0,150" fill="#0a0a0a" />
-                  <rect x="14" y="24" width="70" height="16" fill="#ffffff" />
-                  <rect x="14" y="46" width="50" height="6" fill="#c81854" />
-                  <rect x="150" y="16" width="36" height="36" fill="#c81854" />
-                  <rect x="110" y="70" width="76" height="8" fill="#0a0a0a" />
-                  <rect x="110" y="86" width="50" height="5" fill="#8a8a8a" />
-                  <rect x="14" y="100" width="70" height="34" fill="#f2f2f2" />
-                  <rect x="110" y="100" width="34" height="34" fill="#0a0a0a" />
-                  <rect x="150" y="100" width="34" height="34" fill="#c81854" />
-                </svg>
-                <!-- Trove preview: cream surface, mustard/teal duo-tone, circular crops + sharp cards -->
-                <svg v-else-if="tpl === 'trove'" viewBox="0 0 200 150" class="size-full" preserveAspectRatio="xMidYMid meet">
-                  <rect x="0" y="0" width="200" height="150" fill="#faf6ee" />
-                  <rect x="0" y="0" width="200" height="16" fill="#f1e9d8" />
-                  <rect x="8" y="4" width="28" height="8" fill="#3f3424" />
-                  <rect x="16" y="32" width="120" height="14" rx="3" fill="#3f3424" />
-                  <rect x="16" y="52" width="80" height="6" rx="2" fill="#8a7a5c" />
-                  <circle cx="40" cy="98" r="26" fill="#d9a017" />
-                  <rect x="80" y="76" width="44" height="44" fill="#ffffff" stroke="#e4d8bc" stroke-width="2" />
-                  <circle cx="102" cy="98" r="14" fill="#1f6f6b" />
-                  <rect x="136" y="76" width="44" height="44" rx="4" fill="#1f6f6b" />
-                  <circle cx="158" cy="98" r="12" fill="#faf6ee" />
-                </svg>
-                <!-- Forge preview: concrete-gray surface, safety-yellow accent, hazard stripes -->
-                <svg v-else-if="tpl === 'forge'" viewBox="0 0 200 150" class="size-full" preserveAspectRatio="xMidYMid meet">
-                  <defs>
-                    <pattern id="forgeHazard" width="12" height="12" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
-                      <rect width="6" height="12" fill="#171412" />
-                      <rect x="6" width="6" height="12" fill="#f2a900" />
-                    </pattern>
-                  </defs>
-                  <rect x="0" y="0" width="200" height="150" fill="#e7e5e2" />
-                  <rect x="0" y="0" width="200" height="10" fill="url(#forgeHazard)" />
-                  <rect x="14" y="26" width="140" height="16" fill="#232120" />
-                  <rect x="14" y="48" width="90" height="6" fill="#6b6863" />
-                  <rect x="14" y="64" width="56" height="16" fill="#f2a900" stroke="#232120" stroke-width="2" />
-                  <rect x="14" y="96" width="52" height="42" fill="#ffffff" stroke="#232120" stroke-width="3" />
-                  <rect x="74" y="96" width="52" height="42" fill="#ffffff" stroke="#232120" stroke-width="3" />
-                  <rect x="134" y="96" width="52" height="42" fill="#ffffff" stroke="#232120" stroke-width="3" />
-                  <rect x="134" y="96" width="52" height="8" fill="url(#forgeHazard)" />
-                </svg>
-                <!-- Impulse preview: funnel page — green trust band, centered headline with yellow marker, glowing orange CTA, countdown pills -->
-                <svg v-else viewBox="0 0 200 150" class="size-full" preserveAspectRatio="xMidYMid meet">
-                  <rect x="0" y="0" width="200" height="150" fill="#fdf9f4" />
-                  <rect x="0" y="0" width="200" height="8" fill="#16a34a" />
-                  <rect x="45" y="24" width="110" height="10" rx="2" fill="#1c1712" />
-                  <rect x="55" y="40" width="90" height="10" rx="2" fill="#ffd43b" />
-                  <rect x="62" y="42" width="76" height="6" rx="1" fill="#1c1712" />
-                  <ellipse cx="100" cy="72" rx="42" ry="12" fill="#ff6a1f" opacity="0.25" />
-                  <rect x="60" y="62" width="80" height="20" rx="10" fill="#ff6a1f" />
-                  <rect x="70" y="69" width="60" height="6" rx="3" fill="#ffffff" opacity="0.9" />
-                  <rect x="66" y="94" width="20" height="12" rx="2" fill="#1c1712" />
-                  <rect x="90" y="94" width="20" height="12" rx="2" fill="#1c1712" />
-                  <rect x="114" y="94" width="20" height="12" rx="2" fill="#1c1712" />
-                  <rect x="20" y="118" width="76" height="22" rx="6" fill="#ffffff" stroke="#ece1d4" stroke-width="2" />
-                  <rect x="104" y="118" width="76" height="22" rx="6" fill="#ffffff" stroke="#ece1d4" stroke-width="2" />
-                  <rect x="26" y="124" width="34" height="10" rx="5" fill="#dcf5e5" />
-                  <rect x="110" y="124" width="34" height="10" rx="5" fill="#dcf5e5" />
-                </svg>
-              </div>
-
-              <div class="space-y-2 p-4">
-                <div class="flex items-center justify-between">
-                  <h3 class="font-semibold text-highlighted">{{ TEMPLATE_META[tpl].label }}</h3>
-                  <UIcon
-                    v-if="selectedTemplate === tpl"
-                    name="i-lucide-circle-check-big"
-                    class="size-5 text-primary"
-                  />
-                </div>
-                <p class="text-sm text-muted">{{ TEMPLATE_META[tpl].description }}</p>
-                <p class="text-xs text-muted"><span class="font-medium">Best for:</span> {{ TEMPLATE_META[tpl].bestFor }}</p>
-              </div>
-            </button>
-          </div>
-        </section>
-
-        <!-- Store identity -->
-        <section class="admin-kpi-card space-y-4 p-6">
-          <h2 class="text-lg font-semibold text-highlighted">Store identity</h2>
-          <UFormField label="Store name" help="Shown in the header, footer, and browser title.">
-            <UInput v-model="storeName" class="w-full max-w-md" />
-          </UFormField>
-          <UFormField label="Announcement bar text" help="Leave empty to hide the announcement bar. Shown across all templates.">
-            <UTextarea v-model="announcementText" :rows="2" class="w-full max-w-md" />
-          </UFormField>
-        </section>
-
-        <!-- Abandoned carts -->
-        <section class="admin-kpi-card space-y-4 p-6">
-          <h2 class="text-lg font-semibold text-highlighted">Abandoned carts</h2>
-          <p class="text-sm text-muted">
-            On the Impulse template's lead form, if a customer types a phone number and then goes idle without
-            submitting, an order is created automatically and marked abandoned — visible on the
-            <NuxtLink to="/abandoned-carts" class="text-primary hover:underline">Abandoned Carts</NuxtLink> page for
-            follow-up.
-          </p>
-          <UFormField label="Idle delay before creating the abandoned order" help="10–3600 seconds.">
-            <UInputNumber v-model="abandonedCartDelaySeconds" :min="10" :max="3600" class="w-40" />
-          </UFormField>
-        </section>
-
-        <!-- Checkout behavior -->
-        <section class="admin-kpi-card space-y-4 p-6">
-          <h2 class="text-lg font-semibold text-highlighted">Checkout behavior</h2>
-          <div class="flex items-center justify-between rounded-lg border border-[var(--color-admin-border)] p-4">
-            <div>
-              <p class="font-medium text-highlighted">Cart-based checkout</p>
-              <p class="text-sm text-muted">
-                {{ displayCart
-                  ? 'Customers add products to a cart, then check out with phone + address — a call-center agent confirms the order after.'
-                  : 'No cart — customers fill a lead form directly on the product page (phone + address + quantity); a call-center agent confirms after.' }}
-              </p>
+      <!-- Themes -->
+      <section v-if="tab === 'themes'" class="stack">
+        <div class="card-head"><h2 style="font-size: 16px">Theme library</h2><span class="muted">Each template has its own visual identity: colour, shadow, radius and type, not just layout.</span></div>
+        <div class="cards-grid">
+          <article v-for="tpl in STORE_TEMPLATES" :key="tpl" class="theme-card" :class="{ current: selectedTemplate === tpl }">
+            <div class="theme-prev" style="padding: 10px; background: var(--hover)">
+              <svg v-if="tpl === 'minimal'" viewBox="0 0 200 150" style="width: 100%; height: 100%" preserveAspectRatio="xMidYMid meet">
+              <rect x="0" y="0" width="200" height="20" fill="#e5e7eb" />
+              <rect x="60" y="70" width="80" height="14" rx="2" fill="#1a1a1a" />
+              <rect x="70" y="90" width="60" height="6" rx="1" fill="#9ca3af" />
+              <rect x="75" y="108" width="50" height="14" rx="3" fill="#1a1a1a" />
+              <rect x="20" y="128" width="35" height="6" fill="#d1d5db" />
+              <rect x="83" y="128" width="35" height="6" fill="#d1d5db" />
+              <rect x="145" y="128" width="35" height="6" fill="#d1d5db" />
+            </svg>
+            <!-- Editorial preview: full-bleed dark hero + bold type -->
+            <svg v-else-if="tpl === 'editorial'" viewBox="0 0 200 150" style="width: 100%; height: 100%" preserveAspectRatio="xMidYMid meet">
+              <rect x="0" y="0" width="200" height="95" fill="#1a1a1a" />
+              <rect x="20" y="30" width="160" height="22" rx="1" fill="#ffffff" />
+              <rect x="40" y="60" width="120" height="8" fill="#9ca3af" />
+              <rect x="70" y="76" width="60" height="10" rx="2" fill="#ffffff" />
+              <rect x="15" y="108" width="52" height="32" rx="2" fill="#d1d5db" />
+              <rect x="74" y="108" width="52" height="32" rx="2" fill="#d1d5db" />
+              <rect x="133" y="108" width="52" height="32" rx="2" fill="#d1d5db" />
+            </svg>
+            <!-- Boutique preview: sparse, refined, narrow -->
+            <svg v-else-if="tpl === 'boutique'" viewBox="0 0 200 150" style="width: 100%; height: 100%" preserveAspectRatio="xMidYMid meet">
+              <rect x="0" y="0" width="200" height="150" fill="#ffffff" />
+              <rect x="80" y="34" width="40" height="5" fill="#9ca3af" />
+              <rect x="55" y="48" width="90" height="10" fill="#1a1a1a" />
+              <rect x="65" y="66" width="70" height="5" fill="#9ca3af" />
+              <rect x="70" y="84" width="60" height="9" fill="none" stroke="#1a1a1a" stroke-width="1" />
+              <rect x="30" y="112" width="50" height="26" fill="#e5e7eb" />
+              <rect x="120" y="112" width="50" height="26" fill="#e5e7eb" />
+            </svg>
+            <!-- Promify preview: glassy header + blue hero + card grid -->
+            <svg v-else-if="tpl === 'promify'" viewBox="0 0 200 150" style="width: 100%; height: 100%" preserveAspectRatio="xMidYMid meet">
+              <rect x="0" y="0" width="200" height="150" fill="#f9fafb" />
+              <rect x="0" y="0" width="200" height="14" fill="#ffffff" />
+              <rect x="8" y="4" width="6" height="6" rx="1" fill="#0074c7" />
+              <circle cx="184" cy="7" r="2.5" fill="#d1d5db" />
+              <circle cx="192" cy="7" r="2.5" fill="#d1d5db" />
+              <!-- Hero band with blue gradient feel -->
+              <rect x="0" y="14" width="200" height="48" fill="#0074c7" />
+              <rect x="14" y="26" width="60" height="8" rx="1" fill="#ffffff" />
+              <rect x="14" y="40" width="80" height="4" fill="#ffffff" opacity="0.7" />
+              <rect x="14" y="50" width="28" height="6" rx="1" fill="#ffffff" />
+              <!-- Decorative circle -->
+              <circle cx="165" cy="38" r="14" fill="#ffffff" opacity="0.15" />
+              <!-- Product card grid -->
+              <rect x="14" y="76" width="40" height="44" rx="3" fill="#ffffff" stroke="#e5e7eb" />
+              <rect x="18" y="80" width="32" height="20" rx="1" fill="#bae0fd" />
+              <rect x="18" y="104" width="20" height="3" rx="1" fill="#1f2937" />
+              <rect x="18" y="110" width="12" height="3" rx="1" fill="#0074c7" />
+              <rect x="62" y="76" width="40" height="44" rx="3" fill="#ffffff" stroke="#e5e7eb" />
+              <rect x="66" y="80" width="32" height="20" rx="1" fill="#bae0fd" />
+              <rect x="66" y="104" width="20" height="3" rx="1" fill="#1f2937" />
+              <rect x="66" y="110" width="12" height="3" rx="1" fill="#0074c7" />
+              <rect x="110" y="76" width="40" height="44" rx="3" fill="#ffffff" stroke="#e5e7eb" />
+              <rect x="114" y="80" width="32" height="20" rx="1" fill="#bae0fd" />
+              <rect x="114" y="104" width="20" height="3" rx="1" fill="#1f2937" />
+              <rect x="114" y="110" width="12" height="3" rx="1" fill="#0074c7" />
+              <rect x="158" y="76" width="40" height="44" rx="3" fill="#ffffff" stroke="#e5e7eb" />
+              <rect x="162" y="80" width="32" height="20" rx="1" fill="#bae0fd" />
+              <rect x="162" y="104" width="20" height="3" rx="1" fill="#1f2937" />
+              <rect x="162" y="110" width="12" height="3" rx="1" fill="#0074c7" />
+            </svg>
+            <!-- Nova preview: neubrutalist — thick borders, hard offset shadow, lime accent -->
+            <svg v-else-if="tpl === 'nova'" viewBox="0 0 200 150" style="width: 100%; height: 100%" preserveAspectRatio="xMidYMid meet">
+              <rect x="0" y="0" width="200" height="150" fill="#ffffff" />
+              <rect x="0" y="0" width="200" height="18" fill="#ffffff" stroke="#000000" stroke-width="2" />
+              <rect x="8" y="5" width="30" height="8" fill="#000000" />
+              <!-- Headline block with hard offset shadow -->
+              <rect x="18" y="34" width="90" height="14" fill="#000000" />
+              <rect x="14" y="30" width="90" height="14" fill="#ccff00" stroke="#000000" stroke-width="2" />
+              <rect x="14" y="52" width="70" height="6" fill="#d1d5db" />
+              <!-- CTA button with offset shadow -->
+              <rect x="18" y="68" width="46" height="16" fill="#000000" />
+              <rect x="14" y="64" width="46" height="16" fill="#ccff00" stroke="#000000" stroke-width="2" />
+              <!-- Sticker badge -->
+              <rect x="150" y="20" width="40" height="14" fill="#ff3d6e" stroke="#000000" stroke-width="2" rx="7" transform="rotate(-6 170 27)" />
+              <!-- Product card grid, hard shadows -->
+              <rect x="16" y="100" width="50" height="42" fill="#000000" />
+              <rect x="12" y="96" width="50" height="42" fill="#ffffff" stroke="#000000" stroke-width="2" />
+              <rect x="76" y="100" width="50" height="42" fill="#000000" />
+              <rect x="72" y="96" width="50" height="42" fill="#ffffff" stroke="#000000" stroke-width="2" />
+              <rect x="136" y="100" width="50" height="42" fill="#000000" />
+              <rect x="132" y="96" width="50" height="42" fill="#ffffff" stroke="#000000" stroke-width="2" />
+            </svg>
+            <!-- Atelier preview: velvet header/hero + rose-gold accent + rounded cards -->
+            <svg v-else-if="tpl === 'atelier'" viewBox="0 0 200 150" style="width: 100%; height: 100%" preserveAspectRatio="xMidYMid meet">
+              <rect x="0" y="0" width="200" height="150" fill="#faf3ef" />
+              <!-- Velvet hero band -->
+              <rect x="0" y="0" width="200" height="66" fill="#12211c" />
+              <circle cx="170" cy="24" r="18" fill="none" stroke="#b76e79" stroke-width="1" opacity="0.5" />
+              <circle cx="170" cy="24" r="10" fill="#b76e79" opacity="0.85" />
+              <rect x="14" y="18" width="70" height="10" rx="5" fill="#faf3ef" />
+              <rect x="14" y="34" width="90" height="5" fill="#b76e79" opacity="0.7" />
+              <rect x="14" y="46" width="44" height="12" rx="6" fill="#b76e79" />
+              <!-- Rounded product cards on cream surface -->
+              <rect x="14" y="80" width="50" height="50" rx="10" fill="#12211c" />
+              <rect x="14" y="130" width="50" height="6" rx="3" fill="#e8d5cb" />
+              <rect x="74" y="80" width="50" height="50" rx="10" fill="#12211c" />
+              <rect x="74" y="130" width="50" height="6" rx="3" fill="#e8d5cb" />
+              <rect x="134" y="80" width="50" height="50" rx="10" fill="#12211c" />
+              <rect x="134" y="130" width="50" height="6" rx="3" fill="#e8d5cb" />
+            </svg>
+            <!-- Drop preview: black surface, red-orange accent, condensed streetwear -->
+            <svg v-else-if="tpl === 'drop'" viewBox="0 0 200 150" style="width: 100%; height: 100%" preserveAspectRatio="xMidYMid meet">
+              <rect x="0" y="0" width="200" height="150" fill="#0a0a0a" />
+              <rect x="0" y="0" width="200" height="16" fill="#0a0a0a" stroke="#ff3300" stroke-width="1" />
+              <rect x="8" y="4" width="26" height="8" fill="#ffffff" />
+              <rect x="14" y="30" width="150" height="18" fill="#ffffff" />
+              <rect x="14" y="52" width="90" height="6" fill="#8a8a8a" />
+              <rect x="14" y="68" width="60" height="16" fill="#ff3300" />
+              <rect x="150" y="16" width="36" height="14" fill="#ff3300" transform="rotate(-6 168 23)" />
+              <rect x="14" y="98" width="52" height="42" fill="#171717" stroke="#ff3300" stroke-width="1" />
+              <rect x="74" y="98" width="52" height="42" fill="#171717" stroke="#ff3300" stroke-width="1" />
+              <rect x="134" y="98" width="52" height="42" fill="#171717" stroke="#ff3300" stroke-width="1" />
+            </svg>
+            <!-- Bloom preview: airy blush surface, pink accent, rounded pill shapes -->
+            <svg v-else-if="tpl === 'bloom'" viewBox="0 0 200 150" style="width: 100%; height: 100%" preserveAspectRatio="xMidYMid meet">
+              <rect x="0" y="0" width="200" height="150" fill="#fdf3f6" />
+              <rect x="0" y="0" width="200" height="60" fill="#fbe4ec" />
+              <rect x="20" y="18" width="110" height="14" rx="7" fill="#3a2a30" />
+              <rect x="20" y="38" width="80" height="6" rx="3" fill="#c67a94" />
+              <rect x="140" y="16" width="44" height="24" rx="12" fill="#ec6f9b" />
+              <rect x="16" y="78" width="52" height="52" rx="16" fill="#ffffff" stroke="#f6c9d6" stroke-width="1" />
+              <rect x="76" y="78" width="52" height="52" rx="16" fill="#ffffff" stroke="#f6c9d6" stroke-width="1" />
+              <rect x="136" y="78" width="52" height="52" rx="16" fill="#ffffff" stroke="#f6c9d6" stroke-width="1" />
+              <rect x="24" y="138" width="30" height="6" rx="3" fill="#ec6f9b" />
+              <rect x="84" y="138" width="30" height="6" rx="3" fill="#ec6f9b" />
+              <rect x="144" y="138" width="30" height="6" rx="3" fill="#ec6f9b" />
+            </svg>
+            <!-- Hearth preview: sandy linen surface, terracotta + sage, framed cards -->
+            <svg v-else-if="tpl === 'hearth'" viewBox="0 0 200 150" style="width: 100%; height: 100%" preserveAspectRatio="xMidYMid meet">
+              <rect x="0" y="0" width="200" height="150" fill="#f4ede3" />
+              <rect x="0" y="0" width="200" height="18" fill="#ece2d3" />
+              <rect x="8" y="5" width="30" height="8" fill="#8a5a3f" />
+              <rect x="16" y="34" width="130" height="14" rx="3" fill="#3f342a" />
+              <rect x="16" y="54" width="90" height="6" rx="2" fill="#8f7e6a" />
+              <rect x="16" y="70" width="50" height="16" rx="4" fill="#c1633d" />
+              <rect x="16" y="98" width="56" height="42" fill="#ffffff" stroke="#d8c8b3" stroke-width="3" />
+              <rect x="24" y="104" width="40" height="30" fill="#c1633d" opacity="0.8" />
+              <rect x="80" y="98" width="56" height="42" fill="#ffffff" stroke="#d8c8b3" stroke-width="3" />
+              <rect x="88" y="104" width="40" height="30" fill="#8a9a7b" opacity="0.85" />
+              <rect x="144" y="98" width="44" height="42" fill="#ffffff" stroke="#d8c8b3" stroke-width="3" />
+              <rect x="150" y="104" width="32" height="30" fill="#b89a78" opacity="0.85" />
+            </svg>
+            <!-- Volt preview: near-black surface, cyan accent, grid-line blueprint motif -->
+            <svg v-else-if="tpl === 'volt'" viewBox="0 0 200 150" style="width: 100%; height: 100%" preserveAspectRatio="xMidYMid meet">
+              <rect x="0" y="0" width="200" height="150" fill="#050708" />
+              <line x1="0" y1="30" x2="200" y2="30" stroke="#1c2a2c" stroke-width="1" />
+              <line x1="0" y1="60" x2="200" y2="60" stroke="#1c2a2c" stroke-width="1" />
+              <line x1="50" y1="0" x2="50" y2="150" stroke="#1c2a2c" stroke-width="1" />
+              <line x1="150" y1="0" x2="150" y2="150" stroke="#1c2a2c" stroke-width="1" />
+              <rect x="14" y="14" width="60" height="7" fill="#2fe6e6" />
+              <rect x="14" y="34" width="140" height="14" rx="2" fill="#ffffff" />
+              <rect x="14" y="54" width="90" height="5" fill="#7a8a8c" />
+              <rect x="14" y="70" width="10" height="10" fill="none" stroke="#2fe6e6" stroke-width="1" />
+              <rect x="30" y="70" width="60" height="10" fill="none" stroke="#2fe6e6" stroke-width="1" />
+              <rect x="14" y="96" width="52" height="40" rx="2" fill="#0c1113" stroke="#1c2a2c" stroke-width="1" />
+              <rect x="20" y="102" width="40" height="20" fill="#12181a" />
+              <rect x="74" y="96" width="52" height="40" rx="2" fill="#0c1113" stroke="#1c2a2c" stroke-width="1" />
+              <rect x="80" y="102" width="40" height="20" fill="#12181a" />
+              <rect x="134" y="96" width="52" height="40" rx="2" fill="#0c1113" stroke="#2fe6e6" stroke-width="1" />
+              <rect x="140" y="102" width="40" height="20" fill="#12181a" />
+            </svg>
+            <!-- Pulse preview: white surface, gradient-mesh violet/cyan blobs, rounded-2xl -->
+            <svg v-else-if="tpl === 'pulse'" viewBox="0 0 200 150" style="width: 100%; height: 100%" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <radialGradient id="pulseGrad" cx="30%" cy="20%" r="80%">
+                  <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.55" />
+                  <stop offset="100%" stop-color="#67e8f9" stop-opacity="0" />
+                </radialGradient>
+              </defs>
+              <rect x="0" y="0" width="200" height="150" fill="#ffffff" />
+              <rect x="0" y="0" width="200" height="70" fill="url(#pulseGrad)" />
+              <rect x="16" y="20" width="130" height="14" rx="7" fill="#241b3f" />
+              <rect x="16" y="40" width="90" height="6" rx="3" fill="#8b8399" />
+              <rect x="16" y="54" width="60" height="16" rx="8" fill="#6d5ef5" />
+              <rect x="14" y="86" width="52" height="46" rx="12" fill="#ffffff" stroke="#ece9fb" stroke-width="2" />
+              <rect x="74" y="86" width="52" height="46" rx="12" fill="#ffffff" stroke="#ece9fb" stroke-width="2" />
+              <rect x="134" y="86" width="52" height="46" rx="12" fill="#ffffff" stroke="#ece9fb" stroke-width="2" />
+              <circle cx="40" cy="107" r="10" fill="#c4b8fb" />
+              <circle cx="100" cy="107" r="10" fill="#8ee3ec" />
+              <circle cx="160" cy="107" r="10" fill="#c4b8fb" />
+            </svg>
+            <!-- Lumière preview: stark black/white, crimson block, diagonal cut, oversized type -->
+            <svg v-else-if="tpl === 'lumiere'" viewBox="0 0 200 150" style="width: 100%; height: 100%" preserveAspectRatio="xMidYMid meet">
+              <rect x="0" y="0" width="200" height="150" fill="#ffffff" />
+              <polygon points="0,0 130,0 90,150 0,150" fill="#0a0a0a" />
+              <rect x="14" y="24" width="70" height="16" fill="#ffffff" />
+              <rect x="14" y="46" width="50" height="6" fill="#c81854" />
+              <rect x="150" y="16" width="36" height="36" fill="#c81854" />
+              <rect x="110" y="70" width="76" height="8" fill="#0a0a0a" />
+              <rect x="110" y="86" width="50" height="5" fill="#8a8a8a" />
+              <rect x="14" y="100" width="70" height="34" fill="#f2f2f2" />
+              <rect x="110" y="100" width="34" height="34" fill="#0a0a0a" />
+              <rect x="150" y="100" width="34" height="34" fill="#c81854" />
+            </svg>
+            <!-- Trove preview: cream surface, mustard/teal duo-tone, circular crops + sharp cards -->
+            <svg v-else-if="tpl === 'trove'" viewBox="0 0 200 150" style="width: 100%; height: 100%" preserveAspectRatio="xMidYMid meet">
+              <rect x="0" y="0" width="200" height="150" fill="#faf6ee" />
+              <rect x="0" y="0" width="200" height="16" fill="#f1e9d8" />
+              <rect x="8" y="4" width="28" height="8" fill="#3f3424" />
+              <rect x="16" y="32" width="120" height="14" rx="3" fill="#3f3424" />
+              <rect x="16" y="52" width="80" height="6" rx="2" fill="#8a7a5c" />
+              <circle cx="40" cy="98" r="26" fill="#d9a017" />
+              <rect x="80" y="76" width="44" height="44" fill="#ffffff" stroke="#e4d8bc" stroke-width="2" />
+              <circle cx="102" cy="98" r="14" fill="#1f6f6b" />
+              <rect x="136" y="76" width="44" height="44" rx="4" fill="#1f6f6b" />
+              <circle cx="158" cy="98" r="12" fill="#faf6ee" />
+            </svg>
+            <!-- Forge preview: concrete-gray surface, safety-yellow accent, hazard stripes -->
+            <svg v-else-if="tpl === 'forge'" viewBox="0 0 200 150" style="width: 100%; height: 100%" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <pattern id="forgeHazard" width="12" height="12" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+                  <rect width="6" height="12" fill="#171412" />
+                  <rect x="6" width="6" height="12" fill="#f2a900" />
+                </pattern>
+              </defs>
+              <rect x="0" y="0" width="200" height="150" fill="#e7e5e2" />
+              <rect x="0" y="0" width="200" height="10" fill="url(#forgeHazard)" />
+              <rect x="14" y="26" width="140" height="16" fill="#232120" />
+              <rect x="14" y="48" width="90" height="6" fill="#6b6863" />
+              <rect x="14" y="64" width="56" height="16" fill="#f2a900" stroke="#232120" stroke-width="2" />
+              <rect x="14" y="96" width="52" height="42" fill="#ffffff" stroke="#232120" stroke-width="3" />
+              <rect x="74" y="96" width="52" height="42" fill="#ffffff" stroke="#232120" stroke-width="3" />
+              <rect x="134" y="96" width="52" height="42" fill="#ffffff" stroke="#232120" stroke-width="3" />
+              <rect x="134" y="96" width="52" height="8" fill="url(#forgeHazard)" />
+            </svg>
+            <!-- Impulse preview: funnel page — green trust band, centered headline with yellow marker, glowing orange CTA, countdown pills -->
+            <svg v-else viewBox="0 0 200 150" style="width: 100%; height: 100%" preserveAspectRatio="xMidYMid meet">
+              <rect x="0" y="0" width="200" height="150" fill="#fdf9f4" />
+              <rect x="0" y="0" width="200" height="8" fill="#16a34a" />
+              <rect x="45" y="24" width="110" height="10" rx="2" fill="#1c1712" />
+              <rect x="55" y="40" width="90" height="10" rx="2" fill="#ffd43b" />
+              <rect x="62" y="42" width="76" height="6" rx="1" fill="#1c1712" />
+              <ellipse cx="100" cy="72" rx="42" ry="12" fill="#ff6a1f" opacity="0.25" />
+              <rect x="60" y="62" width="80" height="20" rx="10" fill="#ff6a1f" />
+              <rect x="70" y="69" width="60" height="6" rx="3" fill="#ffffff" opacity="0.9" />
+              <rect x="66" y="94" width="20" height="12" rx="2" fill="#1c1712" />
+              <rect x="90" y="94" width="20" height="12" rx="2" fill="#1c1712" />
+              <rect x="114" y="94" width="20" height="12" rx="2" fill="#1c1712" />
+              <rect x="20" y="118" width="76" height="22" rx="6" fill="#ffffff" stroke="#ece1d4" stroke-width="2" />
+              <rect x="104" y="118" width="76" height="22" rx="6" fill="#ffffff" stroke="#ece1d4" stroke-width="2" />
+              <rect x="26" y="124" width="34" height="10" rx="5" fill="#dcf5e5" />
+              <rect x="110" y="124" width="34" height="10" rx="5" fill="#dcf5e5" />
+            </svg>
             </div>
-            <USwitch v-model="displayCart" />
-          </div>
-        </section>
-
-        <!-- Lead form field builder (only when displayCart is off) -->
-        <section v-if="!displayCart" class="admin-kpi-card space-y-4 p-6">
-          <div class="flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-highlighted">Lead form fields</h2>
-            <UButton icon="i-lucide-plus" size="xs" color="primary" label="Add field" @click="openAddField" />
-          </div>
-          <p class="text-sm text-muted">Configure the fields customers fill on the product page. Drag or reorder with arrows. Toggle to enable/disable. Core fields (name, phone) can't be deleted.</p>
-
-          <div class="space-y-2">
-            <div
-              v-for="(field, idx) in leadFormFields"
-              :key="field.id"
-              class="flex items-center gap-3 rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg)] p-3"
-              :class="field.enabled === false ? 'opacity-50' : ''"
-            >
-              <div class="flex flex-col gap-0.5">
-                <UButton icon="i-lucide-chevron-up" size="xs" variant="ghost" color="neutral" :disabled="idx === 0" @click="moveField(idx, 'up')" />
-                <UButton icon="i-lucide-chevron-down" size="xs" variant="ghost" color="neutral" :disabled="idx === leadFormFields.length - 1" @click="moveField(idx, 'down')" />
+            <div class="info">
+              <div class="row1">
+                <h3>{{ TEMPLATE_META[tpl].label }}</h3>
+                <span v-if="settings && settings.activeTemplate === tpl" class="pill solid">Live</span>
+                <span v-else-if="selectedTemplate === tpl" class="pill new">Selected</span>
               </div>
-              <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-center gap-2">
-                  <span class="font-medium text-highlighted">{{ field.label }}</span>
-                  <UBadge size="sm" color="neutral" variant="subtle">{{ field.type }}</UBadge>
-                  <UBadge v-if="field.required" size="sm" color="warning" variant="subtle">Required</UBadge>
-                  <UBadge v-if="field.isCore" size="sm" color="info" variant="subtle">Core</UBadge>
-                  <UBadge
-                    v-if="field.productIds?.length"
-                    size="sm"
-                    color="primary"
-                    variant="subtle"
-                    :title="field.productIds.map(id => productOptions.find(p => p.id === id)?.name ?? id).join(', ')"
-                  >
-                    {{ field.productIds.length }} product{{ field.productIds.length === 1 ? '' : 's' }} only
-                  </UBadge>
-                </div>
-                <p class="text-xs text-muted">Key: <code>{{ field.key }}</code>{{ field.placeholder ? ` · Placeholder: "${field.placeholder}"` : '' }}</p>
+              <p>{{ TEMPLATE_META[tpl].description }}</p>
+              <p class="muted" style="font-size: 12px"><b style="font-weight: 600">Best for:</b> {{ TEMPLATE_META[tpl].bestFor }}</p>
+              <div class="acts">
+                <button class="btn btn-sm" :class="{ 'btn-primary': selectedTemplate !== tpl }" type="button" :disabled="selectedTemplate === tpl" @click="selectedTemplate = tpl">{{ selectedTemplate === tpl ? 'Selected' : 'Use this theme' }}</button>
               </div>
-              <USwitch v-model="field.enabled" />
-              <UButton icon="i-lucide-pencil" size="xs" variant="ghost" color="neutral" @click="openEditField(field)" />
-              <UButton v-if="!field.isCore" icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="deleteField(field.id)" />
             </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Store settings -->
+      <div v-else-if="tab === 'settings'" class="split">
+        <div class="stack">
+          <section class="card" aria-labelledby="gen-h">
+            <div class="card-head"><h2 id="gen-h">General</h2></div>
+            <AdsField label="Store name" help="Shown in the header, footer and browser title."><AdsInput v-model="storeName" /></AdsField>
+          </section>
+
+          <section class="card" aria-labelledby="an-h">
+            <div class="card-head"><h2 id="an-h">Announcement bar</h2></div>
+            <AdsField label="Text" help="Leave empty to hide the announcement bar. Shown across all templates."><AdsTextarea v-model="announcementText" :rows="2" /></AdsField>
+          </section>
+        </div>
+
+        <div class="stack">
+          <section class="card" aria-labelledby="ch-h">
+            <div class="card-head"><h2 id="ch-h">Checkout</h2></div>
+            <div class="setting" style="padding-top: 0; border: 0">
+              <div class="text"><b>Cart-based checkout</b><span>{{ displayCart ? 'Customers add products to a cart, then check out with phone + address; a call-center agent confirms the order after.' : 'No cart: customers fill a lead form on the product page (phone + address + quantity); a call-center agent confirms after.' }}</span></div>
+              <AdsSwitch v-model="displayCart" aria-label="Cart-based checkout" />
+            </div>
+          </section>
+
+          <section class="card" aria-labelledby="ab-h">
+            <div class="card-head"><h2 id="ab-h">Abandoned carts</h2></div>
+            <p class="card-sub">On the Impulse template's lead form, if a customer types a phone number and goes idle without submitting, an order is created automatically and marked abandoned. Follow up on <NuxtLink to="/abandoned-carts">Abandoned carts</NuxtLink>.</p>
+            <AdsField label="Idle delay before creating the abandoned order" help="10–3600 seconds."><AdsNumberInput v-model="abandonedCartDelaySeconds" :min="10" :max="3600" /></AdsField>
+          </section>
+        </div>
+      </div>
+
+      <!-- Order form (lead-form field builder; only used when the cart is off) -->
+      <div v-else class="stack">
+        <AdsBanner v-if="displayCart">The order form is only used when cart-based checkout is off (see Store settings). Fields below apply to the lead form on product pages.</AdsBanner>
+        <section class="card flush" aria-labelledby="of-h">
+          <div class="card-head"><h2 id="of-h">Order form fields</h2><button class="btn btn-sm btn-primary" type="button" @click="openAddField"><AdsIcon name="i-lucide-plus" />Add field</button></div>
+          <div class="table-wrap">
+            <table style="min-width: 640px">
+              <thead><tr><th style="padding-left: 20px">Field</th><th>Type</th><th>Shown</th><th>Required</th><th><span class="sr">Actions</span></th></tr></thead>
+              <tbody>
+                <tr v-for="(field, idx) in leadFormFields" :key="field.id" :style="field.enabled === false ? 'opacity: .55' : undefined">
+                  <td style="padding-left: 20px">
+                    <span class="strong">{{ field.label }}</span>
+                    <span v-if="field.isCore" class="pill neutral" style="margin-left: 6px">Core</span>
+                    <span v-if="field.productIds?.length" class="pill outline" style="margin-left: 6px" :title="field.productIds.map((id) => productOptions.find((p) => p.id === id)?.name ?? id).join(', ')">{{ field.productIds.length }} product{{ field.productIds.length === 1 ? '' : 's' }} only</span>
+                    <span class="sub">Key: {{ field.key }}<template v-if="field.placeholder"> · “{{ field.placeholder }}”</template></span>
+                  </td>
+                  <td>{{ field.type }}</td>
+                  <td><AdsSwitch v-model="field.enabled" :aria-label="`Show ${field.label}`" /></td>
+                  <td><span v-if="field.required" class="pill new">Required</span><span v-else class="muted">Optional</span></td>
+                  <td class="num" style="white-space: nowrap">
+                    <button class="row-btn" type="button" :disabled="idx === 0" aria-label="Move up" @click="moveField(idx, 'up')"><AdsIcon name="i-lucide-chevron-up" /></button>
+                    <button class="row-btn" type="button" :disabled="idx === leadFormFields.length - 1" aria-label="Move down" @click="moveField(idx, 'down')"><AdsIcon name="i-lucide-chevron-down" /></button>
+                    <button class="row-btn" type="button" aria-label="Edit field" @click="openEditField(field)"><AdsIcon name="i-lucide-pencil" /></button>
+                    <button v-if="!field.isCore" class="row-btn" type="button" aria-label="Delete field" @click="deleteField(field.id)"><AdsIcon name="i-lucide-trash-2" /></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </section>
-
-        <!-- Apply bar -->
-        <div class="sticky bottom-4 flex items-center justify-between rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] px-5 py-3 shadow-[var(--shadow-admin-md)]">
-          <p class="text-sm" :class="dirty ? 'text-highlighted' : 'text-muted'">
-            {{ dirty ? 'Unsaved changes — the storefront updates on the next visitor load.' : 'All changes saved.' }}
-          </p>
-          <UButton :loading="saving" color="primary" icon="i-lucide-check" @click="apply">Apply changes</UButton>
-        </div>
       </div>
     </template>
-  </UDashboardPanel>
+  </AdsPage>
 
-  <!-- Field editor modal -->
-  <UModal v-model:open="showFieldModalBool">
-    <template #content>
-      <div v-if="editingField" class="w-full max-w-md space-y-4 p-6">
-        <h3 class="text-lg font-semibold">{{ editingField.isCore ? 'Edit' : 'New' }} field</h3>
-        <UFormField label="Label" hint="Shown above the input">
-          <UInput v-model="editingField.label" placeholder="Full name" class="w-full" />
-        </UFormField>
-        <UFormField label="Key" hint="The data key sent to the server (lowercase, no spaces)">
-          <UInput v-model="editingField.key" placeholder="fullName" class="w-full" :disabled="editingField.isCore" />
-        </UFormField>
-        <UFormField label="Type">
-          <USelect v-model="editingField.type" :items="FIELD_TYPES" class="w-full" :disabled="editingField.isCore" />
-        </UFormField>
-        <UFormField label="Placeholder (optional)">
-          <UInput v-model="editingField.placeholder" placeholder="Enter your…" class="w-full" />
-        </UFormField>
-        <p v-if="['wilaya', 'commune'].includes(editingField.key)" class="text-xs text-muted">
-          Options for this field come from the Algeria wilaya/commune dataset, not a manual list — commune choices follow whichever wilaya the customer picks.
-        </p>
-        <div v-else-if="editingField.type === 'select'" class="space-y-2">
-          <UFormField label="Options (comma-separated)">
-            <UInput
-              :model-value="(editingField.options ?? []).join(', ')"
-              placeholder="Option 1, Option 2, Option 3"
-              class="w-full"
-              @update:model-value="(v: string) => editingField!.options = v.split(',').map(s => s.trim()).filter(Boolean)"
-            />
-          </UFormField>
-        </div>
-        <div class="flex items-center gap-4">
-          <UCheckbox v-model="editingField.required" label="Required" />
-          <UCheckbox v-model="editingField.halfWidth" label="Half width" />
-        </div>
+  <div class="savebar" :class="{ on: dirty }">
+    <span>Unsaved changes: the storefront updates on the next visitor load.</span>
+    <button class="btn" type="button" @click="discard">Discard</button>
+    <button class="btn btn-brass" type="button" :disabled="saving" @click="apply">Apply changes</button>
+  </div>
 
-        <!-- Visibility scope — core fields (name/phone/wilaya/commune) are
-             structural to every checkout, so scoping is only offered for
-             custom fields. A field a customer needs to fill on THIS product
-             but not others (e.g. "Preferred size" on clothing, meaningless
-             on a mug) shouldn't have to be a global field just to exist. -->
-        <UFormField v-if="!editingField.isCore" label="Visible on">
-          <URadioGroup
-            v-model="fieldVisibilityScope"
-            orientation="horizontal"
-            :items="[{ label: 'All products', value: 'all' }, { label: 'Selected products', value: 'selected' }]"
-          />
-          <USelectMenu
-            v-if="fieldVisibilityScope === 'selected'"
-            v-model="editingField.productIds"
-            :items="productOptions.map(p => ({ label: p.name, value: p.id }))"
-            value-key="value"
-            multiple
-            placeholder="Choose products…"
-            class="mt-2 w-full"
-          />
-          <p v-if="fieldVisibilityScope === 'selected' && !editingField.productIds?.length" class="mt-1 text-xs text-warning">
-            No products selected yet — this field won't appear anywhere until you pick at least one.
-          </p>
-        </UFormField>
-
-        <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="ghost" label="Cancel" @click="showFieldModalBool = false" />
-          <UButton :disabled="!editingField.key || !editingField.label" label="Save field" color="primary" @click="saveField" />
-        </div>
+  <!-- Field editor -->
+  <AdsDialog v-model:open="showFieldModalBool" :title="`${editingField?.isCore ? 'Edit' : 'New'} field`">
+    <template v-if="editingField">
+      <AdsField label="Label" help="Shown above the input"><AdsInput v-model="editingField.label" placeholder="Full name" /></AdsField>
+      <div class="grid-2">
+        <AdsField label="Key" help="Data key sent to the server (lowercase, no spaces)"><AdsInput v-model="editingField.key" placeholder="fullName" :disabled="editingField.isCore" /></AdsField>
+        <AdsField label="Type"><AdsSelect v-model="editingField.type" :items="FIELD_TYPES" :disabled="editingField.isCore" /></AdsField>
       </div>
+      <AdsField label="Placeholder (optional)"><AdsInput v-model="editingField.placeholder" placeholder="Enter your…" /></AdsField>
+      <p v-if="['wilaya', 'commune'].includes(editingField.key)" class="muted">Options for this field come from the Algeria wilaya/commune dataset; commune choices follow whichever wilaya the customer picks.</p>
+      <AdsField v-else-if="editingField.type === 'select'" label="Options (comma-separated)">
+        <AdsInput :model-value="(editingField.options ?? []).join(', ')" placeholder="Option 1, Option 2, Option 3" @update:model-value="(v: string) => editingField!.options = v.split(',').map((s) => s.trim()).filter(Boolean)" />
+      </AdsField>
+      <div style="display: flex; gap: 20px"><AdsCheckbox v-model="editingField.required" label="Required" /><AdsCheckbox v-model="editingField.halfWidth" label="Half width" /></div>
+      <!-- Visibility scope: core fields are structural to every checkout, so scoping is only for custom fields. -->
+      <AdsField v-if="!editingField.isCore" label="Visible on">
+        <AdsRadioGroup v-model="fieldVisibilityScope" :items="[{ label: 'All products', value: 'all' }, { label: 'Selected products', value: 'selected' }]" />
+        <AdsSelect v-if="fieldVisibilityScope === 'selected'" v-model="editingField.productIds" :items="productOptions.map((p) => ({ label: p.name, value: p.id }))" multiple placeholder="Choose products…" />
+        <p v-if="fieldVisibilityScope === 'selected' && !editingField.productIds?.length" class="hint" style="color: var(--warn-fg)">No products selected yet: this field won't appear anywhere until you pick at least one.</p>
+      </AdsField>
     </template>
-  </UModal>
+    <template #footer>
+      <button class="btn" type="button" @click="showFieldModalBool = false">Cancel</button>
+      <button class="btn btn-primary" type="button" :disabled="!editingField?.key || !editingField?.label" @click="saveField">Save field</button>
+    </template>
+  </AdsDialog>
 </template>

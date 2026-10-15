@@ -206,286 +206,262 @@ async function applyToRates(provider: ShippingCompanyProvider) {
     applying[provider] = false
   }
 }
+
+// ---- Design cards + settings drawer: the full integration UI (token, webhook, tariffs, logs) lives in the drawer ----
+const activeProvider = ref<ShippingCompanyProvider | null>(null)
+const active = computed(() => (companies.value ?? []).find((c) => c.provider === activeProvider.value) ?? null)
+const activeList = computed(() => (active.value ? [active.value] : []))
+const drawerOpen = computed({ get: () => !!activeProvider.value, set: (v) => { if (!v) activeProvider.value = null } })
+const lastSync = computed(() => {
+  const d = (companies.value ?? []).map((c) => c.lastSyncedAt).filter(Boolean).sort().pop()
+  return d ? new Date(d as string).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'Never'
+})
+
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Shipping companies">
-        <template #leading><UDashboardSidebarCollapse /></template>
-      </UDashboardNavbar>
+  <AdsPage title="Shipping companies" description="Connect delivery companies and choose who ships what">
+    <template #actions>
+      <NuxtLink to="/settings/shipping" class="btn hide-sm"><AdsDesignIcon name="rates" />Shipping rates</NuxtLink>
     </template>
 
-    <template #body>
-      <div v-if="pending" class="py-24 text-center text-muted">Loading…</div>
-      <div v-else class="max-w-3xl space-y-6">
-        <div>
-          <h2 class="text-lg font-semibold text-highlighted">Courier integrations</h2>
-          <p class="text-sm text-muted">
-            Link a courier's API to pull its own per-wilaya delivery tariffs for reference, and apply them into
-            <NuxtLink to="/settings/shipping" class="text-primary underline">Shipping Rates</NuxtLink> with one click.
-          </p>
+    <div v-if="pending" class="empty">Loading…</div>
+    <template v-else>
+      <section class="kpis" aria-label="Shipping summary">
+        <AdsKpiCard label="Connected" :value="(companies ?? []).filter((c) => c.isLinked).length" color="dark" :meta="`of ${(companies ?? []).length} companies`" />
+        <AdsKpiCard label="Default company" :value="(companies ?? []).find((c) => c.isDefault)?.name ?? '—'" meta="Used when nothing else is assigned" />
+        <AdsKpiCard label="Last tariff sync" :value="lastSync" meta="Prices are applied to Shipping rates on request" />
+      </section>
+
+      <section aria-labelledby="con-h" class="stack">
+        <h2 id="con-h" style="font-size: 16px">Companies</h2>
+        <div class="cards-grid">
+          <article v-for="c in companies" :key="c.provider" class="carrier" :class="{ 'is-default': c.isDefault }">
+            <div class="head">
+              <span class="app-logo" style="width: 40px; height: 40px" aria-hidden="true"><AdsIcon :name="iconByProvider[c.provider]" /></span>
+              <div class="grow"><h3 style="font-size: 15px">{{ c.name }}</h3><span class="muted">{{ c.baseUrl }}</span></div>
+              <span v-if="c.isDefault" class="pill solid">Default</span>
+              <span v-else-if="c.isLinked" class="pill connected">Connected</span>
+              <span v-else class="pill neutral">Not linked</span>
+            </div>
+            <div class="body">
+              <dl class="details" style="font-size: 13px">
+                <dt>API token</dt><dd>{{ c.hasApiToken ? 'Saved' : 'Not set' }}</dd>
+                <dt>Webhook</dt><dd>{{ c.webhookUrl ? (c.hasWebhookSecret ? 'Configured' : 'Secret missing') : 'Not available' }}</dd>
+                <dt>Tariffs</dt><dd>{{ c.lastSyncedAt ? `Synced ${new Date(c.lastSyncedAt).toLocaleDateString()}` : 'Never synced' }}</dd>
+              </dl>
+            </div>
+            <div class="foot">
+              <button class="btn btn-sm" :class="{ 'btn-primary': !c.isLinked }" type="button" @click="activeProvider = c.provider"><AdsIcon :name="c.isLinked ? 'i-lucide-settings' : 'i-lucide-link'" />{{ c.isLinked ? 'Settings' : 'Connect' }}</button>
+              <button v-if="c.isLinked && !c.isDefault" class="btn btn-sm btn-ghost" type="button" @click="setDefault(c.provider)">Make default</button>
+            </div>
+          </article>
+        </div>
+      </section>
+    </template>
+  </AdsPage>
+
+  <AdsDrawer v-model:open="drawerOpen" :title="active?.name ?? 'Shipping company'" wide>
+    <section v-for="company in activeList" :key="company.provider" class="stack" style="gap: 20px">
+      <div class="prod" style="align-items: flex-start">
+        <span class="app-logo" style="width: 44px; height: 44px" aria-hidden="true"><AdsIcon :name="iconByProvider[company.provider]" /></span>
+        <div class="grow">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+            <h3 style="font-size: 16px">{{ company.name }}</h3>
+            <span v-if="company.isLinked" class="pill connected">Linked</span>
+            <span v-else class="pill neutral">Not linked</span>
+            <span v-if="company.isDefault" class="pill solid">Default</span>
+          </div>
+          <p class="muted">{{ company.baseUrl }}</p>
+          <p v-if="company.lastSyncedAt" class="muted">Tariffs last synced {{ new Date(company.lastSyncedAt).toLocaleString() }}</p>
+        </div>
+      </div>
+
+      <AdsField label="API token" :help="company.hasApiToken ? 'A token is already saved — leave blank to keep it.' : 'From your ' + company.name + ' account settings.'">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+          <AdsInput
+            v-model="apiTokenInput[company.provider]"
+            type="password"
+            autocomplete="new-password"
+            :placeholder="company.hasApiToken ? '•••••••••••••••••••• (configured)' : 'API token'"
+            style="flex: 1 1 240px"
+          />
+          <AdsButton :loading="linking[company.provider]" :disabled="!apiTokenInput[company.provider]?.trim()" @click="link(company.provider)">
+            {{ company.isLinked ? 'Update' : 'Link' }}
+          </AdsButton>
+        </div>
+      </AdsField>
+
+      <template v-if="company.webhookUrl">
+        <AdsField label="Webhook URL" help="Paste this into DHD's own webhook configuration (state-webhooks settings) as the endpoint URL.">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+            <AdsInput :model-value="company.webhookUrl" readonly class="mono" style="flex: 1 1 240px" @focus="($event.target as HTMLInputElement)?.select()" />
+            <AdsButton appearance="default" icon="i-lucide-copy" @click="copyWebhookUrl(company.webhookUrl!)">Copy</AdsButton>
+          </div>
+        </AdsField>
+
+        <AdsField
+          label="Webhook secret (HMAC-SHA256)"
+          :help="company.hasWebhookSecret ? 'A secret is already saved — leave blank to keep it.' : 'The secret DHD generated (or you set) when configuring the webhook on their side — needed to verify incoming requests.'"
+        >
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+            <AdsInput
+              v-model="webhookSecretInput[company.provider]"
+              type="password"
+              autocomplete="new-password"
+              :placeholder="company.hasWebhookSecret ? '•••••••••••••••••••• (configured)' : 'Webhook secret'"
+              style="flex: 1 1 240px"
+            />
+            <AdsButton :loading="savingWebhookSecret[company.provider]" :disabled="!webhookSecretInput[company.provider]?.trim()" @click="saveWebhookSecret(company.provider)">
+              Save
+            </AdsButton>
+          </div>
+        </AdsField>
+      </template>
+
+      <div v-if="company.isLinked" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+        <AdsButton :loading="syncing[company.provider]" appearance="default" icon="i-lucide-refresh-cw" @click="sync(company.provider)">Sync tariffs</AdsButton>
+        <AdsButton v-if="company.lastSyncedAt" appearance="default" icon="i-lucide-table" @click="toggleTariffs(company.provider)">
+          {{ tariffsByProvider[company.provider] ? 'Hide tariffs' : 'View tariffs' }}
+        </AdsButton>
+        <AdsButton v-if="!company.isDefault" appearance="default" icon="i-lucide-star" @click="setDefault(company.provider)">Set as default</AdsButton>
+        <AdsButton v-if="company.webhookUrl" appearance="default" icon="i-lucide-history" @click="toggleWebhookLogs(company.provider)">
+          {{ webhookLogsByProvider[company.provider] ? 'Hide webhook logs' : 'View webhook logs' }}
+        </AdsButton>
+        <AdsButton v-if="company.webhookUrl" appearance="default" icon="i-lucide-scroll-text" @click="toggleWebhookRawLogs(company.provider)">
+          {{ webhookRawLogsByProvider[company.provider] ? 'Hide raw delivery log' : 'View raw delivery log' }}
+        </AdsButton>
+        <AdsButton appearance="danger" icon="i-lucide-unlink" @click="unlink(company.provider)">Unlink</AdsButton>
+      </div>
+
+      <p v-if="loadingTariffs[company.provider]" class="muted">Loading tariffs…</p>
+      <div v-else-if="tariffsByProvider[company.provider]" class="stack">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px">
+          <p class="muted">{{ tariffsByProvider[company.provider]!.length }} wilayas synced from {{ company.name }}.</p>
+          <AdsButton :loading="applying[company.provider]" size="sm" icon="i-lucide-arrow-right-left" @click="applyToRates(company.provider)">
+            Apply all to Shipping Rates
+          </AdsButton>
+        </div>
+        <div class="table-wrap" style="max-height: 320px; overflow-y: auto">
+          <table style="min-width: 420px">
+            <thead><tr><th>Wilaya</th><th>Home delivery</th><th>Desk delivery</th></tr></thead>
+            <tbody>
+              <tr v-for="t in tariffsByProvider[company.provider]" :key="t.wilayaId">
+                <td class="strong">{{ t.wilayaName }}</td>
+                <td><AdsPrice v-if="t.deliveryPriceCents != null" :amount-cents="t.deliveryPriceCents" /><span v-else class="muted">—</span></td>
+                <td>
+                  <AdsPrice v-if="t.deliveryStopdeskPriceCents" :amount-cents="t.deliveryStopdeskPriceCents" />
+                  <span v-else class="muted">Not offered</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <p v-if="loadingWebhookLogs[company.provider] && !webhookLogsByProvider[company.provider]" class="muted">Loading webhook logs…</p>
+      <div v-else-if="webhookLogsByProvider[company.provider]" class="stack">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px">
+          <p class="muted" style="flex: 1 1 260px">Every inbound webhook delivery from {{ company.name }} — matches their own “Logs de livraison” page.</p>
+          <AdsSearch v-model="webhookLogSearch[company.provider]" placeholder="Filter by tracking reference…" label="Filter webhook logs" @keyup.enter="searchWebhookLogs(company.provider)" />
         </div>
 
-        <section v-for="company in companies" :key="company.provider" class="admin-kpi-card space-y-5 p-6">
-          <div class="flex items-start justify-between gap-4">
-            <div class="flex items-start gap-4">
-              <div class="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <UIcon :name="iconByProvider[company.provider]" class="size-6" />
-              </div>
-              <div>
-                <div class="flex flex-wrap items-center gap-2">
-                  <h3 class="font-semibold text-highlighted">{{ company.name }}</h3>
-                  <UBadge v-if="company.isLinked" color="success" variant="subtle" size="sm">Linked</UBadge>
-                  <UBadge v-else color="neutral" variant="subtle" size="sm">Not linked</UBadge>
-                  <UBadge v-if="company.isDefault" color="primary" variant="subtle" size="sm">Default</UBadge>
-                </div>
-                <p class="mt-1 text-xs text-muted">{{ company.baseUrl }}</p>
-                <p v-if="company.lastSyncedAt" class="mt-1 text-xs text-muted">Tariffs last synced {{ new Date(company.lastSyncedAt).toLocaleString() }}</p>
-              </div>
-            </div>
+        <AdsEmptyState
+          v-if="!webhookLogsByProvider[company.provider]!.items.length"
+          icon="i-lucide-history"
+          title="No webhook deliveries yet"
+          description="Once DHD's webhook is configured and an order's state changes, deliveries will show up here."
+        />
+        <template v-else>
+          <div class="table-wrap" style="max-height: 384px; overflow-y: auto">
+            <table style="min-width: 560px">
+              <thead><tr><th>Received</th><th>Tracking</th><th>Event</th><th>Order</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr v-for="log in webhookLogsByProvider[company.provider]!.items" :key="log.id">
+                  <td class="muted" style="white-space: nowrap">{{ new Date(log.receivedAt).toLocaleString() }}</td>
+                  <td class="mono">{{ log.trackingReference }}</td>
+                  <td>{{ log.stateTitle ?? log.event }}<span class="sub">{{ log.event }}</span></td>
+                  <td>
+                    <NuxtLink v-if="log.orderId" :to="`/orders/${log.orderId}`" class="link-cell">#{{ log.orderId.slice(0, 8) }}</NuxtLink>
+                    <span v-else class="muted">—</span>
+                  </td>
+                  <td>
+                    <span v-if="log.applied" class="pill confirmed">Applied</span>
+                    <span v-else-if="log.error" class="pill returned" :title="log.error">Failed</span>
+                    <span v-else class="pill neutral">Logged only</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+          <AdsPagination
+            :page="webhookLogsByProvider[company.provider]!.page"
+            :total="webhookLogsByProvider[company.provider]!.total"
+            :page-size="webhookLogsByProvider[company.provider]!.pageSize"
+            item-label="webhook deliveries"
+            @update:page="(p) => loadWebhookLogs(company.provider, p)"
+            @update:page-size="(size) => { webhookLogPageSize[company.provider] = size; loadWebhookLogs(company.provider, 1) }"
+          />
+        </template>
+      </div>
 
-          <UFormField label="API token" :help="company.hasApiToken ? 'A token is already saved — leave blank to keep it.' : 'From your ' + company.name + ' account settings.'">
-            <div class="flex flex-wrap items-center gap-2">
-              <UInput
-                v-model="apiTokenInput[company.provider]"
-                type="password"
-                autocomplete="new-password"
-                :placeholder="company.hasApiToken ? '•••••••••••••••••••• (configured)' : 'API token'"
-                class="w-full max-w-sm"
-              />
-              <UButton :loading="linking[company.provider]" :disabled="!apiTokenInput[company.provider]?.trim()" color="primary" @click="link(company.provider)">
-                {{ company.isLinked ? 'Update' : 'Link' }}
-              </UButton>
-            </div>
-          </UFormField>
+      <p v-if="loadingWebhookRawLogs[company.provider] && !webhookRawLogsByProvider[company.provider]" class="muted">Loading raw delivery log…</p>
+      <div v-else-if="webhookRawLogsByProvider[company.provider]" class="stack">
+        <p class="muted">
+          Every request that hit this webhook endpoint, unconditionally — including ones rejected before {{ company.name }}'s delivery could ever
+          show up in the log above (unknown company id, missing/invalid signature, malformed payload). Use this to see exactly what was received
+          when something 401s or 400s.
+        </p>
 
-          <template v-if="company.webhookUrl">
-            <UFormField label="Webhook URL" help="Paste this into DHD's own webhook configuration (state-webhooks settings) as the endpoint URL.">
-              <div class="flex flex-wrap items-center gap-2">
-                <UInput :model-value="company.webhookUrl" readonly class="w-full max-w-lg font-mono text-xs" @focus="($event.target as HTMLInputElement)?.select()" />
-                <UButton variant="outline" color="neutral" icon="i-lucide-copy" @click="copyWebhookUrl(company.webhookUrl!)">Copy</UButton>
-              </div>
-            </UFormField>
-
-            <UFormField
-              label="Webhook secret (HMAC-SHA256)"
-              :help="company.hasWebhookSecret ? 'A secret is already saved — leave blank to keep it.' : 'The secret DHD generated (or you set) when configuring the webhook on their side — needed to verify incoming requests.'"
-            >
-              <div class="flex flex-wrap items-center gap-2">
-                <UInput
-                  v-model="webhookSecretInput[company.provider]"
-                  type="password"
-                  autocomplete="new-password"
-                  :placeholder="company.hasWebhookSecret ? '•••••••••••••••••••• (configured)' : 'Webhook secret'"
-                  class="w-full max-w-sm"
-                />
-                <UButton :loading="savingWebhookSecret[company.provider]" :disabled="!webhookSecretInput[company.provider]?.trim()" color="primary" @click="saveWebhookSecret(company.provider)">
-                  Save
-                </UButton>
-              </div>
-            </UFormField>
-          </template>
-
-          <div v-if="company.isLinked" class="flex flex-wrap items-center gap-3">
-            <UButton :loading="syncing[company.provider]" variant="soft" icon="i-lucide-refresh-cw" @click="sync(company.provider)">Sync tariffs</UButton>
-            <UButton
-              v-if="company.lastSyncedAt"
-              variant="outline"
-              color="neutral"
-              icon="i-lucide-table"
-              @click="toggleTariffs(company.provider)"
-            >
-              {{ tariffsByProvider[company.provider] ? 'Hide tariffs' : 'View tariffs' }}
-            </UButton>
-            <UButton v-if="!company.isDefault" variant="outline" color="neutral" icon="i-lucide-star" @click="setDefault(company.provider)">Set as default</UButton>
-            <UButton v-if="company.webhookUrl" variant="outline" color="neutral" icon="i-lucide-history" @click="toggleWebhookLogs(company.provider)">
-              {{ webhookLogsByProvider[company.provider] ? 'Hide webhook logs' : 'View webhook logs' }}
-            </UButton>
-            <UButton v-if="company.webhookUrl" variant="outline" color="neutral" icon="i-lucide-scroll-text" @click="toggleWebhookRawLogs(company.provider)">
-              {{ webhookRawLogsByProvider[company.provider] ? 'Hide raw delivery log' : 'View raw delivery log' }}
-            </UButton>
-            <UButton variant="ghost" color="error" icon="i-lucide-unlink" @click="unlink(company.provider)">Unlink</UButton>
-          </div>
-
-          <div v-if="loadingTariffs[company.provider]" class="text-sm text-muted">Loading tariffs…</div>
-          <div v-else-if="tariffsByProvider[company.provider]" class="space-y-3">
-            <div class="flex items-center justify-between">
-              <p class="text-sm text-muted">{{ tariffsByProvider[company.provider]!.length }} wilayas synced from {{ company.name }}.</p>
-              <UButton :loading="applying[company.provider]" size="sm" color="primary" icon="i-lucide-arrow-right-left" @click="applyToRates(company.provider)">
-                Apply all to Shipping Rates
-              </UButton>
-            </div>
-            <div class="max-h-80 overflow-y-auto rounded-md border border-[var(--color-admin-border)]">
-              <table class="w-full text-sm">
-                <thead class="sticky top-0 border-b border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] text-left text-xs uppercase tracking-wide text-muted">
+        <AdsEmptyState
+          v-if="!webhookRawLogsByProvider[company.provider]!.items.length"
+          icon="i-lucide-scroll-text"
+          title="No requests recorded yet"
+          description="Every request to this webhook URL — successful or not — will show up here."
+        />
+        <template v-else>
+          <div class="table-wrap" style="max-height: 384px; overflow-y: auto">
+            <table style="min-width: 560px">
+              <thead><tr><th>Received</th><th>Status</th><th>Signature</th><th>Error</th><th><span class="sr">Details</span></th></tr></thead>
+              <tbody>
+                <template v-for="log in webhookRawLogsByProvider[company.provider]!.items" :key="log.id">
                   <tr>
-                    <th class="px-3 py-2 font-medium">Wilaya</th>
-                    <th class="px-3 py-2 font-medium">Home delivery</th>
-                    <th class="px-3 py-2 font-medium">Desk delivery</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-[var(--color-admin-border)]">
-                  <tr v-for="t in tariffsByProvider[company.provider]" :key="t.wilayaId">
-                    <td class="px-3 py-2 text-highlighted">{{ t.wilayaName }}</td>
-                    <td class="px-3 py-2"><PriceDisplay v-if="t.deliveryPriceCents != null" :amount-cents="t.deliveryPriceCents" /><span v-else class="text-muted">—</span></td>
-                    <td class="px-3 py-2">
-                      <PriceDisplay v-if="t.deliveryStopdeskPriceCents" :amount-cents="t.deliveryStopdeskPriceCents" />
-                      <span v-else class="text-muted">Not offered</span>
+                    <td class="muted" style="white-space: nowrap">{{ new Date(log.receivedAt).toLocaleString() }}</td>
+                    <td><span class="pill" :class="log.statusCode < 300 ? 'confirmed' : 'returned'">{{ log.statusCode }}</span></td>
+                    <td>
+                      <span v-if="log.signatureValid === null" class="pill new">No header</span>
+                      <span v-else-if="log.signatureValid" class="pill confirmed">Valid</span>
+                      <span v-else class="pill returned">Invalid</span>
+                    </td>
+                    <td style="max-width: 260px; overflow: hidden; text-overflow: ellipsis; color: var(--danger-fg)" :title="log.errorMessage ?? ''">{{ log.errorMessage ?? '—' }}</td>
+                    <td class="num">
+                      <AdsButton appearance="subtle" size="sm" :icon="expandedRawLogId === log.id ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" @click="expandedRawLogId = expandedRawLogId === log.id ? null : log.id">
+                        {{ expandedRawLogId === log.id ? 'Hide' : 'View' }}
+                      </AdsButton>
                     </td>
                   </tr>
-                </tbody>
-              </table>
-            </div>
+                  <tr v-if="expandedRawLogId === log.id">
+                    <td colspan="5" style="background: var(--ivory); white-space: normal">
+                      <p class="muted" style="margin-bottom: 4px">Headers</p>
+                      <pre class="mono" style="max-height: 192px; overflow: auto; margin: 0 0 12px; padding: 10px; background: var(--white); border: 1px solid var(--line-soft); border-radius: var(--r)">{{ JSON.stringify(log.headers, null, 2) }}</pre>
+                      <p class="muted" style="margin-bottom: 4px">Body</p>
+                      <pre class="mono" style="max-height: 192px; overflow: auto; margin: 0; padding: 10px; background: var(--white); border: 1px solid var(--line-soft); border-radius: var(--r)">{{ log.rawBody ?? '(empty)' }}</pre>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
           </div>
-
-          <div v-if="loadingWebhookLogs[company.provider] && !webhookLogsByProvider[company.provider]" class="text-sm text-muted">Loading webhook logs…</div>
-          <div v-else-if="webhookLogsByProvider[company.provider]" class="space-y-3">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <p class="text-sm text-muted">Every inbound webhook delivery from {{ company.name }} — matches their own "Logs de livraison" page.</p>
-              <div class="flex flex-wrap items-center gap-2">
-                <UInput
-                  v-model="webhookLogSearch[company.provider]"
-                  icon="i-lucide-search"
-                  placeholder="Filter by tracking reference…"
-                  size="sm"
-                  class="w-56"
-                  @keyup.enter="searchWebhookLogs(company.provider)"
-                />
-                <UButton size="sm" variant="outline" color="neutral" :loading="loadingWebhookLogs[company.provider]" @click="searchWebhookLogs(company.provider)">Search</UButton>
-              </div>
-            </div>
-
-            <EmptyState
-              v-if="!webhookLogsByProvider[company.provider]!.items.length"
-              icon="i-lucide-history"
-              title="No webhook deliveries yet"
-              description="Once DHD's webhook is configured and an order's state changes, deliveries will show up here."
-            />
-            <template v-else>
-              <div class="max-h-96 overflow-y-auto rounded-md border border-[var(--color-admin-border)]">
-                <table class="w-full text-sm">
-                  <thead class="sticky top-0 border-b border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] text-left text-xs uppercase tracking-wide text-muted">
-                    <tr>
-                      <th class="px-3 py-2 font-medium">Received</th>
-                      <th class="px-3 py-2 font-medium">Tracking</th>
-                      <th class="px-3 py-2 font-medium">Event</th>
-                      <th class="px-3 py-2 font-medium">Order</th>
-                      <th class="px-3 py-2 font-medium">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-[var(--color-admin-border)]">
-                    <tr v-for="log in webhookLogsByProvider[company.provider]!.items" :key="log.id">
-                      <td class="px-3 py-2 whitespace-nowrap text-muted">{{ new Date(log.receivedAt).toLocaleString() }}</td>
-                      <td class="px-3 py-2 tabular">{{ log.trackingReference }}</td>
-                      <td class="px-3 py-2">
-                        <div class="text-highlighted">{{ log.stateTitle ?? log.event }}</div>
-                        <div class="text-xs text-muted">{{ log.event }}</div>
-                      </td>
-                      <td class="px-3 py-2">
-                        <NuxtLink v-if="log.orderId" :to="`/orders/${log.orderId}`" class="tabular text-primary hover:underline">{{ log.orderId.slice(0, 8) }}</NuxtLink>
-                        <span v-else class="text-muted">—</span>
-                      </td>
-                      <td class="px-3 py-2">
-                        <UBadge v-if="log.applied" color="success" variant="subtle" size="sm">Applied</UBadge>
-                        <UBadge v-else-if="log.error" color="error" variant="subtle" size="sm" :title="log.error">Failed</UBadge>
-                        <UBadge v-else color="neutral" variant="subtle" size="sm">Logged only</UBadge>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <AdminPagination
-                :page="webhookLogsByProvider[company.provider]!.page"
-                :total="webhookLogsByProvider[company.provider]!.total"
-                :page-size="webhookLogsByProvider[company.provider]!.pageSize"
-                item-label="webhook deliveries"
-                @update:page="(p) => loadWebhookLogs(company.provider, p)"
-                @update:page-size="(size) => { webhookLogPageSize[company.provider] = size; loadWebhookLogs(company.provider, 1) }"
-              />
-            </template>
-          </div>
-
-          <div v-if="loadingWebhookRawLogs[company.provider] && !webhookRawLogsByProvider[company.provider]" class="text-sm text-muted">Loading raw delivery log…</div>
-          <div v-else-if="webhookRawLogsByProvider[company.provider]" class="space-y-3">
-            <p class="text-sm text-muted">
-              Every request that hit this webhook endpoint, unconditionally — including ones rejected before {{ company.name }}'s delivery could ever
-              show up in the log above (unknown company id, missing/invalid signature, malformed payload). Use this to see exactly what was received
-              when something 401s or 400s.
-            </p>
-
-            <EmptyState
-              v-if="!webhookRawLogsByProvider[company.provider]!.items.length"
-              icon="i-lucide-scroll-text"
-              title="No requests recorded yet"
-              description="Every request to this webhook URL — successful or not — will show up here."
-            />
-            <template v-else>
-              <div class="max-h-96 overflow-y-auto rounded-md border border-[var(--color-admin-border)]">
-                <table class="w-full text-sm">
-                  <thead class="sticky top-0 border-b border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] text-left text-xs uppercase tracking-wide text-muted">
-                    <tr>
-                      <th class="px-3 py-2 font-medium">Received</th>
-                      <th class="px-3 py-2 font-medium">Status</th>
-                      <th class="px-3 py-2 font-medium">Signature</th>
-                      <th class="px-3 py-2 font-medium">Error</th>
-                      <th class="px-3 py-2 font-medium"></th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-[var(--color-admin-border)]">
-                    <template v-for="log in webhookRawLogsByProvider[company.provider]!.items" :key="log.id">
-                      <tr>
-                        <td class="px-3 py-2 whitespace-nowrap text-muted">{{ new Date(log.receivedAt).toLocaleString() }}</td>
-                        <td class="px-3 py-2">
-                          <UBadge :color="log.statusCode < 300 ? 'success' : 'error'" variant="subtle" size="sm">{{ log.statusCode }}</UBadge>
-                        </td>
-                        <td class="px-3 py-2">
-                          <UBadge v-if="log.signatureValid === null" color="warning" variant="subtle" size="sm">No header</UBadge>
-                          <UBadge v-else-if="log.signatureValid" color="success" variant="subtle" size="sm">Valid</UBadge>
-                          <UBadge v-else color="error" variant="subtle" size="sm">Invalid</UBadge>
-                        </td>
-                        <td class="max-w-64 truncate px-3 py-2 text-error" :title="log.errorMessage ?? ''">{{ log.errorMessage ?? '—' }}</td>
-                        <td class="px-3 py-2 text-right">
-                          <UButton
-                            size="xs"
-                            variant="ghost"
-                            color="neutral"
-                            :icon="expandedRawLogId === log.id ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
-                            @click="expandedRawLogId = expandedRawLogId === log.id ? null : log.id"
-                          >
-                            {{ expandedRawLogId === log.id ? 'Hide' : 'View' }}
-                          </UButton>
-                        </td>
-                      </tr>
-                      <tr v-if="expandedRawLogId === log.id">
-                        <td colspan="5" class="space-y-3 bg-[var(--color-admin-surface-tint)] px-3 py-3">
-                          <div>
-                            <p class="mb-1 text-xs font-medium uppercase tracking-wide text-muted">Headers</p>
-                            <pre class="max-h-48 overflow-auto rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] p-2 text-xs">{{ JSON.stringify(log.headers, null, 2) }}</pre>
-                          </div>
-                          <div>
-                            <p class="mb-1 text-xs font-medium uppercase tracking-wide text-muted">Body</p>
-                            <pre class="max-h-48 overflow-auto rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] p-2 text-xs">{{ log.rawBody ?? '(empty)' }}</pre>
-                          </div>
-                        </td>
-                      </tr>
-                    </template>
-                  </tbody>
-                </table>
-              </div>
-              <AdminPagination
-                :page="webhookRawLogsByProvider[company.provider]!.page"
-                :total="webhookRawLogsByProvider[company.provider]!.total"
-                :page-size="webhookRawLogsByProvider[company.provider]!.pageSize"
-                item-label="requests"
-                @update:page="(p) => loadWebhookRawLogs(company.provider, p)"
-                @update:page-size="(size) => { webhookRawLogPageSize[company.provider] = size; loadWebhookRawLogs(company.provider, 1) }"
-              />
-            </template>
-          </div>
-        </section>
+          <AdsPagination
+            :page="webhookRawLogsByProvider[company.provider]!.page"
+            :total="webhookRawLogsByProvider[company.provider]!.total"
+            :page-size="webhookRawLogsByProvider[company.provider]!.pageSize"
+            item-label="requests"
+            @update:page="(p) => loadWebhookRawLogs(company.provider, p)"
+            @update:page-size="(size) => { webhookRawLogPageSize[company.provider] = size; loadWebhookRawLogs(company.provider, 1) }"
+          />
+        </template>
       </div>
-    </template>
-  </UDashboardPanel>
+    </section>
+  </AdsDrawer>
 </template>

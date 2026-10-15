@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Attributes &amp; options — Leezil Admin</title>
+  <link rel="icon" href="assets/img/leezil-icon-teal.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/pages/attributes.js" defer></script>
+</head>
+<body>
+<div class="app" data-page="attributes">
+  <main class="main">
+
+    <header class="page-head">
+      <div class="title">
+        <p>Reusable variant options for your products</p>
+        <h1>Attributes &amp; options</h1>
+      </div>
+      <button class="btn btn-primary" type="button" id="add-attr"><svg data-icon="plus"></svg>New attribute</button>
+    </header>
+
+    <div class="split queue-left">
+      <section class="card flush" aria-labelledby="al-h">
+        <div class="card-head"><h2 id="al-h">Attributes <small id="attr-count"></small></h2></div>
+        <div class="attr-list" id="attr-list"></div>
+      </section>
+
+      <form class="stack" id="attr-form" novalidate>
+        <section class="card" aria-labelledby="ae-h">
+          <div class="card-head"><h2 id="ae-h">Attribute</h2><span class="muted" id="attr-used"></span></div>
+          <div class="grid-2">
+            <div class="field"><label for="a-name">Name</label><input class="input" id="a-name" required><span class="hint">Shown to customers, e.g. “Color”.</span></div>
+            <div class="field"><label for="a-slug">Code</label><input class="input" id="a-slug"><span class="hint">Used in imports and the API.</span></div>
+          </div>
+          <div class="field">
+            <span class="label">How customers choose</span>
+            <div class="type-pick" role="radiogroup" aria-label="Display type">
+              <label><input type="radio" name="atype" value="color"><b>Color swatches</b><span>Small squares of colour</span></label>
+              <label><input type="radio" name="atype" value="text"><b>Buttons</b><span>One button per option</span></label>
+              <label><input type="radio" name="atype" value="select"><b>Dropdown</b><span>For long lists</span></label>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="ao-h">
+          <div class="card-head"><h2 id="ao-h">Options</h2><span class="muted">Drag to reorder</span></div>
+          <div id="opt-list"></div>
+          <div style="display:flex;gap:8px">
+            <label class="sr" for="new-opt">New option</label>
+            <input class="input" id="new-opt" placeholder="Add an option and press Enter">
+            <button class="btn" type="button" id="add-opt"><svg data-icon="plus"></svg>Add</button>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="pv-h">
+          <div class="card-head"><h2 id="pv-h">Preview on the product page</h2></div>
+          <div id="preview" style="background:var(--ivory);border-radius:var(--r);padding:16px"></div>
+        </section>
+
+        <div style="display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap">
+          <button class="btn btn-danger" type="button" id="del-attr"><svg data-icon="trash"></svg>Delete attribute</button>
+          <button class="btn btn-primary" type="button" id="save-attr"><svg data-icon="check"></svg>Save attribute</button>
+        </div>
+      </form>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

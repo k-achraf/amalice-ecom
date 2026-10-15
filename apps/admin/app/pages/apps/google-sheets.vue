@@ -157,135 +157,104 @@ const pending = computed(() => appsPending.value || sheetsPending.value)
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Google Sheets">
-        <template #leading><UDashboardSidebarCollapse /></template>
-        <template #trailing>
-          <UButton icon="i-lucide-refresh-cw" variant="ghost" color="neutral" size="sm" :loading="syncing" @click="syncNow">Sync now</UButton>
-          <UButton to="/apps" variant="ghost" color="neutral" icon="i-lucide-arrow-left" size="sm">Apps</UButton>
-        </template>
-      </UDashboardNavbar>
+  <AdsPage title="Google Sheets" description="Orders sync app">
+    <template #actions>
+      <AdsButton appearance="default" icon="i-lucide-refresh-cw" :loading="syncing" @click="syncNow">Sync now</AdsButton>
+      <NuxtLink to="/apps" class="btn"><AdsIcon name="i-lucide-arrow-left" />Apps</NuxtLink>
     </template>
 
-    <template #body>
-      <div v-if="pending" class="py-24 text-center text-muted">Loading…</div>
-      <div v-else class="max-w-3xl space-y-8">
-        <div class="flex items-start gap-4">
-          <div class="flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <UIcon name="i-lucide-table" class="size-6" />
-          </div>
-          <div>
-            <h2 class="text-lg font-semibold text-highlighted">Google Sheets</h2>
-            <p class="text-sm text-muted">
-              Push every order to a connected Google Sheet as it comes in, and keep its status columns in sync as you
-              work the order. Connect as many sheets as you like — route all products to one sheet, or spread
-              different products across different sheets.
-            </p>
-            <p class="mt-2 text-sm text-muted">
-              The Shipping Company, Call Center Status, Fulfillment Status, Delivery Status, and Notes columns are
-              editable directly in the sheet — pick from the dropdown or type a note, and it's pulled back in
-              automatically within a couple of minutes, or immediately with "Sync now" above. "Sent to Shipping
-              Company" is display-only (it only turns Yes once a real dispatch happens) — editing it in the sheet
-              won't do anything.
-            </p>
-          </div>
-        </div>
-
-        <section class="admin-kpi-card space-y-2 p-6">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="font-medium text-highlighted">Enable Google Sheets</p>
-              <p class="text-sm text-muted">Master switch — when off, no sheet (even an enabled one below) receives pushes or status updates.</p>
-            </div>
-            <USwitch :model-value="app?.enabled ?? false" :disabled="togglingMaster" @update:model-value="toggleMaster" />
-          </div>
-        </section>
-
-        <section class="space-y-4">
-          <div class="flex items-center justify-between">
-            <h3 class="text-sm font-medium text-muted">Connected sheets</h3>
-            <UButton icon="i-lucide-plus" color="primary" variant="soft" size="sm" @click="openCreate">Connect a sheet</UButton>
-          </div>
-
-          <EmptyState v-if="!sheets?.length" icon="i-lucide-table" title="No sheets connected yet" description="Connect a Google Sheet to start pushing orders to it." />
-
-          <div v-for="sheet in sheets" :key="sheet.id" class="admin-kpi-card space-y-3 p-5">
-            <div class="flex items-start justify-between gap-4">
-              <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                  <a :href="sheet.sheetUrl" target="_blank" rel="noopener" class="truncate font-medium text-highlighted hover:underline">{{ sheet.name }}</a>
-                  <UBadge v-if="sheet.enabled" color="success" variant="subtle" size="sm">Enabled</UBadge>
-                  <UBadge v-else color="neutral" variant="subtle" size="sm">Disabled</UBadge>
-                </div>
-                <p class="text-xs text-muted">Tab: {{ sheet.sheetName }}</p>
-                <p class="mt-1 text-sm text-muted">
-                  <template v-if="sheet.appliesToAllProducts">Receives every order, regardless of product.</template>
-                  <template v-else-if="sheet.products.length">Receives orders for: {{ sheet.products.map(p => p.name).join(', ') }}</template>
-                  <template v-else>No products mapped yet — this sheet won't receive any orders.</template>
-                </p>
-              </div>
-              <div class="flex shrink-0 items-center gap-1">
-                <UButton icon="i-lucide-plug-zap" color="neutral" variant="ghost" size="sm" :loading="testingId === sheet.id" title="Test connection" @click="testConnection(sheet)" />
-                <UButton icon="i-lucide-pencil" color="neutral" variant="ghost" size="sm" title="Edit" @click="openEdit(sheet)" />
-                <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="sm" :loading="deletingId === sheet.id" title="Disconnect" @click="removeSheet(sheet)" />
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-    </template>
-  </UDashboardPanel>
-
-  <UModal v-model:open="showModal">
-    <template #content>
-      <div class="space-y-4 p-6">
-        <h3 class="text-lg font-semibold">{{ editingId ? 'Edit sheet' : 'Connect a sheet' }}</h3>
-
-        <UFormField label="Label" help="For your own reference — not sent to Google.">
-          <UInput v-model="form.name" placeholder="Main orders sheet" class="w-full" />
-        </UFormField>
-
-        <UFormField label="Spreadsheet URL" help="Paste the sheet's URL from your browser's address bar.">
-          <UInput v-model="form.spreadsheetUrl" placeholder="https://docs.google.com/spreadsheets/d/…/edit" class="w-full" />
-        </UFormField>
-
-        <UFormField label="Tab name" help="Created automatically on first push if it doesn't exist yet.">
-          <UInput v-model="form.sheetName" placeholder="Orders" class="w-full" />
-        </UFormField>
-
-        <div class="flex items-center justify-between rounded-md border border-[var(--color-admin-border)] p-3">
-          <div>
-            <p class="text-sm font-medium text-highlighted">Applies to all products</p>
-            <p class="text-xs text-muted">Every order pushes here, regardless of what was bought.</p>
-          </div>
-          <USwitch v-model="form.appliesToAllProducts" />
-        </div>
-
-        <UFormField v-if="!form.appliesToAllProducts" label="Products" help="Only orders containing at least one of these products push to this sheet.">
-          <USelectMenu
-            v-model="form.productIds"
-            :items="productOptions.map(p => ({ label: p.name, value: p.id }))"
-            value-key="value"
-            multiple
-            placeholder="Choose products…"
-            class="w-full"
-          />
-        </UFormField>
-
-        <div class="flex items-center justify-between rounded-md border border-[var(--color-admin-border)] p-3">
-          <div>
-            <p class="text-sm font-medium text-highlighted">Enabled</p>
-            <p class="text-xs text-muted">Turn off to pause pushes to just this sheet without disconnecting it.</p>
-          </div>
-          <USwitch v-model="form.enabled" />
-        </div>
-
-        <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="ghost" @click="showModal = false">Cancel</UButton>
-          <UButton :loading="saving" color="primary" icon="i-lucide-check" @click="submitForm">{{ editingId ? 'Save' : 'Connect' }}</UButton>
+    <div v-if="pending" class="empty">Loading…</div>
+    <div v-else class="stack" style="width: 100%; max-width: 820px">
+      <div class="prod" style="align-items: flex-start">
+        <span class="app-logo" style="background: var(--teal); color: var(--ivory)" aria-hidden="true"><AdsIcon name="i-lucide-table" /></span>
+        <div class="grow">
+          <h2 style="font-size: 18px">Google Sheets</h2>
+          <p class="muted">
+            Push every order to a connected Google Sheet as it comes in, and keep its status columns in sync as you
+            work the order. Connect as many sheets as you like — route all products to one sheet, or spread
+            different products across different sheets.
+          </p>
+          <p class="muted" style="margin-top: 8px">
+            The Shipping Company, Call Center Status, Fulfillment Status, Delivery Status, and Notes columns are
+            editable directly in the sheet — pick from the dropdown or type a note, and it's pulled back in
+            automatically within a couple of minutes, or immediately with “Sync now” above. “Sent to Shipping
+            Company” is display-only (it only turns Yes once a real dispatch happens) — editing it in the sheet
+            won't do anything.
+          </p>
         </div>
       </div>
+
+      <section class="card" aria-label="Master switch">
+        <div class="setting">
+          <div class="text"><b>Enable Google Sheets</b><span>Master switch — when off, no sheet (even an enabled one below) receives pushes or status updates.</span></div>
+          <AdsSwitch :model-value="app?.enabled ?? false" :disabled="togglingMaster" aria-label="Enable Google Sheets" @update:model-value="toggleMaster" />
+        </div>
+      </section>
+
+      <section class="card" aria-label="Connected sheets">
+        <div class="card-head">
+          <h2>Connected sheets</h2>
+          <button class="btn btn-sm btn-primary" type="button" @click="openCreate"><AdsIcon name="i-lucide-plus" />Connect a sheet</button>
+        </div>
+
+        <AdsEmptyState v-if="!sheets?.length" icon="i-lucide-table" title="No sheets connected yet" description="Connect a Google Sheet to start pushing orders to it." />
+
+        <ul v-else class="list">
+          <li v-for="sheet in sheets" :key="sheet.id" style="align-items: flex-start; padding: 14px 0">
+            <div class="grow" style="min-width: 0">
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+                <a :href="sheet.sheetUrl" target="_blank" rel="noopener" class="link-cell">{{ sheet.name }}</a>
+                <span v-if="sheet.enabled" class="pill confirmed">Enabled</span>
+                <span v-else class="pill neutral">Disabled</span>
+              </div>
+              <p class="muted">Tab: {{ sheet.sheetName }}</p>
+              <p class="muted" style="margin-top: 4px">
+                <template v-if="sheet.appliesToAllProducts">Receives every order, regardless of product.</template>
+                <template v-else-if="sheet.products.length">Receives orders for: {{ sheet.products.map((p) => p.name).join(', ') }}</template>
+                <template v-else>No products mapped yet — this sheet won't receive any orders.</template>
+              </p>
+            </div>
+            <div style="display: flex; gap: 4px; flex-shrink: 0">
+              <AdsButton square appearance="subtle" size="sm" icon="i-lucide-plug-zap" :loading="testingId === sheet.id" title="Test connection" aria-label="Test connection" @click="testConnection(sheet)" />
+              <AdsButton square appearance="subtle" size="sm" icon="i-lucide-pencil" title="Edit" aria-label="Edit" @click="openEdit(sheet)" />
+              <AdsButton square appearance="subtle" size="sm" icon="i-lucide-trash-2" :loading="deletingId === sheet.id" title="Disconnect" aria-label="Disconnect" @click="removeSheet(sheet)" />
+            </div>
+          </li>
+        </ul>
+      </section>
+    </div>
+  </AdsPage>
+
+  <AdsDialog v-model:open="showModal" :title="editingId ? 'Edit sheet' : 'Connect a sheet'">
+    <AdsField label="Label" help="For your own reference — not sent to Google.">
+      <AdsInput v-model="form.name" placeholder="Main orders sheet" />
+    </AdsField>
+
+    <AdsField label="Spreadsheet URL" help="Paste the sheet's URL from your browser's address bar.">
+      <AdsInput v-model="form.spreadsheetUrl" placeholder="https://docs.google.com/spreadsheets/d/…/edit" />
+    </AdsField>
+
+    <AdsField label="Tab name" help="Created automatically on first push if it doesn't exist yet.">
+      <AdsInput v-model="form.sheetName" placeholder="Orders" />
+    </AdsField>
+
+    <div class="setting">
+      <div class="text"><b>Applies to all products</b><span>Every order pushes here, regardless of what was bought.</span></div>
+      <AdsSwitch v-model="form.appliesToAllProducts" aria-label="Applies to all products" />
+    </div>
+
+    <AdsField v-if="!form.appliesToAllProducts" label="Products" help="Only orders containing at least one of these products push to this sheet.">
+      <AdsSelect v-model="form.productIds" :items="productOptions.map((p) => ({ label: p.name, value: p.id }))" value-key="value" multiple placeholder="Choose products…" />
+    </AdsField>
+
+    <div class="setting">
+      <div class="text"><b>Enabled</b><span>Turn off to pause pushes to just this sheet without disconnecting it.</span></div>
+      <AdsSwitch v-model="form.enabled" aria-label="Enabled" />
+    </div>
+
+    <template #footer>
+      <button class="btn" type="button" @click="showModal = false">Cancel</button>
+      <AdsButton :loading="saving" icon="i-lucide-check" @click="submitForm">{{ editingId ? 'Save' : 'Connect' }}</AdsButton>
     </template>
-  </UModal>
+  </AdsDialog>
 </template>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import { CALL_CENTER_STATE_TO_ORDER_STATE, SHIPPING_STATE_TO_ORDER_STATE, type CallCenterState, type OrderState, type ShippingState } from '@amalice/shared'
 
 interface CustomerDetail {
@@ -17,57 +18,53 @@ const { data: customer, pending, error } = await useAdminFetch<CustomerDetail>(`
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar :title="customer?.name ?? customer?.phone ?? 'Customer'">
-        <template #leading>
-          <UButton icon="i-lucide-arrow-left" color="neutral" variant="ghost" to="/customers" />
-          <UDashboardSidebarCollapse />
-        </template>
-      </UDashboardNavbar>
+  <AdsPage :title="customer?.name ?? customer?.phone ?? 'Customer'" :description="customer?.name ? customer.phone : undefined">
+    <template #breadcrumb>
+      <NuxtLink to="/customers">Customers</NuxtLink><AdsIcon name="i-lucide-chevron-right" style="width: 14px; height: 14px" /><span>{{ customer?.name ?? customer?.phone ?? 'Customer' }}</span>
     </template>
-    <template #body>
-      <div v-if="pending" class="py-24 text-center text-muted">Loading…</div>
-      <EmptyState v-else-if="error" icon="i-lucide-user-x" title="Customer not found" />
-      <div v-else-if="customer" class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div class="space-y-6 lg:col-span-2">
-          <div class="admin-kpi-card p-5">
-            <h3 class="mb-3 text-sm font-medium text-muted">Order history</h3>
-            <table class="admin-table w-full text-sm" v-if="customer.orders?.length">
-              <thead>
-                <tr><th class="px-2 py-2 text-left">Order</th><th class="px-2 py-2 text-left">Status</th><th class="px-2 py-2 text-right">Total</th></tr>
-              </thead>
-              <tbody>
-                <tr v-for="o in customer.orders" :key="o.id" class="cursor-pointer" @click="navigateTo(`/orders/${o.id}`)">
-                  <td class="px-2 py-2 tabular text-primary">{{ o.id.slice(0, 8) }}</td>
-                  <td class="px-2 py-2">
-                    <div class="flex flex-wrap items-center gap-1.5">
-                      <StatusBadge :state="CALL_CENTER_STATE_TO_ORDER_STATE[o.callCenterState]" />
-                      <StatusBadge v-if="o.shippingState" :state="SHIPPING_STATE_TO_ORDER_STATE[o.shippingState]" />
-                    </div>
-                  </td>
-                  <td class="tabular px-2 py-2 text-right"><PriceDisplay :amount-cents="o.totalCents" /></td>
-                </tr>
-              </tbody>
-            </table>
-            <p v-else class="py-8 text-center text-muted">No orders yet.</p>
-          </div>
+
+    <div v-if="pending" class="empty">Loading…</div>
+    <AdsEmptyState v-else-if="error" icon="i-lucide-user-x" title="Customer not found" />
+    <div v-else-if="customer" class="split">
+      <section class="card flush" aria-labelledby="oh-h">
+        <div class="card-head"><h2 id="oh-h">Order history</h2></div>
+        <div v-if="customer.orders?.length" class="table-wrap">
+          <table style="min-width: 520px">
+            <thead><tr><th style="padding-left: 20px">Order</th><th>Status</th><th class="num" style="padding-right: 20px">Total</th></tr></thead>
+            <tbody>
+              <tr v-for="o in customer.orders" :key="o.id" class="clickable" @click="navigateTo(`/orders/${o.id}`)">
+                <td style="padding-left: 20px"><NuxtLink class="link-cell" :to="`/orders/${o.id}`">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
+                <td>
+                  <div style="display: flex; flex-wrap: wrap; gap: 4px">
+                    <AdsOrderStatus :state="CALL_CENTER_STATE_TO_ORDER_STATE[o.callCenterState]" />
+                    <AdsOrderStatus v-if="o.shippingState" :state="SHIPPING_STATE_TO_ORDER_STATE[o.shippingState]" />
+                  </div>
+                </td>
+                <td class="num strong" style="padding-right: 20px"><AdsPrice :amount-cents="o.totalCents" /></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div class="space-y-6">
-          <div class="admin-kpi-card p-5">
-            <h3 class="mb-3 text-sm font-medium text-muted">Profile</h3>
-            <p class="font-medium text-highlighted">{{ customer.name ?? '—' }}</p>
-            <p class="tabular text-sm text-muted">{{ customer.phone }}</p>
-            <p class="mt-3 text-xs text-muted">Risk score: <span class="text-muted">not yet available (RSK-01)</span></p>
+        <p v-else class="empty">No orders yet.</p>
+      </section>
+
+      <div class="stack">
+        <section class="card" aria-labelledby="pf-h">
+          <div class="card-head"><h2 id="pf-h">Profile</h2></div>
+          <div style="display: flex; align-items: center; gap: 14px">
+            <span class="initials lg">{{ (customer.name ?? '?').split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase() }}</span>
+            <div class="grow"><b style="font-weight: 600">{{ customer.name ?? '—' }}</b><span class="muted" style="display: block">{{ customer.phone }}</span></div>
           </div>
-          <div v-if="customer.addresses?.length" class="admin-kpi-card p-5">
-            <h3 class="mb-3 text-sm font-medium text-muted">Addresses</h3>
-            <address v-for="a in customer.addresses" :key="a.id" class="mb-3 text-sm not-italic leading-relaxed text-muted">
-              {{ a.line1 }}, {{ a.city }}, {{ a.region }} {{ a.postalCode }}
-            </address>
-          </div>
-        </div>
+          <a class="btn" :href="`tel:${customer.phone}`"><AdsIcon name="i-lucide-phone" />Call {{ customer.phone }}</a>
+          <p class="muted">Risk score: not yet available (RSK-01)</p>
+        </section>
+        <section v-if="customer.addresses?.length" class="card" aria-labelledby="ad-h">
+          <div class="card-head"><h2 id="ad-h">Addresses</h2></div>
+          <dl v-for="a in customer.addresses" :key="a.id" class="details">
+            <dt>Address</dt><dd>{{ a.line1 }}</dd><dt>Commune</dt><dd>{{ a.city }}</dd><dt>Wilaya</dt><dd>{{ a.region }}</dd>
+          </dl>
+        </section>
       </div>
-    </template>
-  </UDashboardPanel>
+    </div>
+  </AdsPage>
 </template>

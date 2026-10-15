@@ -27,7 +27,10 @@ export function useAdminApi() {
   const config = useRuntimeConfig()
   const auth = useAuthStore()
 
-  return $fetch.create({
+  // Typed as a plain (url, opts) => Promise<T> client: letting TS infer the
+  // full $fetch overloads against Nuxt's generated route types overflows the
+  // checker's stack ('Excessive stack depth') at template-literal URLs.
+  const client = $fetch.create({
     baseURL: config.public.apiBase,
     onRequest({ options }) {
       const token = auth.token
@@ -40,6 +43,7 @@ export function useAdminApi() {
       if (response.status === 401) handle401()
     }
   })
+  return client as unknown as <T = any>(url: string, opts?: Record<string, any>) => Promise<T>
 }
 
 // useFetch wrapper — keeps the option surface narrow (query + key) to avoid

@@ -87,78 +87,43 @@ function toggleExpanded(id: string) {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <UDashboardNavbar title="Server Logs">
-        <template #leading><UDashboardSidebarCollapse /></template>
-        <template #right>
-          <UButton icon="i-lucide-refresh-cw" size="sm" variant="outline" color="neutral" :loading="loading" @click="manualRefresh" />
-        </template>
-      </UDashboardNavbar>
+  <AdsPage title="Server logs" description="Every warning and error the API logged">
+    <template #actions>
+      <button class="btn" type="button" :disabled="loading" @click="manualRefresh"><AdsIcon name="i-lucide-refresh-cw" />Refresh</button>
     </template>
-    <template #body>
-      <div class="space-y-4">
-        <p class="text-xs text-muted">
-          Every warning/error the API logged, across all services — separate from
-          <NuxtLink to="/audit-log" class="text-primary underline">Audit Log</NuxtLink> (business events, not errors).
-        </p>
 
-        <div class="flex flex-wrap items-center gap-3">
-          <span class="text-sm text-muted">Level:</span>
-          <USelect :model-value="level" :items="levelOptions" class="w-40" @update:model-value="(v) => applyLevel(v as string)" />
-          <UInput v-model="search" icon="i-lucide-search" placeholder="Search message or context…" class="w-72" @keyup.enter="applySearch" />
-          <UButton size="sm" variant="outline" color="neutral" :loading="loading" @click="applySearch">Search</UButton>
-        </div>
-
-        <div class="admin-table-wrap">
-          <table class="admin-table w-full text-sm">
-            <thead>
-              <tr>
-                <th class="px-4 py-2.5 text-left">When</th>
-                <th class="px-4 py-2.5 text-left">Level</th>
-                <th class="px-4 py-2.5 text-left">Context</th>
-                <th class="px-4 py-2.5 text-left">Message</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="pending"><td colspan="4" class="px-4 py-12 text-center text-muted">Loading…</td></tr>
-              <tr v-else-if="!data?.items.length"><td colspan="4" class="px-4 py-12 text-center text-muted">No log entries match this filter.</td></tr>
-              <template v-for="entry in data?.items" :key="entry.id">
-                <tr
-                  :class="entry.trace ? 'cursor-pointer' : ''"
-                  @click="entry.trace && toggleExpanded(entry.id)"
-                >
-                  <td class="px-4 py-3 whitespace-nowrap text-muted">{{ fmtDateTime(entry.createdAt) }}</td>
-                  <td class="px-4 py-3">
-                    <UBadge :color="entry.level === 'Error' ? 'error' : 'warning'" variant="subtle">{{ entry.level }}</UBadge>
-                  </td>
-                  <td class="px-4 py-3 text-highlighted">{{ entry.context ?? '—' }}</td>
-                  <td class="max-w-md whitespace-normal px-4 py-3 text-muted">
-                    <div class="flex items-start gap-1.5">
-                      <UIcon v-if="entry.trace" :name="expandedId === entry.id ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'" class="mt-0.5 size-3.5 shrink-0" />
-                      <span>{{ entry.message }}</span>
-                    </div>
-                  </td>
-                </tr>
-                <tr v-if="entry.trace && expandedId === entry.id">
-                  <td colspan="4" class="bg-[var(--color-admin-surface-tint)] px-4 py-3">
-                    <pre class="max-h-64 overflow-auto whitespace-pre-wrap font-mono text-xs text-muted">{{ entry.trace }}</pre>
-                  </td>
-                </tr>
-              </template>
-            </tbody>
-          </table>
-        </div>
-
-        <AdminPagination
-          :total="data?.total ?? 0"
-          :page="currentPage"
-          :page-size="currentPageSize"
-          item-label="log entries"
-          @update:page="goToPage"
-          @update:page-size="changePageSize"
-        />
+    <section class="card" aria-label="Server logs">
+      <div class="card-head">
+        <AdsTabs :model-value="level" :items="levelOptions" @update:model-value="(v) => applyLevel(v as string)" />
+        <AdsSearch v-model="search" soft placeholder="Search message or context…" label="Search logs" @keyup.enter="applySearch" />
       </div>
-    </template>
-  </UDashboardPanel>
+      <p class="muted" style="padding: 0 20px">
+        Separate from the <NuxtLink to="/audit-log" class="link-cell">audit log</NuxtLink>, which records business events rather than errors.
+      </p>
+      <div class="table-wrap">
+        <table style="min-width: 760px">
+          <thead><tr><th>When</th><th>Level</th><th>Context</th><th>Message</th></tr></thead>
+          <tbody>
+            <tr v-if="pending"><td colspan="4" class="empty">Loading…</td></tr>
+            <tr v-else-if="!data?.items.length"><td colspan="4" class="empty">No log entries match this filter.</td></tr>
+            <template v-for="entry in data?.items" v-else :key="entry.id">
+              <tr :style="entry.trace ? 'cursor: pointer' : ''" @click="entry.trace && toggleExpanded(entry.id)">
+                <td class="muted" style="white-space: nowrap">{{ fmtDateTime(entry.createdAt) }}</td>
+                <td><span class="pill" :class="entry.level === 'Error' ? 'returned' : 'new'">{{ entry.level }}</span></td>
+                <td class="strong">{{ entry.context ?? '—' }}</td>
+                <td style="white-space: normal; max-width: 480px">
+                  <AdsIcon v-if="entry.trace" :name="expandedId === entry.id ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'" style="width: 14px; height: 14px; vertical-align: -2px" />
+                  {{ entry.message }}
+                </td>
+              </tr>
+              <tr v-if="entry.trace && expandedId === entry.id">
+                <td colspan="4"><pre class="mono muted" style="white-space: pre-wrap; max-height: 256px; overflow: auto; margin: 0">{{ entry.trace }}</pre></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+      <AdsPagination :total="data?.total ?? 0" :page="currentPage" :page-size="currentPageSize" item-label="log entries" @update:page="goToPage" @update:page-size="changePageSize" />
+    </section>
+  </AdsPage>
 </template>
