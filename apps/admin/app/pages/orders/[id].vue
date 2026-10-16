@@ -18,6 +18,8 @@ useHead({ title: `Order ${id.slice(0, 8)}` })
 const api = useAdminApi()
 const { run } = useApiAction()
 const { isSuperAdmin, confirmDelete } = useDangerDelete()
+// Bumped after each read of the courier so the tracking card re-reads what that read stored.
+const timelineKey = ref(0)
 
 // Permanent delete (SuperAdmin): removes the order with its items, shipment and
 // reconciliation rows. A parcel already created at a courier is NOT removed there.
@@ -285,15 +287,14 @@ async function dispatchManual() {
 // getShipmentLabel) ----
 const shipmentActing = ref<'dispatch' | null>(null)
 
-async function dispatchToCourier(confirm = true) {
+// Sending creates the parcel at the courier; it stays "Prêt à expédier" there. It is only
+// confirmed (the courier's Expedier step) when someone presses "Confirm with courier".
+async function dispatchToCourier() {
   shipmentActing.value = 'dispatch'
-  const res = await run(() => api<{ confirmed: boolean; confirmError: string | null }>(`/admin/fulfillment/orders/${id}/dispatch`, { method: 'POST', body: { confirm } }), {
+  const res = await run(() => api<{ confirmed: boolean; confirmError: string | null }>(`/admin/fulfillment/orders/${id}/dispatch`, { method: 'POST', body: { confirm: false } }), {
     errorFallback: 'Could not dispatch the order'
   })
-  if (res) {
-    if (res.confirmError) toast.warning('Created at the courier, but confirming failed', { description: `${res.confirmError} Confirm it from the Shipment card.` })
-    else toast.success(res.confirmed ? 'Sent to the courier and confirmed' : 'Created at the courier — confirm it when ready')
-  }
+  if (res) toast.success('Sent to the courier — it stays “Prêt à expédier” until you confirm it')
   await refresh()
   shipmentActing.value = null
 }
@@ -413,7 +414,7 @@ function initials(name: string | null) {
       <button v-if="isSuperAdmin" class="btn btn-danger" type="button" :disabled="deleting" @click="deleteOrder"><AdsIcon name="i-lucide-trash-2" />Delete</button>
     </template>
 
-    <div v-if="pending" class="empty">Loading…</div>
+    <div v-if="pending && !order" class="empty">Loading…</div>
     <AdsEmptyState v-else-if="error" icon="i-lucide-package-x" title="Order not found" description="It may have been removed, or the link is wrong.">
       <NuxtLink to="/orders" class="btn" style="margin-top: 8px">Back to orders</NuxtLink>
     </AdsEmptyState>
@@ -493,8 +494,7 @@ function initials(name: string | null) {
             <template v-if="order.state === 'Packed' && order.fulfillmentMethod !== 'Unassigned'">
               <hr class="divider">
               <div v-if="order.fulfillmentMethod === 'ShippingCompany'" style="display: flex; gap: 8px; flex-wrap: wrap">
-                <button class="btn btn-primary" type="button" :disabled="shipmentActing === 'dispatch'" @click="dispatchToCourier(true)"><AdsIcon name="i-lucide-truck" />Send to courier</button>
-                <button class="btn" type="button" :disabled="shipmentActing === 'dispatch'" title="Create the parcel at the courier but don't confirm it yet, so it can still be edited" @click="dispatchToCourier(false)">Create without confirming</button>
+                <button class="btn btn-primary" type="button" :disabled="shipmentActing === 'dispatch'" @click="dispatchToCourier()"><AdsIcon name="i-lucide-truck" />Send to courier</button>
               </div>
               <p v-if="order.fulfillmentMethod === 'ShippingCompany'" class="muted" style="line-height: 1.5">Or, if you created this shipment by hand on the courier's own platform, mark it as sent here (add the tracking number if you have it):</p>
               <div style="display: flex; gap: 8px; flex-wrap: wrap">
@@ -504,7 +504,7 @@ function initials(name: string | null) {
             </template>
           </section>
 
-          <ShipmentPanel v-else :order="order" @changed="refresh" />
+          <ShipmentPanel v-else :order="order" @changed="refresh" @refreshed="timelineKey++" />
 
           <section class="card" aria-labelledby="tl-h">
             <div class="card-head"><h2 id="tl-h">Activity</h2><button class="btn btn-sm" type="button" @click="openNotes"><AdsIcon name="i-lucide-sticky-note" />{{ order.notes ? 'Edit note' : 'Add note' }}</button></div>
@@ -517,7 +517,7 @@ function initials(name: string | null) {
             </ol>
           </section>
 
-          <OrderTimeline :order-id="id" :refresh-key="order.updatedAt" />
+          <OrderTimeline :order-id="id" :refresh-key="`${order.updatedAt}:${timelineKey}`" />
         </div>
 
         <div class="stack">

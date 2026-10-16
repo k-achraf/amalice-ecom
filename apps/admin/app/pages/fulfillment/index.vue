@@ -92,13 +92,10 @@ async function cancelOnHold(orderId: string) {
 
 async function dispatch(orderId: string) {
   acting.value = orderId
-  const res = await run(() => api<{ confirmed: boolean; confirmError: string | null }>(`/admin/fulfillment/orders/${orderId}/dispatch`, { method: 'POST', body: { confirm: true } }), {
+  const res = await run(() => api<{ confirmed: boolean; confirmError: string | null }>(`/admin/fulfillment/orders/${orderId}/dispatch`, { method: 'POST', body: { confirm: false } }), {
     errorFallback: 'Could not dispatch the order'
   })
-  if (res) {
-    if (res.confirmError) toast.warning('Created at the courier, but confirming failed', { description: res.confirmError })
-    else toast.success('Sent to the courier and confirmed')
-  }
+  if (res) toast.success('Sent to the courier — it stays “Prêt à expédier” until you confirm it')
   await Promise.all([refreshPacked(), refreshHandedOver()])
   acting.value = null
 }
@@ -116,7 +113,7 @@ async function dispatchSelected() {
   for (const [shippingCompanyId, orderIds] of byCompany) {
     const res = await run(() => api<{ dispatched: { confirmed: boolean }[]; failed: { orderId: string; reason: string }[]; skipped: { orderId: string; reason: string }[] }>('/admin/fulfillment/orders/bulk-dispatch', {
       method: 'POST',
-      body: { orderIds, shippingCompanyId, confirm: true }
+      body: { orderIds, shippingCompanyId, confirm: false }
     }), { errorFallback: 'Bulk dispatch failed' })
     if (!res) continue
     ok += res.dispatched.length

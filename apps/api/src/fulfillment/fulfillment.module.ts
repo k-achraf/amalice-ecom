@@ -3,7 +3,6 @@ import { FulfillmentController } from './fulfillment.controller'
 import { WebhooksController } from './webhooks.controller'
 import { FulfillmentService } from './fulfillment.service'
 import { DhdWebhookService } from './dhd-webhook.service'
-import { ShipmentSyncService } from './shipment-sync.service'
 import { MockCourierProvider } from './mock-courier.provider'
 import { DhdCourierProvider } from './dhd-courier.provider'
 import { COURIER_PROVIDER } from './courier-provider.interface'
@@ -24,7 +23,6 @@ import { AppsModule } from '../apps/apps.module'
   controllers: [FulfillmentController, WebhooksController],
   providers: [
     FulfillmentService,
-    ShipmentSyncService,
     DhdWebhookService,
     MockCourierProvider, // dev-only mock-status route — see comment above
     DhdCourierProvider,

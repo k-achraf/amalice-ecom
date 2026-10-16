@@ -6,8 +6,9 @@ import { toast } from 'vue-sonner'
 // driver) in one list — the order and customer, the products, the company, the
 // shipment (tracking, fees, confirmation), the courier's status in its own words,
 // the driver or stop desk, and the latest remarks and delivery attempts. It reads
-// the shipping companies' own API on every load (list with status, tracking history,
-// remarks); only our order/customer/product data is local. If a company can't be
+// the shipping companies' own API: ONE get/trackings/info request per company for the whole
+// page (status, driver, stop desk, delivery history). No polling and no automatic re-reads;
+// the remarks, fees and courier actions are on the order's own page. If a company can't be
 // reached its cards say so.
 definePageMeta({ requiredRole: ['SuperAdmin', 'OpsManager', 'Finance', 'Support', 'Warehouse'] })
 useHead({ title: 'Delivery details' })
@@ -21,12 +22,10 @@ const stage = ref<DeliveryStage>('all')
 const company = ref('')
 const search = ref('')
 const page = ref(1)
-const pageSize = ref(10)
+const pageSize = ref(25)
 const data = ref<DeliveryListResponse | null>(null)
 const loading = ref(true)
-const acting = ref<string | null>(null)
 const openHistory = ref<Set<string>>(new Set())
-const noteText = reactive<Record<string, string>>({})
 
 const { data: companies } = await useAdminFetch<ShippingCompanyView[]>('/admin/shipping-companies', { key: 'admin-deliveries-companies' }).catch(() => ({ data: ref<ShippingCompanyView[] | null>(null) }))
 const companyOptions = computed(() => [{ label: 'All shipping companies', value: '' }, ...(companies.value ?? []).filter((c) => c.id && c.isLinked).map((c) => ({ label: c.name, value: c.id! }))])
@@ -51,36 +50,14 @@ watch(search, () => {
   timer = setTimeout(() => { page.value = 1; load() }, 350)
 })
 
+const tabs = computed(() => DELIVERY_STAGES.map((s) => ({ label: DELIVERY_STAGE_LABELS[s], value: s, count: data.value?.counts[s] ?? 0 })))
+
 function toggleHistory(id: string) {
   const next = new Set(openHistory.value)
   if (next.has(id)) next.delete(id)
   else next.add(id)
   openHistory.value = next
 }
-
-// add/maj — a remark for the delivery company, visible to the driver.
-async function sendNote(d: DeliveryListItem) {
-  const text = noteText[d.shipmentId]?.trim()
-  if (!text) return
-  acting.value = d.shipmentId
-  const res = await run(() => api(`/admin/fulfillment/orders/${d.orderId}/courier-note`, { method: 'POST', body: { content: text } }), { success: 'Note sent to the courier', errorFallback: 'Could not send the note' })
-  acting.value = null
-  if (res !== undefined) { noteText[d.shipmentId] = ''; await load(true) }
-}
-
-// ask/for/order/return — only possible while the parcel is out for delivery; the courier may ignore it.
-async function requestReturn(d: DeliveryListItem) {
-  if (!window.confirm('Ask the courier to bring this parcel back? They may ignore the request.')) return
-  acting.value = d.shipmentId
-  const res = await run(() => api(`/admin/fulfillment/orders/${d.orderId}/request-return`, { method: 'POST' }), { success: 'Return requested', errorFallback: 'Could not request the return' })
-  acting.value = null
-  if (res !== undefined) await load(true)
-}
-const isOut = (d: DeliveryListItem) => d.courierStatusCode?.toLowerCase().replace(/[^a-z]/g, '') === 'enlivraison'
-const canNote = computed(() => ['SuperAdmin', 'OpsManager', 'Support'].includes(auth.role ?? ''))
-const canReturn = computed(() => ['SuperAdmin', 'OpsManager'].includes(auth.role ?? ''))
-
-const tabs = computed(() => DELIVERY_STAGES.map((s) => ({ label: DELIVERY_STAGE_LABELS[s], value: s, count: data.value?.counts[s] ?? 0 })))
 
 function fmt(iso: string | null) {
   return iso ? new Date(iso).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : '—'
@@ -234,17 +211,10 @@ function stageTone(d: DeliveryListItem): string {
         </ol>
       </div>
 
-      <!-- Actions on the courier's side -->
-      <div v-if="d.via === 'api' && d.confirmed && d.source.live" class="acts">
-        <template v-if="canNote">
-          <input v-model="noteText[d.shipmentId]" class="input" maxlength="255" placeholder="Note for the courier / driver (e.g. call before 17:00)" @keydown.enter="sendNote(d)">
-          <button class="btn btn-sm" type="button" :disabled="acting === d.shipmentId || !noteText[d.shipmentId]?.trim()" @click="sendNote(d)"><AdsIcon name="i-lucide-send" />Send note</button>
-        </template>
-        <button v-if="canReturn && isOut(d)" class="btn btn-sm" type="button" :disabled="acting === d.shipmentId" @click="requestReturn(d)"><AdsIcon name="i-lucide-rotate-ccw" />Request return</button>
-      </div>
+      <div class="more"><NuxtLink :to="`/orders/${d.orderId}`" class="btn btn-sm"><AdsIcon name="i-lucide-clipboard-list" />Full details, remarks, fees &amp; courier actions</NuxtLink></div>
     </article>
 
-    <AdsPagination v-if="data" :total="data.total" :page="page" :page-size="pageSize" item-label="deliveries" :page-size-options="[10, 25, 50]" @update:page="(p) => (page = p)" @update:page-size="(s) => (pageSize = s)" />
+    <AdsPagination v-if="data" :total="data.total" :page="page" :page-size="pageSize" item-label="deliveries" :page-size-options="[10, 25, 50, 100]" @update:page="(p) => (page = p)" @update:page-size="(s) => (pageSize = s)" />
   </AdsPage>
 </template>
 
@@ -278,6 +248,5 @@ function stageTone(d: DeliveryListItem): string {
 .remarks .txt { overflow-wrap: anywhere; }
 .hist ol { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; font-size: 13px; }
 .hist li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
-.acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.acts .input { flex: 1 1 260px; }
+.more { display: flex; }
 </style>

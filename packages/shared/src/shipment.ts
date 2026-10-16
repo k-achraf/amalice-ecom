@@ -71,8 +71,8 @@ export const BulkDispatchSchema = z.object({
   // same company (FulfillmentService.assignShippingCompany) — bulk-dispatch
   // never picks a company on the caller's behalf.
   shippingCompanyId: z.uuid(),
-  // Also perform the courier's "Expedier" step for every created parcel.
-  confirm: z.boolean().default(true),
+  // Never confirmed automatically: parcels stay "Prêt à expédier" until confirmed by hand.
+  confirm: z.boolean().default(false),
   askCollection: z.boolean().default(true)
 })
 export type BulkDispatch = z.infer<typeof BulkDispatchSchema>
@@ -89,7 +89,9 @@ export type ValidateOrderReturns = z.infer<typeof ValidateOrderReturnsSchema>
 // deleted at the courier); with confirm=false the parcel is only created and
 // waits for an explicit confirmation.
 export const DispatchOrderSchema = z.object({
-  confirm: z.boolean().default(true),
+  // Off by default and NEVER turned on by the system: the parcel stays "Prêt à expédier"
+  // at the courier until someone confirms it by hand.
+  confirm: z.boolean().default(false),
   // Ask the courier to pick the parcel up from the shop (vs. shop drop-off).
   askCollection: z.boolean().default(true)
 })

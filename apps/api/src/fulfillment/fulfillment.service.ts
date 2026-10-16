@@ -212,7 +212,9 @@ export class FulfillmentService {
   // stored; with `confirm` (default) the courier's "Expedier" step is also done
   // right away, after which the parcel can no longer be edited or deleted there.
   async createShipmentForOrder(orderId: string, actor: AuditActor, opts: Partial<DispatchOrder> = {}) {
-    const confirm = opts.confirm ?? true
+    // Creating the parcel never confirms it (the courier's "Expedier" step): it stays
+    // "Prêt à expédier" there until someone confirms it by hand.
+    const confirm = opts.confirm ?? false
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: { customer: true, address: true, shipment: true, items: { include: { product: true } } }
@@ -525,7 +527,7 @@ export class FulfillmentService {
   // get a Shipment row + HandedToCourier. With `confirm`, each created parcel is
   // then also confirmed ("Expedier").
   async bulkDispatch(orderIds: string[], shippingCompanyId: string, actor: AuditActor, opts: { confirm?: boolean; askCollection?: boolean } = {}) {
-    const confirm = opts.confirm ?? true
+    const confirm = opts.confirm ?? false
     const orders = await this.prisma.order.findMany({
       where: { id: { in: orderIds } },
       include: { customer: true, address: true, shipment: true, items: { include: { product: true } } }
@@ -914,6 +916,9 @@ export class FulfillmentService {
         if (!info && listed.status) await this.applyRawStatus(order.shipment.id, listed.status, 'courier-refresh')
       }
     }
+    // Stamp the attempt itself: when the courier has no entry for this parcel nothing
+    // else would update it, and "stale" would stay true forever.
+    if (refresh) await this.prisma.shipment.update({ where: { id: order.shipment.id }, data: { lastSyncedAt: new Date() } })
     const fresh = await this.prisma.shipment.findUniqueOrThrow({ where: { id: order.shipment.id } })
     return this.trackingView(fresh, updates)
   }

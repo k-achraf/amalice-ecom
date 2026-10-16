@@ -8,7 +8,7 @@ import { toast } from 'vue-sonner'
 // courier — confirm ("Expedier"), refresh, label, note for the driver, request
 // return, and cancel/delete while it hasn't been confirmed yet.
 const props = defineProps<{ order: AdminOrderDetail }>()
-const emit = defineEmits<{ changed: [] }>()
+const emit = defineEmits<{ changed: []; refreshed: [] }>()
 
 const api = useAdminApi()
 const { run } = useApiAction()
@@ -28,21 +28,25 @@ async function load(refresh: boolean) {
   return res
 }
 
+// The courier is read ONCE, when the page is opened. There is no automatic re-read and no
+// polling: after this only the Refresh button (or an action below) reads it again.
+const initialLoading = ref(true)
 onMounted(async () => {
-  const stored = await load(false)
-  // Re-read live when the stored snapshot is missing or older than 5 minutes.
-  const stale = !stored?.lastSyncedAt || Date.now() - new Date(stored.lastSyncedAt).getTime() > 5 * 60_000
-  if (viaCompany.value && stale) {
-    await load(true)
-    emit('changed')
-  }
+  const before = props.order.shipment?.courierStatus ?? null
+  const view = await load(viaCompany.value)
+  initialLoading.value = false
+  emit('refreshed')
+  // Tell the page only when the courier actually changed something about the order.
+  if (view && view.courierStatus !== before) emit('changed')
 })
 
 async function refreshNow() {
   acting.value = 'refresh'
-  await load(true)
+  const before = props.order.shipment?.courierStatus ?? null
+  const view = await load(true)
   acting.value = null
-  emit('changed')
+  emit('refreshed')
+  if (view && view.courierStatus !== before) emit('changed')
 }
 
 async function confirmShipment() {
@@ -165,7 +169,7 @@ const courierCancelled = computed(() => /annul/i.test(tracking.value?.courierSta
 
     <div style="display: flex; flex-wrap: wrap; gap: 8px">
       <button v-if="viaCompany && !confirmed" class="btn btn-primary" type="button" :disabled="acting === 'confirm'" @click="confirmShipment"><AdsIcon name="i-lucide-package-check" />Confirm with courier</button>
-      <button v-if="viaCompany" class="btn" type="button" :disabled="acting === 'refresh'" @click="refreshNow"><AdsIcon name="i-lucide-refresh-cw" />Refresh from courier</button>
+      <button v-if="viaCompany" class="btn" type="button" :disabled="acting === 'refresh' || initialLoading" @click="refreshNow"><AdsIcon name="i-lucide-refresh-cw" />{{ initialLoading || acting === 'refresh' ? 'Reading the courier…' : 'Refresh from courier' }}</button>
       <button v-if="viaCompany" class="btn" type="button" :disabled="acting === 'label'" @click="downloadLabel"><AdsIcon name="i-lucide-file-down" />Download label</button>
       <button v-if="canRequestReturn" class="btn" type="button" :disabled="acting === 'return'" @click="requestReturn"><AdsIcon name="i-lucide-rotate-ccw" />Request return</button>
       <button v-if="!viaCompany || !confirmed" class="btn btn-danger" type="button" :disabled="acting === 'cancel'" @click="cancelShipment"><AdsIcon name="i-lucide-x" />Cancel shipment</button>

@@ -175,16 +175,14 @@ export class AdminController {
     @Query('company') company: string | undefined,
     @Query('search') search: string | undefined,
     @Query('page') page: string = '1',
-    @Query('pageSize') pageSize: string = '10',
-    @Query('refresh') refresh: string | undefined
+    @Query('pageSize') pageSize: string = '25'
   ) {
     return this.deliveries.list({
-      refresh: refresh === '1',
       stage: DELIVERY_STAGES.includes(stage as DeliveryStage) ? (stage as DeliveryStage) : 'all',
       companyId: company || undefined,
       search: search || undefined,
       page: Math.max(Number(page) || 1, 1),
-      pageSize: Math.min(Math.max(Number(pageSize) || 10, 1), 50)
+      pageSize: Math.min(Math.max(Number(pageSize) || 25, 1), 100)
     })
   }
 
