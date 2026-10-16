@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import type { AdminRoleName, DashboardStats } from '@amalice/shared'
-import { Filter, SearchCode, PackageCheck, Receipt, History, Server, FileWarning, Truck } from 'lucide-vue-next'
+import { Filter, SearchCode, PackageCheck, Receipt, History, Server, FileWarning, Truck, PackageSearch } from 'lucide-vue-next'
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -40,6 +40,7 @@ const groups: NavGroup[] = [
     items: [
       { label: 'Fulfillment', icon: PackageCheck, to: '/fulfillment', roles: ['SuperAdmin', 'OpsManager'] },
       { label: 'Shipments', icon: Truck, to: '/shipping', roles: ['SuperAdmin', 'OpsManager'] },
+      { label: 'Delivery details', icon: PackageSearch, to: '/deliveries', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Support', 'Warehouse'] },
       { label: 'Reconciliation', icon: Receipt, to: '/reconciliation', roles: ['SuperAdmin', 'Finance'] }
     ]
   },

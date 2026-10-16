@@ -398,6 +398,37 @@ export class DhdApiService {
     return result
   }
 
+  // GET /api/v1/get/tracking/info — "Suivi et historique des operations sur une
+  // commande": status + operation history of ONE parcel. The collection only shows
+  // its error example, so both a bare object and a {data:{...}} wrapper are read.
+  async getTrackingInfo(baseUrl: string, apiToken: string, tracking: string): Promise<DhdTrackingInfo | null> {
+    const response = await this.request(baseUrl, '/api/v1/get/tracking/info', apiToken, {}, { tracking })
+    if (response.status === 422) return null
+    if (!response.ok) throw new BadGatewayException(`The courier returned HTTP ${response.status} while fetching tracking info.`)
+    const body = (await response.json().catch(() => null)) as Record<string, unknown> | null
+    if (!body) return null
+    const raw = (body.data && typeof body.data === 'object' ? (body.data as Record<string, unknown>) : body) as Record<string, unknown>
+    // A wrapper keyed by tracking number: take the entry.
+    const entry = raw[tracking] && typeof raw[tracking] === 'object' ? (raw[tracking] as Record<string, unknown>) : raw
+    return 'status' in entry || 'activity' in entry ? this.toTrackingInfo(entry) : null
+  }
+
+  // GET /api/v1/get/orders/status — "Filtre des commandes par status": the same
+  // per-parcel detail as trackings/info, restricted to parcels currently in one of
+  // the given statuses (max 100 trackings per request).
+  async getOrdersByStatus(baseUrl: string, apiToken: string, trackings: string[], statuses: string[]): Promise<Record<string, DhdTrackingInfo>> {
+    const result: Record<string, DhdTrackingInfo> = {}
+    for (let i = 0; i < trackings.length; i += 100) {
+      const chunk = trackings.slice(i, i + 100)
+      const response = await this.request(baseUrl, '/api/v1/get/orders/status', apiToken, {}, { trackings: chunk.join(','), status: statuses.join(',') })
+      if (response.status === 422) continue
+      if (!response.ok) throw new BadGatewayException(`The courier returned HTTP ${response.status} while filtering orders by status.`)
+      const body = (await response.json().catch(() => null)) as { data?: Record<string, Record<string, unknown>> } | null
+      for (const [tracking, raw] of Object.entries(body?.data ?? {})) result[tracking] = this.toTrackingInfo(raw ?? {})
+    }
+    return result
+  }
+
   // GET /api/v1/get/orders — in-process orders with current status and the
   // courier's fees for each (tarif_prestation / tarif_retour). 40 per page,
   // last 90 days unless a range is given; archived orders are excluded.

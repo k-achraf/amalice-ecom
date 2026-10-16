@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { courierStatusToOrderState } from './shipment'
 
 // ---- Delivery details: every order sent to a shipping company ----
 
@@ -54,6 +55,9 @@ export interface DeliveryListItem {
   lastSyncedAt: string | null
   // Newest first, at most 5.
   remarks: DeliveryRemark[]
+  // The courier's full delivery history for the parcel (get/trackings/info), newest first.
+  history: DeliveryHistoryEntry[]
+  source: DeliveryLiveInfo
 }
 
 export interface DeliveryListResponse {
@@ -62,4 +66,52 @@ export interface DeliveryListResponse {
   page: number
   pageSize: number
   counts: Record<DeliveryStage, number>
+  // When the courier data was read, and which couriers could not be reached.
+  fetchedAt: string
+  liveErrors: { company: string; message: string }[]
+}
+
+// The stage tab a courier status belongs to (null = unknown status).
+export function deliveryStageOfCourierStatus(raw: string): Exclude<DeliveryStage, 'all'> | null {
+  const mapped = courierStatusToOrderState(raw)
+  if (mapped === undefined) return null
+  return deliveryStageOfOrderState(mapped)
+}
+
+// Same grouping from our own order state, for parcels the courier can't be asked about.
+export function deliveryStageOfOrderState(state: string | null): Exclude<DeliveryStage, 'all'> {
+  switch (state) {
+    case null: return 'awaiting'
+    case 'OutForDelivery': return 'out'
+    case 'DeliveryFailed': return 'failed'
+    case 'Delivered': case 'CashCollected': case 'Reconciled': case 'Settled': return 'delivered'
+    case 'ReturnedToOrigin': case 'Restocked': case 'CancelledShipping': return 'returned'
+    default: return 'withCourier'
+  }
+}
+
+// The courier's status codes that make up each stage (for its status filter).
+export const COURIER_CODES_BY_STAGE: Record<Exclude<DeliveryStage, 'all'>, string[]> = {
+  awaiting: ['prete_a_expedier'],
+  withCourier: ['en_ramassage', 'en_preparation_stock', 'vers_hub', 'en_hub', 'vers_wilaya', 'en_preparation'],
+  out: ['en_livraison'],
+  failed: ['suspendu'],
+  delivered: ['livre_non_encaisse', 'encaisse_non_paye', 'paiements_prets', 'paye_et_archive'],
+  returned: ['retour_chez_livreur', 'retour_transit_entrepot', 'retour_en_traitement', 'retour_recu', 'retour_archive', 'annule']
+}
+
+export interface DeliveryHistoryEntry {
+  at: string | null
+  reason: string | null
+  details: string | null
+  station: string | null
+  driver: string | null
+  postponedTo: string | null
+}
+
+export interface DeliveryLiveInfo {
+  // true: this card's courier fields were just read from the courier's API.
+  live: boolean
+  // Why the live read failed (the card then shows what we last stored).
+  error: string | null
 }
