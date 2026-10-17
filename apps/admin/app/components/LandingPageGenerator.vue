@@ -11,8 +11,8 @@ import { toast } from 'vue-sonner'
 
 // AI landing pages for a product — used on the product's Landing Page tab and
 // inside a funnel's Landing step. A page is composed, not painted: the AI writes
-// validated copy and paints a text-free background; the copy is drawn by code on
-// top of the product's REAL photos (apps/api landing-pages). So the text is always
+// validated copy and retouches the product's REAL photos; the copy is drawn by
+// code directly on those photos (apps/api landing-pages). So the text is always
 // spelled right, the product is never distorted, and every line can be fixed by
 // hand and re-drawn instantly without another AI call.
 const props = withDefaults(defineProps<{
@@ -89,9 +89,9 @@ const generating = ref(false)
 const improving = ref(false)
 
 const providers: { value: LandingPageImageProvider; label: string; hint: string }[] = [
-  { value: 'Gemini', label: 'AI backgrounds', hint: 'Gemini paints a background for each part. Best look; needs a Gemini key.' },
-  { value: 'Pollinations', label: 'Free AI backgrounds', hint: 'Free, no key. Simpler backgrounds.' },
-  { value: 'Template', label: 'Designed only', hint: 'No AI images: instant, free, can’t fail.' }
+  { value: 'Gemini', label: 'AI-retouched photos', hint: 'Gemini improves each photo (light, colour, sharpness) and removes foreign captions, banners and watermarks. Best look; needs a Gemini key.' },
+  { value: 'Pollinations', label: 'Automatic enhancement', hint: 'Free, no key: photos are cleaned up and sharpened by code only.' },
+  { value: 'Template', label: 'Original photos', hint: 'Your photos as they are (light automatic clean-up): instant, free, can’t fail.' }
 ]
 const styleLabel: Record<LandingStyle, string> = { vibrant: 'Vibrant', dark: 'Dark', light: 'Light' }
 const languages: { value: LandingLanguage; label: string }[] = [
@@ -195,7 +195,7 @@ function dirty(sectionId: string, headline: string, body: string) {
   return !!e && (e.headline !== headline || e.body !== body)
 }
 
-// ---- new background for one section ----
+// ---- retouch one section's photo again ----
 const regenFor = ref<string | null>(null)
 const regenText = reactive<Record<string, string>>({})
 async function regenerate(page: ProductLandingPage, sectionId: string) {
@@ -251,7 +251,7 @@ function progress(page: ProductLandingPage) {
   <div class="stack">
     <div v-if="mode === 'funnel'" class="notice">
       <AdsIcon name="i-lucide-sparkles" />
-      <span>Generate a long landing page with AI, then press <b>Use this page</b>. It is shown below the order form. The AI writes the copy and paints the background; the text and your real product photos are drawn by code, so nothing is misspelled or distorted — and you can fix any line by hand.</span>
+      <span>Generate a long landing page with AI, then press <b>Use this page</b>. It is shown below the order form. The AI writes the copy and retouches your real product photos; the text is drawn by code directly on the photos, so nothing is misspelled or distorted — and you can fix any line by hand.</span>
     </div>
 
     <div v-if="loading" class="empty">Loading…</div>
@@ -262,7 +262,7 @@ function progress(page: ProductLandingPage) {
         <div class="titles">
           <h3>{{ page.name }}</h3>
           <span class="pill" :class="statusTone[page.status]">{{ page.status }}</span>
-          <span class="pill outline">{{ page.imageProvider === 'Template' ? 'Designed' : page.imageProvider }}</span>
+          <span class="pill outline">{{ page.imageProvider === 'Template' ? 'Original photos' : page.imageProvider === 'Pollinations' ? 'Enhanced' : 'AI-retouched' }}</span>
           <span v-if="page.design" class="pill neutral">{{ page.design.language.toUpperCase() }} · {{ styleLabel[page.design.style] }}</span>
           <span v-if="selectedId === page.id" class="pill confirmed">In use</span>
           <AdsIcon v-if="page.status === 'Generating'" name="i-lucide-refresh-cw" class="spin" />
@@ -319,11 +319,11 @@ function progress(page: ProductLandingPage) {
               <AdsTextarea :model-value="val(s, 'body')" dir="auto" :rows="2" maxlength="220" :disabled="page.status === 'Generating'" aria-label="Supporting text" @update:model-value="(v?: string | null) => setEdit(s, 'body', v ?? '')" />
               <div class="sec-actions">
                 <button v-if="dirty(s.id, s.headline, s.body)" class="btn btn-sm btn-primary" type="button" :disabled="savingSection === s.id" @click="saveSection(page, s.id)"><AdsIcon name="i-lucide-check" />Save text</button>
-                <button v-if="page.imageProvider !== 'Template'" class="btn btn-sm" type="button" :disabled="page.status === 'Generating'" @click="regenFor = regenFor === s.id ? null : s.id"><AdsIcon name="i-lucide-refresh-cw" />New background</button>
+                <button v-if="page.imageProvider !== 'Template'" class="btn btn-sm" type="button" :disabled="page.status === 'Generating'" @click="regenFor = regenFor === s.id ? null : s.id"><AdsIcon name="i-lucide-refresh-cw" />Retouch photo again</button>
               </div>
               <div v-if="regenFor === s.id" class="regen">
-                <AdsTextarea v-model="regenText[s.id]" :rows="2" placeholder="Optional direction, e.g. warmer light, wooden table…" />
-                <button class="btn btn-sm btn-primary" type="button" @click="regenerate(page, s.id)"><AdsIcon name="i-lucide-sparkles" />Generate background</button>
+                <AdsTextarea v-model="regenText[s.id]" :rows="2" placeholder="Optional direction, e.g. brighter, cleaner background…" />
+                <button class="btn btn-sm btn-primary" type="button" @click="regenerate(page, s.id)"><AdsIcon name="i-lucide-sparkles" />Retouch photo</button>
               </div>
             </template>
             <p v-if="s.errorMessage" class="notice danger"><span>{{ s.errorMessage }}</span></p>
@@ -364,8 +364,8 @@ function progress(page: ProductLandingPage) {
           <AdsField label="Sections"><AdsSelect v-model="sectionCount" :options="[3, 4, 5, 6, 7]" /></AdsField>
         </div>
 
-        <AdsField label="Backgrounds">
-          <div class="providers" role="radiogroup" aria-label="Backgrounds">
+        <AdsField label="Photos">
+          <div class="providers" role="radiogroup" aria-label="Photos">
             <button v-for="p in providers" :key="p.value" type="button" role="radio" class="prov" :aria-checked="provider === p.value" @click="provider = p.value">
               <b>{{ p.label }}</b><span class="muted">{{ p.hint }}</span>
             </button>

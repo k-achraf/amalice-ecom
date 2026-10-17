@@ -6,7 +6,7 @@ import { LandingDesignSchema, LandingPageSectionSchema, type LandingPageImagePro
 import { PrismaService } from '../prisma/prisma.service'
 import { Prisma } from '../generated/prisma/client'
 import { LandingComposerService, type ComposeContext } from './landing-composer.service'
-import type { InlineImage, ProductBrief } from './gemini.service'
+import type { InlineImage } from './gemini.service'
 
 interface GenerateFullJob {
   landingPageId: string
@@ -21,12 +21,12 @@ interface RegenerateSectionJob {
 }
 
 // The background worker behind the landing-page builder. A page is composed, not
-// painted: validated copy (landing-composer.service.ts) is drawn by code on top
-// of a text-free AI background and the product's real photos, section by section,
-// then stitched into one long image. Progress is saved after every step so the
-// admin UI (which polls) shows the copy first and each finished section as it
-// lands. One section failing to draw fails the page; a missing AI background
-// does not — it falls back to a designed one with a warning.
+// painted: validated copy (landing-composer.service.ts) is drawn by code directly
+// on the product's own photos (retouched first), section by section, then
+// stitched into one long image. Progress is saved after every step so the admin
+// UI (which polls) shows the copy first and each finished section as it lands.
+// One section failing to draw fails the page; AI retouching being unavailable
+// does not — the photo is enhanced by code instead, with a warning.
 @Processor('landing-pages')
 export class LandingPagesProcessor extends WorkerHost {
   private readonly logger = new Logger(LandingPagesProcessor.name)
@@ -103,30 +103,31 @@ export class LandingPagesProcessor extends WorkerHost {
       }))
       await this.save(landingPageId, { sections })
 
-      // ---- sections: background, then composition ----
-      // One AI background per role group (hero / all features / cta): three images
-      // at most, however long the page is.
-      const scenes = new Map<string, { buffer: Buffer | null; url: string | null; warning: string | null }>()
-      const sceneFor = async (role: 'hero' | 'feature' | 'cta') => {
-        const cached = scenes.get(role)
+      // ---- sections: retouched photo, then the copy drawn on it ----
+      // A photo is retouched once however many sections use it.
+      const prepared = new Map<string, { buffer: Buffer; url: string; warning: string | null }>()
+      const photoFor = async (index: number) => {
+        const source = this.composer.pickSource(ctx, sections[index]!, index)
+        if (!source) throw new Error('This section has no readable photo.')
+        const cached = prepared.get(source.url)
         if (cached) return cached
-        const made = await this.composer.produceScene({ provider, role, brief: copy.brief as ProductBrief | undefined, productName, palette: ctx.palette, style: ctx.design.style, instructions })
-        const entry = { buffer: made.buffer, url: made.buffer ? this.composer.saveScene(made.buffer) : null, warning: made.warning }
-        scenes.set(role, entry)
+        const made = await this.composer.producePhoto({ provider, source: source.buffer, instructions })
+        const entry = { buffer: made.buffer, url: this.composer.savePhoto(made.buffer), warning: made.warning }
+        prepared.set(source.url, entry)
         return entry
       }
 
       for (let i = 0; i < sections.length; i++) {
-        const scene = await sceneFor(sections[i]!.role)
         try {
-          const buffer = await this.composer.renderOne(ctx, sections, i, scene.buffer)
+          const photo = await photoFor(i)
+          const buffer = await this.composer.renderOne(ctx, sections, i, photo.buffer)
           sections[i] = {
             ...sections[i]!,
             imageUrl: this.composer.saveSectionImage(buffer),
-            sceneUrl: scene.url,
+            sceneUrl: photo.url,
             status: 'completed',
             errorMessage: null,
-            warning: [sections[i]!.warning, scene.warning].filter(Boolean).join(' ') || null
+            warning: [sections[i]!.warning, photo.warning].filter(Boolean).join(' ') || null
           }
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error)
@@ -159,13 +160,13 @@ export class LandingPagesProcessor extends WorkerHost {
     }
   }
 
-  // "Regenerate" on one section: a fresh AI background (steered by the
+  // "Regenerate" on one section: the photo retouched again (steered by the
   // instructions, if any) and a re-render with the current copy. Sections that
   // have no image yet (pages made before this pipeline) are rendered too, so the
   // page can always be completed.
   private async processRegenerateSection(job: Job<RegenerateSectionJob>): Promise<void> {
     const { landingPageId, sectionId, instructions } = job.data
-    const { sections: loaded, design, provider, productName } = await this.load(landingPageId)
+    const { sections: loaded, design, provider } = await this.load(landingPageId)
     const sections = loaded
     const index = sections.findIndex((s) => s.id === sectionId)
     if (index === -1) {
@@ -177,20 +178,20 @@ export class LandingPagesProcessor extends WorkerHost {
       const ctx = await this.composer.prepare(design, sections.flatMap((s) => s.sourceImageUrls))
       if (ctx.photos.size === 0) throw new Error('None of the selected product photos could be read.')
 
-      const made = await this.composer.produceScene({ provider, role: sections[index]!.role, productName, palette: ctx.palette, style: ctx.design.style, instructions })
-      const sceneUrl = made.buffer ? this.composer.saveScene(made.buffer) : sections[index]!.sceneUrl ?? null
-      const sceneBuffer = made.buffer ?? (await this.composer.loadScene(sections[index]!))
+      const source = this.composer.pickSource(ctx, sections[index]!, index)
+      if (!source) throw new Error('This section has no readable photo.')
+      const made = await this.composer.producePhoto({ provider, source: source.buffer, instructions })
       sections[index] = {
         ...sections[index]!,
-        imageUrl: this.composer.saveSectionImage(await this.composer.renderOne(ctx, sections, index, sceneBuffer)),
-        sceneUrl,
+        imageUrl: this.composer.saveSectionImage(await this.composer.renderOne(ctx, sections, index, made.buffer)),
+        sceneUrl: this.composer.savePhoto(made.buffer),
         status: 'completed',
         errorMessage: null,
         warning: made.warning
       }
       for (let i = 0; i < sections.length; i++) {
         if (sections[i]!.imageUrl) continue
-        sections[i] = { ...sections[i]!, imageUrl: this.composer.saveSectionImage(await this.composer.renderOne(ctx, sections, i, await this.composer.loadScene(sections[i]!))), status: 'completed', errorMessage: null }
+        sections[i] = { ...sections[i]!, imageUrl: this.composer.saveSectionImage(await this.composer.renderOne(ctx, sections, i, await this.composer.loadPrepared(sections[i]!))), status: 'completed', errorMessage: null }
       }
       await this.save(landingPageId, { sections, design: ctx.design })
       await this.finalize(landingPageId, sections)

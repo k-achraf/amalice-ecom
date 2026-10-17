@@ -260,7 +260,7 @@ export class LandingPagesService {
     if (ctx.photos.size === 0) throw new BadRequestException('None of the selected product photos could be read.')
     const out = [...sections]
     for (let i = 0; i < out.length; i++) {
-      const buffer = await this.composer.renderOne(ctx, out, i, await this.composer.loadScene(out[i]!))
+      const buffer = await this.composer.renderOne(ctx, out, i, await this.composer.loadPrepared(out[i]!))
       out[i] = { ...out[i]!, imageUrl: this.composer.saveSectionImage(buffer), status: 'completed', errorMessage: null }
     }
     const finalImageUrl = await this.composer.stitchAndSave(out)

@@ -19,10 +19,10 @@ export type LandingPageSectionStatus = z.infer<typeof LandingPageSectionStatusSc
 // Which backend generates the section images — see the Prisma model comment
 // for the Gemini-needs-billing / Pollinations-is-free-but-lower-quality
 // tradeoff. Stored per landing page so "Regenerate" reuses the same choice.
-// 'Template' = no AI images at all: sections are composed in code on designed
-// gradient backgrounds from the product's own photos (free, instant, never
-// fails). 'Gemini' / 'Pollinations' add an AI-generated, text-free background
-// scene behind each section.
+// Every section is the product's own photo with the copy drawn on it by code.
+// 'Gemini' also retouches each photo with the image model (light, colour,
+// sharpness, foreign overlay text removed — checked against the original);
+// 'Pollinations' / 'Template' only enhance it by code (free, instant, never fails).
 export const LandingPageImageProviderSchema = z.enum(['Gemini', 'Pollinations', 'Template'])
 export type LandingPageImageProvider = z.infer<typeof LandingPageImageProviderSchema>
 
@@ -36,16 +36,16 @@ export const LandingPageSectionSchema = z.object({
   role: z.enum(['hero', 'feature', 'cta']),
   headline: z.string(),
   body: z.string(),
-  // The finished section image (copy rendered in code on top of the scene and
-  // the product's real photos — the AI never draws any text).
+  // The finished section image (copy rendered in code directly on the product's
+  // retouched photo — the AI never draws any text).
   imageUrl: z.string().nullable(),
-  // The AI-generated, text-free background behind this section; kept so the copy
-  // can be edited and re-rendered instantly without another AI call.
+  // The retouched photo this section is drawn on; kept so the copy can be edited
+  // and re-rendered instantly without another AI call.
   sceneUrl: z.string().nullable().optional(),
   sourceImageUrls: z.array(z.string()),
   status: LandingPageSectionStatusSchema,
   errorMessage: z.string().nullable().optional(),
-  // Non-fatal note, e.g. the AI background was unavailable so a designed one was used.
+  // Non-fatal note, e.g. AI retouching was unavailable so the photo was enhanced by code.
   warning: z.string().nullable().optional()
 })
 export type LandingPageSection = z.infer<typeof LandingPageSectionSchema>

@@ -3,12 +3,12 @@ import sharp from 'sharp'
 import type { LandingLanguage, LandingStyle } from '@amalice/shared'
 import { CTA_BUTTON } from './landing-copy.util'
 
-// Composes one landing-page section in code: a background (the AI scene, or a
-// designed gradient), the product's REAL photo untouched on a card, and the copy
-// drawn as real text with the bundled Cairo font (Arabic shaping + right-to-left
-// handled by Pango/HarfBuzz). Because the AI never draws letters or the product,
-// text can't be misspelled or garbled and the product can't be distorted — and a
-// copy edit re-renders in under a second with no AI call.
+// Composes one landing-page section in code: the product's own (enhanced) photo
+// is the section, full width, and the copy is drawn directly on it as real text
+// with the bundled Cairo font (Arabic shaping + right-to-left handled by
+// Pango/HarfBuzz) over a gradient that keeps it readable. The AI never draws
+// letters, so text can't be misspelled or garbled — and a copy edit re-renders
+// in under a second with no AI call.
 
 const W = 1080
 const FONT_FILE = join(process.cwd(), 'assets', 'fonts', 'Cairo-Variable.ttf')
@@ -82,11 +82,6 @@ export function buildPalette(accentHex: string): Palette {
   }
 }
 
-// Words describing the palette for the scene prompt.
-export function paletteHint(p: Palette, style: LandingStyle): string {
-  return `dominant colour ${p.accent}, deep shade ${p.accentDark}, ${style === 'light' ? `light tones near ${p.accentLight}` : 'rich dark tones'}`
-}
-
 // ---- text ----
 
 function esc(text: string): string {
@@ -104,48 +99,17 @@ async function textImg(text: string, o: { size: number; weight: 'bold' | 'regula
   return { buf, w: m.width ?? 0, h: m.height ?? 0 }
 }
 
-// ---- photo card ----
+// ---- photo preparation ----
 
-async function photoCard(photo: Buffer, maxW: number, maxH: number, o: { pad: number; radius: number; bg: string }): Promise<Img> {
-  const fitted = await sharp(photo).rotate().flatten({ background: '#ffffff' }).resize({ width: maxW - o.pad * 2, height: maxH - o.pad * 2, fit: 'inside', withoutEnlargement: false }).toBuffer()
-  const fm = await sharp(fitted).metadata()
-  const w = (fm.width ?? 0) + o.pad * 2
-  const h = (fm.height ?? 0) + o.pad * 2
-  const mask = Buffer.from(`<svg width="${w}" height="${h}"><rect width="${w}" height="${h}" rx="${o.radius}" fill="#fff"/></svg>`)
-  // Two passes: sharp only applies the LAST composite() call in a pipeline.
-  const withPhoto = await sharp({ create: { width: w, height: h, channels: 4, background: o.bg } })
-    .composite([{ input: fitted, top: o.pad, left: o.pad }])
-    .png()
-    .toBuffer()
-  const card = await sharp(withPhoto).composite([{ input: mask, blend: 'dest-in' }]).png().toBuffer()
-  return { buf: card, w, h }
-}
-
-async function shadow(w: number, h: number, radius: number): Promise<Buffer> {
-  const blur = 28
-  const svg = Buffer.from(`<svg width="${w + blur * 4}" height="${h + blur * 4}"><rect x="${blur * 2}" y="${blur * 2}" width="${w}" height="${h}" rx="${radius}" fill="#000" fill-opacity="0.42"/></svg>`)
-  return sharp(svg).blur(blur).png().toBuffer()
-}
-
-// ---- background ----
-
-async function background(h: number, o: { scene: Buffer | null; palette: Palette; style: LandingStyle; role: 'hero' | 'feature' | 'cta'; index: number }): Promise<Buffer> {
-  const p = o.palette
-  const light = o.style === 'light'
-  // Gradient endpoints per style; the CTA is always the most saturated section.
-  const top = light ? p.paper : o.style === 'dark' ? '#0b0f12' : p.accentDark
-  const bottom = light ? p.accentLight : o.style === 'dark' ? p.accentDark : o.role === 'cta' ? p.accent : p.accentDark
-  const dir = o.index % 2 === 0 ? 'x1="0" y1="0" x2="0.25" y2="1"' : 'x1="0" y1="1" x2="0.25" y2="0"'
-  const circles = `<circle cx="${o.index % 2 ? 140 : W - 140}" cy="${Math.round(h * 0.22)}" r="320" fill="${light ? p.accent : '#fff'}" fill-opacity="${light ? 0.06 : 0.05}"/>
-    <circle cx="${o.index % 2 ? W - 90 : 90}" cy="${Math.round(h * 0.82)}" r="260" fill="${light ? p.accent : '#fff'}" fill-opacity="${light ? 0.05 : 0.04}"/>`
-  const gradient = Buffer.from(`<svg width="${W}" height="${h}"><defs><linearGradient id="g" ${dir}><stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bottom}"/></linearGradient></defs><rect width="${W}" height="${h}" fill="url(#g)"/>${circles}</svg>`)
-  if (!o.scene) return sharp(gradient).png().toBuffer()
-
-  // AI scene behind a tint, so the text stays readable whatever the scene is.
-  const tint = light ? '#ffffff' : p.accentDark
-  const overlay = Buffer.from(`<svg width="${W}" height="${h}"><defs><linearGradient id="t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${tint}" stop-opacity="${light ? 0.78 : 0.7}"/><stop offset="1" stop-color="${tint}" stop-opacity="${light ? 0.6 : 0.5}"/></linearGradient></defs><rect width="${W}" height="${h}" fill="url(#t)"/></svg>`)
-  const scene = await sharp(o.scene).resize(W, h, { fit: 'cover', position: 'centre' }).toBuffer()
-  return sharp(scene).composite([{ input: overlay, top: 0, left: 0 }]).png().toBuffer()
+// Deterministic clean-up of a product photo, always applied (before any AI edit):
+// upright, auto-levels, a touch of colour and sharpness, and upscaled when the
+// photo is too small for a 1080px-wide page.
+export async function enhanceLocal(photo: Buffer): Promise<Buffer> {
+  const upright = await sharp(photo).rotate().flatten({ background: '#ffffff' }).toBuffer()
+  const meta = await sharp(upright).metadata()
+  let img = sharp(upright).normalise({ lower: 1, upper: 99 }).modulate({ saturation: 1.07 })
+  if ((meta.width ?? W) < 1400) img = img.resize({ width: 1400, kernel: 'lanczos3', withoutEnlargement: false })
+  return img.sharpen({ sigma: 0.9, m1: 0.8, m2: 2 }).jpeg({ quality: 94, chromaSubsampling: '4:4:4' }).toBuffer()
 }
 
 // ---- section layouts ----
@@ -159,110 +123,101 @@ export interface RenderInput {
   language: LandingLanguage
   style: LandingStyle
   palette: Palette
-  scene: Buffer | null
-  photos: Buffer[]
+  // The prepared (enhanced) photo of this section.
+  photo: Buffer
 }
 
 const BADGE: Record<LandingLanguage, string> = { ar: 'الدفع عند الاستلام', fr: 'Paiement à la livraison', en: 'Pay on delivery' }
+
+// Photo height per role; the text block reaches OVERLAP px up over the photo and
+// FADE px of gradient lead into it.
+const PHOTO_H = { hero: 1350, feature: 1200, cta: 1150 } as const
+const OVERLAP = 300
+const FADE = 220
+const EDGE = 90
 
 export async function renderSection(input: RenderInput): Promise<Buffer> {
   const p = input.palette
   const light = input.style === 'light'
   const textColor = light ? p.ink : '#ffffff'
-  const softColor = light ? '#3d4a49' : '#e8eeee'
-  const photo = input.photos.length ? input.photos[input.index % input.photos.length]! : null
-
-  const layers: { buf: Buffer; top: number; left: number }[] = []
+  const softColor = light ? '#2f3b3a' : '#eef3f3'
+  const scrim = light ? '#ffffff' : input.style === 'dark' ? '#0b0f12' : p.accentDark
+  const solid = light ? 0.93 : 0.9
+  // Alternate features put their text above the photo instead of below it.
+  const textOnTop = input.role === 'feature' && input.index % 2 === 0
+  const photoH = PHOTO_H[input.role]
   const center = (w: number) => Math.round((W - w) / 2)
-  let y = 0
 
-  const place = (img: Img, top: number) => layers.push({ buf: img.buf, top, left: center(img.w) })
-  const placeCard = async (card: Img, top: number) => {
-    const sh = await shadow(card.w, card.h, 40)
-    layers.push({ buf: sh, top: top - 56 + 18, left: center(card.w) - 56 })
-    layers.push({ buf: card.buf, top, left: center(card.w) })
+  // ---- the text block, measured ----
+  const parts: { buf: Buffer; w: number; h: number; gap: number }[] = []
+  const add = (img: Img, gap: number) => parts.push({ ...img, gap })
+  const sizes = input.role === 'feature' ? { h: 74, b: 44 } : { h: input.role === 'hero' ? 88 : 84, b: 46 }
+
+  if (input.role === 'feature') {
+    const size = 96
+    const num = await textImg(String(input.featureNumber), { size: 52, weight: 'bold', color: light ? '#ffffff' : p.accentDark, width: size })
+    const circle = Buffer.from(`<svg width="${size}" height="${size}"><circle cx="${size / 2}" cy="${size / 2}" r="${size / 2}" fill="${light ? p.accent : '#ffffff'}"/></svg>`)
+    const badge = await sharp(circle).composite([{ input: num.buf, top: Math.round((size - num.h) / 2) - 2, left: Math.round((size - num.w) / 2) }]).png().toBuffer()
+    add({ buf: badge, w: size, h: size }, 36)
   }
+  add(await textImg(input.headline, { size: sizes.h, weight: 'bold', color: textColor, width: TEXT_W, spacing: -16 }), 26)
+  add(await textImg(input.body, { size: sizes.b, weight: 'regular', color: softColor, width: TEXT_W - 50, spacing: -8 }), 0)
 
-  if (input.role === 'hero') {
-    y = 130
-    const headline = await textImg(input.headline, { size: 88, weight: 'bold', color: textColor, width: TEXT_W, spacing: -18 })
-    place(headline, y)
-    y += headline.h + 28
-    const body = await textImg(input.body, { size: 46, weight: 'regular', color: softColor, width: TEXT_W - 60, spacing: -8 })
-    place(body, y)
-    y += body.h + 70
-    if (photo) {
-      const card = await photoCard(photo, 900, 980, { pad: 26, radius: 40, bg: '#ffffff' })
-      await placeCard(card, y)
-      y += card.h + 70
-    }
-    const pill = await textImg(BADGE[input.language], { size: 40, weight: 'bold', color: light ? '#ffffff' : p.accentDark, width: TEXT_W })
-    const pw = pill.w + 90
-    const ph = pill.h + 36
-    const pillBg = Buffer.from(`<svg width="${pw}" height="${ph}"><rect width="${pw}" height="${ph}" rx="${ph / 2}" fill="${light ? p.accent : '#ffffff'}"/></svg>`)
-    layers.push({ buf: pillBg, top: y, left: center(pw) })
-    layers.push({ buf: pill.buf, top: y + 18, left: center(pill.w) })
-    y += ph + 110
-  } else if (input.role === 'feature') {
-    const textFirst = input.index % 2 === 1
-    y = 110
-    const blocks = async () => {
-      const badgeSize = 96
-      const num = await textImg(String(input.featureNumber), { size: 52, weight: 'bold', color: light ? '#ffffff' : p.accentDark, width: badgeSize })
-      const circle = Buffer.from(`<svg width="${badgeSize}" height="${badgeSize}"><circle cx="${badgeSize / 2}" cy="${badgeSize / 2}" r="${badgeSize / 2}" fill="${light ? p.accent : '#ffffff'}"/></svg>`)
-      layers.push({ buf: circle, top: y, left: center(badgeSize) })
-      layers.push({ buf: num.buf, top: y + Math.round((badgeSize - num.h) / 2) - 2, left: center(num.w) })
-      y += badgeSize + 40
-      const headline = await textImg(input.headline, { size: 74, weight: 'bold', color: textColor, width: TEXT_W, spacing: -16 })
-      place(headline, y)
-      y += headline.h + 26
-      const body = await textImg(input.body, { size: 44, weight: 'regular', color: softColor, width: TEXT_W - 40, spacing: -8 })
-      place(body, y)
-      y += body.h + 70
-    }
-    if (textFirst) {
-      await blocks()
-      if (photo) {
-        const card = await photoCard(photo, 860, 860, { pad: 24, radius: 44, bg: '#ffffff' })
-        await placeCard(card, y)
-        y += card.h + 110
-      }
-    } else {
-      if (photo) {
-        const card = await photoCard(photo, 860, 860, { pad: 24, radius: 44, bg: '#ffffff' })
-        await placeCard(card, y)
-        y += card.h + 80
-      }
-      await blocks()
-      y += 40
-    }
-  } else {
-    y = 130
-    const headline = await textImg(input.headline, { size: 84, weight: 'bold', color: textColor, width: TEXT_W, spacing: -18 })
-    place(headline, y)
-    y += headline.h + 28
-    const body = await textImg(input.body, { size: 46, weight: 'regular', color: softColor, width: TEXT_W - 60, spacing: -8 })
-    place(body, y)
-    y += body.h + 80
-    if (photo) {
-      const card = await photoCard(photo, 640, 640, { pad: 22, radius: 40, bg: '#ffffff' })
-      await placeCard(card, y)
-      y += card.h + 90
-    }
-    // The order button — the page's single call to action.
+  if (input.role === 'cta') {
     const label = await textImg(CTA_BUTTON[input.language], { size: 52, weight: 'bold', color: light || input.style === 'dark' ? '#ffffff' : p.accentDark, width: TEXT_W - 80 })
     const bw = Math.min(W - PAD * 2, Math.max(label.w + 120, 700))
     const bh = label.h + 64
-    const buttonColor = light || input.style === 'dark' ? p.accent : '#ffffff'
-    const button = Buffer.from(`<svg width="${bw}" height="${bh}"><rect width="${bw}" height="${bh}" rx="${bh / 2}" fill="${buttonColor}"/></svg>`)
-    layers.push({ buf: button, top: y, left: center(bw) })
-    layers.push({ buf: label.buf, top: y + 32, left: center(label.w) })
-    y += bh + 130
+    const fill = light || input.style === 'dark' ? p.accent : '#ffffff'
+    const svg = Buffer.from(`<svg width="${bw}" height="${bh}"><rect width="${bw}" height="${bh}" rx="${bh / 2}" fill="${fill}"/></svg>`)
+    const button = await sharp(svg).composite([{ input: label.buf, top: 32, left: Math.round((bw - label.w) / 2) }]).png().toBuffer()
+    parts[parts.length - 1]!.gap = 64
+    add({ buf: button, w: bw, h: bh }, 0)
+  }
+  const blockH = parts.reduce((sum, x) => sum + x.h + x.gap, 0)
+
+  // ---- geometry ----
+  // Text below: photo on top, the text block reaching OVERLAP px up over it.
+  // Text above: mirrored.
+  const textZone = Math.max(blockH + EDGE * 2 - OVERLAP, 140)
+  const height = photoH + textZone
+  const photoTop = textOnTop ? textZone : 0
+  const blockTop = textOnTop ? EDGE : photoH - OVERLAP + EDGE
+
+  // ---- layers ----
+  const cover = await sharp(input.photo).resize(W, photoH, { fit: 'cover', position: sharp.strategy.attention }).toBuffer()
+  // Under the text the page is the photo's own colours, blurred and tinted.
+  const blurred = await sharp(input.photo).resize(W, height, { fit: 'cover', position: sharp.strategy.attention }).blur(60).toBuffer()
+
+  // Clear over the photo, solid where the text sits.
+  const gradTop = textOnTop ? 0 : Math.max(0, photoH - OVERLAP + EDGE - FADE)
+  const gradHeight = textOnTop ? Math.min(height, blockH + EDGE * 2 + FADE) : height - gradTop
+  const solidAt = Math.min(0.9, FADE / gradHeight)
+  const stops = textOnTop
+    ? `<stop offset="0" stop-color="${scrim}" stop-opacity="${solid}"/><stop offset="${1 - solidAt}" stop-color="${scrim}" stop-opacity="${solid - 0.05}"/><stop offset="1" stop-color="${scrim}" stop-opacity="0"/>`
+    : `<stop offset="0" stop-color="${scrim}" stop-opacity="0"/><stop offset="${solidAt}" stop-color="${scrim}" stop-opacity="${solid - 0.05}"/><stop offset="1" stop-color="${scrim}" stop-opacity="${solid}"/>`
+  const scrimSvg = Buffer.from(`<svg width="${W}" height="${gradHeight}"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">${stops}</linearGradient></defs><rect width="${W}" height="${gradHeight}" fill="url(#g)"/></svg>`)
+
+  const layers: sharp.OverlayOptions[] = [
+    { input: cover, top: photoTop, left: 0 },
+    { input: scrimSvg, top: gradTop, left: 0 }
+  ]
+
+  // Hero: the cash-on-delivery pill on the photo.
+  if (input.role === 'hero') {
+    const pill = await textImg(BADGE[input.language], { size: 40, weight: 'bold', color: light ? '#ffffff' : p.accentDark, width: TEXT_W })
+    const pw = pill.w + 90
+    const ph = pill.h + 36
+    const bg = Buffer.from(`<svg width="${pw}" height="${ph}"><rect width="${pw}" height="${ph}" rx="${ph / 2}" fill="${light ? p.accent : '#ffffff'}" fill-opacity="0.96"/></svg>`)
+    layers.push({ input: bg, top: 56, left: center(pw) }, { input: pill.buf, top: 56 + 18, left: center(pill.w) })
   }
 
-  const height = Math.round(y)
-  const base = await background(height, { scene: input.scene, palette: p, style: input.style, role: input.role, index: input.index })
-  return sharp(base).composite(layers.map((l) => ({ input: l.buf, top: Math.round(l.top), left: Math.round(l.left) }))).webp({ quality: 90, effort: 4 }).toBuffer()
+  let y = blockTop
+  for (const part of parts) {
+    layers.push({ input: part.buf, top: Math.round(y), left: center(part.w) })
+    y += part.h + part.gap
+  }
+
+  return sharp(blurred).composite(layers).webp({ quality: 90, effort: 4 }).toBuffer()
 }
 
 // Stacks finished section images into the final long page.

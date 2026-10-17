@@ -10,6 +10,7 @@ import type { Env } from '../config/env.validation'
 // rolling-deprecation caveat as GRAPH_API_VERSION / EVENTS_API_VERSION in
 // the pixel services; these two constants are the ones to bump if Google
 // renames or retires either model.
+const LANGUAGE_NAME: Record<LandingLanguage, string> = { ar: 'formal Modern Standard Arabic', fr: 'French', en: 'English' }
 const TEXT_MODEL = 'gemini-flash-latest'
 const IMAGE_MODEL = 'gemini-3.1-flash-image'
 const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models'
@@ -59,10 +60,11 @@ interface GeminiResponse {
 
 // Talks to Gemini for the admin AI features:
 //  - the landing page builder: analyzeProduct → draftSectionCopy → proofreadCopy
-//    (text), generateScene + checkScene (a text-free background, vision-checked).
-//    The copy is validated in code (landing-copy.util.ts) and drawn by code
-//    (landing-page-render.util.ts): the image model never draws text or the
-//    product, which is what caused misspelled Arabic and distorted products;
+//    (text), enhancePhoto + checkEnhanced (retouching the real product photo,
+//    vision-checked against the original). The copy is validated in code
+//    (landing-copy.util.ts) and drawn by code on the photo
+//    (landing-page-render.util.ts): the image model never draws text, which is
+//    what caused misspelled Arabic;
 //  - draftLandingCopy for a funnel's native page;
 //  - draftProductContent, the product editor's "generate with AI" drafter, and
 //    improveLandingPageDescription.
@@ -147,7 +149,7 @@ export class GeminiService {
   // worries about, and what kind of background scene suits it. Writing from this
   // brief (instead of straight from the raw text) is what keeps the copy specific
   // and on-topic.
-  async analyzeProduct(input: { productName: string; description: string; photos?: InlineImage[]; instructions?: string }): Promise<ProductBrief> {
+  async analyzeProduct(input: { productName: string; description: string; language: LandingLanguage; photos?: InlineImage[]; instructions?: string }): Promise<ProductBrief> {
     const prompt = `You are a senior e-commerce copywriter preparing to write landing-page copy for a cash-on-delivery store in Algeria. First ANALYZE the product — do not write copy yet.
 
 Product name: ${input.productName}
@@ -155,11 +157,11 @@ Product information (the ONLY source of truth):
 """
 ${input.description}
 """
-${input.instructions ? `\nStore owner's instructions: ${input.instructions}\n` : ''}${input.photos?.length ? '\nThe attached photos show the real product.\n' : ''}
+${input.instructions ? `\nStore owner's instructions: ${input.instructions}\n` : ''}${input.photos?.length ? '\nThe attached photos show the real product. Any text visible on them (captions, banners, packaging) is product information too, in whatever language it is written: read it and use its meaning.\n' : ''}
 Return:
 - category: what kind of product this is, in a few English words.
 - audience: who typically buys it and why, one English sentence.
-- benefits: 3-5 of the strongest benefits or features that are EXPLICITLY supported by the product information (each as a short phrase in the language of the source). Never invent any.
+- benefits: 3-5 of the strongest benefits or features that are EXPLICITLY supported by the product information or by text visible on the photos (each as a short phrase, TRANSLATED into ${LANGUAGE_NAME[input.language]} even when the source is in another language such as Chinese or English). Never invent any.
 - objections: 2-3 doubts a hesitant buyer would have (quality, size, how it works…), based on the product type.
 - sceneKeywords: 8-14 ENGLISH words describing a fitting, tasteful background scene for advertising this product (setting, materials, lighting, mood) — NO text, NO people's faces, NO brand names.
 - tone: one English phrase for the right voice (e.g. "warm and reassuring", "energetic and modern").`
@@ -403,62 +405,68 @@ Improve this text: fix grammar and clarity, organize it so the description, spec
     return { base64: inline.data, mimeType: inline.mimeType }
   }
 
-  // A text-free background scene for one section. The model never draws
-  // letters, the product, or a logo: text is drawn by code afterwards (so it can
-  // never be misspelled or distorted) and the real product photo is placed on top
-  // untouched. Colours follow the page palette so sections look like one design.
-  async generateScene(input: {
-    role: 'hero' | 'feature' | 'cta'
-    sceneKeywords: string
-    paletteHint: string
-    style: 'vibrant' | 'dark' | 'light'
-    instructions?: string
-  }): Promise<InlineImage> {
-    const mood: Record<typeof input.style, string> = {
-      vibrant: 'rich, saturated, energetic but tasteful',
-      dark: 'dark, moody, premium, with soft highlights',
-      light: 'bright, airy, clean, soft pastel light'
-    }
-    const roleBrief: Record<typeof input.role, string> = {
-      hero: 'a dramatic, high-impact backdrop with depth and soft light, the visual centre clear and empty',
-      feature: 'a calm, minimal backdrop with generous empty space and gentle depth',
-      cta: 'a confident, warm backdrop with a clear empty centre'
-    }
-    const prompt = `Create a background image for an e-commerce advertisement.
-
-Scene: ${input.sceneKeywords}. Style: ${mood[input.style]}. Colour palette: ${input.paletteHint}. Composition: ${roleBrief[input.role]}. Portrait orientation, 4:5.
-
-ABSOLUTE RULES: the image must contain NO text of any kind — no letters, numbers, words, signs, labels, captions, logos, watermarks, or symbols that look like writing. NO products, NO packaging, NO people or faces, NO hands. Only an empty, beautiful backdrop (surfaces, textures, light, soft shapes, bokeh, subtle props unrelated to any brand) where a product and text will be placed on top later. The centre and the upper third must stay uncluttered.${input.instructions ? `\nAdditional art direction from the store owner: ${input.instructions}` : ''}`
-    return this.requestImage([{ text: prompt }], '4:5')
+  // The aspect ratios the image model accepts; the nearest one to the source photo is
+  // requested so an edit keeps the photo's framing.
+  private nearestAspect(width: number, height: number): string {
+    const options: [string, number][] = [['1:1', 1], ['4:5', 0.8], ['3:4', 0.75], ['2:3', 0.667], ['5:4', 1.25], ['4:3', 1.333], ['3:2', 1.5], ['9:16', 0.5625], ['16:9', 1.778]]
+    const r = width / height
+    return options.reduce((best, o) => (Math.abs(o[1] - r) < Math.abs(best[1] - r) ? o : best))[0]
   }
 
-  // Vision check of a generated scene: reject anything with writing, logos,
-  // people/products, or visible distortion — those are exactly the defects that
-  // make an AI landing page look broken.
-  async checkScene(image: InlineImage): Promise<{ ok: boolean; reasons: string[] }> {
-    const prompt = `Inspect this generated background image strictly. It will be used behind headlines and a product photo, so it must be empty of content. Answer each question honestly:
-- containsText: is there ANY readable or pseudo-readable text, letters, numbers, logos, watermarks or writing-like marks?
-- containsProductOrPerson: is there a main product, packaging, a person, a face or hands?
-- looksBroken: are there obvious distortions, warped shapes, melted objects, strange artifacts, or severe noise?
-- tooBusy: is the centre or upper third cluttered so text would be hard to read?`
+  // Edits the REAL product photo: better light/colour/sharpness, a clean backdrop,
+  // and every overlaid caption, banner, sticker, price tag or watermark that is not
+  // part of the physical product removed (those are usually in another language
+  // and are what makes a marketplace photo unusable). The product itself must stay
+  // identical. The model never writes any text: all page text is drawn by code, so
+  // it can't come out misspelled.
+  async enhancePhoto(input: { image: InlineImage; width: number; height: number; instructions?: string }): Promise<InlineImage> {
+    const prompt = `Retouch this product photo for a professional e-commerce advertisement.
+
+DO:
+- Improve lighting, exposure, contrast, colour accuracy and sharpness; reduce noise and blur; make the image look crisp and premium.
+- Clean the backdrop (remove dust, stains, clutter, harsh shadows) while keeping it natural and the same kind of setting.
+- REMOVE every overlaid graphic or text that is not physically part of the product: captions, banners, stickers, badges, price tags, arrows, watermarks, marketplace or seller logos. Fill the area naturally.
+
+DO NOT:
+- Change the product in any way: same shape, proportions, colours, materials, quantity of items, and any printing or branding that is physically ON the product must stay exactly as it is.
+- Add any text, letters, numbers, logos or symbols anywhere. Do not add people, hands, or new objects.
+- Crop out any part of the product. Keep the same composition and framing.${input.instructions ? `\nStore owner's art direction (only if it does not break the rules above): ${input.instructions}` : ''}`
+    return this.requestImage([{ text: prompt }, { inlineData: { mimeType: input.image.mimeType, data: input.image.base64 } }], this.nearestAspect(input.width, input.height))
+  }
+
+  // Vision check of a retouched photo against the original: reject it if the
+  // product changed, anything was added, writing remains over the picture, or it
+  // came out worse.
+  async checkEnhanced(original: InlineImage, edited: InlineImage): Promise<{ ok: boolean; reasons: string[] }> {
+    const prompt = `Image 1 is the ORIGINAL product photo. Image 2 is a retouched version. Compare them strictly:
+- productChanged: is the product in image 2 different from image 1 (shape, proportions, colour, material, number of items, printed branding on the product, missing or extra parts)?
+- addedContent: did image 2 gain objects, people, hands, logos, symbols or text that image 1 does not have?
+- overlayTextRemains: does image 2 still show overlaid captions, banners, stickers, price tags or watermarks that are NOT physically part of the product?
+- looksBroken: does image 2 show warped shapes, melted details, strange artifacts or smeared areas?
+- worseThanOriginal: is image 2 clearly lower quality (blurrier, darker, flatter, less natural) than image 1?`
     const schema = {
       type: 'OBJECT',
       properties: {
-        containsText: { type: 'BOOLEAN' },
-        containsProductOrPerson: { type: 'BOOLEAN' },
+        productChanged: { type: 'BOOLEAN' },
+        addedContent: { type: 'BOOLEAN' },
+        overlayTextRemains: { type: 'BOOLEAN' },
         looksBroken: { type: 'BOOLEAN' },
-        tooBusy: { type: 'BOOLEAN' }
+        worseThanOriginal: { type: 'BOOLEAN' }
       },
-      required: ['containsText', 'containsProductOrPerson', 'looksBroken', 'tooBusy']
+      required: ['productChanged', 'addedContent', 'overlayTextRemains', 'looksBroken', 'worseThanOriginal']
     }
-    const result = await this.generateJson<{ containsText: boolean; containsProductOrPerson: boolean; looksBroken: boolean; tooBusy: boolean }>(
-      prompt, schema, [{ inlineData: { mimeType: image.mimeType, data: image.base64 } }], 0
+    const result = await this.generateJson<Record<'productChanged' | 'addedContent' | 'overlayTextRemains' | 'looksBroken' | 'worseThanOriginal', boolean>>(
+      prompt,
+      schema,
+      [{ inlineData: { mimeType: original.mimeType, data: original.base64 } }, { inlineData: { mimeType: edited.mimeType, data: edited.base64 } }],
+      0
     )
     const reasons: string[] = []
-    if (result.containsText) reasons.push('contains text or logos')
-    if (result.containsProductOrPerson) reasons.push('contains a product or person')
-    if (result.looksBroken) reasons.push('looks distorted')
-    if (result.tooBusy) reasons.push('too busy behind the text')
+    if (result.productChanged) reasons.push('the product was altered')
+    if (result.addedContent) reasons.push('something was added')
+    if (result.overlayTextRemains) reasons.push('overlay text remains')
+    if (result.looksBroken) reasons.push('visible distortion')
+    if (result.worseThanOriginal) reasons.push('lower quality than the original')
     return { ok: reasons.length === 0, reasons }
   }
 }
