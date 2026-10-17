@@ -12,6 +12,9 @@ const apiHost = (() => {
 })()
 
 export default defineNuxtConfig({
+  // Source maps for 15 templates' worth of client + server bundles are what pushed the production build past
+  // Node's default heap (OOM on the VPS); nobody reads them in production, so skip them.
+  sourcemap: { client: false, server: false },
   extends: ['../../packages/ui'],
   modules: ['@nuxt/eslint', '@pinia/nuxt', '@nuxt/image', '@nuxtjs/sitemap'],
   // Disable directory-prefixing for component auto-import so the template-
