@@ -506,21 +506,39 @@ export class MetaAdsService {
 
     let list: GraphList<GraphAd>
     let parent: { id: string; name?: string; account_id?: string; campaign?: { id: string; name?: string } }
+    const filtering = JSON.stringify([{ field: 'adset.id', operator: 'EQUAL', value: adsetId }, ...(query.status ? [{ field: 'effective_status', operator: 'IN', value: [query.status] }] : [])])
+    const insightsField = `insights.date_preset(${query.datePreset}){${INSIGHT_FIELDS}}`
+    // The creative thumbnail and the nested insights are the heavy / permission-sensitive parts: if Meta
+    // rejects the full request, retry with less rather than leaving the page unusable.
+    const fieldSets = [
+      `id,name,status,effective_status,creative{thumbnail_url},${insightsField}`,
+      `id,name,status,effective_status,${insightsField}`,
+      'id,name,status,effective_status'
+    ]
+    const fetchAds = async (): Promise<GraphList<GraphAd>> => {
+      let lastError: unknown
+      for (const fields of fieldSets) {
+        try {
+          return await this.call<GraphList<GraphAd>>(connection, `${accountId}/ads`, { fields, filtering, limit: 25, after: query.after }, token)
+        } catch (error) {
+          if (!(error instanceof MetaGraphError) || error.isAuthError || error.isRateLimit) throw error
+          this.logger.warn(`Meta ads request failed (${error.code ?? ''}: ${error.message}) — retrying with fewer fields`)
+          lastError = error
+        }
+      }
+      throw lastError
+    }
+    const fetchParent = async () => {
+      type AdSetParent = { id: string; name?: string; account_id?: string; campaign?: { id: string; name?: string } }
+      try {
+        return await this.call<AdSetParent>(connection, adsetId, { fields: 'id,name,account_id,campaign{id,name}' }, token)
+      } catch (error) {
+        if (!(error instanceof MetaGraphError) || error.isAuthError || error.isRateLimit) throw error
+        return this.call<AdSetParent>(connection, adsetId, { fields: 'id,name,account_id' }, token)
+      }
+    }
     try {
-      ;[list, parent] = await Promise.all([
-        this.call<GraphList<GraphAd>>(
-          connection,
-          `${accountId}/ads`,
-          {
-            fields: `id,name,status,effective_status,creative{thumbnail_url},insights.date_preset(${query.datePreset}){${INSIGHT_FIELDS}}`,
-            filtering: JSON.stringify([{ field: 'adset.id', operator: 'EQUAL', value: adsetId }, ...(query.status ? [{ field: 'effective_status', operator: 'IN', value: [query.status] }] : [])]),
-            limit: 25,
-            after: query.after
-          },
-          token
-        ),
-        this.call<{ id: string; name?: string; account_id?: string; campaign?: { id: string; name?: string } }>(connection, adsetId, { fields: 'id,name,account_id,campaign{id,name}' }, token)
-      ])
+      ;[list, parent] = await Promise.all([fetchAds(), fetchParent()])
     } catch (error) {
       throw await this.handleGraphError(connection, error)
     }
