@@ -18,6 +18,8 @@ import { deviceTypeOf, fbcFromFbclid, resolvePlatform } from './order-attributio
 export interface OrderRequestContext {
   ip?: string
   userAgent?: string
+  // Set server-side by the funnels controller (from the slug) — ties the order to its funnel.
+  funnelId?: string
 }
 
 // Same customer submitting the same product twice within this window gets
@@ -580,6 +582,7 @@ export class OrdersService {
               shippingType: lead.shippingType,
               shippingPriceCents,
               isAbandoned: false,
+              ...(context.funnelId && { funnelId: context.funnelId }),
               items: { create: pricedItems }
             },
             include: { items: true }
@@ -596,6 +599,7 @@ export class OrdersService {
             shippingPriceCents,
             isDuplicate: !!duplicateOfOrderId,
             duplicateOfOrderId,
+            funnelId: context.funnelId ?? null,
             items: { create: pricedItems }
           },
           include: { items: true }

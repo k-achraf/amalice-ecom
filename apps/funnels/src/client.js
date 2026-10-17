@@ -99,7 +99,25 @@
   ttEv('ViewContent', { contents: [{ content_id: fd.pid, content_type: 'product', price: fd.unit / 100 }], value: fd.unit / 100, currency: 'DZD' })
 
   // First-party traffic count (admin dashboard). Fire and forget.
-  try { fetch(fd.api + '/analytics/view', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'Funnel', entityId: fd.id, path: location.pathname, visitorId: visitor() }), keepalive: true }).catch(function () {}) } catch (e) {}
+  var viewId = uuid(), formTouched = false, touch = attrRead()
+  try { fetch(fd.api + '/analytics/view', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'Funnel', entityId: fd.id, path: location.pathname, visitorId: visitor(), viewId: viewId, attribution: touch ? touch.last : undefined }), keepalive: true }).catch(function () {}) } catch (e) {}
+
+  // Engagement: visible seconds + deepest scroll + whether the form was touched, reported (cumulative) whenever the page is hidden or closed.
+  var shownAt = document.hidden ? 0 : Date.now(), visibleMs = 0, maxScroll = 0
+  function scrollPct() {
+    var d = document.documentElement, h = Math.max(d.scrollHeight, document.body.scrollHeight) - innerHeight
+    var p = h > 0 ? Math.round((scrollY / h) * 100) : 100
+    if (p > maxScroll) maxScroll = Math.min(100, p)
+  }
+  addEventListener('scroll', scrollPct, { passive: true })
+  function report() {
+    if (shownAt) { visibleMs += Date.now() - shownAt; shownAt = 0 }
+    scrollPct()
+    var sec = Math.min(1800, Math.round(visibleMs / 1000))
+    try { fetch(fd.api + '/analytics/engagement', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ viewId: viewId, visitorId: visitor(), seconds: sec, scrollDepth: maxScroll, startedForm: formTouched }), keepalive: true }).catch(function () {}) } catch (e) {}
+  }
+  document.addEventListener('visibilitychange', function () { if (document.hidden) report(); else if (!shownAt) shownAt = Date.now() })
+  addEventListener('pagehide', report)
 
   // ---------- photo carousel dots ----------
   var sl = $('#sl'), dots = $$('#dots i'), cnt = $('#cnt')
@@ -314,6 +332,7 @@
   function startCheckout() {
     if (started) return
     started = true
+    formTouched = true
     var v = total() / 100
     metaEv('InitiateCheckout', { content_ids: [fd.pid], content_type: 'product', contents: [{ id: fd.pid, quantity: qty() }], value: v, currency: 'DZD', num_items: qty() })
     ttEv('InitiateCheckout', { contents: [{ content_id: fd.pid, quantity: qty(), price: unit() / 100 }], value: v, currency: 'DZD' })

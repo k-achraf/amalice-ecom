@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { FunnelsController } from './funnels.controller'
 import { FunnelsService } from './funnels.service'
+import { FunnelsStatsService } from './funnels-stats.service'
 import { FunnelsPublicController } from './funnels-public.controller'
 import { FunnelsPublicService } from './funnels-public.service'
 import { CommonModule } from '../common/common.module'
@@ -10,6 +11,6 @@ import { OrderItemsModule } from '../order-items/order-items.module'
 @Module({
   imports: [CommonModule, OrdersModule, OrderItemsModule],
   controllers: [FunnelsController, FunnelsPublicController],
-  providers: [FunnelsService, FunnelsPublicService]
+  providers: [FunnelsService, FunnelsStatsService, FunnelsPublicService]
 })
 export class FunnelsModule {}

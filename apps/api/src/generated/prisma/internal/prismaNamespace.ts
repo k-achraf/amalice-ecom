@@ -4860,6 +4860,7 @@ export const OrderScalarFieldEnum = {
   gpsLink: 'gpsLink',
   courierOperation: 'courierOperation',
   exchangeProduct: 'exchangeProduct',
+  funnelId: 'funnelId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -5403,6 +5404,12 @@ export const PageViewEventScalarFieldEnum = {
   entityId: 'entityId',
   visitorId: 'visitorId',
   path: 'path',
+  durationSeconds: 'durationSeconds',
+  scrollDepth: 'scrollDepth',
+  startedForm: 'startedForm',
+  deviceType: 'deviceType',
+  source: 'source',
+  campaign: 'campaign',
   createdAt: 'createdAt'
 } as const
 
@@ -6263,4 +6270,5 @@ export type PrismaAction =
  * `PrismaClient` proxy available in interactive transactions.
  */
 export type TransactionClient = Omit<DefaultPrismaClient, runtime.ITXClientDenyList>
+
 

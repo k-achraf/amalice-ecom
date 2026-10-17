@@ -208,6 +208,7 @@ export type FunnelWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Funnel"> | Date | string
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
   steps?: Prisma.FunnelStepListRelationFilter
+  orders?: Prisma.OrderListRelationFilter
 }
 
 export type FunnelOrderByWithRelationInput = {
@@ -221,6 +222,7 @@ export type FunnelOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   product?: Prisma.ProductOrderByWithRelationInput
   steps?: Prisma.FunnelStepOrderByRelationAggregateInput
+  orders?: Prisma.OrderOrderByRelationAggregateInput
 }
 
 export type FunnelWhereUniqueInput = Prisma.AtLeast<{
@@ -237,6 +239,7 @@ export type FunnelWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Funnel"> | Date | string
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
   steps?: Prisma.FunnelStepListRelationFilter
+  orders?: Prisma.OrderListRelationFilter
 }, "id" | "slug">
 
 export type FunnelOrderByWithAggregationInput = {
@@ -277,6 +280,7 @@ export type FunnelCreateInput = {
   updatedAt?: Date | string
   product: Prisma.ProductCreateNestedOneWithoutFunnelsInput
   steps?: Prisma.FunnelStepCreateNestedManyWithoutFunnelInput
+  orders?: Prisma.OrderCreateNestedManyWithoutFunnelInput
 }
 
 export type FunnelUncheckedCreateInput = {
@@ -289,6 +293,7 @@ export type FunnelUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   steps?: Prisma.FunnelStepUncheckedCreateNestedManyWithoutFunnelInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutFunnelInput
 }
 
 export type FunnelUpdateInput = {
@@ -301,6 +306,7 @@ export type FunnelUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.ProductUpdateOneRequiredWithoutFunnelsNestedInput
   steps?: Prisma.FunnelStepUpdateManyWithoutFunnelNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutFunnelNestedInput
 }
 
 export type FunnelUncheckedUpdateInput = {
@@ -313,6 +319,7 @@ export type FunnelUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   steps?: Prisma.FunnelStepUncheckedUpdateManyWithoutFunnelNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutFunnelNestedInput
 }
 
 export type FunnelCreateManyInput = {
@@ -355,6 +362,11 @@ export type FunnelListRelationFilter = {
 
 export type FunnelOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type FunnelNullableScalarRelationFilter = {
+  is?: Prisma.FunnelWhereInput | null
+  isNot?: Prisma.FunnelWhereInput | null
 }
 
 export type FunnelCountOrderByAggregateInput = {
@@ -437,6 +449,22 @@ export type FunnelUncheckedUpdateManyWithoutProductNestedInput = {
   deleteMany?: Prisma.FunnelScalarWhereInput | Prisma.FunnelScalarWhereInput[]
 }
 
+export type FunnelCreateNestedOneWithoutOrdersInput = {
+  create?: Prisma.XOR<Prisma.FunnelCreateWithoutOrdersInput, Prisma.FunnelUncheckedCreateWithoutOrdersInput>
+  connectOrCreate?: Prisma.FunnelCreateOrConnectWithoutOrdersInput
+  connect?: Prisma.FunnelWhereUniqueInput
+}
+
+export type FunnelUpdateOneWithoutOrdersNestedInput = {
+  create?: Prisma.XOR<Prisma.FunnelCreateWithoutOrdersInput, Prisma.FunnelUncheckedCreateWithoutOrdersInput>
+  connectOrCreate?: Prisma.FunnelCreateOrConnectWithoutOrdersInput
+  upsert?: Prisma.FunnelUpsertWithoutOrdersInput
+  disconnect?: Prisma.FunnelWhereInput | boolean
+  delete?: Prisma.FunnelWhereInput | boolean
+  connect?: Prisma.FunnelWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.FunnelUpdateToOneWithWhereWithoutOrdersInput, Prisma.FunnelUpdateWithoutOrdersInput>, Prisma.FunnelUncheckedUpdateWithoutOrdersInput>
+}
+
 export type EnumFunnelStatusFieldUpdateOperationsInput = {
   set?: $Enums.FunnelStatus
 }
@@ -464,6 +492,7 @@ export type FunnelCreateWithoutProductInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   steps?: Prisma.FunnelStepCreateNestedManyWithoutFunnelInput
+  orders?: Prisma.OrderCreateNestedManyWithoutFunnelInput
 }
 
 export type FunnelUncheckedCreateWithoutProductInput = {
@@ -475,6 +504,7 @@ export type FunnelUncheckedCreateWithoutProductInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   steps?: Prisma.FunnelStepUncheckedCreateNestedManyWithoutFunnelInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutFunnelInput
 }
 
 export type FunnelCreateOrConnectWithoutProductInput = {
@@ -517,6 +547,70 @@ export type FunnelScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Funnel"> | Date | string
 }
 
+export type FunnelCreateWithoutOrdersInput = {
+  id?: string
+  name: string
+  slug: string
+  templateId: string
+  status?: $Enums.FunnelStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  product: Prisma.ProductCreateNestedOneWithoutFunnelsInput
+  steps?: Prisma.FunnelStepCreateNestedManyWithoutFunnelInput
+}
+
+export type FunnelUncheckedCreateWithoutOrdersInput = {
+  id?: string
+  name: string
+  slug: string
+  templateId: string
+  status?: $Enums.FunnelStatus
+  productId: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  steps?: Prisma.FunnelStepUncheckedCreateNestedManyWithoutFunnelInput
+}
+
+export type FunnelCreateOrConnectWithoutOrdersInput = {
+  where: Prisma.FunnelWhereUniqueInput
+  create: Prisma.XOR<Prisma.FunnelCreateWithoutOrdersInput, Prisma.FunnelUncheckedCreateWithoutOrdersInput>
+}
+
+export type FunnelUpsertWithoutOrdersInput = {
+  update: Prisma.XOR<Prisma.FunnelUpdateWithoutOrdersInput, Prisma.FunnelUncheckedUpdateWithoutOrdersInput>
+  create: Prisma.XOR<Prisma.FunnelCreateWithoutOrdersInput, Prisma.FunnelUncheckedCreateWithoutOrdersInput>
+  where?: Prisma.FunnelWhereInput
+}
+
+export type FunnelUpdateToOneWithWhereWithoutOrdersInput = {
+  where?: Prisma.FunnelWhereInput
+  data: Prisma.XOR<Prisma.FunnelUpdateWithoutOrdersInput, Prisma.FunnelUncheckedUpdateWithoutOrdersInput>
+}
+
+export type FunnelUpdateWithoutOrdersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  templateId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumFunnelStatusFieldUpdateOperationsInput | $Enums.FunnelStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  product?: Prisma.ProductUpdateOneRequiredWithoutFunnelsNestedInput
+  steps?: Prisma.FunnelStepUpdateManyWithoutFunnelNestedInput
+}
+
+export type FunnelUncheckedUpdateWithoutOrdersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  templateId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumFunnelStatusFieldUpdateOperationsInput | $Enums.FunnelStatus
+  productId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  steps?: Prisma.FunnelStepUncheckedUpdateManyWithoutFunnelNestedInput
+}
+
 export type FunnelCreateWithoutStepsInput = {
   id?: string
   name: string
@@ -526,6 +620,7 @@ export type FunnelCreateWithoutStepsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   product: Prisma.ProductCreateNestedOneWithoutFunnelsInput
+  orders?: Prisma.OrderCreateNestedManyWithoutFunnelInput
 }
 
 export type FunnelUncheckedCreateWithoutStepsInput = {
@@ -537,6 +632,7 @@ export type FunnelUncheckedCreateWithoutStepsInput = {
   productId: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutFunnelInput
 }
 
 export type FunnelCreateOrConnectWithoutStepsInput = {
@@ -564,6 +660,7 @@ export type FunnelUpdateWithoutStepsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.ProductUpdateOneRequiredWithoutFunnelsNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutFunnelNestedInput
 }
 
 export type FunnelUncheckedUpdateWithoutStepsInput = {
@@ -575,6 +672,7 @@ export type FunnelUncheckedUpdateWithoutStepsInput = {
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutFunnelNestedInput
 }
 
 export type FunnelCreateManyProductInput = {
@@ -596,6 +694,7 @@ export type FunnelUpdateWithoutProductInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   steps?: Prisma.FunnelStepUpdateManyWithoutFunnelNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutFunnelNestedInput
 }
 
 export type FunnelUncheckedUpdateWithoutProductInput = {
@@ -607,6 +706,7 @@ export type FunnelUncheckedUpdateWithoutProductInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   steps?: Prisma.FunnelStepUncheckedUpdateManyWithoutFunnelNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutFunnelNestedInput
 }
 
 export type FunnelUncheckedUpdateManyWithoutProductInput = {
@@ -626,10 +726,12 @@ export type FunnelUncheckedUpdateManyWithoutProductInput = {
 
 export type FunnelCountOutputType = {
   steps: number
+  orders: number
 }
 
 export type FunnelCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   steps?: boolean | FunnelCountOutputTypeCountStepsArgs
+  orders?: boolean | FunnelCountOutputTypeCountOrdersArgs
 }
 
 /**
@@ -649,6 +751,13 @@ export type FunnelCountOutputTypeCountStepsArgs<ExtArgs extends runtime.Types.Ex
   where?: Prisma.FunnelStepWhereInput
 }
 
+/**
+ * FunnelCountOutputType without action
+ */
+export type FunnelCountOutputTypeCountOrdersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrderWhereInput
+}
+
 
 export type FunnelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -661,6 +770,7 @@ export type FunnelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   updatedAt?: boolean
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
   steps?: boolean | Prisma.Funnel$stepsArgs<ExtArgs>
+  orders?: boolean | Prisma.Funnel$ordersArgs<ExtArgs>
   _count?: boolean | Prisma.FunnelCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["funnel"]>
 
@@ -703,6 +813,7 @@ export type FunnelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
 export type FunnelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
   steps?: boolean | Prisma.Funnel$stepsArgs<ExtArgs>
+  orders?: boolean | Prisma.Funnel$ordersArgs<ExtArgs>
   _count?: boolean | Prisma.FunnelCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type FunnelIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -717,6 +828,7 @@ export type $FunnelPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   objects: {
     product: Prisma.$ProductPayload<ExtArgs>
     steps: Prisma.$FunnelStepPayload<ExtArgs>[]
+    orders: Prisma.$OrderPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1123,6 +1235,7 @@ export interface Prisma__FunnelClient<T, Null = never, ExtArgs extends runtime.T
   readonly [Symbol.toStringTag]: "PrismaPromise"
   product<T extends Prisma.ProductDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductDefaultArgs<ExtArgs>>): Prisma.Prisma__ProductClient<runtime.Types.Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   steps<T extends Prisma.Funnel$stepsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Funnel$stepsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FunnelStepPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  orders<T extends Prisma.Funnel$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Funnel$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1585,6 +1698,30 @@ export type Funnel$stepsArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
 }
 
 /**
+ * Funnel.orders
+ */
+export type Funnel$ordersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Order
+   */
+  select?: Prisma.OrderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Order
+   */
+  omit?: Prisma.OrderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrderInclude<ExtArgs> | null
+  where?: Prisma.OrderWhereInput
+  orderBy?: Prisma.OrderOrderByWithRelationInput | Prisma.OrderOrderByWithRelationInput[]
+  cursor?: Prisma.OrderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrderScalarFieldEnum | Prisma.OrderScalarFieldEnum[]
+}
+
+/**
  * Funnel without action
  */
 export type FunnelDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1601,3 +1738,4 @@ export type FunnelDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   include?: Prisma.FunnelInclude<ExtArgs> | null
 }
+

@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common'
+import type { Request } from 'express'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Throttle } from '@nestjs/throttler'
-import { RecordPageViewSchema } from '@amalice/shared'
+import { RecordPageEngagementSchema, RecordPageViewSchema } from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
 import { AnalyticsService } from './analytics.service'
 import { JwtAuthGuard } from '../identity/admin-auth/jwt-auth.guard'
@@ -9,6 +10,7 @@ import { RolesGuard } from '../identity/admin-auth/roles.guard'
 import { Roles } from '../identity/admin-auth/roles.decorator'
 
 class RecordPageViewDto extends createZodDto(RecordPageViewSchema) {}
+class RecordPageEngagementDto extends createZodDto(RecordPageEngagementSchema) {}
 
 // Public write (no auth — the caller is an anonymous storefront visitor,
 // same trust model as the checkout endpoints) + one admin-only read. A
@@ -24,8 +26,16 @@ export class AnalyticsController {
 
   @Post('analytics/view')
   @Throttle({ default: { limit: 30, ttl: 60 * 1000 } })
-  async recordView(@Body() body: RecordPageViewDto) {
-    await this.analytics.recordView(body)
+  async recordView(@Body() body: RecordPageViewDto, @Req() req: Request) {
+    await this.analytics.recordView(body, req.headers['user-agent'])
+    return { ok: true }
+  }
+
+  // Funnel pages report time on page / scroll depth when the visitor leaves.
+  @Post('analytics/engagement')
+  @Throttle({ default: { limit: 30, ttl: 60 * 1000 } })
+  async recordEngagement(@Body() body: RecordPageEngagementDto) {
+    await this.analytics.recordEngagement(body)
     return { ok: true }
   }
 

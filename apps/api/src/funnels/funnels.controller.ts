@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import {
   CreateFunnelSchema,
@@ -11,6 +11,7 @@ import {
 import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
 import { FunnelsService } from './funnels.service'
+import { FunnelsStatsService } from './funnels-stats.service'
 import { JwtAuthGuard } from '../identity/admin-auth/jwt-auth.guard'
 import { RolesGuard } from '../identity/admin-auth/roles.guard'
 import { Roles } from '../identity/admin-auth/roles.decorator'
@@ -35,7 +36,10 @@ const actorOf = (req: AuthedRequest): AuditActor => ({ id: req.user.sub, email: 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('SuperAdmin', 'OpsManager')
 export class FunnelsController {
-  constructor(private readonly funnels: FunnelsService) {}
+  constructor(
+    private readonly funnels: FunnelsService,
+    private readonly stats: FunnelsStatsService
+  ) {}
 
   // Static catalog from packages/shared — declared before ':id' so it is not captured as an id.
   @Get('templates')
@@ -46,6 +50,11 @@ export class FunnelsController {
   @Get()
   list() {
     return this.funnels.list()
+  }
+
+  @Get(':id/stats')
+  statsOf(@Param('id') id: string, @Query('days') days = '30') {
+    return this.stats.stats(id, Math.min(365, Math.max(1, Math.floor(Number(days)) || 30)))
   }
 
   @Get(':id')

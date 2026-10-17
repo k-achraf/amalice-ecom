@@ -548,10 +548,15 @@ model Order {
   // Where the order came from (ad platform, campaign, click ids, IP…) — null
   // for orders placed before attribution existed.
   attribution          OrderAttribution?
+  // The funnel this order was placed on (set server-side from the funnel's
+  // slug, never from the browser). SetNull so deleting a funnel keeps its orders.
+  funnelId             String?               @map("funnel_id")
+  funnel               Funnel?               @relation(fields: [funnelId], references: [id], onDelete: SetNull)
   createdAt            DateTime              @default(now()) @map("created_at")
   updatedAt            DateTime              @updatedAt @map("updated_at")
 
   @@index([customerId])
+  @@index([funnelId])
   @@index([state])
   @@index([duplicateOfOrderId])
   @@index([shippingCompanyId])
@@ -1655,14 +1660,24 @@ enum PageViewType {
 }
 
 model PageViewEvent {
-  id        String       @id @default(uuid())
-  type      PageViewType
-  entityId  String?      @map("entity_id")
-  visitorId String       @map("visitor_id")
-  path      String
-  createdAt DateTime     @default(now()) @map("created_at")
+  id              String       @id @default(uuid())
+  type            PageViewType
+  entityId        String?      @map("entity_id")
+  visitorId       String       @map("visitor_id")
+  path            String
+  // Funnel pages only: engagement reported by the page when the visitor
+  // leaves (visible seconds, deepest scroll in %, whether the order form was
+  // touched), plus the device and traffic source/campaign of the visit.
+  durationSeconds Int?         @map("duration_seconds")
+  scrollDepth     Int?         @map("scroll_depth")
+  startedForm     Boolean      @default(false) @map("started_form")
+  deviceType      String?      @map("device_type")
+  source          String?
+  campaign        String?
+  createdAt       DateTime     @default(now()) @map("created_at")
 
   @@index([type, createdAt])
+  @@index([entityId, createdAt])
   @@index([entityId])
   @@index([visitorId])
   @@map("page_view_events")
@@ -1697,6 +1712,7 @@ model Funnel {
   productId  String       @map("product_id")
   product    Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
   steps      FunnelStep[]
+  orders     Order[]
   createdAt  DateTime     @default(now()) @map("created_at")
   updatedAt  DateTime     @updatedAt @map("updated_at")
 

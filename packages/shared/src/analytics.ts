@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { AttributionTouchSchema } from './attribution'
 
 // First-party storefront view-tracking — our own DB, never third-party
 // pixel data (Meta/TikTok pixels still fire independently for ad-platform
@@ -16,9 +17,26 @@ export const RecordPageViewSchema = z.object({
   type: PageViewTypeSchema,
   entityId: z.string().max(200).optional(),
   path: z.string().min(1).max(500),
-  visitorId: z.string().min(8).max(100)
+  visitorId: z.string().min(8).max(100),
+  // Funnel pages only: an id the page generates for this visit (becomes the
+  // row id) so it can report its engagement later, and the visitor's ad/referrer
+  // touch so the visit can be tied to a traffic source.
+  viewId: z.uuid().optional(),
+  attribution: AttributionTouchSchema.optional()
 })
 export type RecordPageView = z.infer<typeof RecordPageViewSchema>
+
+// Sent when a funnel visitor leaves/hides the page: cumulative visible time,
+// deepest scroll and whether they touched the order form. Applied to the
+// visit row only if viewId + visitorId match what the page recorded.
+export const RecordPageEngagementSchema = z.object({
+  viewId: z.uuid(),
+  visitorId: z.string().min(8).max(100),
+  seconds: z.number().int().min(0).max(1800),
+  scrollDepth: z.number().int().min(0).max(100),
+  startedForm: z.boolean()
+})
+export type RecordPageEngagement = z.infer<typeof RecordPageEngagementSchema>
 
 export const TopViewedItemSchema = z.object({
   id: z.string(),

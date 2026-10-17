@@ -89,6 +89,8 @@ export class AdminOrdersService {
     sort?: 'oldest' | 'followup'
     search?: string
     courierId?: string
+    // Only the orders placed on this funnel.
+    funnelId?: string
     from?: Date
     to?: Date
     page: number
@@ -111,6 +113,7 @@ export class AdminOrdersService {
       ...(args.state && !args.states && { state: args.state }),
       ...(args.states && { state: { in: args.state ? args.states.filter((x) => x === args.state) : [...args.states] } }),
       ...(args.courierId && { shipment: { courierId: args.courierId } }),
+      ...(args.funnelId && { funnelId: args.funnelId }),
       ...((args.from || args.to) && {
         createdAt: { ...(args.from && { gte: args.from }), ...(args.to && { lte: args.to }) }
       }),

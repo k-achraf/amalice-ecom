@@ -180,7 +180,7 @@ export class FunnelsPublicService {
         formLoadedAt: input.formLoadedAt,
         convertsAbandonedOrderId: input.convertsAbandonedOrderId
       },
-      context
+      { ...context, funnelId: funnel.id }
     )
 
     if (bump) await this.addOfferItem(order.id, bump.productId, bump.priceCents)

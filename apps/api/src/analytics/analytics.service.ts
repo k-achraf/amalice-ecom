@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import type { AnalyticsOverview, RecordPageView, TopViewedItem } from '@amalice/shared'
+import type { AnalyticsOverview, RecordPageEngagement, RecordPageView, TopViewedItem } from '@amalice/shared'
+import { deviceTypeOf, resolvePlatform } from '../orders/order-attribution.util'
 import { PrismaService } from '../prisma/prisma.service'
 
 // First-party storefront view-tracking — see PageViewEvent's Prisma model
@@ -15,15 +16,33 @@ export class AnalyticsService {
   // in a try/catch (a genuine DB outage should still 500 like anything
   // else), but the storefront's own fetch call is itself fire-and-forget
   // with a swallowed catch — see useViewTracking.ts.
-  async recordView(input: RecordPageView): Promise<void> {
+  async recordView(input: RecordPageView, userAgent?: string): Promise<void> {
+    const a = input.attribution
+    const isFunnel = input.type === 'Funnel'
     await this.prisma.pageViewEvent.create({
       data: {
+        ...(isFunnel && input.viewId && { id: input.viewId }),
         type: input.type,
         entityId: input.entityId ?? null,
         visitorId: input.visitorId,
-        path: input.path
+        path: input.path,
+        deviceType: deviceTypeOf(userAgent),
+        source: isFunnel ? resolvePlatform(a) : null,
+        campaign: isFunnel ? (a?.campaignName ?? a?.utmCampaign ?? null) : null
       }
     })
+  }
+
+  // Funnel visits only. The visit is found by the id the page generated and
+  // must belong to the same visitor; durations/scroll only ever grow, so a
+  // late or repeated beacon can't shrink what was already reported.
+  async recordEngagement(input: RecordPageEngagement): Promise<void> {
+    await this.prisma.$executeRaw`
+      UPDATE page_view_events
+      SET duration_seconds = GREATEST(COALESCE(duration_seconds, 0), ${input.seconds}),
+          scroll_depth = GREATEST(COALESCE(scroll_depth, 0), ${input.scrollDepth}),
+          started_form = started_form OR ${input.startedForm}
+      WHERE id = ${input.viewId} AND visitor_id = ${input.visitorId} AND type = 'Funnel'`
   }
 
   async getOverview(days: number): Promise<AnalyticsOverview> {

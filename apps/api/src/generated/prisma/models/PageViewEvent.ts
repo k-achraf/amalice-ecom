@@ -20,8 +20,20 @@ export type PageViewEventModel = runtime.Types.Result.DefaultSelection<Prisma.$P
 
 export type AggregatePageViewEvent = {
   _count: PageViewEventCountAggregateOutputType | null
+  _avg: PageViewEventAvgAggregateOutputType | null
+  _sum: PageViewEventSumAggregateOutputType | null
   _min: PageViewEventMinAggregateOutputType | null
   _max: PageViewEventMaxAggregateOutputType | null
+}
+
+export type PageViewEventAvgAggregateOutputType = {
+  durationSeconds: number | null
+  scrollDepth: number | null
+}
+
+export type PageViewEventSumAggregateOutputType = {
+  durationSeconds: number | null
+  scrollDepth: number | null
 }
 
 export type PageViewEventMinAggregateOutputType = {
@@ -30,6 +42,12 @@ export type PageViewEventMinAggregateOutputType = {
   entityId: string | null
   visitorId: string | null
   path: string | null
+  durationSeconds: number | null
+  scrollDepth: number | null
+  startedForm: boolean | null
+  deviceType: string | null
+  source: string | null
+  campaign: string | null
   createdAt: Date | null
 }
 
@@ -39,6 +57,12 @@ export type PageViewEventMaxAggregateOutputType = {
   entityId: string | null
   visitorId: string | null
   path: string | null
+  durationSeconds: number | null
+  scrollDepth: number | null
+  startedForm: boolean | null
+  deviceType: string | null
+  source: string | null
+  campaign: string | null
   createdAt: Date | null
 }
 
@@ -48,10 +72,26 @@ export type PageViewEventCountAggregateOutputType = {
   entityId: number
   visitorId: number
   path: number
+  durationSeconds: number
+  scrollDepth: number
+  startedForm: number
+  deviceType: number
+  source: number
+  campaign: number
   createdAt: number
   _all: number
 }
 
+
+export type PageViewEventAvgAggregateInputType = {
+  durationSeconds?: true
+  scrollDepth?: true
+}
+
+export type PageViewEventSumAggregateInputType = {
+  durationSeconds?: true
+  scrollDepth?: true
+}
 
 export type PageViewEventMinAggregateInputType = {
   id?: true
@@ -59,6 +99,12 @@ export type PageViewEventMinAggregateInputType = {
   entityId?: true
   visitorId?: true
   path?: true
+  durationSeconds?: true
+  scrollDepth?: true
+  startedForm?: true
+  deviceType?: true
+  source?: true
+  campaign?: true
   createdAt?: true
 }
 
@@ -68,6 +114,12 @@ export type PageViewEventMaxAggregateInputType = {
   entityId?: true
   visitorId?: true
   path?: true
+  durationSeconds?: true
+  scrollDepth?: true
+  startedForm?: true
+  deviceType?: true
+  source?: true
+  campaign?: true
   createdAt?: true
 }
 
@@ -77,6 +129,12 @@ export type PageViewEventCountAggregateInputType = {
   entityId?: true
   visitorId?: true
   path?: true
+  durationSeconds?: true
+  scrollDepth?: true
+  startedForm?: true
+  deviceType?: true
+  source?: true
+  campaign?: true
   createdAt?: true
   _all?: true
 }
@@ -119,6 +177,18 @@ export type PageViewEventAggregateArgs<ExtArgs extends runtime.Types.Extensions.
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: PageViewEventAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: PageViewEventSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: PageViewEventMinAggregateInputType
@@ -149,6 +219,8 @@ export type PageViewEventGroupByArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   _count?: PageViewEventCountAggregateInputType | true
+  _avg?: PageViewEventAvgAggregateInputType
+  _sum?: PageViewEventSumAggregateInputType
   _min?: PageViewEventMinAggregateInputType
   _max?: PageViewEventMaxAggregateInputType
 }
@@ -159,8 +231,16 @@ export type PageViewEventGroupByOutputType = {
   entityId: string | null
   visitorId: string
   path: string
+  durationSeconds: number | null
+  scrollDepth: number | null
+  startedForm: boolean
+  deviceType: string | null
+  source: string | null
+  campaign: string | null
   createdAt: Date
   _count: PageViewEventCountAggregateOutputType | null
+  _avg: PageViewEventAvgAggregateOutputType | null
+  _sum: PageViewEventSumAggregateOutputType | null
   _min: PageViewEventMinAggregateOutputType | null
   _max: PageViewEventMaxAggregateOutputType | null
 }
@@ -189,6 +269,12 @@ export type PageViewEventWhereInput = {
   entityId?: Prisma.StringNullableFilter<"PageViewEvent"> | string | null
   visitorId?: Prisma.StringFilter<"PageViewEvent"> | string
   path?: Prisma.StringFilter<"PageViewEvent"> | string
+  durationSeconds?: Prisma.IntNullableFilter<"PageViewEvent"> | number | null
+  scrollDepth?: Prisma.IntNullableFilter<"PageViewEvent"> | number | null
+  startedForm?: Prisma.BoolFilter<"PageViewEvent"> | boolean
+  deviceType?: Prisma.StringNullableFilter<"PageViewEvent"> | string | null
+  source?: Prisma.StringNullableFilter<"PageViewEvent"> | string | null
+  campaign?: Prisma.StringNullableFilter<"PageViewEvent"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PageViewEvent"> | Date | string
 }
 
@@ -198,6 +284,12 @@ export type PageViewEventOrderByWithRelationInput = {
   entityId?: Prisma.SortOrderInput | Prisma.SortOrder
   visitorId?: Prisma.SortOrder
   path?: Prisma.SortOrder
+  durationSeconds?: Prisma.SortOrderInput | Prisma.SortOrder
+  scrollDepth?: Prisma.SortOrderInput | Prisma.SortOrder
+  startedForm?: Prisma.SortOrder
+  deviceType?: Prisma.SortOrderInput | Prisma.SortOrder
+  source?: Prisma.SortOrderInput | Prisma.SortOrder
+  campaign?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -210,6 +302,12 @@ export type PageViewEventWhereUniqueInput = Prisma.AtLeast<{
   entityId?: Prisma.StringNullableFilter<"PageViewEvent"> | string | null
   visitorId?: Prisma.StringFilter<"PageViewEvent"> | string
   path?: Prisma.StringFilter<"PageViewEvent"> | string
+  durationSeconds?: Prisma.IntNullableFilter<"PageViewEvent"> | number | null
+  scrollDepth?: Prisma.IntNullableFilter<"PageViewEvent"> | number | null
+  startedForm?: Prisma.BoolFilter<"PageViewEvent"> | boolean
+  deviceType?: Prisma.StringNullableFilter<"PageViewEvent"> | string | null
+  source?: Prisma.StringNullableFilter<"PageViewEvent"> | string | null
+  campaign?: Prisma.StringNullableFilter<"PageViewEvent"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PageViewEvent"> | Date | string
 }, "id">
 
@@ -219,10 +317,18 @@ export type PageViewEventOrderByWithAggregationInput = {
   entityId?: Prisma.SortOrderInput | Prisma.SortOrder
   visitorId?: Prisma.SortOrder
   path?: Prisma.SortOrder
+  durationSeconds?: Prisma.SortOrderInput | Prisma.SortOrder
+  scrollDepth?: Prisma.SortOrderInput | Prisma.SortOrder
+  startedForm?: Prisma.SortOrder
+  deviceType?: Prisma.SortOrderInput | Prisma.SortOrder
+  source?: Prisma.SortOrderInput | Prisma.SortOrder
+  campaign?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.PageViewEventCountOrderByAggregateInput
+  _avg?: Prisma.PageViewEventAvgOrderByAggregateInput
   _max?: Prisma.PageViewEventMaxOrderByAggregateInput
   _min?: Prisma.PageViewEventMinOrderByAggregateInput
+  _sum?: Prisma.PageViewEventSumOrderByAggregateInput
 }
 
 export type PageViewEventScalarWhereWithAggregatesInput = {
@@ -234,6 +340,12 @@ export type PageViewEventScalarWhereWithAggregatesInput = {
   entityId?: Prisma.StringNullableWithAggregatesFilter<"PageViewEvent"> | string | null
   visitorId?: Prisma.StringWithAggregatesFilter<"PageViewEvent"> | string
   path?: Prisma.StringWithAggregatesFilter<"PageViewEvent"> | string
+  durationSeconds?: Prisma.IntNullableWithAggregatesFilter<"PageViewEvent"> | number | null
+  scrollDepth?: Prisma.IntNullableWithAggregatesFilter<"PageViewEvent"> | number | null
+  startedForm?: Prisma.BoolWithAggregatesFilter<"PageViewEvent"> | boolean
+  deviceType?: Prisma.StringNullableWithAggregatesFilter<"PageViewEvent"> | string | null
+  source?: Prisma.StringNullableWithAggregatesFilter<"PageViewEvent"> | string | null
+  campaign?: Prisma.StringNullableWithAggregatesFilter<"PageViewEvent"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"PageViewEvent"> | Date | string
 }
 
@@ -243,6 +355,12 @@ export type PageViewEventCreateInput = {
   entityId?: string | null
   visitorId: string
   path: string
+  durationSeconds?: number | null
+  scrollDepth?: number | null
+  startedForm?: boolean
+  deviceType?: string | null
+  source?: string | null
+  campaign?: string | null
   createdAt?: Date | string
 }
 
@@ -252,6 +370,12 @@ export type PageViewEventUncheckedCreateInput = {
   entityId?: string | null
   visitorId: string
   path: string
+  durationSeconds?: number | null
+  scrollDepth?: number | null
+  startedForm?: boolean
+  deviceType?: string | null
+  source?: string | null
+  campaign?: string | null
   createdAt?: Date | string
 }
 
@@ -261,6 +385,12 @@ export type PageViewEventUpdateInput = {
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visitorId?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
+  durationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  scrollDepth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  startedForm?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deviceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  campaign?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -270,6 +400,12 @@ export type PageViewEventUncheckedUpdateInput = {
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visitorId?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
+  durationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  scrollDepth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  startedForm?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deviceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  campaign?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -279,6 +415,12 @@ export type PageViewEventCreateManyInput = {
   entityId?: string | null
   visitorId: string
   path: string
+  durationSeconds?: number | null
+  scrollDepth?: number | null
+  startedForm?: boolean
+  deviceType?: string | null
+  source?: string | null
+  campaign?: string | null
   createdAt?: Date | string
 }
 
@@ -288,6 +430,12 @@ export type PageViewEventUpdateManyMutationInput = {
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visitorId?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
+  durationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  scrollDepth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  startedForm?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deviceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  campaign?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -297,6 +445,12 @@ export type PageViewEventUncheckedUpdateManyInput = {
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visitorId?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
+  durationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  scrollDepth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  startedForm?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  deviceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  campaign?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -306,7 +460,18 @@ export type PageViewEventCountOrderByAggregateInput = {
   entityId?: Prisma.SortOrder
   visitorId?: Prisma.SortOrder
   path?: Prisma.SortOrder
+  durationSeconds?: Prisma.SortOrder
+  scrollDepth?: Prisma.SortOrder
+  startedForm?: Prisma.SortOrder
+  deviceType?: Prisma.SortOrder
+  source?: Prisma.SortOrder
+  campaign?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type PageViewEventAvgOrderByAggregateInput = {
+  durationSeconds?: Prisma.SortOrder
+  scrollDepth?: Prisma.SortOrder
 }
 
 export type PageViewEventMaxOrderByAggregateInput = {
@@ -315,6 +480,12 @@ export type PageViewEventMaxOrderByAggregateInput = {
   entityId?: Prisma.SortOrder
   visitorId?: Prisma.SortOrder
   path?: Prisma.SortOrder
+  durationSeconds?: Prisma.SortOrder
+  scrollDepth?: Prisma.SortOrder
+  startedForm?: Prisma.SortOrder
+  deviceType?: Prisma.SortOrder
+  source?: Prisma.SortOrder
+  campaign?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -324,7 +495,18 @@ export type PageViewEventMinOrderByAggregateInput = {
   entityId?: Prisma.SortOrder
   visitorId?: Prisma.SortOrder
   path?: Prisma.SortOrder
+  durationSeconds?: Prisma.SortOrder
+  scrollDepth?: Prisma.SortOrder
+  startedForm?: Prisma.SortOrder
+  deviceType?: Prisma.SortOrder
+  source?: Prisma.SortOrder
+  campaign?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type PageViewEventSumOrderByAggregateInput = {
+  durationSeconds?: Prisma.SortOrder
+  scrollDepth?: Prisma.SortOrder
 }
 
 export type EnumPageViewTypeFieldUpdateOperationsInput = {
@@ -339,6 +521,12 @@ export type PageViewEventSelect<ExtArgs extends runtime.Types.Extensions.Interna
   entityId?: boolean
   visitorId?: boolean
   path?: boolean
+  durationSeconds?: boolean
+  scrollDepth?: boolean
+  startedForm?: boolean
+  deviceType?: boolean
+  source?: boolean
+  campaign?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["pageViewEvent"]>
 
@@ -348,6 +536,12 @@ export type PageViewEventSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   entityId?: boolean
   visitorId?: boolean
   path?: boolean
+  durationSeconds?: boolean
+  scrollDepth?: boolean
+  startedForm?: boolean
+  deviceType?: boolean
+  source?: boolean
+  campaign?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["pageViewEvent"]>
 
@@ -357,6 +551,12 @@ export type PageViewEventSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   entityId?: boolean
   visitorId?: boolean
   path?: boolean
+  durationSeconds?: boolean
+  scrollDepth?: boolean
+  startedForm?: boolean
+  deviceType?: boolean
+  source?: boolean
+  campaign?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["pageViewEvent"]>
 
@@ -366,10 +566,16 @@ export type PageViewEventSelectScalar = {
   entityId?: boolean
   visitorId?: boolean
   path?: boolean
+  durationSeconds?: boolean
+  scrollDepth?: boolean
+  startedForm?: boolean
+  deviceType?: boolean
+  source?: boolean
+  campaign?: boolean
   createdAt?: boolean
 }
 
-export type PageViewEventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "entityId" | "visitorId" | "path" | "createdAt", ExtArgs["result"]["pageViewEvent"]>
+export type PageViewEventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "entityId" | "visitorId" | "path" | "durationSeconds" | "scrollDepth" | "startedForm" | "deviceType" | "source" | "campaign" | "createdAt", ExtArgs["result"]["pageViewEvent"]>
 
 export type $PageViewEventPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "PageViewEvent"
@@ -380,6 +586,12 @@ export type $PageViewEventPayload<ExtArgs extends runtime.Types.Extensions.Inter
     entityId: string | null
     visitorId: string
     path: string
+    durationSeconds: number | null
+    scrollDepth: number | null
+    startedForm: boolean
+    deviceType: string | null
+    source: string | null
+    campaign: string | null
     createdAt: Date
   }, ExtArgs["result"]["pageViewEvent"]>
   composites: {}
@@ -809,6 +1021,12 @@ export interface PageViewEventFieldRefs {
   readonly entityId: Prisma.FieldRef<"PageViewEvent", 'String'>
   readonly visitorId: Prisma.FieldRef<"PageViewEvent", 'String'>
   readonly path: Prisma.FieldRef<"PageViewEvent", 'String'>
+  readonly durationSeconds: Prisma.FieldRef<"PageViewEvent", 'Int'>
+  readonly scrollDepth: Prisma.FieldRef<"PageViewEvent", 'Int'>
+  readonly startedForm: Prisma.FieldRef<"PageViewEvent", 'Boolean'>
+  readonly deviceType: Prisma.FieldRef<"PageViewEvent", 'String'>
+  readonly source: Prisma.FieldRef<"PageViewEvent", 'String'>
+  readonly campaign: Prisma.FieldRef<"PageViewEvent", 'String'>
   readonly createdAt: Prisma.FieldRef<"PageViewEvent", 'DateTime'>
 }
     
@@ -1179,3 +1397,4 @@ export type PageViewEventDefaultArgs<ExtArgs extends runtime.Types.Extensions.In
    */
   omit?: Prisma.PageViewEventOmit<ExtArgs> | null
 }
+
