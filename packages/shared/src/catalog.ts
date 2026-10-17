@@ -214,6 +214,8 @@ export interface AdminProductDetail {
   bestSeller: boolean
   visible: boolean
   priceCents: number
+  // Unit cost for profit reports (null = unknown). Admin-only.
+  costCents?: number | null
   stockQuantity: number
   lowStockThreshold: number
   requireOfferSelection: boolean

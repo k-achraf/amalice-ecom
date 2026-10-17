@@ -285,7 +285,8 @@ async function fireAbandonedOrder() {
         fields: leadFormData,
         wilayaId: leadFormData.wilayaId || undefined,
         shippingType: leadFormData.shippingType || undefined,
-        items: [{ productId: product.value.id, variantId: selectedVariantId.value ?? undefined, quantity: quantity.value, offerId: selectedOfferId.value ?? undefined }]
+        items: [{ productId: product.value.id, variantId: selectedVariantId.value ?? undefined, quantity: quantity.value, offerId: selectedOfferId.value ?? undefined }],
+        tracking: { ...useMetaPixel().getFbCookies(), ...useTikTokPixel().getTtCookie(), attribution: useAttribution().getAttribution('storefront') }
       }
     })
     abandonedOrderId.value = created.id
@@ -357,7 +358,7 @@ async function onSubmitLead() {
           items: [{ productId: product.value.id, variantId: selectedVariantId.value ?? undefined, quantity: quantity.value, offerId: selectedOfferId.value ?? undefined }],
           // Pixel match-quality context — see checkout.vue's placeOrder for
           // why no eventId is threaded through here either.
-          tracking: { ...useMetaPixel().getFbCookies(), ...useTikTokPixel().getTtCookie() },
+          tracking: { ...useMetaPixel().getFbCookies(), ...useTikTokPixel().getTtCookie(), attribution: useAttribution().getAttribution('storefront') },
           // If this same funnel visit already created an abandoned order
           // (see fireAbandonedOrder above), update that row instead of
           // creating a second one.

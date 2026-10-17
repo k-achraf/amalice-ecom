@@ -136,3 +136,10 @@
   /* Underline tabs: the -1px active-border overlap otherwise creates a stray vertical scrollbar. */
   .tabs { overflow-y: hidden; }
 }
+
+@layer components {
+  /* Filter chips placed straight in the page column (.main is flex-direction: column): the design's
+     `flex-grow: 1` is meant for a toolbar row, and here it stretches the strip vertically to fill the
+     leftover page height whenever the content below is short (loading, empty or few rows). */
+  .main > .chips { flex-grow: 0; align-self: flex-start; }
+}

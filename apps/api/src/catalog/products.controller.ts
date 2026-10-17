@@ -12,8 +12,10 @@ class ProductListQueryDto extends createZodDto(ProductListQuerySchema) {}
 // rows are NULL, not []) — every read path normalizes to [] here so nothing
 // consuming the shared `Product` type needs its own null-check.
 function withNormalizedContent<T extends ProductRow>(product: T) {
+  // costCents is back-office data: the public catalog must never expose it.
+  const { costCents: _cost, ...publicProduct } = product
   return {
-    ...product,
+    ...publicProduct,
     faqs: (product.faqs as ProductFaq[] | null) ?? [],
     specifications: (product.specifications as ProductSpecification[] | null) ?? []
   }

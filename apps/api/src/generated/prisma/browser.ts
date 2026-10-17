@@ -93,6 +93,11 @@ export type Courier = Prisma.CourierModel
  */
 export type Order = Prisma.OrderModel
 /**
+ * Model OrderAttribution
+ * 
+ */
+export type OrderAttribution = Prisma.OrderAttributionModel
+/**
  * Model CallAttempt
  * 
  */
@@ -277,3 +282,18 @@ export type Funnel = Prisma.FunnelModel
  * 
  */
 export type FunnelStep = Prisma.FunnelStepModel
+/**
+ * Model MetaConnection
+ * 
+ */
+export type MetaConnection = Prisma.MetaConnectionModel
+/**
+ * Model MetaAdAccount
+ * 
+ */
+export type MetaAdAccount = Prisma.MetaAdAccountModel
+/**
+ * Model MetaAppCredentials
+ * 
+ */
+export type MetaAppCredentials = Prisma.MetaAppCredentialsModel

@@ -203,7 +203,8 @@ async function fireAbandonedOrder() {
           variantId: selectedVariantId.value ?? undefined,
           quantity: quantity.value,
           offerId: selectedOfferId.value ?? undefined
-        }]
+        }],
+        tracking: { ...metaPixel.getFbCookies(), ...tiktokPixel.getTtCookie(), attribution: useAttribution().getAttribution('landing_page') }
       }
     })
     abandonedOrderId.value = created.id
@@ -265,7 +266,7 @@ async function onSubmitLead() {
             quantity: quantity.value,
             offerId: selectedOfferId.value ?? undefined
           }],
-          tracking: { ...metaPixel.getFbCookies(), ...tiktokPixel.getTtCookie() },
+          tracking: { ...metaPixel.getFbCookies(), ...tiktokPixel.getTtCookie(), attribution: useAttribution().getAttribution('landing_page') },
           convertsAbandonedOrderId: abandonedOrderId.value ?? undefined,
           idempotencyKey: leadIdempotencyKey || undefined,
           formLoadedAt: leadFormLoadedAt || undefined

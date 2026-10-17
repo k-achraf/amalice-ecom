@@ -9,6 +9,7 @@ import { TikTokEventsApiService } from '../apps/tiktok-events-api.service'
 import { GoogleSheetsService } from '../apps/google-sheets.service'
 import { OrderItemsService, canAddOrderItems } from '../order-items/order-items.service'
 import { RedisService } from '../redis/redis.service'
+import { deviceTypeOf, fbcFromFbclid, resolvePlatform } from './order-attribution.util'
 
 // Request-derived context for the pixel apps' server-side purchase events —
 // never required, never validated beyond "is it a string": a missing or
@@ -132,6 +133,51 @@ export class OrdersService {
     return prior?.id ?? null
   }
 
+  // Stores where the order came from (see OrderAttribution's Prisma comment).
+  // Always best-effort: attribution is analytics, so any failure here is
+  // logged and swallowed rather than failing an order that already exists.
+  // Upserts so converting an abandoned capture into a real order refreshes
+  // the row with the final submit's (fresher) data.
+  private async recordAttribution(orderId: string, tracking: Checkout['tracking'], context: OrderRequestContext): Promise<void> {
+    try {
+      const a = tracking?.attribution
+      const clean = (v: string | undefined) => v?.trim() || null
+      const data = {
+        platform: resolvePlatform(a),
+        channel: a?.channel ?? null,
+        utmSource: clean(a?.utmSource),
+        utmMedium: clean(a?.utmMedium),
+        utmCampaign: clean(a?.utmCampaign),
+        utmContent: clean(a?.utmContent),
+        utmTerm: clean(a?.utmTerm),
+        campaignId: clean(a?.campaignId),
+        adsetId: clean(a?.adsetId),
+        adId: clean(a?.adId),
+        campaignName: clean(a?.campaignName),
+        adsetName: clean(a?.adsetName),
+        adName: clean(a?.adName),
+        placement: clean(a?.placement),
+        fbclid: clean(a?.fbclid),
+        ttclid: clean(a?.ttclid),
+        gclid: clean(a?.gclid),
+        fbp: clean(tracking?.fbp),
+        fbc: clean(tracking?.fbc) ?? fbcFromFbclid(a?.fbclid, a?.capturedAt) ?? null,
+        ttp: clean(tracking?.ttp),
+        landingUrl: clean(a?.landingUrl),
+        referrer: clean(a?.referrer),
+        pageUrl: clean(a?.pageUrl),
+        visitorId: clean(a?.visitorId),
+        ipAddress: clean(context.ip),
+        userAgent: clean(context.userAgent),
+        deviceType: deviceTypeOf(context.userAgent),
+        firstTouch: a?.firstTouch ? (a.firstTouch as Prisma.InputJsonValue) : undefined
+      }
+      await this.prisma.orderAttribution.upsert({ where: { orderId }, create: { orderId, ...data }, update: data })
+    } catch (error) {
+      this.logger.warn(`Recording attribution failed for order ${orderId}: ${(error as Error).message}`)
+    }
+  }
+
   // Server-side purchase events for both pixel apps' server-side APIs
   // (Meta's Conversions API, TikTok's Events API) — fire-and-forget by
   // design (see *ApiService.fireAndForget): either platform being slow or
@@ -163,7 +209,7 @@ export class OrdersService {
         this.metaConversions.fireAndForget(credentials, {
           eventName: 'Purchase',
           eventId,
-          userData: { phone, ip: context.ip, userAgent: context.userAgent, fbp: tracking?.fbp, fbc: tracking?.fbc },
+          userData: { phone, ip: context.ip, userAgent: context.userAgent, fbp: tracking?.fbp, fbc: tracking?.fbc ?? fbcFromFbclid(tracking?.attribution?.fbclid, tracking?.attribution?.capturedAt) },
           customData: { value: valueDzd, currency: 'DZD', order_id: orderId, content_ids: contentIds, content_type: 'product' }
         })
       })
@@ -406,6 +452,7 @@ export class OrdersService {
         orderId: order.id
       })
 
+      await this.recordAttribution(order.id, checkout.tracking, context)
       this.sendPurchaseEvents(order.id, totalCents, checkout.phone, context, order.items, checkout.tracking)
       this.pushToGoogleSheets(order.id)
 
@@ -570,6 +617,7 @@ export class OrdersService {
       orderId: order.id
     })
 
+    await this.recordAttribution(order.id, lead.tracking, context)
     this.sendPurchaseEvents(order.id, totalCents, phone, context, order.items, lead.tracking)
     this.pushToGoogleSheets(order.id)
 
@@ -586,7 +634,7 @@ export class OrdersService {
   // pixel Purchase events (would corrupt conversion/ROAS reporting for an
   // action that didn't happen). Stock decrement and pixel events DO fire
   // normally once/if createLeadOrder converts this row into a real order.
-  async createAbandonedOrder(lead: AbandonedLeadOrder) {
+  async createAbandonedOrder(lead: AbandonedLeadOrder, context: OrderRequestContext = {}) {
     const productIds = lead.items.map((item) => item.productId)
     const products = await this.prisma.product.findMany({ where: { id: { in: productIds } } })
     const productById = new Map(products.map((p) => [p.id, p]))
@@ -657,7 +705,7 @@ export class OrdersService {
       }
     })
 
-    return this.prisma.order.create({
+    const order = await this.prisma.order.create({
       data: {
         customerId: customer.id,
         addressId: address.id,
@@ -670,6 +718,8 @@ export class OrdersService {
       },
       include: { items: true }
     })
+    await this.recordAttribution(order.id, lead.tracking, context)
+    return order
   }
 
   async trackOrder(orderId: string, phone: string) {

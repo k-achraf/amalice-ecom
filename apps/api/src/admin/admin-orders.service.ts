@@ -131,7 +131,8 @@ export class AdminOrdersService {
           address: { select: { line1: true, line2: true, city: true, region: true, postalCode: true, country: true } },
           items: { include: itemInclude },
           shipment: { include: { courier: { select: { name: true } } } },
-          shippingCompany: { select: { name: true } }
+          shippingCompany: { select: { name: true } },
+          attribution: { select: { platform: true, utmCampaign: true, campaignName: true } }
         },
         orderBy: args.sort === 'followup' ? [{ postponedUntil: 'asc' }, { createdAt: 'asc' }] : { createdAt: args.sort === 'oldest' ? 'asc' : 'desc' },
         skip: (args.page - 1) * args.pageSize,
@@ -143,7 +144,8 @@ export class AdminOrdersService {
       withDerivedStates({
         ...order,
         items: order.items.map(toLineItem),
-        shippingCompanyName: order.shippingCompany?.name ?? null
+        shippingCompanyName: order.shippingCompany?.name ?? null,
+        attribution: order.attribution && { platform: order.attribution.platform, campaign: order.attribution.campaignName ?? order.attribution.utmCampaign }
       })
     )
     return { items, total, page: args.page, pageSize: args.pageSize }
@@ -159,6 +161,7 @@ export class AdminOrdersService {
         shipment: { include: { courier: true } },
         shippingCompany: { select: { name: true } },
         cashReconciliation: true,
+        attribution: true,
         notifications: { orderBy: { createdAt: 'desc' }, take: 10 }
       }
     })

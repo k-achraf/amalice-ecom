@@ -5,6 +5,7 @@ import { CheckoutSchema, LeadOrderSchema, AbandonedLeadOrderSchema, TrackOrderQu
 import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
 import { OrdersService, type OrderRequestContext } from './orders.service'
+import { clientIp } from './order-attribution.util'
 
 class CheckoutDto extends createZodDto(CheckoutSchema) {}
 class LeadOrderDto extends createZodDto(LeadOrderSchema) {}
@@ -64,8 +65,8 @@ export class OrdersController {
   // repeatedly from a stuck tab shouldn't be able to hammer this.
   @Post('abandoned')
   @Throttle({ default: { limit: 20, ttl: 5 * 60 * 1000 } })
-  createAbandoned(@Body() body: AbandonedLeadOrderDto) {
-    return this.orders.createAbandonedOrder(body)
+  createAbandoned(@Body() body: AbandonedLeadOrderDto, @Req() req: Request) {
+    return this.orders.createAbandonedOrder(body, requestContext(req))
   }
 
   // Order id + phone together act as a shared secret — public and
@@ -102,9 +103,9 @@ export class OrdersController {
   }
 }
 
-// Best-effort IP/user-agent extraction for the Meta Conversions API's match
-// quality fields — not security-sensitive (unlike auth), so no need for a
-// `trust proxy` setup here beyond what Express's default req.ip gives us.
+// Best-effort IP/user-agent extraction for order attribution and the ad
+// platforms' server-side match quality — not security-sensitive (unlike
+// auth); clientIp() prefers the reverse proxy's forwarded address.
 function requestContext(req: Request): OrderRequestContext {
-  return { ip: req.ip, userAgent: req.headers['user-agent'] }
+  return { ip: clientIp(req), userAgent: req.headers['user-agent'] }
 }

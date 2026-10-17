@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CALL_CENTER_STATE_TO_ORDER_STATE, formatPhoneLocal, ORDER_STATE_LABELS, PRICE_EDITABLE_STATES, SHIPPING_STATE_TO_ORDER_STATE, STATES_REQUIRING_SHIPMENT, type AdminOrderDetail, type OrderState, type ShippingCompanyView } from '@amalice/shared'
+import { ATTRIBUTION_PLATFORM_LABELS, CALL_CENTER_STATE_TO_ORDER_STATE, formatPhoneLocal, ORDER_STATE_LABELS, PRICE_EDITABLE_STATES, SHIPPING_STATE_TO_ORDER_STATE, STATES_REQUIRING_SHIPMENT, type AdminOrderDetail, type OrderState, type ShippingCompanyView } from '@amalice/shared'
 import { VALID_TRANSITIONS } from '~/composables/order-transitions'
 import { toast } from 'vue-sonner'
 
@@ -34,6 +34,24 @@ async function deleteOrder() {
   if (res !== undefined) await navigateTo('/orders')
 }
 const { data: order, pending, error, refresh } = await useAdminFetch<AdminOrderDetail>(`/admin/orders/${id}`, { key: `admin-order-${id}` })
+
+// Non-empty tracking details of the order's source, labelled for the "Order source" card.
+const attributionRows = computed<[string, string][]>(() => {
+  const a = order.value?.attribution
+  if (!a) return []
+  const rows: [string, string | null | undefined][] = [
+    ['Campaign', a.campaignName ?? a.utmCampaign], ['Campaign ID', a.campaignId],
+    ['Ad set', a.adsetName ?? a.utmTerm], ['Ad set ID', a.adsetId],
+    ['Ad', a.adName ?? a.utmContent], ['Ad ID', a.adId],
+    ['Placement', a.placement], ['utm_source', a.utmSource], ['utm_medium', a.utmMedium],
+    ['fbclid', a.fbclid], ['ttclid', a.ttclid], ['gclid', a.gclid],
+    ['_fbp', a.fbp], ['_fbc', a.fbc], ['_ttp', a.ttp],
+    ['Landing URL', a.landingUrl], ['Order page', a.pageUrl], ['Referrer', a.referrer],
+    ['First visit', a.firstTouch ? [a.firstTouch.utmSource, a.firstTouch.utmCampaign ?? a.firstTouch.campaignName, a.firstTouch.landingUrl].filter(Boolean).join(' · ') : null],
+    ['IP address', a.ipAddress], ['Device', a.deviceType], ['User agent', a.userAgent], ['Visitor ID', a.visitorId]
+  ]
+  return rows.filter((r): r is [string, string] => !!r[1])
+})
 
 const transitioning = ref<OrderState | null>(null)
 // No in-transit states before a courier shipment exists (server enforces it too).
@@ -550,6 +568,21 @@ function initials(name: string | null) {
               <button v-if="PRICE_EDITABLE_STATES.includes(order.state)" class="btn btn-sm btn-ghost" type="button" @click="openCustomerEditor"><AdsIcon name="i-lucide-pencil" />Edit</button>
             </div>
             <a class="btn" :href="`tel:${order.customer.phone}`"><AdsIcon name="i-lucide-phone" />{{ order.customer.phone }}</a>
+          </section>
+
+          <!-- Where the order came from: ad platform, campaign / ad set / ad, click ids, IP… (see packages/shared attribution.ts). -->
+          <section class="card" aria-labelledby="src-h">
+            <div class="card-head"><h2 id="src-h">Order source</h2></div>
+            <p v-if="!order.attribution" class="muted">No source was recorded for this order.</p>
+            <template v-else>
+              <p style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+                <b style="font-weight: 600">{{ ATTRIBUTION_PLATFORM_LABELS[order.attribution.platform] }}</b>
+                <span v-if="order.attribution.channel" class="muted">· {{ { storefront: 'Store', landing_page: 'Landing page', funnel: 'Funnel' }[order.attribution.channel] }}</span>
+              </p>
+              <dl class="details">
+                <template v-for="row in attributionRows" :key="row[0]"><dt>{{ row[0] }}</dt><dd style="word-break: break-all">{{ row[1] }}</dd></template>
+              </dl>
+            </template>
           </section>
 
           <section class="card" aria-labelledby="ad-h">

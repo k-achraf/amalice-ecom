@@ -25,7 +25,7 @@ export default defineNuxtConfig({
     optimizeDeps: {
       // Pre-bundle everything up front: a dep Vite discovers mid-session triggers a
       // re-optimize + full reload, which shows up as a blank page / 504 'Outdated Optimize Dep'.
-      include: ['reka-ui', 'lucide-vue-next', '@tanstack/vue-table', 'vue-sonner', 'class-variance-authority', 'clsx', 'tailwind-merge', '@tiptap/core', '@tiptap/vue-3', '@tiptap/starter-kit', '@tiptap/extension-image', '@tiptap/extension-link']
+      include: ['reka-ui', 'lucide-vue-next', '@tanstack/vue-table', 'vue-sonner', 'class-variance-authority', 'clsx', 'tailwind-merge', '@tiptap/core', '@tiptap/vue-3', '@tiptap/starter-kit', '@tiptap/extension-image', '@tiptap/extension-link', 'echarts/core', 'echarts/charts', 'echarts/components', 'echarts/renderers']
     }
   },
   runtimeConfig: {

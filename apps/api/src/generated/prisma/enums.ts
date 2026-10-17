@@ -88,6 +88,19 @@ export const AttributeType = {
 export type AttributeType = (typeof AttributeType)[keyof typeof AttributeType]
 
 
+export const AttributionPlatform = {
+  Meta: 'Meta',
+  TikTok: 'TikTok',
+  Google: 'Google',
+  Snapchat: 'Snapchat',
+  Other: 'Other',
+  Organic: 'Organic',
+  Direct: 'Direct'
+} as const
+
+export type AttributionPlatform = (typeof AttributionPlatform)[keyof typeof AttributionPlatform]
+
+
 export const CourierOperation = {
   Delivery: 'Delivery',
   Exchange: 'Exchange'
@@ -300,3 +313,11 @@ export const FunnelStepType = {
 } as const
 
 export type FunnelStepType = (typeof FunnelStepType)[keyof typeof FunnelStepType]
+
+
+export const MetaConnectionStatus = {
+  Active: 'Active',
+  Expired: 'Expired'
+} as const
+
+export type MetaConnectionStatus = (typeof MetaConnectionStatus)[keyof typeof MetaConnectionStatus]

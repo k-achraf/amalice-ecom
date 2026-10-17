@@ -429,6 +429,7 @@ export type OrderWhereInput = {
   notifications?: Prisma.NotificationListRelationFilter
   googleSheetRows?: Prisma.GoogleSheetOrderRowListRelationFilter
   courierWebhookEvents?: Prisma.CourierWebhookEventListRelationFilter
+  attribution?: Prisma.XOR<Prisma.OrderAttributionNullableScalarRelationFilter, Prisma.OrderAttributionWhereInput> | null
 }
 
 export type OrderOrderByWithRelationInput = {
@@ -474,6 +475,7 @@ export type OrderOrderByWithRelationInput = {
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowOrderByRelationAggregateInput
   courierWebhookEvents?: Prisma.CourierWebhookEventOrderByRelationAggregateInput
+  attribution?: Prisma.OrderAttributionOrderByWithRelationInput
 }
 
 export type OrderWhereUniqueInput = Prisma.AtLeast<{
@@ -522,6 +524,7 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   notifications?: Prisma.NotificationListRelationFilter
   googleSheetRows?: Prisma.GoogleSheetOrderRowListRelationFilter
   courierWebhookEvents?: Prisma.CourierWebhookEventListRelationFilter
+  attribution?: Prisma.XOR<Prisma.OrderAttributionNullableScalarRelationFilter, Prisma.OrderAttributionWhereInput> | null
 }, "id">
 
 export type OrderOrderByWithAggregationInput = {
@@ -635,6 +638,7 @@ export type OrderCreateInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateInput = {
@@ -676,6 +680,7 @@ export type OrderUncheckedCreateInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionUncheckedCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUpdateInput = {
@@ -717,6 +722,7 @@ export type OrderUpdateInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateInput = {
@@ -758,6 +764,7 @@ export type OrderUncheckedUpdateInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUncheckedUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderCreateManyInput = {
@@ -1142,6 +1149,20 @@ export type OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput = {
   deleteMany?: Prisma.OrderScalarWhereInput | Prisma.OrderScalarWhereInput[]
 }
 
+export type OrderCreateNestedOneWithoutAttributionInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutAttributionInput, Prisma.OrderUncheckedCreateWithoutAttributionInput>
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutAttributionInput
+  connect?: Prisma.OrderWhereUniqueInput
+}
+
+export type OrderUpdateOneRequiredWithoutAttributionNestedInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutAttributionInput, Prisma.OrderUncheckedCreateWithoutAttributionInput>
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutAttributionInput
+  upsert?: Prisma.OrderUpsertWithoutAttributionInput
+  connect?: Prisma.OrderWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrderUpdateToOneWithWhereWithoutAttributionInput, Prisma.OrderUpdateWithoutAttributionInput>, Prisma.OrderUncheckedUpdateWithoutAttributionInput>
+}
+
 export type OrderCreateNestedOneWithoutCallAttemptsInput = {
   create?: Prisma.XOR<Prisma.OrderCreateWithoutCallAttemptsInput, Prisma.OrderUncheckedCreateWithoutCallAttemptsInput>
   connectOrCreate?: Prisma.OrderCreateOrConnectWithoutCallAttemptsInput
@@ -1340,6 +1361,7 @@ export type OrderCreateWithoutCustomerInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutCustomerInput = {
@@ -1380,6 +1402,7 @@ export type OrderUncheckedCreateWithoutCustomerInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionUncheckedCreateNestedOneWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutCustomerInput = {
@@ -1481,6 +1504,7 @@ export type OrderCreateWithoutAddressInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutAddressInput = {
@@ -1521,6 +1545,7 @@ export type OrderUncheckedCreateWithoutAddressInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionUncheckedCreateNestedOneWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutAddressInput = {
@@ -1587,6 +1612,7 @@ export type OrderCreateWithoutDuplicateOrdersInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutDuplicateOrdersInput = {
@@ -1627,6 +1653,7 @@ export type OrderUncheckedCreateWithoutDuplicateOrdersInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionUncheckedCreateNestedOneWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutDuplicateOrdersInput = {
@@ -1672,6 +1699,7 @@ export type OrderCreateWithoutDuplicateOfOrderInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutDuplicateOfOrderInput = {
@@ -1712,6 +1740,7 @@ export type OrderUncheckedCreateWithoutDuplicateOfOrderInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionUncheckedCreateNestedOneWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutDuplicateOfOrderInput = {
@@ -1773,6 +1802,7 @@ export type OrderUpdateWithoutDuplicateOrdersInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutDuplicateOrdersInput = {
@@ -1813,6 +1843,7 @@ export type OrderUncheckedUpdateWithoutDuplicateOrdersInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUncheckedUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUpsertWithWhereUniqueWithoutDuplicateOfOrderInput = {
@@ -1829,6 +1860,186 @@ export type OrderUpdateWithWhereUniqueWithoutDuplicateOfOrderInput = {
 export type OrderUpdateManyWithWhereWithoutDuplicateOfOrderInput = {
   where: Prisma.OrderScalarWhereInput
   data: Prisma.XOR<Prisma.OrderUpdateManyMutationInput, Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderInput>
+}
+
+export type OrderCreateWithoutAttributionInput = {
+  id?: string
+  state?: $Enums.OrderState
+  totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
+  isAbandoned?: boolean
+  fulfillmentMethod?: $Enums.FulfillmentMethod
+  notes?: string | null
+  postponedUntil?: Date | string | null
+  isDuplicate?: boolean
+  archived?: boolean
+  archivedAt?: Date | string | null
+  assignedToId?: string | null
+  assignedToEmail?: string | null
+  lockedUntil?: Date | string | null
+  skippedUntil?: Date | string | null
+  callAttemptsCount?: number
+  lastCalledAt?: Date | string | null
+  deliveryNote?: string | null
+  isFragile?: boolean
+  gpsLink?: string | null
+  courierOperation?: $Enums.CourierOperation
+  exchangeProduct?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
+  address: Prisma.AddressCreateNestedOneWithoutOrdersInput
+  shippingCompany?: Prisma.ShippingCompanyCreateNestedOneWithoutOrdersInput
+  duplicateOfOrder?: Prisma.OrderCreateNestedOneWithoutDuplicateOrdersInput
+  duplicateOrders?: Prisma.OrderCreateNestedManyWithoutDuplicateOfOrderInput
+  callAttempts?: Prisma.CallAttemptCreateNestedManyWithoutOrderInput
+  items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
+  shipment?: Prisma.ShipmentCreateNestedOneWithoutOrderInput
+  cashReconciliation?: Prisma.CashReconciliationCreateNestedOneWithoutOrderInput
+  ledgerEntries?: Prisma.LedgerEntryCreateNestedManyWithoutOrderInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
+  courierWebhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutOrderInput
+}
+
+export type OrderUncheckedCreateWithoutAttributionInput = {
+  id?: string
+  customerId: string
+  addressId: string
+  state?: $Enums.OrderState
+  totalCents: number
+  shippingType?: $Enums.ShippingType | null
+  shippingPriceCents?: number
+  isAbandoned?: boolean
+  fulfillmentMethod?: $Enums.FulfillmentMethod
+  shippingCompanyId?: string | null
+  notes?: string | null
+  postponedUntil?: Date | string | null
+  isDuplicate?: boolean
+  duplicateOfOrderId?: string | null
+  archived?: boolean
+  archivedAt?: Date | string | null
+  assignedToId?: string | null
+  assignedToEmail?: string | null
+  lockedUntil?: Date | string | null
+  skippedUntil?: Date | string | null
+  callAttemptsCount?: number
+  lastCalledAt?: Date | string | null
+  deliveryNote?: string | null
+  isFragile?: boolean
+  gpsLink?: string | null
+  courierOperation?: $Enums.CourierOperation
+  exchangeProduct?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
+  callAttempts?: Prisma.CallAttemptUncheckedCreateNestedManyWithoutOrderInput
+  items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
+  shipment?: Prisma.ShipmentUncheckedCreateNestedOneWithoutOrderInput
+  cashReconciliation?: Prisma.CashReconciliationUncheckedCreateNestedOneWithoutOrderInput
+  ledgerEntries?: Prisma.LedgerEntryUncheckedCreateNestedManyWithoutOrderInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
+  courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutOrderInput
+}
+
+export type OrderCreateOrConnectWithoutAttributionInput = {
+  where: Prisma.OrderWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrderCreateWithoutAttributionInput, Prisma.OrderUncheckedCreateWithoutAttributionInput>
+}
+
+export type OrderUpsertWithoutAttributionInput = {
+  update: Prisma.XOR<Prisma.OrderUpdateWithoutAttributionInput, Prisma.OrderUncheckedUpdateWithoutAttributionInput>
+  create: Prisma.XOR<Prisma.OrderCreateWithoutAttributionInput, Prisma.OrderUncheckedCreateWithoutAttributionInput>
+  where?: Prisma.OrderWhereInput
+}
+
+export type OrderUpdateToOneWithWhereWithoutAttributionInput = {
+  where?: Prisma.OrderWhereInput
+  data: Prisma.XOR<Prisma.OrderUpdateWithoutAttributionInput, Prisma.OrderUncheckedUpdateWithoutAttributionInput>
+}
+
+export type OrderUpdateWithoutAttributionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
+  totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  assignedToId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedToEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  skippedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  callAttemptsCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastCalledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deliveryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isFragile?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
+  exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
+  address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
+  shippingCompany?: Prisma.ShippingCompanyUpdateOneWithoutOrdersNestedInput
+  duplicateOfOrder?: Prisma.OrderUpdateOneWithoutDuplicateOrdersNestedInput
+  duplicateOrders?: Prisma.OrderUpdateManyWithoutDuplicateOfOrderNestedInput
+  callAttempts?: Prisma.CallAttemptUpdateManyWithoutOrderNestedInput
+  items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
+  shipment?: Prisma.ShipmentUpdateOneWithoutOrderNestedInput
+  cashReconciliation?: Prisma.CashReconciliationUpdateOneWithoutOrderNestedInput
+  ledgerEntries?: Prisma.LedgerEntryUpdateManyWithoutOrderNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
+  courierWebhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutOrderNestedInput
+}
+
+export type OrderUncheckedUpdateWithoutAttributionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.EnumOrderStateFieldUpdateOperationsInput | $Enums.OrderState
+  totalCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
+  shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
+  shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isDuplicate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  duplicateOfOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  assignedToId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedToEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  skippedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  callAttemptsCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastCalledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deliveryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isFragile?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
+  exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
+  callAttempts?: Prisma.CallAttemptUncheckedUpdateManyWithoutOrderNestedInput
+  items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
+  shipment?: Prisma.ShipmentUncheckedUpdateOneWithoutOrderNestedInput
+  cashReconciliation?: Prisma.CashReconciliationUncheckedUpdateOneWithoutOrderNestedInput
+  ledgerEntries?: Prisma.LedgerEntryUncheckedUpdateManyWithoutOrderNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
+  googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
+  courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderCreateWithoutCallAttemptsInput = {
@@ -1869,6 +2080,7 @@ export type OrderCreateWithoutCallAttemptsInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutCallAttemptsInput = {
@@ -1909,6 +2121,7 @@ export type OrderUncheckedCreateWithoutCallAttemptsInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionUncheckedCreateNestedOneWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutCallAttemptsInput = {
@@ -1965,6 +2178,7 @@ export type OrderUpdateWithoutCallAttemptsInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutCallAttemptsInput = {
@@ -2005,6 +2219,7 @@ export type OrderUncheckedUpdateWithoutCallAttemptsInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUncheckedUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderCreateWithoutItemsInput = {
@@ -2045,6 +2260,7 @@ export type OrderCreateWithoutItemsInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutItemsInput = {
@@ -2085,6 +2301,7 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionUncheckedCreateNestedOneWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutItemsInput = {
@@ -2141,6 +2358,7 @@ export type OrderUpdateWithoutItemsInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutItemsInput = {
@@ -2181,6 +2399,7 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUncheckedUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderCreateWithoutShipmentInput = {
@@ -2221,6 +2440,7 @@ export type OrderCreateWithoutShipmentInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutShipmentInput = {
@@ -2261,6 +2481,7 @@ export type OrderUncheckedCreateWithoutShipmentInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionUncheckedCreateNestedOneWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutShipmentInput = {
@@ -2317,6 +2538,7 @@ export type OrderUpdateWithoutShipmentInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutShipmentInput = {
@@ -2357,6 +2579,7 @@ export type OrderUncheckedUpdateWithoutShipmentInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUncheckedUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderCreateWithoutCashReconciliationInput = {
@@ -2397,6 +2620,7 @@ export type OrderCreateWithoutCashReconciliationInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutCashReconciliationInput = {
@@ -2437,6 +2661,7 @@ export type OrderUncheckedCreateWithoutCashReconciliationInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionUncheckedCreateNestedOneWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutCashReconciliationInput = {
@@ -2493,6 +2718,7 @@ export type OrderUpdateWithoutCashReconciliationInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutCashReconciliationInput = {
@@ -2533,6 +2759,7 @@ export type OrderUncheckedUpdateWithoutCashReconciliationInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUncheckedUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderCreateWithoutLedgerEntriesInput = {
@@ -2573,6 +2800,7 @@ export type OrderCreateWithoutLedgerEntriesInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutLedgerEntriesInput = {
@@ -2613,6 +2841,7 @@ export type OrderUncheckedCreateWithoutLedgerEntriesInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionUncheckedCreateNestedOneWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutLedgerEntriesInput = {
@@ -2669,6 +2898,7 @@ export type OrderUpdateWithoutLedgerEntriesInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutLedgerEntriesInput = {
@@ -2709,6 +2939,7 @@ export type OrderUncheckedUpdateWithoutLedgerEntriesInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUncheckedUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderCreateWithoutNotificationsInput = {
@@ -2749,6 +2980,7 @@ export type OrderCreateWithoutNotificationsInput = {
   ledgerEntries?: Prisma.LedgerEntryCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutNotificationsInput = {
@@ -2789,6 +3021,7 @@ export type OrderUncheckedCreateWithoutNotificationsInput = {
   ledgerEntries?: Prisma.LedgerEntryUncheckedCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionUncheckedCreateNestedOneWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutNotificationsInput = {
@@ -2845,6 +3078,7 @@ export type OrderUpdateWithoutNotificationsInput = {
   ledgerEntries?: Prisma.LedgerEntryUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutNotificationsInput = {
@@ -2885,6 +3119,7 @@ export type OrderUncheckedUpdateWithoutNotificationsInput = {
   ledgerEntries?: Prisma.LedgerEntryUncheckedUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUncheckedUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderCreateWithoutGoogleSheetRowsInput = {
@@ -2925,6 +3160,7 @@ export type OrderCreateWithoutGoogleSheetRowsInput = {
   ledgerEntries?: Prisma.LedgerEntryCreateNestedManyWithoutOrderInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutGoogleSheetRowsInput = {
@@ -2965,6 +3201,7 @@ export type OrderUncheckedCreateWithoutGoogleSheetRowsInput = {
   ledgerEntries?: Prisma.LedgerEntryUncheckedCreateNestedManyWithoutOrderInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionUncheckedCreateNestedOneWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutGoogleSheetRowsInput = {
@@ -3021,6 +3258,7 @@ export type OrderUpdateWithoutGoogleSheetRowsInput = {
   ledgerEntries?: Prisma.LedgerEntryUpdateManyWithoutOrderNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutGoogleSheetRowsInput = {
@@ -3061,6 +3299,7 @@ export type OrderUncheckedUpdateWithoutGoogleSheetRowsInput = {
   ledgerEntries?: Prisma.LedgerEntryUncheckedUpdateManyWithoutOrderNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUncheckedUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderCreateWithoutShippingCompanyInput = {
@@ -3101,6 +3340,7 @@ export type OrderCreateWithoutShippingCompanyInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutShippingCompanyInput = {
@@ -3141,6 +3381,7 @@ export type OrderUncheckedCreateWithoutShippingCompanyInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionUncheckedCreateNestedOneWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutShippingCompanyInput = {
@@ -3207,6 +3448,7 @@ export type OrderCreateWithoutCourierWebhookEventsInput = {
   ledgerEntries?: Prisma.LedgerEntryCreateNestedManyWithoutOrderInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutCourierWebhookEventsInput = {
@@ -3247,6 +3489,7 @@ export type OrderUncheckedCreateWithoutCourierWebhookEventsInput = {
   ledgerEntries?: Prisma.LedgerEntryUncheckedCreateNestedManyWithoutOrderInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutOrderInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedCreateNestedManyWithoutOrderInput
+  attribution?: Prisma.OrderAttributionUncheckedCreateNestedOneWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutCourierWebhookEventsInput = {
@@ -3303,6 +3546,7 @@ export type OrderUpdateWithoutCourierWebhookEventsInput = {
   ledgerEntries?: Prisma.LedgerEntryUpdateManyWithoutOrderNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutCourierWebhookEventsInput = {
@@ -3343,6 +3587,7 @@ export type OrderUncheckedUpdateWithoutCourierWebhookEventsInput = {
   ledgerEntries?: Prisma.LedgerEntryUncheckedUpdateManyWithoutOrderNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUncheckedUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderCreateManyCustomerInput = {
@@ -3414,6 +3659,7 @@ export type OrderUpdateWithoutCustomerInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutCustomerInput = {
@@ -3454,6 +3700,7 @@ export type OrderUncheckedUpdateWithoutCustomerInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUncheckedUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateManyWithoutCustomerInput = {
@@ -3556,6 +3803,7 @@ export type OrderUpdateWithoutAddressInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutAddressInput = {
@@ -3596,6 +3844,7 @@ export type OrderUncheckedUpdateWithoutAddressInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUncheckedUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateManyWithoutAddressInput = {
@@ -3698,6 +3947,7 @@ export type OrderUpdateWithoutDuplicateOfOrderInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutDuplicateOfOrderInput = {
@@ -3738,6 +3988,7 @@ export type OrderUncheckedUpdateWithoutDuplicateOfOrderInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUncheckedUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateManyWithoutDuplicateOfOrderInput = {
@@ -3840,6 +4091,7 @@ export type OrderUpdateWithoutShippingCompanyInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutShippingCompanyInput = {
@@ -3880,6 +4132,7 @@ export type OrderUncheckedUpdateWithoutShippingCompanyInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutOrderNestedInput
   googleSheetRows?: Prisma.GoogleSheetOrderRowUncheckedUpdateManyWithoutOrderNestedInput
   courierWebhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutOrderNestedInput
+  attribution?: Prisma.OrderAttributionUncheckedUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateManyWithoutShippingCompanyInput = {
@@ -4041,6 +4294,7 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   notifications?: boolean | Prisma.Order$notificationsArgs<ExtArgs>
   googleSheetRows?: boolean | Prisma.Order$googleSheetRowsArgs<ExtArgs>
   courierWebhookEvents?: boolean | Prisma.Order$courierWebhookEventsArgs<ExtArgs>
+  attribution?: boolean | Prisma.Order$attributionArgs<ExtArgs>
   _count?: boolean | Prisma.OrderCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
 
@@ -4163,6 +4417,7 @@ export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   notifications?: boolean | Prisma.Order$notificationsArgs<ExtArgs>
   googleSheetRows?: boolean | Prisma.Order$googleSheetRowsArgs<ExtArgs>
   courierWebhookEvents?: boolean | Prisma.Order$courierWebhookEventsArgs<ExtArgs>
+  attribution?: boolean | Prisma.Order$attributionArgs<ExtArgs>
   _count?: boolean | Prisma.OrderCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrderIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -4194,6 +4449,7 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     notifications: Prisma.$NotificationPayload<ExtArgs>[]
     googleSheetRows: Prisma.$GoogleSheetOrderRowPayload<ExtArgs>[]
     courierWebhookEvents: Prisma.$CourierWebhookEventPayload<ExtArgs>[]
+    attribution: Prisma.$OrderAttributionPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -4632,6 +4888,7 @@ export interface Prisma__OrderClient<T, Null = never, ExtArgs extends runtime.Ty
   notifications<T extends Prisma.Order$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   googleSheetRows<T extends Prisma.Order$googleSheetRowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$googleSheetRowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GoogleSheetOrderRowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   courierWebhookEvents<T extends Prisma.Order$courierWebhookEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$courierWebhookEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CourierWebhookEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  attribution<T extends Prisma.Order$attributionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$attributionArgs<ExtArgs>>): Prisma.Prisma__OrderAttributionClient<runtime.Types.Result.GetResult<Prisma.$OrderAttributionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5332,6 +5589,25 @@ export type Order$courierWebhookEventsArgs<ExtArgs extends runtime.Types.Extensi
   take?: number
   skip?: number
   distinct?: Prisma.CourierWebhookEventScalarFieldEnum | Prisma.CourierWebhookEventScalarFieldEnum[]
+}
+
+/**
+ * Order.attribution
+ */
+export type Order$attributionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OrderAttribution
+   */
+  select?: Prisma.OrderAttributionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OrderAttribution
+   */
+  omit?: Prisma.OrderAttributionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrderAttributionInclude<ExtArgs> | null
+  where?: Prisma.OrderAttributionWhereInput
 }
 
 /**

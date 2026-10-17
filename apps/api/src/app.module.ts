@@ -25,6 +25,7 @@ import { SourcingModule } from './sourcing/sourcing.module'
 import { FunnelsModule } from './funnels/funnels.module'
 import { ServerPerformanceModule } from './server-performance/server-performance.module'
 import { AnalyticsModule } from './analytics/analytics.module'
+import { MetaAdsModule } from './meta-ads/meta-ads.module'
 
 @Module({
   imports: [
@@ -70,7 +71,8 @@ import { AnalyticsModule } from './analytics/analytics.module'
     SourcingModule,
     FunnelsModule,
     ServerPerformanceModule,
-    AnalyticsModule
+    AnalyticsModule,
+    MetaAdsModule
   ],
   providers: [
     { provide: APP_PIPE, useClass: ZodValidationPipe },

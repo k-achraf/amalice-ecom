@@ -31,6 +31,36 @@
   function phoneOf(s) { return digits(s).replace(/[\s.\-()]/g, '') }
   var PHONE = /^(?:\+?213|0)[567]\d{8}$/
 
+  // ---------- ad-source attribution (mirror of the storefront's useAttribution.ts) ----------
+  // Remembers where the visitor came from (utm_*, campaign/ad ids, click ids, landing URL, referrer) for 30 days; the first touch is kept, the last touch is only replaced by a visit that carries an ad signal.
+  var AP = { utmSource: [['utm_source'], 200], utmMedium: [['utm_medium'], 200], utmCampaign: [['utm_campaign'], 300], utmContent: [['utm_content'], 300], utmTerm: [['utm_term'], 300], campaignId: [['campaign_id', 'utm_id'], 100], adsetId: [['adset_id', 'adgroup_id'], 100], adId: [['ad_id', 'creative_id'], 100], campaignName: [['campaign_name'], 300], adsetName: [['adset_name', 'adgroup_name'], 300], adName: [['ad_name'], 300], placement: [['placement'], 100], fbclid: [['fbclid'], 500], ttclid: [['ttclid'], 500], gclid: [['gclid'], 500] }
+  function adSignal(t) { return !!(t.utmSource || t.utmMedium || t.utmCampaign || t.campaignId || t.adsetId || t.adId || t.fbclid || t.ttclid || t.gclid) }
+  function attrRead() { try { var s = JSON.parse(localStorage.getItem('f.attr')); return s && s.exp > Date.now() ? s : null } catch (e) { return null } }
+  function attrWrite(s) { try { localStorage.setItem('f.attr', JSON.stringify(s)) } catch (e) {} }
+  function attrCapture() {
+    var q = new URLSearchParams(location.search), t = { capturedAt: Date.now() }
+    Object.keys(AP).forEach(function (f) {
+      var v = null
+      AP[f][0].forEach(function (k) { if (!v && q.get(k) && q.get(k).trim()) v = q.get(k).trim() })
+      if (v) t[f] = v.slice(0, AP[f][1])
+    })
+    t.landingUrl = (location.origin + location.pathname + location.search).slice(0, 2000)
+    try { if (document.referrer && new URL(document.referrer).host !== location.host) t.referrer = document.referrer.slice(0, 2000) } catch (e) {}
+    var s = attrRead(), exp = Date.now() + 2592000000
+    if (!s) attrWrite({ first: t, last: t, exp: exp })
+    else if (adSignal(t)) attrWrite({ first: s.first, last: t, exp: exp })
+  }
+  function attribution() {
+    var s = attrRead(), a = {}, k
+    if (s) for (k in s.last) a[k] = s.last[k]
+    a.channel = 'funnel'
+    a.pageUrl = (location.origin + location.pathname + location.search).slice(0, 2000)
+    a.visitorId = visitor()
+    if (s && s.first.capturedAt !== s.last.capturedAt) a.firstTouch = s.first
+    return a
+  }
+  attrCapture()
+
   // ---------- pixels: stubs now, scripts when the visitor interacts or the page is idle ----------
   var pq = [], pxReady = false
   function px(fn) { pxReady ? fn() : pq.push(fn) }
@@ -303,7 +333,7 @@
     abDone = true
     var fields = { phone: form.phone.value }
     ;['name', 'commune', 'address'].forEach(function (k) { if (form[k] && form[k].value.trim()) fields[k] = form[k].value.trim() })
-    var body = { fields: fields, items: items() }
+    var body = { fields: fields, items: items(), tracking: { fbp: cookie('_fbp'), fbc: cookie('_fbc'), ttp: cookie('_ttp'), attribution: attribution() } }
     if (st.wil) body.wilayaId = st.wil[0]
     if (st.ship) body.shippingType = st.ship
     fetch(fd.api + '/orders/abandoned', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).then(function (r) { return r.json() }).then(function (j) { if (j && j.id) abId = j.id }).catch(function () {})
@@ -349,7 +379,7 @@
     var fields = { name: form.name.value.trim(), phone: form.phone.value.trim(), commune: form.commune.value }
     if (form.address && form.address.value.trim()) fields.address = form.address.value.trim()
     if (form.notes && form.notes.value.trim()) fields.notes = form.notes.value.trim()
-    var body = { fields: fields, wilayaId: st.wil[0], shippingType: st.ship, quantity: 1, idempotencyKey: key, formLoadedAt: loadedAt, tracking: { fbp: cookie('_fbp'), fbc: cookie('_fbc'), ttp: cookie('_ttp') } }
+    var body = { fields: fields, wilayaId: st.wil[0], shippingType: st.ship, quantity: 1, idempotencyKey: key, formLoadedAt: loadedAt, tracking: { fbp: cookie('_fbp'), fbc: cookie('_fbc'), ttp: cookie('_ttp'), attribution: attribution() } }
     var v = vsel(), o = offer()
     if (v) body.variantId = v
     if (o) body.offerId = o.id

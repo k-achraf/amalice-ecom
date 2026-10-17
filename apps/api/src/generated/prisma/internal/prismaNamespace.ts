@@ -399,6 +399,7 @@ export const ModelName = {
   Review: 'Review',
   Courier: 'Courier',
   Order: 'Order',
+  OrderAttribution: 'OrderAttribution',
   CallAttempt: 'CallAttempt',
   OrderItem: 'OrderItem',
   ProductOffer: 'ProductOffer',
@@ -435,7 +436,10 @@ export const ModelName = {
   ProductSourcingRequest: 'ProductSourcingRequest',
   PageViewEvent: 'PageViewEvent',
   Funnel: 'Funnel',
-  FunnelStep: 'FunnelStep'
+  FunnelStep: 'FunnelStep',
+  MetaConnection: 'MetaConnection',
+  MetaAdAccount: 'MetaAdAccount',
+  MetaAppCredentials: 'MetaAppCredentials'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -451,7 +455,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "callAttempt" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "shippingCompanyCommune" | "shipmentEvent" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "sourcedProductVideoCreative" | "sourcedProductCompetitor" | "productAdTest" | "productSourcingRequest" | "pageViewEvent" | "funnel" | "funnelStep"
+    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderAttribution" | "callAttempt" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "shippingCompanyCommune" | "shipmentEvent" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "sourcedProductVideoCreative" | "sourcedProductCompetitor" | "productAdTest" | "productSourcingRequest" | "pageViewEvent" | "funnel" | "funnelStep" | "metaConnection" | "metaAdAccount" | "metaAppCredentials"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1562,6 +1566,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.OrderCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.OrderCountAggregateOutputType> | number
+        }
+      }
+    }
+    OrderAttribution: {
+      payload: Prisma.$OrderAttributionPayload<ExtArgs>
+      fields: Prisma.OrderAttributionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OrderAttributionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderAttributionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OrderAttributionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderAttributionPayload>
+        }
+        findFirst: {
+          args: Prisma.OrderAttributionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderAttributionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OrderAttributionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderAttributionPayload>
+        }
+        findMany: {
+          args: Prisma.OrderAttributionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderAttributionPayload>[]
+        }
+        create: {
+          args: Prisma.OrderAttributionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderAttributionPayload>
+        }
+        createMany: {
+          args: Prisma.OrderAttributionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OrderAttributionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderAttributionPayload>[]
+        }
+        delete: {
+          args: Prisma.OrderAttributionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderAttributionPayload>
+        }
+        update: {
+          args: Prisma.OrderAttributionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderAttributionPayload>
+        }
+        deleteMany: {
+          args: Prisma.OrderAttributionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OrderAttributionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OrderAttributionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderAttributionPayload>[]
+        }
+        upsert: {
+          args: Prisma.OrderAttributionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderAttributionPayload>
+        }
+        aggregate: {
+          args: Prisma.OrderAttributionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOrderAttribution>
+        }
+        groupBy: {
+          args: Prisma.OrderAttributionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrderAttributionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OrderAttributionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrderAttributionCountAggregateOutputType> | number
         }
       }
     }
@@ -4303,6 +4381,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    MetaConnection: {
+      payload: Prisma.$MetaConnectionPayload<ExtArgs>
+      fields: Prisma.MetaConnectionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MetaConnectionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaConnectionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MetaConnectionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaConnectionPayload>
+        }
+        findFirst: {
+          args: Prisma.MetaConnectionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaConnectionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MetaConnectionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaConnectionPayload>
+        }
+        findMany: {
+          args: Prisma.MetaConnectionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaConnectionPayload>[]
+        }
+        create: {
+          args: Prisma.MetaConnectionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaConnectionPayload>
+        }
+        createMany: {
+          args: Prisma.MetaConnectionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MetaConnectionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaConnectionPayload>[]
+        }
+        delete: {
+          args: Prisma.MetaConnectionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaConnectionPayload>
+        }
+        update: {
+          args: Prisma.MetaConnectionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaConnectionPayload>
+        }
+        deleteMany: {
+          args: Prisma.MetaConnectionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MetaConnectionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MetaConnectionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaConnectionPayload>[]
+        }
+        upsert: {
+          args: Prisma.MetaConnectionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaConnectionPayload>
+        }
+        aggregate: {
+          args: Prisma.MetaConnectionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMetaConnection>
+        }
+        groupBy: {
+          args: Prisma.MetaConnectionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MetaConnectionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MetaConnectionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MetaConnectionCountAggregateOutputType> | number
+        }
+      }
+    }
+    MetaAdAccount: {
+      payload: Prisma.$MetaAdAccountPayload<ExtArgs>
+      fields: Prisma.MetaAdAccountFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MetaAdAccountFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAdAccountPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MetaAdAccountFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAdAccountPayload>
+        }
+        findFirst: {
+          args: Prisma.MetaAdAccountFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAdAccountPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MetaAdAccountFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAdAccountPayload>
+        }
+        findMany: {
+          args: Prisma.MetaAdAccountFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAdAccountPayload>[]
+        }
+        create: {
+          args: Prisma.MetaAdAccountCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAdAccountPayload>
+        }
+        createMany: {
+          args: Prisma.MetaAdAccountCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MetaAdAccountCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAdAccountPayload>[]
+        }
+        delete: {
+          args: Prisma.MetaAdAccountDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAdAccountPayload>
+        }
+        update: {
+          args: Prisma.MetaAdAccountUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAdAccountPayload>
+        }
+        deleteMany: {
+          args: Prisma.MetaAdAccountDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MetaAdAccountUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MetaAdAccountUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAdAccountPayload>[]
+        }
+        upsert: {
+          args: Prisma.MetaAdAccountUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAdAccountPayload>
+        }
+        aggregate: {
+          args: Prisma.MetaAdAccountAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMetaAdAccount>
+        }
+        groupBy: {
+          args: Prisma.MetaAdAccountGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MetaAdAccountGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MetaAdAccountCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MetaAdAccountCountAggregateOutputType> | number
+        }
+      }
+    }
+    MetaAppCredentials: {
+      payload: Prisma.$MetaAppCredentialsPayload<ExtArgs>
+      fields: Prisma.MetaAppCredentialsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MetaAppCredentialsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAppCredentialsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MetaAppCredentialsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAppCredentialsPayload>
+        }
+        findFirst: {
+          args: Prisma.MetaAppCredentialsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAppCredentialsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MetaAppCredentialsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAppCredentialsPayload>
+        }
+        findMany: {
+          args: Prisma.MetaAppCredentialsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAppCredentialsPayload>[]
+        }
+        create: {
+          args: Prisma.MetaAppCredentialsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAppCredentialsPayload>
+        }
+        createMany: {
+          args: Prisma.MetaAppCredentialsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MetaAppCredentialsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAppCredentialsPayload>[]
+        }
+        delete: {
+          args: Prisma.MetaAppCredentialsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAppCredentialsPayload>
+        }
+        update: {
+          args: Prisma.MetaAppCredentialsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAppCredentialsPayload>
+        }
+        deleteMany: {
+          args: Prisma.MetaAppCredentialsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MetaAppCredentialsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MetaAppCredentialsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAppCredentialsPayload>[]
+        }
+        upsert: {
+          args: Prisma.MetaAppCredentialsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MetaAppCredentialsPayload>
+        }
+        aggregate: {
+          args: Prisma.MetaAppCredentialsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMetaAppCredentials>
+        }
+        groupBy: {
+          args: Prisma.MetaAppCredentialsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MetaAppCredentialsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MetaAppCredentialsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MetaAppCredentialsCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -4395,6 +4695,7 @@ export const ProductScalarFieldEnum = {
   bestSeller: 'bestSeller',
   visible: 'visible',
   priceCents: 'priceCents',
+  costCents: 'costCents',
   stockQuantity: 'stockQuantity',
   lowStockThreshold: 'lowStockThreshold',
   requireOfferSelection: 'requireOfferSelection',
@@ -4564,6 +4865,44 @@ export const OrderScalarFieldEnum = {
 } as const
 
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
+
+
+export const OrderAttributionScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  platform: 'platform',
+  channel: 'channel',
+  utmSource: 'utmSource',
+  utmMedium: 'utmMedium',
+  utmCampaign: 'utmCampaign',
+  utmContent: 'utmContent',
+  utmTerm: 'utmTerm',
+  campaignId: 'campaignId',
+  adsetId: 'adsetId',
+  adId: 'adId',
+  campaignName: 'campaignName',
+  adsetName: 'adsetName',
+  adName: 'adName',
+  placement: 'placement',
+  fbclid: 'fbclid',
+  ttclid: 'ttclid',
+  gclid: 'gclid',
+  fbp: 'fbp',
+  fbc: 'fbc',
+  ttp: 'ttp',
+  landingUrl: 'landingUrl',
+  referrer: 'referrer',
+  pageUrl: 'pageUrl',
+  visitorId: 'visitorId',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  deviceType: 'deviceType',
+  firstTouch: 'firstTouch',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OrderAttributionScalarFieldEnum = (typeof OrderAttributionScalarFieldEnum)[keyof typeof OrderAttributionScalarFieldEnum]
 
 
 export const CallAttemptScalarFieldEnum = {
@@ -5099,6 +5438,53 @@ export const FunnelStepScalarFieldEnum = {
 export type FunnelStepScalarFieldEnum = (typeof FunnelStepScalarFieldEnum)[keyof typeof FunnelStepScalarFieldEnum]
 
 
+export const MetaConnectionScalarFieldEnum = {
+  id: 'id',
+  adminUserId: 'adminUserId',
+  fbUserId: 'fbUserId',
+  fbUserName: 'fbUserName',
+  accessTokenEnc: 'accessTokenEnc',
+  scopes: 'scopes',
+  tokenExpiresAt: 'tokenExpiresAt',
+  status: 'status',
+  method: 'method',
+  selectedAdAccountId: 'selectedAdAccountId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MetaConnectionScalarFieldEnum = (typeof MetaConnectionScalarFieldEnum)[keyof typeof MetaConnectionScalarFieldEnum]
+
+
+export const MetaAdAccountScalarFieldEnum = {
+  id: 'id',
+  connectionId: 'connectionId',
+  accountId: 'accountId',
+  name: 'name',
+  currency: 'currency',
+  timezoneName: 'timezoneName',
+  accountStatus: 'accountStatus',
+  businessName: 'businessName',
+  amountSpent: 'amountSpent',
+  balance: 'balance',
+  exchangeRateToDzd: 'exchangeRateToDzd',
+  syncedAt: 'syncedAt'
+} as const
+
+export type MetaAdAccountScalarFieldEnum = (typeof MetaAdAccountScalarFieldEnum)[keyof typeof MetaAdAccountScalarFieldEnum]
+
+
+export const MetaAppCredentialsScalarFieldEnum = {
+  id: 'id',
+  appId: 'appId',
+  appName: 'appName',
+  appSecretEnc: 'appSecretEnc',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MetaAppCredentialsScalarFieldEnum = (typeof MetaAppCredentialsScalarFieldEnum)[keyof typeof MetaAppCredentialsScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -5325,6 +5711,20 @@ export type EnumCourierOperationFieldRefInput<$PrismaModel> = FieldRefInputType<
  * Reference to a field of type 'CourierOperation[]'
  */
 export type ListEnumCourierOperationFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CourierOperation[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AttributionPlatform'
+ */
+export type EnumAttributionPlatformFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AttributionPlatform'>
+    
+
+
+/**
+ * Reference to a field of type 'AttributionPlatform[]'
+ */
+export type ListEnumAttributionPlatformFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AttributionPlatform[]'>
     
 
 
@@ -5609,6 +6009,20 @@ export type ListEnumFunnelStepTypeFieldRefInput<$PrismaModel> = FieldRefInputTyp
 
 
 /**
+ * Reference to a field of type 'MetaConnectionStatus'
+ */
+export type EnumMetaConnectionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MetaConnectionStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'MetaConnectionStatus[]'
+ */
+export type ListEnumMetaConnectionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MetaConnectionStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -5746,6 +6160,7 @@ export type GlobalOmitConfig = {
   review?: Prisma.ReviewOmit
   courier?: Prisma.CourierOmit
   order?: Prisma.OrderOmit
+  orderAttribution?: Prisma.OrderAttributionOmit
   callAttempt?: Prisma.CallAttemptOmit
   orderItem?: Prisma.OrderItemOmit
   productOffer?: Prisma.ProductOfferOmit
@@ -5783,6 +6198,9 @@ export type GlobalOmitConfig = {
   pageViewEvent?: Prisma.PageViewEventOmit
   funnel?: Prisma.FunnelOmit
   funnelStep?: Prisma.FunnelStepOmit
+  metaConnection?: Prisma.MetaConnectionOmit
+  metaAdAccount?: Prisma.MetaAdAccountOmit
+  metaAppCredentials?: Prisma.MetaAppCredentialsOmit
 }
 
 /* Types for Logging */

@@ -66,6 +66,7 @@ export const ModelName = {
   Review: 'Review',
   Courier: 'Courier',
   Order: 'Order',
+  OrderAttribution: 'OrderAttribution',
   CallAttempt: 'CallAttempt',
   OrderItem: 'OrderItem',
   ProductOffer: 'ProductOffer',
@@ -102,7 +103,10 @@ export const ModelName = {
   ProductSourcingRequest: 'ProductSourcingRequest',
   PageViewEvent: 'PageViewEvent',
   Funnel: 'Funnel',
-  FunnelStep: 'FunnelStep'
+  FunnelStep: 'FunnelStep',
+  MetaConnection: 'MetaConnection',
+  MetaAdAccount: 'MetaAdAccount',
+  MetaAppCredentials: 'MetaAppCredentials'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -174,6 +178,7 @@ export const ProductScalarFieldEnum = {
   bestSeller: 'bestSeller',
   visible: 'visible',
   priceCents: 'priceCents',
+  costCents: 'costCents',
   stockQuantity: 'stockQuantity',
   lowStockThreshold: 'lowStockThreshold',
   requireOfferSelection: 'requireOfferSelection',
@@ -343,6 +348,44 @@ export const OrderScalarFieldEnum = {
 } as const
 
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
+
+
+export const OrderAttributionScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  platform: 'platform',
+  channel: 'channel',
+  utmSource: 'utmSource',
+  utmMedium: 'utmMedium',
+  utmCampaign: 'utmCampaign',
+  utmContent: 'utmContent',
+  utmTerm: 'utmTerm',
+  campaignId: 'campaignId',
+  adsetId: 'adsetId',
+  adId: 'adId',
+  campaignName: 'campaignName',
+  adsetName: 'adsetName',
+  adName: 'adName',
+  placement: 'placement',
+  fbclid: 'fbclid',
+  ttclid: 'ttclid',
+  gclid: 'gclid',
+  fbp: 'fbp',
+  fbc: 'fbc',
+  ttp: 'ttp',
+  landingUrl: 'landingUrl',
+  referrer: 'referrer',
+  pageUrl: 'pageUrl',
+  visitorId: 'visitorId',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  deviceType: 'deviceType',
+  firstTouch: 'firstTouch',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OrderAttributionScalarFieldEnum = (typeof OrderAttributionScalarFieldEnum)[keyof typeof OrderAttributionScalarFieldEnum]
 
 
 export const CallAttemptScalarFieldEnum = {
@@ -876,6 +919,53 @@ export const FunnelStepScalarFieldEnum = {
 } as const
 
 export type FunnelStepScalarFieldEnum = (typeof FunnelStepScalarFieldEnum)[keyof typeof FunnelStepScalarFieldEnum]
+
+
+export const MetaConnectionScalarFieldEnum = {
+  id: 'id',
+  adminUserId: 'adminUserId',
+  fbUserId: 'fbUserId',
+  fbUserName: 'fbUserName',
+  accessTokenEnc: 'accessTokenEnc',
+  scopes: 'scopes',
+  tokenExpiresAt: 'tokenExpiresAt',
+  status: 'status',
+  method: 'method',
+  selectedAdAccountId: 'selectedAdAccountId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MetaConnectionScalarFieldEnum = (typeof MetaConnectionScalarFieldEnum)[keyof typeof MetaConnectionScalarFieldEnum]
+
+
+export const MetaAdAccountScalarFieldEnum = {
+  id: 'id',
+  connectionId: 'connectionId',
+  accountId: 'accountId',
+  name: 'name',
+  currency: 'currency',
+  timezoneName: 'timezoneName',
+  accountStatus: 'accountStatus',
+  businessName: 'businessName',
+  amountSpent: 'amountSpent',
+  balance: 'balance',
+  exchangeRateToDzd: 'exchangeRateToDzd',
+  syncedAt: 'syncedAt'
+} as const
+
+export type MetaAdAccountScalarFieldEnum = (typeof MetaAdAccountScalarFieldEnum)[keyof typeof MetaAdAccountScalarFieldEnum]
+
+
+export const MetaAppCredentialsScalarFieldEnum = {
+  id: 'id',
+  appId: 'appId',
+  appName: 'appName',
+  appSecretEnc: 'appSecretEnc',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MetaAppCredentialsScalarFieldEnum = (typeof MetaAppCredentialsScalarFieldEnum)[keyof typeof MetaAppCredentialsScalarFieldEnum]
 
 
 export const SortOrder = {

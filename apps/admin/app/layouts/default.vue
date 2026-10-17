@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import type { AdminRoleName, DashboardStats } from '@amalice/shared'
-import { Filter, SearchCode, PackageCheck, Receipt, History, Server, FileWarning, Truck, PackageSearch } from 'lucide-vue-next'
+import { Filter, SearchCode, PackageCheck, Receipt, History, Server, FileWarning, Truck, PackageSearch, LayoutDashboard, Megaphone, Link2, Wallet } from 'lucide-vue-next'
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -52,6 +52,15 @@ const groups: NavGroup[] = [
     ]
   },
   {
+    title: 'Meta Ads',
+    items: [
+      { label: 'Dashboard', icon: LayoutDashboard, to: '/meta-ads', roles: ['SuperAdmin', 'OpsManager'] },
+      { label: 'Campaigns', icon: Megaphone, to: '/meta-ads/campaigns', roles: ['SuperAdmin', 'OpsManager'] },
+      { label: 'Profitability', icon: Wallet, to: '/meta-ads/profitability', roles: ['SuperAdmin', 'OpsManager'] },
+      { label: 'Connection & accounts', icon: Link2, to: '/meta-ads/accounts', roles: ['SuperAdmin', 'OpsManager'] }
+    ]
+  },
+  {
     title: 'Online store',
     items: [
       { label: 'Storefront', design: 'store', to: '/settings/storefront', roles: ['SuperAdmin'] },
@@ -78,8 +87,13 @@ const visibleGroups = computed(() =>
 const QUICK = ['/', '/orders', '/call-center', '/inventory']
 const tabItems = computed(() => visibleGroups.value.flatMap((g) => g.items).filter((i) => QUICK.includes(i.to)))
 
+const allNavPaths = groups.flatMap((g) => g.items.map((i) => i.to))
 function isActive(to: string) {
-  return to === '/' ? route.path === '/' : route.path === to || route.path.startsWith(`${to}/`)
+  if (to === '/') return route.path === '/'
+  if (route.path === to) return true
+  if (!route.path.startsWith(`${to}/`)) return false
+  // Don't light up a parent entry (e.g. /meta-ads) while a more specific sibling (/meta-ads/campaigns) matches.
+  return !allNavPaths.some((other) => other.length > to.length && other.startsWith(`${to}/`) && (route.path === other || route.path.startsWith(`${other}/`)))
 }
 
 // "Call center" badge = orders still waiting for a confirmation call.

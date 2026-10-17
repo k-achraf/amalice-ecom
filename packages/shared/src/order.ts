@@ -4,6 +4,7 @@ import { CheckoutTrackingSchema } from './apps'
 import { ShippingTypeSchema, type ShippingType } from './shipping'
 import { PhoneSchema } from './phone'
 import type { FulfillmentMethod } from './shipment'
+import type { AttributionPlatform, OrderAttributionView } from './attribution'
 
 // Every state from the order lifecycle state machine (cod-platform-plan.md
 // §7) — the single source of truth other places (StatusBadge, the DB enum
@@ -435,7 +436,9 @@ export const AbandonedLeadOrderSchema = z.object({
   fields: z.record(z.string()),
   wilayaId: z.string().optional(),
   shippingType: ShippingTypeSchema.optional(),
-  items: z.array(CheckoutItemSchema).min(1)
+  items: z.array(CheckoutItemSchema).min(1),
+  // Same ad-source context as a real order — see CheckoutTrackingSchema.
+  tracking: CheckoutTrackingSchema.optional()
 })
 export type AbandonedLeadOrder = z.infer<typeof AbandonedLeadOrderSchema>
 
@@ -550,6 +553,8 @@ export interface AdminOrderListItem {
   // explicitly queried with `archived=only`.
   archived: boolean
   archivedAt: string | null
+  // Compact source for the list: platform + campaign name (null = unknown).
+  attribution: { platform: AttributionPlatform; campaign: string | null } | null
 }
 
 export interface OrderListResponse {
@@ -607,6 +612,9 @@ export interface AdminOrderDetail {
   // See Order.archived's Prisma comment.
   archived: boolean
   archivedAt: string | null
+  // Where the order came from (ad platform, campaign, click ids, IP…) — null
+  // for orders placed before attribution existed. See attribution.ts.
+  attribution: OrderAttributionView | null
 }
 
 // Call-center notes — free text, not part of the order-state machine.

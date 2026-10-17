@@ -51,6 +51,14 @@ const productPriceDzd = computed<number>({
   }
 })
 
+// Unit cost (what one unit costs us) feeds the Meta Ads profit reports. Blank = unknown.
+const productCostDzd = computed<number | null>({
+  get: () => (product.value?.costCents != null ? product.value.costCents / 100 : null),
+  set: (v) => {
+    if (product.value) product.value.costCents = v == null ? null : Math.round(v * 100)
+  }
+})
+
 // ---- Details tab ----
 const savingDetails = ref(false)
 async function saveDetails() {
@@ -65,6 +73,7 @@ async function saveDetails() {
         description: product.value.description ?? undefined,
         categoryId: product.value.categoryId ?? undefined,
         priceCents: product.value.priceCents,
+        costCents: product.value.costCents ?? null,
         lowStockThreshold: product.value.lowStockThreshold,
         featured: product.value.featured,
         bestSeller: product.value.bestSeller
@@ -887,6 +896,11 @@ async function deleteUpsell(upsellId: string) {
             />
           </AdsField>
           <AdsField label="Price (DZD)"><AdsNumberInput v-model="productPriceDzd" :min="0" class="w-full" /></AdsField>
+        </div>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <AdsField label="Unit cost (DZD)" help="What one unit costs you (purchase + packaging). Used for profit in Meta Ads reports; never shown to customers.">
+            <AdsNumberInput v-model="productCostDzd" :min="0" class="w-full" />
+          </AdsField>
         </div>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <AdsField label="Low-stock threshold"><AdsNumberInput v-model="product.lowStockThreshold" class="w-full" /></AdsField>

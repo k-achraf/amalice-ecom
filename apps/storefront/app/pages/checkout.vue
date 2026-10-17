@@ -124,7 +124,7 @@ async function placeOrder() {
         // purchase event id to the order id, and the confirmation page's
         // browser pixel calls use that same order id, so they dedupe
         // without the client needing to invent and thread an id through.
-        tracking: { ...metaPixel.getFbCookies(), ...tiktokPixel.getTtCookie() },
+        tracking: { ...metaPixel.getFbCookies(), ...tiktokPixel.getTtCookie(), attribution: useAttribution().getAttribution('storefront') },
         idempotencyKey: idempotencyKey || undefined,
         formLoadedAt: formLoadedAt || undefined
       }

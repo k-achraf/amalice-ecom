@@ -199,6 +199,7 @@ export type AdminUserWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"AdminUser"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"AdminUser"> | Date | string
   role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>
+  metaConnection?: Prisma.XOR<Prisma.MetaConnectionNullableScalarRelationFilter, Prisma.MetaConnectionWhereInput> | null
 }
 
 export type AdminUserOrderByWithRelationInput = {
@@ -210,6 +211,7 @@ export type AdminUserOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   role?: Prisma.RoleOrderByWithRelationInput
+  metaConnection?: Prisma.MetaConnectionOrderByWithRelationInput
 }
 
 export type AdminUserWhereUniqueInput = Prisma.AtLeast<{
@@ -224,6 +226,7 @@ export type AdminUserWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"AdminUser"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"AdminUser"> | Date | string
   role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>
+  metaConnection?: Prisma.XOR<Prisma.MetaConnectionNullableScalarRelationFilter, Prisma.MetaConnectionWhereInput> | null
 }, "id" | "email">
 
 export type AdminUserOrderByWithAggregationInput = {
@@ -260,6 +263,7 @@ export type AdminUserCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   role: Prisma.RoleCreateNestedOneWithoutAdminUsersInput
+  metaConnection?: Prisma.MetaConnectionCreateNestedOneWithoutAdminUserInput
 }
 
 export type AdminUserUncheckedCreateInput = {
@@ -270,6 +274,7 @@ export type AdminUserUncheckedCreateInput = {
   active?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  metaConnection?: Prisma.MetaConnectionUncheckedCreateNestedOneWithoutAdminUserInput
 }
 
 export type AdminUserUpdateInput = {
@@ -280,6 +285,7 @@ export type AdminUserUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.RoleUpdateOneRequiredWithoutAdminUsersNestedInput
+  metaConnection?: Prisma.MetaConnectionUpdateOneWithoutAdminUserNestedInput
 }
 
 export type AdminUserUncheckedUpdateInput = {
@@ -290,6 +296,7 @@ export type AdminUserUncheckedUpdateInput = {
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  metaConnection?: Prisma.MetaConnectionUncheckedUpdateOneWithoutAdminUserNestedInput
 }
 
 export type AdminUserCreateManyInput = {
@@ -361,6 +368,11 @@ export type AdminUserMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type AdminUserScalarRelationFilter = {
+  is?: Prisma.AdminUserWhereInput
+  isNot?: Prisma.AdminUserWhereInput
+}
+
 export type AdminUserCreateNestedManyWithoutRoleInput = {
   create?: Prisma.XOR<Prisma.AdminUserCreateWithoutRoleInput, Prisma.AdminUserUncheckedCreateWithoutRoleInput> | Prisma.AdminUserCreateWithoutRoleInput[] | Prisma.AdminUserUncheckedCreateWithoutRoleInput[]
   connectOrCreate?: Prisma.AdminUserCreateOrConnectWithoutRoleInput | Prisma.AdminUserCreateOrConnectWithoutRoleInput[]
@@ -403,6 +415,20 @@ export type AdminUserUncheckedUpdateManyWithoutRoleNestedInput = {
   deleteMany?: Prisma.AdminUserScalarWhereInput | Prisma.AdminUserScalarWhereInput[]
 }
 
+export type AdminUserCreateNestedOneWithoutMetaConnectionInput = {
+  create?: Prisma.XOR<Prisma.AdminUserCreateWithoutMetaConnectionInput, Prisma.AdminUserUncheckedCreateWithoutMetaConnectionInput>
+  connectOrCreate?: Prisma.AdminUserCreateOrConnectWithoutMetaConnectionInput
+  connect?: Prisma.AdminUserWhereUniqueInput
+}
+
+export type AdminUserUpdateOneRequiredWithoutMetaConnectionNestedInput = {
+  create?: Prisma.XOR<Prisma.AdminUserCreateWithoutMetaConnectionInput, Prisma.AdminUserUncheckedCreateWithoutMetaConnectionInput>
+  connectOrCreate?: Prisma.AdminUserCreateOrConnectWithoutMetaConnectionInput
+  upsert?: Prisma.AdminUserUpsertWithoutMetaConnectionInput
+  connect?: Prisma.AdminUserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.AdminUserUpdateToOneWithWhereWithoutMetaConnectionInput, Prisma.AdminUserUpdateWithoutMetaConnectionInput>, Prisma.AdminUserUncheckedUpdateWithoutMetaConnectionInput>
+}
+
 export type AdminUserCreateWithoutRoleInput = {
   id?: string
   email: string
@@ -410,6 +436,7 @@ export type AdminUserCreateWithoutRoleInput = {
   active?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  metaConnection?: Prisma.MetaConnectionCreateNestedOneWithoutAdminUserInput
 }
 
 export type AdminUserUncheckedCreateWithoutRoleInput = {
@@ -419,6 +446,7 @@ export type AdminUserUncheckedCreateWithoutRoleInput = {
   active?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  metaConnection?: Prisma.MetaConnectionUncheckedCreateNestedOneWithoutAdminUserInput
 }
 
 export type AdminUserCreateOrConnectWithoutRoleInput = {
@@ -460,6 +488,62 @@ export type AdminUserScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"AdminUser"> | Date | string
 }
 
+export type AdminUserCreateWithoutMetaConnectionInput = {
+  id?: string
+  email: string
+  passwordHash: string
+  active?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role: Prisma.RoleCreateNestedOneWithoutAdminUsersInput
+}
+
+export type AdminUserUncheckedCreateWithoutMetaConnectionInput = {
+  id?: string
+  email: string
+  passwordHash: string
+  roleId: string
+  active?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type AdminUserCreateOrConnectWithoutMetaConnectionInput = {
+  where: Prisma.AdminUserWhereUniqueInput
+  create: Prisma.XOR<Prisma.AdminUserCreateWithoutMetaConnectionInput, Prisma.AdminUserUncheckedCreateWithoutMetaConnectionInput>
+}
+
+export type AdminUserUpsertWithoutMetaConnectionInput = {
+  update: Prisma.XOR<Prisma.AdminUserUpdateWithoutMetaConnectionInput, Prisma.AdminUserUncheckedUpdateWithoutMetaConnectionInput>
+  create: Prisma.XOR<Prisma.AdminUserCreateWithoutMetaConnectionInput, Prisma.AdminUserUncheckedCreateWithoutMetaConnectionInput>
+  where?: Prisma.AdminUserWhereInput
+}
+
+export type AdminUserUpdateToOneWithWhereWithoutMetaConnectionInput = {
+  where?: Prisma.AdminUserWhereInput
+  data: Prisma.XOR<Prisma.AdminUserUpdateWithoutMetaConnectionInput, Prisma.AdminUserUncheckedUpdateWithoutMetaConnectionInput>
+}
+
+export type AdminUserUpdateWithoutMetaConnectionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.RoleUpdateOneRequiredWithoutAdminUsersNestedInput
+}
+
+export type AdminUserUncheckedUpdateWithoutMetaConnectionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type AdminUserCreateManyRoleInput = {
   id?: string
   email: string
@@ -476,6 +560,7 @@ export type AdminUserUpdateWithoutRoleInput = {
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  metaConnection?: Prisma.MetaConnectionUpdateOneWithoutAdminUserNestedInput
 }
 
 export type AdminUserUncheckedUpdateWithoutRoleInput = {
@@ -485,6 +570,7 @@ export type AdminUserUncheckedUpdateWithoutRoleInput = {
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  metaConnection?: Prisma.MetaConnectionUncheckedUpdateOneWithoutAdminUserNestedInput
 }
 
 export type AdminUserUncheckedUpdateManyWithoutRoleInput = {
@@ -507,6 +593,7 @@ export type AdminUserSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   createdAt?: boolean
   updatedAt?: boolean
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>
+  metaConnection?: boolean | Prisma.AdminUser$metaConnectionArgs<ExtArgs>
 }, ExtArgs["result"]["adminUser"]>
 
 export type AdminUserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -544,6 +631,7 @@ export type AdminUserSelectScalar = {
 export type AdminUserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "roleId" | "active" | "createdAt" | "updatedAt", ExtArgs["result"]["adminUser"]>
 export type AdminUserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>
+  metaConnection?: boolean | Prisma.AdminUser$metaConnectionArgs<ExtArgs>
 }
 export type AdminUserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>
@@ -556,6 +644,7 @@ export type $AdminUserPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   name: "AdminUser"
   objects: {
     role: Prisma.$RolePayload<ExtArgs>
+    metaConnection: Prisma.$MetaConnectionPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -960,6 +1049,7 @@ readonly fields: AdminUserFieldRefs;
 export interface Prisma__AdminUserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   role<T extends Prisma.RoleDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RoleDefaultArgs<ExtArgs>>): Prisma.Prisma__RoleClient<runtime.Types.Result.GetResult<Prisma.$RolePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  metaConnection<T extends Prisma.AdminUser$metaConnectionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AdminUser$metaConnectionArgs<ExtArgs>>): Prisma.Prisma__MetaConnectionClient<runtime.Types.Result.GetResult<Prisma.$MetaConnectionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1394,6 +1484,25 @@ export type AdminUserDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Int
    * Limit how many AdminUsers to delete.
    */
   limit?: number
+}
+
+/**
+ * AdminUser.metaConnection
+ */
+export type AdminUser$metaConnectionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MetaConnection
+   */
+  select?: Prisma.MetaConnectionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MetaConnection
+   */
+  omit?: Prisma.MetaConnectionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MetaConnectionInclude<ExtArgs> | null
+  where?: Prisma.MetaConnectionWhereInput
 }
 
 /**

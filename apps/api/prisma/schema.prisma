@@ -137,6 +137,10 @@ model Product {
   // is purely a discoverability switch, independent of stock.
   visible               Boolean              @default(true)
   priceCents            Int                  @map("price_cents")
+  // What one unit costs us (purchase + packaging), used for profit reports (Meta Ads
+  // profitability). Null = unknown: its cost counts as 0 and the report warns.
+  // Never exposed publicly (see the catalog controller's withNormalizedContent).
+  costCents             Int?                 @map("cost_cents")
   stockQuantity         Int                  @default(0) @map("stock_quantity")
   lowStockThreshold     Int                  @default(5) @map("low_stock_threshold")
   orderItems            OrderItem[]
@@ -541,6 +545,9 @@ model Order {
   notifications        Notification[]
   googleSheetRows      GoogleSheetOrderRow[]
   courierWebhookEvents CourierWebhookEvent[]
+  // Where the order came from (ad platform, campaign, click ids, IP…) — null
+  // for orders placed before attribution existed.
+  attribution          OrderAttribution?
   createdAt            DateTime              @default(now()) @map("created_at")
   updatedAt            DateTime              @updatedAt @map("updated_at")
 
@@ -550,6 +557,68 @@ model Order {
   @@index([shippingCompanyId])
   @@index([archived])
   @@map("orders")
+}
+
+enum AttributionPlatform {
+  Meta
+  TikTok
+  Google
+  Snapchat
+  Other
+  Organic
+  Direct
+}
+
+// One row per order: the traffic source and every tracking detail the browser
+// and the request gave us at the moment the order was placed (see
+// packages/shared attribution.ts). Everything except platform is optional —
+// a missing value just means the order is less attributable. `platform` is
+// derived server-side (OrdersService.recordAttribution): click ids first,
+// then utm_source, then the referrer. firstTouch is the visitor's first
+// recorded visit (JSON, AttributionTouch) when it differs from this last
+// touch. Cascades with the order; written fire-and-forget-safe (a failure to
+// record never fails the order).
+model OrderAttribution {
+  id           String              @id @default(uuid())
+  orderId      String              @unique @map("order_id")
+  order        Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  platform     AttributionPlatform
+  // storefront | landing_page | funnel
+  channel      String?
+  utmSource    String?             @map("utm_source")
+  utmMedium    String?             @map("utm_medium")
+  utmCampaign  String?             @map("utm_campaign")
+  utmContent   String?             @map("utm_content")
+  utmTerm      String?             @map("utm_term")
+  campaignId   String?             @map("campaign_id")
+  adsetId      String?             @map("adset_id")
+  adId         String?             @map("ad_id")
+  campaignName String?             @map("campaign_name")
+  adsetName    String?             @map("adset_name")
+  adName       String?             @map("ad_name")
+  placement    String?
+  fbclid       String?
+  ttclid       String?
+  gclid        String?
+  fbp          String?
+  fbc          String?
+  ttp          String?
+  landingUrl   String?             @map("landing_url")
+  referrer     String?
+  pageUrl      String?             @map("page_url")
+  visitorId    String?             @map("visitor_id")
+  ipAddress    String?             @map("ip_address")
+  userAgent    String?             @map("user_agent")
+  deviceType   String?             @map("device_type")
+  firstTouch   Json?               @map("first_touch")
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+
+  @@index([platform, createdAt])
+  @@index([campaignId])
+  @@index([utmCampaign])
+  @@index([visitorId])
+  @@map("order_attributions")
 }
 
 enum CourierOperation {
@@ -819,16 +888,17 @@ model Role {
 }
 
 model AdminUser {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  roleId       String   @map("role_id")
-  role         Role     @relation(fields: [roleId], references: [id])
+  id             String          @id @default(uuid())
+  email          String          @unique
+  passwordHash   String          @map("password_hash")
+  roleId         String          @map("role_id")
+  role           Role            @relation(fields: [roleId], references: [id])
   // ADM-06 — deactivated users can't log in (AdminAuthService.login checks
   // this). Existing JWT session invalidation on deactivate is SEC-track.
-  active       Boolean  @default(true)
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  active         Boolean         @default(true)
+  metaConnection MetaConnection?
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
 
   @@index([roleId])
   @@map("admin_users")
@@ -1652,4 +1722,77 @@ model FunnelStep {
 
   @@index([funnelId, position])
   @@map("funnel_steps")
+}
+
+// ---- Meta Ads (admin section "Meta Ads") ----
+// One connection per admin user: the Facebook account they linked through
+// OAuth. The long-lived user access token is stored AES-256-GCM encrypted
+// (accessTokenEnc, see MetaCrypto) and never leaves the API. Status flips to
+// Expired when Meta rejects the token (code 190) so the UI can ask to
+// reconnect. Ad accounts are synced into MetaAdAccount (so the choice and
+// the list survive without calling Meta); campaigns and insights are always
+// read live from the Graph API (short Redis cache), never stored.
+enum MetaConnectionStatus {
+  Active
+  Expired
+}
+
+model MetaConnection {
+  id                  String               @id @default(uuid())
+  adminUserId         String               @unique @map("admin_user_id")
+  adminUser           AdminUser            @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  fbUserId            String               @map("fb_user_id")
+  fbUserName          String?              @map("fb_user_name")
+  accessTokenEnc      String               @map("access_token_enc")
+  scopes              String[]
+  tokenExpiresAt      DateTime?            @map("token_expires_at")
+  status              MetaConnectionStatus @default(Active)
+  // oauth (Facebook login) | token (pasted access token)
+  method              String               @default("oauth")
+  // accountId ("act_123") of the ad account the user last picked.
+  selectedAdAccountId String?              @map("selected_ad_account_id")
+  adAccounts          MetaAdAccount[]
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+
+  @@map("meta_connections")
+}
+
+model MetaAdAccount {
+  id                String         @id @default(uuid())
+  connectionId      String         @map("connection_id")
+  connection        MetaConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  // Meta's id including the "act_" prefix.
+  accountId         String         @map("account_id")
+  name              String
+  currency          String?
+  timezoneName      String?        @map("timezone_name")
+  // Meta account_status code (1 active, 2 disabled, 3 unsettled, 7 pending review, 9 grace period, 101 closed…).
+  accountStatus     Int            @default(1) @map("account_status")
+  businessName      String?        @map("business_name")
+  // Lifetime spend / current balance in the account currency's minor units, as Meta returns them (strings).
+  amountSpent       String?        @map("amount_spent")
+  balance           String?
+  // 1 unit of the account's currency in DZD, entered by the user (orders and costs are in DZD).
+  // Null for a non-DZD account = profit can't be computed yet.
+  exchangeRateToDzd Float?         @map("exchange_rate_to_dzd")
+  syncedAt          DateTime       @default(now()) @map("synced_at")
+
+  @@unique([connectionId, accountId])
+  @@map("meta_ad_accounts")
+}
+
+// The Meta developer app (id + secret) the Meta Ads section uses for the
+// "Connect with Facebook" login and for extending/inspecting tokens. Entered
+// from the admin UI (single row, id = 'singleton'); the secret is stored
+// encrypted like the user tokens. META_APP_ID / META_APP_SECRET in the env
+// remain as a fallback when this row is empty.
+model MetaAppCredentials {
+  id           String   @id @default("singleton")
+  appId        String   @map("app_id")
+  appName      String?  @map("app_name")
+  appSecretEnc String   @map("app_secret_enc")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("meta_app_credentials")
 }

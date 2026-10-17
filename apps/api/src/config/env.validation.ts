@@ -32,7 +32,18 @@ const envSchema = z.object({
   GOOGLE_SHEETS_PRIVATE_KEY: z.string().min(1).optional(),
   // Comma-separated extra browser origins allowed by CORS — the standalone funnels site
   // (apps/funnels), e.g. https://offers.example.com. Read in main.ts.
-  CORS_EXTRA_ORIGINS: z.string().optional()
+  CORS_EXTRA_ORIGINS: z.string().optional(),
+  // Meta Ads section (apps/api/src/meta-ads) — a Meta developer app's id and
+  // secret (developers.facebook.com → app → Settings → Basic). Both optional
+  // together: without them the section shows "not configured" instead of the
+  // API failing to boot. META_TOKEN_ENCRYPTION_KEY encrypts stored user
+  // tokens (AES-256-GCM); it falls back to a key derived from JWT_SECRET, so
+  // set it explicitly in production to be able to rotate JWT_SECRET alone.
+  META_APP_ID: z.string().min(1).optional(),
+  META_APP_SECRET: z.string().min(1).optional(),
+  META_TOKEN_ENCRYPTION_KEY: z.string().min(16).optional(),
+  // Graph API version the section talks to.
+  META_GRAPH_VERSION: z.string().regex(/^v\d+\.\d+$/).default('v23.0')
 })
 
 export type Env = z.infer<typeof envSchema>

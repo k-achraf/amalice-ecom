@@ -49,6 +49,8 @@ export const CreateProductSchema = z.object({
   // URL. See Product's Prisma model comment.
   visible: z.boolean().default(true),
   priceCents: z.number().int().nonnegative(),
+  // Unit cost for profit reports; null/absent = unknown. Admin-only.
+  costCents: z.number().int().nonnegative().nullable().optional(),
   stockQuantity: z.number().int().nonnegative(),
   lowStockThreshold: z.number().int().nonnegative().default(5),
   // For products only ever sold in fixed lots (wholesale packs of e.g. 40 or

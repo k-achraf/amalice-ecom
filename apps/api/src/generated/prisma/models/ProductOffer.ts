@@ -535,14 +535,6 @@ export type EnumProductOfferTypeFieldUpdateOperationsInput = {
   set?: $Enums.ProductOfferType
 }
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type ProductOfferCreateWithoutProductInput = {
   id?: string
   type: $Enums.ProductOfferType

@@ -4,6 +4,7 @@ import { SkipThrottle, Throttle } from '@nestjs/throttler'
 import { AcceptFunnelOfferSchema, FunnelOrderSchema } from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
+import { clientIp } from '../orders/order-attribution.util'
 import { FunnelsPublicService } from './funnels-public.service'
 
 class FunnelOrderDto extends createZodDto(FunnelOrderSchema) {}
@@ -28,7 +29,7 @@ export class FunnelsPublicController {
   @Post(':slug/orders')
   @Throttle({ default: { limit: 5, ttl: 60 * 1000 } })
   placeOrder(@Param('slug') slug: string, @Body() body: FunnelOrderDto, @Req() req: Request) {
-    return this.funnels.placeOrder(slug, body, { ip: req.ip, userAgent: req.headers['user-agent'] })
+    return this.funnels.placeOrder(slug, body, { ip: clientIp(req), userAgent: req.headers['user-agent'] })
   }
 
   @Post(':slug/orders/:orderId/offers/:stepId')

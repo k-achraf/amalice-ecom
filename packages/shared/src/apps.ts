@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { OrderAttributionInputSchema } from './attribution'
 
 // The storefront "apps" registry — the single source of truth for which
 // installable apps exist. Mirrors the STORE_TEMPLATES/TEMPLATE_META pattern:
@@ -167,7 +168,12 @@ export const CheckoutTrackingSchema = z.object({
   eventId: z.string().max(200).optional(),
   fbp: z.string().max(200).optional(),
   fbc: z.string().max(200).optional(),
-  ttp: z.string().max(200).optional()
+  ttp: z.string().max(200).optional(),
+  // Ad-source attribution (utm_*, campaign/ad ids, click ids, landing page,
+  // referrer…) — see attribution.ts. A malformed value is dropped rather than
+  // failing validation: attribution is analytics, never a reason to reject an
+  // order.
+  attribution: OrderAttributionInputSchema.optional().catch(undefined)
 })
 export type CheckoutTracking = z.infer<typeof CheckoutTrackingSchema>
 
