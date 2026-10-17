@@ -102,6 +102,7 @@ export class AdminProductManagementService {
       bestSeller: product.bestSeller,
       visible: product.visible,
       priceCents: product.priceCents,
+      costCents: product.costCents,
       stockQuantity: product.stockQuantity,
       lowStockThreshold: product.lowStockThreshold,
       requireOfferSelection: product.requireOfferSelection,

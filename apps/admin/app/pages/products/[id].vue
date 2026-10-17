@@ -76,7 +76,11 @@ async function saveDetails() {
         costCents: product.value.costCents ?? null,
         lowStockThreshold: product.value.lowStockThreshold,
         featured: product.value.featured,
-        bestSeller: product.value.bestSeller
+        bestSeller: product.value.bestSeller,
+        // Also persisted here: "Apply" from the AI generator fills these in
+        // memory, and the refresh() below would otherwise reload the product
+        // and silently discard them if only this tab's Save was clicked.
+        ...contentPayload()
       }
     })
     toast.add({ title: 'Product details saved', color: 'success' })
@@ -163,20 +167,25 @@ function removeSpecification(index: number) {
   product.value.specifications.splice(index, 1)
 }
 
+// Blank rows (an "Add" click left unfilled) are dropped rather than
+// saved — a merchant abandoning a half-typed FAQ shouldn't publish
+// an empty question to the storefront.
+function contentPayload() {
+  const p = product.value!
+  return {
+    keyBenefits: p.keyBenefits.map((b) => b.trim()).filter(Boolean),
+    faqs: p.faqs.filter((f) => f.question.trim() && f.answer.trim()),
+    specifications: p.specifications.filter((s) => s.label.trim() && s.value.trim())
+  }
+}
+
 async function saveContent() {
   if (!product.value) return
   savingContent.value = true
   try {
     await api(`/admin/products/${id}`, {
       method: 'PATCH',
-      body: {
-        // Blank rows (an "Add" click left unfilled) are dropped rather than
-        // saved — a merchant abandoning a half-typed FAQ shouldn't publish
-        // an empty question to the storefront.
-        keyBenefits: product.value.keyBenefits.map((b) => b.trim()).filter(Boolean),
-        faqs: product.value.faqs.filter((f) => f.question.trim() && f.answer.trim()),
-        specifications: product.value.specifications.filter((s) => s.label.trim() && s.value.trim())
-      }
+      body: contentPayload()
     })
     toast.add({ title: 'Content saved', color: 'success' })
     await refresh()
