@@ -96,7 +96,9 @@ export const GenerateProductContentSchema = z.object({
   // GenerateLandingPageSchema.sourceImageUrls (landing-page.ts). Optional:
   // rawContent alone is often enough.
   sourceImageUrls: z.array(z.string()).max(5).default([]),
-  instructions: z.string().trim().max(1000).optional()
+  instructions: z.string().trim().max(1000).optional(),
+  // Language the generated name/description/benefits/FAQ/specs are written in.
+  language: z.enum(['ar', 'fr', 'en']).default('ar')
 })
 export type GenerateProductContent = z.infer<typeof GenerateProductContentSchema>
 

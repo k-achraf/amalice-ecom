@@ -199,6 +199,13 @@ async function saveContent() {
 // actually persist, same as if they'd typed it by hand.
 const aiRawContent = ref('')
 const aiInstructions = ref('')
+// Language the AI writes the whole draft in (name, description, benefits, FAQ, specs).
+const aiLanguage = ref<'ar' | 'fr' | 'en'>('ar')
+const AI_LANGUAGES = [
+  { label: 'العربية (Arabic)', value: 'ar' },
+  { label: 'Français (French)', value: 'fr' },
+  { label: 'English', value: 'en' }
+]
 const aiSourceImages = ref<string[]>([])
 const generatingContent = ref(false)
 const aiDraft = ref<GeneratedProductContent | null>(null)
@@ -221,7 +228,8 @@ async function generateProductContent() {
       body: {
         rawContent: aiRawContent.value,
         sourceImageUrls: aiSourceImages.value,
-        instructions: aiInstructions.value.trim() || undefined
+        instructions: aiInstructions.value.trim() || undefined,
+        language: aiLanguage.value
       }
     })
     toast.add({ title: 'Draft ready — review below before applying', color: 'success' })
@@ -241,7 +249,7 @@ function applyGeneratedContent() {
   product.value.faqs = aiDraft.value.faqs.map((f) => ({ ...f }))
   product.value.specifications = aiDraft.value.specifications.map((s) => ({ ...s }))
   aiDraft.value = null
-  toast.add({ title: 'Applied to the form below — click Save on the Details and Content tabs to publish', color: 'success' })
+  toast.add({ title: 'Applied — description is in the editor; benefits, FAQ and specifications are in the Content tab. Save both tabs to publish', color: 'success' })
 }
 
 function discardGeneratedContent() {
@@ -834,6 +842,10 @@ async function deleteUpsell(upsellId: string) {
           </div>
         </AdsField>
 
+        <AdsField label="Output language" help="The name, description, benefits, FAQ and specifications are all written in this language.">
+          <AdsSelect v-model="aiLanguage" :items="AI_LANGUAGES" class="w-full" />
+        </AdsField>
+
         <AdsField label="Additional instructions (optional)">
           <AdsTextarea v-model="aiInstructions" placeholder="e.g. target a younger audience, emphasize the 2-year warranty…" :rows="2" class="w-full" />
         </AdsField>
@@ -856,7 +868,12 @@ async function deleteUpsell(upsellId: string) {
           </div>
           <div>
             <p class="text-xs font-bold uppercase text-muted">Description</p>
-            <p class="whitespace-pre-line text-sm text-highlighted">{{ aiDraft.description }}</p>
+            <!-- eslint-disable-next-line vue/no-v-html -- HTML is whitelisted server-side (normalizeDescriptionHtml) -->
+            <div
+              class="text-sm text-highlighted [&_h3]:mt-2 [&_h3]:font-bold [&_p]:my-1 [&_ul]:my-1 [&_ul]:list-disc [&_ul]:ps-5"
+              :dir="aiLanguage === 'ar' ? 'rtl' : 'ltr'"
+              v-html="aiDraft.description"
+            />
           </div>
           <div v-if="aiDraft.keyBenefits.length">
             <p class="text-xs font-bold uppercase text-muted">Key benefits</p>

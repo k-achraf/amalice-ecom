@@ -23,6 +23,32 @@ import { AuditService, type AuditActor } from '../common/audit.service'
 import { GeminiService } from '../landing-pages/gemini.service'
 import { fetchImageAsInline } from '../landing-pages/landing-page-storage.util'
 
+const DESCRIPTION_TAGS = new Set(['p', 'h2', 'h3', 'ul', 'ol', 'li', 'strong', 'em', 'b', 'i', 'br', 'blockquote'])
+
+// AI drafts go straight into the Tiptap editor and the storefront's
+// sanitized v-html, so the description must be clean HTML from the start:
+// drop code fences, keep only the editor's tags (stripped of attributes),
+// and wrap bare text in paragraphs if the model ignored the HTML instruction.
+function normalizeDescriptionHtml(raw: string): string {
+  let html = raw.replace(/^\s*```(?:html)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
+  html = html
+    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, '')
+    .replace(/<\/?([a-z][a-z0-9]*)\b[^>]*>/gi, (match, tag: string) => {
+      const name = tag.toLowerCase()
+      if (!DESCRIPTION_TAGS.has(name)) return ''
+      return match.startsWith('</') ? `</${name}>` : name === 'br' ? '<br>' : `<${name}>`
+    })
+  if (!/<(p|h2|h3|ul|ol|blockquote)\b/i.test(html)) {
+    html = html
+      .split(/\n{2,}/)
+      .map((chunk) => chunk.trim())
+      .filter(Boolean)
+      .map((chunk) => `<p>${chunk.replace(/\n/g, '<br>')}</p>`)
+      .join('')
+  }
+  return html
+}
+
 // Full product management — variant/image/attribute CRUD for the admin editor.
 // Split from AdminCatalogService (which owns the flat product fields + stock)
 // so each concern stays readable. All write ops are audit-logged (SEC-03).
@@ -140,7 +166,8 @@ export class AdminProductManagementService {
     const draft = await this.gemini.draftProductContent({
       rawContent: input.rawContent,
       sourceImages,
-      instructions: input.instructions
+      instructions: input.instructions,
+      language: input.language
     })
 
     const parsed = GeneratedProductContentSchema.safeParse(draft)
@@ -156,7 +183,7 @@ export class AdminProductManagementService {
       metadata: { action: 'generate-content', sourceImageCount: input.sourceImageUrls.length }
     })
 
-    return parsed.data
+    return { ...parsed.data, description: normalizeDescriptionHtml(parsed.data.description) }
   }
 
   // ---- Variant CRUD ----

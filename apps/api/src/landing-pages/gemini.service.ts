@@ -276,7 +276,7 @@ Never invent specs, numbers, promotions, discounts, free delivery, guarantees or
   // approach as draftSectionCopy, just admin-editor-facing rather than
   // landing-page-facing. Drafts from what was actually given (raw content +
   // photos), never invents specs or claims beyond that.
-  async draftProductContent(input: { rawContent: string; sourceImages: InlineImage[]; instructions?: string }): Promise<DraftedProductContent> {
+  async draftProductContent(input: { rawContent: string; sourceImages: InlineImage[]; instructions?: string; language?: LandingLanguage }): Promise<DraftedProductContent> {
     const apiKey = this.requireApiKey()
 
     const prompt = `You are turning a store owner's raw, messy product notes into polished, high-converting product page content for a cash-on-delivery (COD) e-commerce store. The raw notes below may mix a title, description, specifications, and FAQ together in any order and any language (Arabic, English, French, or mixed) — infer what each part is even where it isn't labeled.
@@ -286,11 +286,11 @@ Raw notes:
 ${input.rawContent}
 """
 ${input.instructions ? `\nAdditional instructions from the store owner (follow these closely — they override the defaults below where they conflict): ${input.instructions}\n` : ''}
-STRICT LANGUAGE REQUIREMENT: write the entire output in formal Modern Standard Arabic (الفصحى) ONLY — this store's storefront is Arabic-only. Never use colloquial/dialect words or expressions (Algerian, Gulf, Egyptian, or any other dialect), slang, or informal internet-Arabic phrasing, unless the instructions above explicitly ask for a different language.
+${this.languageRule(input.language ?? 'ar', input.instructions)} This applies to EVERY field: name, description, keyBenefits, faqs and specifications (labels and values), whatever language the raw notes are written in.
 
 Produce:
 - name: a short, clear, benefit-forward product title (max 12 words). Not clickbait, not ALL CAPS.
-- description: SHORT and scannable (roughly 120-220 words), written to convert a COD shopper skimming on their phone — lead with the single strongest benefit, keep sentences short, close by reinforcing that ordering is easy and risk-free (pay only when it arrives).
+- description: an HTML string (it is loaded into a rich-text editor and shown on the storefront as-is), SHORT and scannable (roughly 120-220 words), written to convert a COD shopper skimming on their phone — lead with the single strongest benefit, keep sentences short, close by reinforcing that ordering is easy and risk-free (pay only when it arrives). Use ONLY these tags: <p>, <h3> (for 1-3 short section headings), <ul>/<li>, <strong>, <em>. No markdown, no code fences, no <html>/<body>, no inline styles, no emoji. Do NOT repeat the key benefits list, FAQ or specifications inside the description — they are shown in their own sections.
 - keyBenefits: 3-6 short punchy bullet points (max 12 words each) — the strongest concrete reasons to buy, drawn straight from the raw notes.
 - faqs: 3-6 question/answer pairs a hesitant buyer would actually ask before ordering (shipping, payment, returns, product doubts) — answer only from what's in the raw notes or the photos; skip a question entirely rather than inventing an answer the notes don't support.
 - specifications: every concrete spec/attribute mentioned in the raw notes (material, size, weight, capacity, contents, compatibility, etc.) as label/value pairs — return an empty array if the notes have no concrete specs, don't invent any.
