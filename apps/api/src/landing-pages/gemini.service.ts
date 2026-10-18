@@ -2,6 +2,7 @@ import { BadGatewayException, BadRequestException, Injectable, Logger } from '@n
 import { ConfigService } from '@nestjs/config'
 import type { LandingLanguage } from '@amalice/shared'
 import type { Env } from '../config/env.validation'
+import { AiSettingsService } from '../ai/ai-settings.service'
 
 // Google's Generative Language API (Gemini) — REST, camelCase JSON, unlike
 // Meta/TikTok's snake_case APIs (see meta-conversions-api.service.ts /
@@ -95,13 +96,21 @@ interface GeminiResponse {
 export class GeminiService {
   private readonly logger = new Logger(GeminiService.name)
 
-  constructor(private readonly config: ConfigService<Env, true>) {}
+  constructor(
+    private readonly config: ConfigService<Env, true>,
+    private readonly aiSettings: AiSettingsService
+  ) {}
+
+  // The Gemini key saved in Settings → AI models wins over the GEMINI_API_KEY env var.
+  private apiKey(): string | undefined {
+    return this.aiSettings.cachedKey('gemini') ?? this.config.get('GEMINI_API_KEY', { infer: true })
+  }
 
   private requireApiKey(): string {
-    const key = this.config.get('GEMINI_API_KEY', { infer: true })
+    const key = this.apiKey()
     if (!key) {
       throw new BadRequestException(
-        'AI landing pages need a Gemini API key. Get a free one at https://aistudio.google.com/apikey and set GEMINI_API_KEY in the API server .env.'
+        'AI landing pages need a Gemini API key. Get a free one at https://aistudio.google.com/apikey and save it in Settings → AI models (or set GEMINI_API_KEY in the API server .env).'
       )
     }
     return key
@@ -167,7 +176,7 @@ export class GeminiService {
   }
 
   isConfigured(): boolean {
-    return !!this.config.get('GEMINI_API_KEY', { infer: true })
+    return !!this.apiKey()
   }
 
   // Brand identity: look at a logo and pick the closest typeface from a fixed

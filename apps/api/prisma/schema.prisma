@@ -1928,6 +1928,37 @@ model ReportSettings {
   @@map("report_settings")
 }
 
+// AI provider API keys (admin → Settings → AI models, SuperAdmin). One row per
+// provider id (see AI_PROVIDER_IDS in packages/shared). The key is AES-256-GCM
+// encrypted (same scheme as the Meta tokens) and never sent back to the
+// browser; keyHint is its last 4 characters, just to recognise it.
+model AiProviderCredential {
+  provider        String   @id
+  apiKeyEncrypted String   @map("api_key_encrypted")
+  keyHint         String   @map("key_hint")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("ai_provider_credentials")
+}
+
+// Which provider + model serves each AI tier (singleton row). All null = the
+// server default (Gemini with GEMINI_API_KEY / AI_FAST_MODEL / AI_SMART_MODEL).
+// The fallback pair is tried when the primary fails (quota, outage).
+model AiSettings {
+  id               String   @id @default("singleton")
+  fastProvider     String?  @map("fast_provider")
+  fastModel        String?  @map("fast_model")
+  smartProvider    String?  @map("smart_provider")
+  smartModel       String?  @map("smart_model")
+  fallbackProvider String?  @map("fallback_provider")
+  fallbackModel    String?  @map("fallback_model")
+  // Max model requests per Algiers day (0 = no cap). Null = AI_DAILY_CALL_LIMIT.
+  dailyCallLimit   Int?     @map("daily_call_limit")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("ai_settings")
+}
+
 // One row per alert already sent (key includes the day), so an alert fires
 // at most once per day per subject.
 model AlertLog {

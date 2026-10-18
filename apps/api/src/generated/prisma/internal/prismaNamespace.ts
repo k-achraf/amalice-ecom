@@ -443,6 +443,8 @@ export const ModelName = {
   MetaAppCredentials: 'MetaAppCredentials',
   BlacklistEntry: 'BlacklistEntry',
   ReportSettings: 'ReportSettings',
+  AiProviderCredential: 'AiProviderCredential',
+  AiSettings: 'AiSettings',
   AlertLog: 'AlertLog'
 } as const
 
@@ -459,7 +461,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "supplier" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderAttribution" | "callAttempt" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "shippingCompanyCommune" | "shipmentEvent" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "sourcedProductVideoCreative" | "sourcedProductCompetitor" | "productAdTest" | "productSourcingRequest" | "pageViewEvent" | "funnel" | "funnelStep" | "metaConnection" | "metaAdAccount" | "metaAppCredentials" | "blacklistEntry" | "reportSettings" | "alertLog"
+    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "supplier" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderAttribution" | "callAttempt" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "shippingCompanyCommune" | "shipmentEvent" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "sourcedProductVideoCreative" | "sourcedProductCompetitor" | "productAdTest" | "productSourcingRequest" | "pageViewEvent" | "funnel" | "funnelStep" | "metaConnection" | "metaAdAccount" | "metaAppCredentials" | "blacklistEntry" | "reportSettings" | "aiProviderCredential" | "aiSettings" | "alertLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4829,6 +4831,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AiProviderCredential: {
+      payload: Prisma.$AiProviderCredentialPayload<ExtArgs>
+      fields: Prisma.AiProviderCredentialFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AiProviderCredentialFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderCredentialPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AiProviderCredentialFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderCredentialPayload>
+        }
+        findFirst: {
+          args: Prisma.AiProviderCredentialFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderCredentialPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AiProviderCredentialFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderCredentialPayload>
+        }
+        findMany: {
+          args: Prisma.AiProviderCredentialFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderCredentialPayload>[]
+        }
+        create: {
+          args: Prisma.AiProviderCredentialCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderCredentialPayload>
+        }
+        createMany: {
+          args: Prisma.AiProviderCredentialCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AiProviderCredentialCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderCredentialPayload>[]
+        }
+        delete: {
+          args: Prisma.AiProviderCredentialDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderCredentialPayload>
+        }
+        update: {
+          args: Prisma.AiProviderCredentialUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderCredentialPayload>
+        }
+        deleteMany: {
+          args: Prisma.AiProviderCredentialDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AiProviderCredentialUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AiProviderCredentialUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderCredentialPayload>[]
+        }
+        upsert: {
+          args: Prisma.AiProviderCredentialUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProviderCredentialPayload>
+        }
+        aggregate: {
+          args: Prisma.AiProviderCredentialAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAiProviderCredential>
+        }
+        groupBy: {
+          args: Prisma.AiProviderCredentialGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiProviderCredentialGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AiProviderCredentialCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiProviderCredentialCountAggregateOutputType> | number
+        }
+      }
+    }
+    AiSettings: {
+      payload: Prisma.$AiSettingsPayload<ExtArgs>
+      fields: Prisma.AiSettingsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AiSettingsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiSettingsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AiSettingsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiSettingsPayload>
+        }
+        findFirst: {
+          args: Prisma.AiSettingsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiSettingsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AiSettingsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiSettingsPayload>
+        }
+        findMany: {
+          args: Prisma.AiSettingsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiSettingsPayload>[]
+        }
+        create: {
+          args: Prisma.AiSettingsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiSettingsPayload>
+        }
+        createMany: {
+          args: Prisma.AiSettingsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AiSettingsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiSettingsPayload>[]
+        }
+        delete: {
+          args: Prisma.AiSettingsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiSettingsPayload>
+        }
+        update: {
+          args: Prisma.AiSettingsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiSettingsPayload>
+        }
+        deleteMany: {
+          args: Prisma.AiSettingsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AiSettingsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AiSettingsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiSettingsPayload>[]
+        }
+        upsert: {
+          args: Prisma.AiSettingsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiSettingsPayload>
+        }
+        aggregate: {
+          args: Prisma.AiSettingsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAiSettings>
+        }
+        groupBy: {
+          args: Prisma.AiSettingsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiSettingsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AiSettingsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiSettingsCountAggregateOutputType> | number
+        }
+      }
+    }
     AlertLog: {
       payload: Prisma.$AlertLogPayload<ExtArgs>
       fields: Prisma.AlertLogFieldRefs
@@ -5850,6 +6000,31 @@ export const ReportSettingsScalarFieldEnum = {
 export type ReportSettingsScalarFieldEnum = (typeof ReportSettingsScalarFieldEnum)[keyof typeof ReportSettingsScalarFieldEnum]
 
 
+export const AiProviderCredentialScalarFieldEnum = {
+  provider: 'provider',
+  apiKeyEncrypted: 'apiKeyEncrypted',
+  keyHint: 'keyHint',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AiProviderCredentialScalarFieldEnum = (typeof AiProviderCredentialScalarFieldEnum)[keyof typeof AiProviderCredentialScalarFieldEnum]
+
+
+export const AiSettingsScalarFieldEnum = {
+  id: 'id',
+  fastProvider: 'fastProvider',
+  fastModel: 'fastModel',
+  smartProvider: 'smartProvider',
+  smartModel: 'smartModel',
+  fallbackProvider: 'fallbackProvider',
+  fallbackModel: 'fallbackModel',
+  dailyCallLimit: 'dailyCallLimit',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AiSettingsScalarFieldEnum = (typeof AiSettingsScalarFieldEnum)[keyof typeof AiSettingsScalarFieldEnum]
+
+
 export const AlertLogScalarFieldEnum = {
   key: 'key',
   createdAt: 'createdAt'
@@ -6633,6 +6808,8 @@ export type GlobalOmitConfig = {
   metaAppCredentials?: Prisma.MetaAppCredentialsOmit
   blacklistEntry?: Prisma.BlacklistEntryOmit
   reportSettings?: Prisma.ReportSettingsOmit
+  aiProviderCredential?: Prisma.AiProviderCredentialOmit
+  aiSettings?: Prisma.AiSettingsOmit
   alertLog?: Prisma.AlertLogOmit
 }
 

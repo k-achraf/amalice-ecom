@@ -335,6 +335,16 @@ export type BlacklistEntry = Prisma.BlacklistEntryModel
  */
 export type ReportSettings = Prisma.ReportSettingsModel
 /**
+ * Model AiProviderCredential
+ * 
+ */
+export type AiProviderCredential = Prisma.AiProviderCredentialModel
+/**
+ * Model AiSettings
+ * 
+ */
+export type AiSettings = Prisma.AiSettingsModel
+/**
  * Model AlertLog
  * 
  */

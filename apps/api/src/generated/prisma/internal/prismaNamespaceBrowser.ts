@@ -110,6 +110,8 @@ export const ModelName = {
   MetaAppCredentials: 'MetaAppCredentials',
   BlacklistEntry: 'BlacklistEntry',
   ReportSettings: 'ReportSettings',
+  AiProviderCredential: 'AiProviderCredential',
+  AiSettings: 'AiSettings',
   AlertLog: 'AlertLog'
 } as const
 
@@ -1035,6 +1037,31 @@ export const ReportSettingsScalarFieldEnum = {
 } as const
 
 export type ReportSettingsScalarFieldEnum = (typeof ReportSettingsScalarFieldEnum)[keyof typeof ReportSettingsScalarFieldEnum]
+
+
+export const AiProviderCredentialScalarFieldEnum = {
+  provider: 'provider',
+  apiKeyEncrypted: 'apiKeyEncrypted',
+  keyHint: 'keyHint',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AiProviderCredentialScalarFieldEnum = (typeof AiProviderCredentialScalarFieldEnum)[keyof typeof AiProviderCredentialScalarFieldEnum]
+
+
+export const AiSettingsScalarFieldEnum = {
+  id: 'id',
+  fastProvider: 'fastProvider',
+  fastModel: 'fastModel',
+  smartProvider: 'smartProvider',
+  smartModel: 'smartModel',
+  fallbackProvider: 'fallbackProvider',
+  fallbackModel: 'fallbackModel',
+  dailyCallLimit: 'dailyCallLimit',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AiSettingsScalarFieldEnum = (typeof AiSettingsScalarFieldEnum)[keyof typeof AiSettingsScalarFieldEnum]
 
 
 export const AlertLogScalarFieldEnum = {

@@ -4,6 +4,8 @@ import { AddressNormalizerService } from './address-normalizer.service'
 import { AiToolsService } from './ai-tools.service'
 import { AiAssistantService } from './ai-assistant.service'
 import { AiInsightService } from './ai-insight.service'
+import { AiSettingsService } from './ai-settings.service'
+import { CommonModule } from '../common/common.module'
 import { AiController } from './ai.controller'
 import { MetaAdsModule } from '../meta-ads/meta-ads.module'
 
@@ -11,9 +13,9 @@ import { MetaAdsModule } from '../meta-ads/meta-ads.module'
 // AiService without importing this module each time.
 @Global()
 @Module({
-  imports: [MetaAdsModule],
+  imports: [MetaAdsModule, CommonModule],
   controllers: [AiController],
-  providers: [AiService, AddressNormalizerService, AiToolsService, AiAssistantService, AiInsightService],
-  exports: [AiService, AddressNormalizerService, AiInsightService]
+  providers: [AiService, AiSettingsService, AddressNormalizerService, AiToolsService, AiAssistantService, AiInsightService],
+  exports: [AiService, AiSettingsService, AddressNormalizerService, AiInsightService]
 })
 export class AiModule {}

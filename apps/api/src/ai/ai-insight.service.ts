@@ -32,7 +32,7 @@ export class AiInsightService {
   ) {}
 
   async dailyInsight(today: DailyFigures): Promise<z.infer<typeof InsightSchema> | null> {
-    if (!this.ai.isConfigured()) return null
+    if (!(await this.ai.isConfigured())) return null
     try {
       const week = await this.tools.salesOverview(7)
       const perDay = (n: number) => Math.round((n / 7) * 10) / 10
