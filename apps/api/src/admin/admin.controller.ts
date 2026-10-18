@@ -67,6 +67,7 @@ import type { AdminJwtPayload } from '../identity/admin-auth/jwt-payload.interfa
 import { AuditService, type AuditActor } from '../common/audit.service'
 import { OrderItemsService } from '../order-items/order-items.service'
 import { RiskService } from '../risk/risk.service'
+import { AddressNormalizerService } from '../ai/address-normalizer.service'
 
 // The admin-facing API surface. Every route is JwtAuthGuard + role-gated
 // (client-side nav hiding is UX only — plan §ADM-02). The actor for audit
@@ -121,7 +122,8 @@ export class AdminController {
     private readonly audit: AuditService,
     private readonly orderItems: OrderItemsService,
     private readonly risk: RiskService,
-    private readonly inventory: AdminInventoryService
+    private readonly inventory: AdminInventoryService,
+    private readonly addressNormalizer: AddressNormalizerService
   ) {}
 
   // ---- ADM-09 dashboard ---------------------------------------------------
@@ -347,6 +349,16 @@ export class AdminController {
   @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
   updateCustomerInfo(@Param('id') id: string, @Body() body: UpdateOrderCustomerInfoDto, @Req() req: AuthedRequest) {
     return this.orders.updateCustomerInfo(id, body, actorFrom(req))
+  }
+
+  // AI address cleanup: read-only suggestion (wilaya / commune / street line
+  // matched against the real wilayas + communes tables). Nothing is saved —
+  // the agent applies it through PATCH orders/:id/customer-info above, which
+  // enforces the pre-Confirmed window and writes the audit log.
+  @Post('orders/:id/address-suggestion')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  addressSuggestion(@Param('id') id: string) {
+    return this.addressNormalizer.suggestForOrder(id)
   }
 
   // Call-center price override (ADM-12) — same role set as transition()/

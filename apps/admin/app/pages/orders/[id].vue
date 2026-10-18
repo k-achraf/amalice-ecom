@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ATTRIBUTION_PLATFORM_LABELS, CALL_CENTER_STATE_TO_ORDER_STATE, formatPhoneLocal, ORDER_STATE_LABELS, PRICE_EDITABLE_STATES, SHIPPING_STATE_TO_ORDER_STATE, STATES_REQUIRING_SHIPMENT, type AdminOrderDetail, type OrderState, type ShippingCompanyView } from '@amalice/shared'
+import { ATTRIBUTION_PLATFORM_LABELS, CALL_CENTER_STATE_TO_ORDER_STATE, formatPhoneLocal, ORDER_STATE_LABELS, PRICE_EDITABLE_STATES, SHIPPING_STATE_TO_ORDER_STATE, STATES_REQUIRING_SHIPMENT, type AddressSuggestion, type AdminOrderDetail, type OrderState, type ShippingCompanyView } from '@amalice/shared'
 import { VALID_TRANSITIONS } from '~/composables/order-transitions'
 import { toast } from 'vue-sonner'
 
@@ -245,6 +245,55 @@ async function saveCustomer() {
   savingCustomer.value = false
   if (result === undefined) return
   customerModalOpen.value = false
+  await refresh()
+}
+
+// ---- AI address suggestion — POST admin/orders/:id/address-suggestion only
+// READS (wilaya / commune / street line matched against the real tables);
+// "Apply" sends the differing fields through the same audited customer-info
+// PATCH as a manual edit, so the pre-Confirmed window is enforced server-side.
+const suggestionOpen = ref(false)
+const suggestionLoading = ref(false)
+const suggestionApplying = ref(false)
+const suggestion = ref<AddressSuggestion | null>(null)
+
+async function openAddressSuggestion() {
+  suggestion.value = null
+  suggestionOpen.value = true
+  suggestionLoading.value = true
+  const result = await run(() => api<AddressSuggestion>(`/admin/orders/${id}/address-suggestion`, { method: 'POST' }), {
+    errorFallback: 'Could not get an address suggestion'
+  })
+  suggestionLoading.value = false
+  if (result === undefined) {
+    suggestionOpen.value = false
+    return
+  }
+  suggestion.value = result
+}
+
+// Only what differs from the stored address, and only fields the AI matched.
+const suggestionBody = computed<Record<string, string>>(() => {
+  const s = suggestion.value
+  const o = order.value
+  if (!s || !o) return {}
+  const body: Record<string, string> = {}
+  if (s.wilayaName && s.wilayaName !== o.address.region) body.wilaya = s.wilayaName
+  if (s.communeName && s.communeName !== o.address.city) body.commune = s.communeName
+  if (s.addressLine1.trim() && s.addressLine1.trim() !== o.address.line1) body.addressLine1 = s.addressLine1.trim()
+  return body
+})
+
+async function applySuggestion() {
+  if (Object.keys(suggestionBody.value).length === 0) return
+  suggestionApplying.value = true
+  const result = await run(() => api(`/admin/orders/${id}/customer-info`, { method: 'PATCH', body: suggestionBody.value }), {
+    success: 'Address updated',
+    errorFallback: 'Could not update the address'
+  })
+  suggestionApplying.value = false
+  if (result === undefined) return
+  suggestionOpen.value = false
   await refresh()
 }
 
@@ -625,6 +674,7 @@ function initials(name: string | null) {
           <section class="card" aria-labelledby="ad-h">
             <div class="card-head">
               <h2 id="ad-h">Shipping address</h2>
+              <button v-if="PRICE_EDITABLE_STATES.includes(order.state)" class="btn btn-sm btn-ghost" type="button" @click="openAddressSuggestion"><AdsIcon name="i-lucide-sparkles" />Suggest</button>
               <button v-if="PRICE_EDITABLE_STATES.includes(order.state)" class="btn btn-sm btn-ghost" type="button" @click="openCustomerEditor"><AdsIcon name="i-lucide-pencil" />Edit</button>
             </div>
             <dl class="details">
@@ -688,6 +738,24 @@ function initials(name: string | null) {
     <template #footer>
       <button class="btn" type="button" @click="postponeModalOpen = false">Cancel</button>
       <button class="btn btn-primary" type="button" :disabled="!postponeDate || transitioning === 'Postponed'" @click="confirmPostpone">Postpone</button>
+    </template>
+  </AdsDialog>
+
+  <AdsDialog v-model:open="suggestionOpen" title="Address suggestion" description="Matched against the real wilaya and commune lists. Nothing changes until you apply it." width="sm">
+    <p v-if="suggestionLoading" class="muted">Analyzing the address…</p>
+    <template v-else-if="suggestion && order">
+      <dl class="details">
+        <div><dt>Wilaya</dt><dd>{{ order.address.region }} → <b>{{ suggestion.wilayaName ?? 'not matched' }}</b></dd></div>
+        <div><dt>Commune</dt><dd>{{ order.address.city }} → <b>{{ suggestion.communeName ?? 'not matched' }}</b></dd></div>
+        <div><dt>Address line</dt><dd>{{ order.address.line1 }} → <b>{{ suggestion.addressLine1 }}</b></dd></div>
+      </dl>
+      <p class="muted" style="margin-top: 8px">Confidence: <b>{{ suggestion.confidence }}</b>. {{ suggestion.reason }}</p>
+      <p v-if="Object.keys(suggestionBody).length === 0" class="muted" style="margin-top: 8px">The current address already matches — nothing to change.</p>
+      <p v-else-if="suggestion.confidence === 'low'" class="muted" style="margin-top: 8px">Low confidence: check this with the customer before applying.</p>
+    </template>
+    <template #footer>
+      <button class="btn" type="button" @click="suggestionOpen = false">Close</button>
+      <button class="btn btn-primary" type="button" :disabled="suggestionLoading || suggestionApplying || Object.keys(suggestionBody).length === 0" @click="applySuggestion">Apply</button>
     </template>
   </AdsDialog>
 

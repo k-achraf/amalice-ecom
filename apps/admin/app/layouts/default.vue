@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import type { AdminRoleName, DashboardStats } from '@amalice/shared'
-import { Filter, SearchCode, PackageCheck, Receipt, History, Server, FileWarning, Truck, PackageSearch, LayoutDashboard, Megaphone, Link2, Wallet, ShieldBan, Palette, BellRing, ClipboardList, Handshake } from 'lucide-vue-next'
+import { Filter, SearchCode, PackageCheck, Receipt, History, Server, FileWarning, Truck, PackageSearch, LayoutDashboard, Megaphone, Link2, Wallet, ShieldBan, Palette, BellRing, ClipboardList, Handshake, Sparkles } from 'lucide-vue-next'
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -70,6 +70,12 @@ const groups: NavGroup[] = [
       { label: 'Brand identity', icon: Palette, to: '/settings/brand', roles: ['SuperAdmin'] },
       { label: 'Reports & alerts', icon: BellRing, to: '/settings/reports', roles: ['SuperAdmin'] },
       { label: 'Apps', design: 'apps', to: '/apps', roles: ['SuperAdmin'] }
+    ]
+  },
+  {
+    title: 'AI',
+    items: [
+      { label: 'AI assistant', icon: Sparkles, to: '/ai', roles: ['SuperAdmin', 'OpsManager', 'Finance'] }
     ]
   },
   {

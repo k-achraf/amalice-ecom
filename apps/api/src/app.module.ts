@@ -27,6 +27,7 @@ import { ServerPerformanceModule } from './server-performance/server-performance
 import { AnalyticsModule } from './analytics/analytics.module'
 import { MetaAdsModule } from './meta-ads/meta-ads.module'
 import { ReportsModule } from './reports/reports.module'
+import { AiModule } from './ai/ai.module'
 
 @Module({
   imports: [
@@ -74,7 +75,8 @@ import { ReportsModule } from './reports/reports.module'
     ServerPerformanceModule,
     AnalyticsModule,
     MetaAdsModule,
-    ReportsModule
+    ReportsModule,
+    AiModule
   ],
   providers: [
     { provide: APP_PIPE, useClass: ZodValidationPipe },

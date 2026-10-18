@@ -20,6 +20,11 @@ const envSchema = z.object({
   // "not configured" error rather than the whole API failing to boot, since
   // it's an opt-in content tool, not core platform infrastructure.
   GEMINI_API_KEY: z.string().min(1).optional(),
+  // Model ids used by AiService (src/ai). 'fast' = cheap classification and
+  // cleanup, 'smart' = analysis and long copy. Google renames/retires models,
+  // so they're overridable here without a code change.
+  AI_FAST_MODEL: z.string().min(1).optional(),
+  AI_SMART_MODEL: z.string().min(1).optional(),
   // Google Sheets integration (apps/api/src/apps/google-sheets-client.service.ts)
   // — a service account's credentials, shared globally across every
   // connected sheet (one Amalice backend, not one per store). Both optional
