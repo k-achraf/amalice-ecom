@@ -1,7 +1,14 @@
-import { Injectable } from '@nestjs/common'
-import { CANCELLED_STATES, DELIVERED_STATES, RETURNED_STATES } from '@amalice/shared'
+import { HttpException, Injectable } from '@nestjs/common'
+import { CANCEL_REASONS, CANCELLED_STATES, DELIVERED_STATES, META_DATE_PRESETS, RETURNED_STATES, type MetaDatePreset } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
+import { MetaAdsService } from '../meta-ads/meta-ads.service'
 import type { AiTool } from './ai.service'
+
+// Who is asking: Meta connections are per admin, so tools that read them need
+// the requester (taken from the verified JWT, never from the model).
+export interface AiToolContext {
+  adminUserId: string
+}
 
 const MAX_DAYS = 90
 const MAX_ROWS = 15
@@ -25,9 +32,12 @@ const DAYS_PARAM = { type: 'INTEGER', description: `How many days back to look (
 // counts are by each order's CURRENT state, over orders created in the window.
 @Injectable()
 export class AiToolsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly metaAds: MetaAdsService
+  ) {}
 
-  tools(): AiTool[] {
+  tools(ctx: AiToolContext): AiTool[] {
     return [
       {
         name: 'sales_overview',
@@ -57,6 +67,32 @@ export class AiToolsService {
         handler: (args) => this.callCenter(clampDays(args.days))
       },
       {
+        name: 'cancellation_reasons',
+        description: 'Why call-center agents cancelled orders over the last N days (the structured reason picked at cancellation), most frequent first. Optionally limited to orders containing a product whose name includes `product`.',
+        parameters: { type: 'OBJECT', properties: { days: DAYS_PARAM, product: { type: 'STRING', description: 'Optional product name (or part of it) to filter by.' } } },
+        handler: (args) => this.cancellationReasons(clampDays(args.days, 30), typeof args.product === 'string' ? args.product.trim().slice(0, 100) : '')
+      },
+      {
+        name: 'ad_profitability',
+        description:
+          'Meta (Facebook/Instagram) ads profitability for the asker\'s linked ad account: per campaign / ad set / ad, ad spend, orders, confirmation / delivery / return rates, revenue, profit, ROI and cost per order, in DZD. Profit-related fields are null when the ad account has no exchange rate set. Returns connected=false when the user has not linked Meta Ads.',
+        parameters: {
+          type: 'OBJECT',
+          properties: {
+            datePreset: { type: 'STRING', enum: [...META_DATE_PRESETS], description: 'Period. Default last_7d.' },
+            level: { type: 'STRING', enum: ['campaign', 'adset', 'ad'], description: 'Breakdown level. Default campaign.' },
+            limit: { type: 'INTEGER', description: `Rows (1-${MAX_ROWS}), biggest spend first. Default 8.` }
+          }
+        },
+        handler: (args) =>
+          this.adProfitability(
+            ctx.adminUserId,
+            META_DATE_PRESETS.find((p) => p === args.datePreset) ?? 'last_7d',
+            ['campaign', 'adset', 'ad'].includes(String(args.level)) ? (args.level as 'campaign' | 'adset' | 'ad') : 'campaign',
+            clampLimit(args.limit, 8)
+          )
+      },
+      {
         name: 'low_stock',
         description: 'Products whose stock is at or below their low-stock threshold, lowest first.',
         parameters: { type: 'OBJECT', properties: { limit: { type: 'INTEGER', description: `Rows (1-${MAX_ROWS}). Default 10.` } } },
@@ -65,7 +101,7 @@ export class AiToolsService {
     ]
   }
 
-  private async salesOverview(days: number) {
+  async salesOverview(days: number) {
     const orders = await this.prisma.order.findMany({ where: { createdAt: { gte: since(days) }, isAbandoned: false }, select: { state: true, totalCents: true } })
     const delivered = orders.filter((o) => DELIVERED_STATES.includes(o.state))
     const returned = orders.filter((o) => RETURNED_STATES.includes(o.state))
@@ -145,6 +181,73 @@ export class AiToolsService {
     return {
       days,
       agents: [...byAgent].map(([agent, r]) => ({ agent, ...r, confirmationRatePct: pct(r.confirmed, r.calls) })).sort((a, b) => b.confirmed - a.confirmed)
+    }
+  }
+
+  private async cancellationReasons(days: number, product: string) {
+    const calls = await this.prisma.callAttempt.findMany({
+      where: {
+        outcome: 'Cancelled',
+        createdAt: { gte: since(days) },
+        ...(product && { order: { items: { some: { product: { name: { contains: product, mode: 'insensitive' } } } } } })
+      },
+      select: { reason: true }
+    })
+    const label = new Map<string, string>(CANCEL_REASONS.map((r) => [r.value, r.label]))
+    const counts = new Map<string, number>()
+    for (const c of calls) {
+      const key = c.reason ?? 'Other'
+      counts.set(key, (counts.get(key) ?? 0) + 1)
+    }
+    return {
+      days,
+      product: product || null,
+      totalCancellations: calls.length,
+      reasons: [...counts].sort((a, b) => b[1] - a[1]).map(([reason, count]) => ({ reason: label.get(reason) ?? reason, count, pct: pct(count, calls.length) }))
+    }
+  }
+
+  private async adProfitability(adminUserId: string, datePreset: MetaDatePreset, level: 'campaign' | 'adset' | 'ad', limit: number) {
+    const connection = await this.prisma.metaConnection.findUnique({
+      where: { adminUserId },
+      select: { selectedAdAccountId: true, adAccounts: { select: { accountId: true }, orderBy: { name: 'asc' }, take: 1 } }
+    })
+    const accountId = connection?.selectedAdAccountId ?? connection?.adAccounts[0]?.accountId
+    if (!accountId) return { connected: false, note: 'Meta Ads is not linked for this user, or the account has no ad account.' }
+
+    let res
+    try {
+      res = await this.metaAds.profitability(adminUserId, accountId, { level, datePreset })
+    } catch (error) {
+      // Rate limits, expired tokens... surface the reason instead of a generic failure.
+      return { connected: true, error: error instanceof HttpException ? error.message : 'Could not read Meta Ads data.' }
+    }
+    const round = (n: number | null) => (n === null ? null : Math.round(n))
+    const round1 = (n: number | null) => (n === null ? null : Math.round(n * 10) / 10)
+    const summarize = (s: (typeof res.rows)[number]['stats']) => ({
+      adSpendDzd: round(s.adSpend),
+      orders: s.orders,
+      confirmationRatePct: round1(s.confirmationRate),
+      deliveryRatePct: round1(s.deliveryRate),
+      returnRatePct: round1(s.returnRate),
+      revenueDzd: round(s.revenue),
+      profitDzd: round(s.profit),
+      roiPct: round1(s.roi),
+      costPerOrderDzd: round(s.costPerOrder),
+      costPerDeliveredDzd: round(s.costPerDelivered)
+    })
+    return {
+      connected: true,
+      datePreset,
+      level,
+      exchangeRateSet: res.exchangeRateToDzd !== null,
+      totals: summarize(res.totals),
+      rows: [...res.rows]
+        .sort((a, b) => (b.stats.adSpend ?? b.spendAccountCurrency) - (a.stats.adSpend ?? a.spendAccountCurrency))
+        .slice(0, limit)
+        .map((r) => ({ name: r.name, status: r.status, ...summarize(r.stats) })),
+      unlinkedOrders: res.unlinkedOrders,
+      warnings: res.warnings
     }
   }
 

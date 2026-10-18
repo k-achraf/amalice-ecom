@@ -25,6 +25,9 @@ const envSchema = z.object({
   // so they're overridable here without a code change.
   AI_FAST_MODEL: z.string().min(1).optional(),
   AI_SMART_MODEL: z.string().min(1).optional(),
+  // Max model requests per Algiers day across all AI features (0 = no cap).
+  // Each request of the assistant's tool loop counts. Counters live in Redis.
+  AI_DAILY_CALL_LIMIT: z.coerce.number().int().min(0).default(500),
   // Google Sheets integration (apps/api/src/apps/google-sheets-client.service.ts)
   // — a service account's credentials, shared globally across every
   // connected sheet (one Amalice backend, not one per store). Both optional

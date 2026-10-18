@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import type { AssistantAnswer, AssistantMessage } from '@amalice/shared'
 
+interface AiUsageDay {
+  date: string
+  calls: number
+  tokens: number
+}
+
 definePageMeta({ requiredRole: ['SuperAdmin', 'OpsManager', 'Finance'] })
 useHead({ title: 'AI assistant' })
 
@@ -13,6 +19,8 @@ interface ChatTurn extends AssistantMessage {
 
 const TOOL_LABELS: Record<string, string> = {
   sales_overview: 'Sales overview',
+  cancellation_reasons: 'Cancellation reasons',
+  ad_profitability: 'Meta Ads profitability',
   top_products: 'Top products',
   wilaya_performance: 'Wilaya performance',
   call_center_performance: 'Call center',
@@ -23,10 +31,61 @@ const SUGGESTIONS = [
   'ما هي الولايات التي ترتفع فيها نسبة المرتجعات؟',
   'لخّص أداء آخر 7 أيام',
   'ما المنتجات الأكثر مبيعا وهل ترتفع مرتجعاتها؟',
-  'أي موظف في مركز الاتصال لديه أفضل نسبة تأكيد؟'
+  'أي موظف في مركز الاتصال لديه أفضل نسبة تأكيد؟',
+  'ما أكثر أسباب إلغاء الطلبات في آخر 30 يوما؟',
+  'أي حملة إعلانية تخسر هذا الأسبوع؟'
 ]
 
+// The conversation survives a page refresh: kept in this browser only (a
+// per-viewer convenience), last 30 turns. Storage can be blocked or full, so
+// every access is guarded and the page works without it.
+const STORAGE_KEY = 'amalice.ai.chat'
+const MAX_STORED_TURNS = 30
+
+function loadTurns(): ChatTurn[] {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')
+    if (!Array.isArray(parsed)) return []
+    return parsed
+      .filter((t) => t && (t.role === 'user' || t.role === 'assistant') && typeof t.text === 'string' && t.text)
+      .map((t) => ({ role: t.role, text: t.text, ...(Array.isArray(t.toolsUsed) && { toolsUsed: t.toolsUsed.filter((n: unknown) => typeof n === 'string') }) }))
+      .slice(-MAX_STORED_TURNS)
+  } catch {
+    return []
+  }
+}
+
 const turns = ref<ChatTurn[]>([])
+onMounted(() => {
+  turns.value = loadTurns()
+  scrollDown()
+})
+watch(
+  turns,
+  (value) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(value.slice(-MAX_STORED_TURNS)))
+    } catch {
+      // storage unavailable — the chat just won't persist
+    }
+  },
+  { deep: true }
+)
+
+function newChat() {
+  turns.value = []
+}
+
+// Today's model requests (the API enforces a daily cap), best-effort.
+const usage = ref<AiUsageDay | null>(null)
+async function loadUsage() {
+  try {
+    usage.value = (await api<AiUsageDay[]>('/admin/ai/usage'))[0] ?? null
+  } catch {
+    usage.value = null
+  }
+}
+onMounted(loadUsage)
 const question = ref('')
 const asking = ref(false)
 const scroller = ref<HTMLElement | null>(null)
@@ -71,6 +130,7 @@ async function ask(text?: string) {
   }
   turns.value.push({ role: 'assistant', text: result.answer, toolsUsed: result.toolsUsed })
   scrollDown()
+  loadUsage()
 }
 
 function onKeydown(e: KeyboardEvent) {
@@ -123,7 +183,13 @@ function onKeydown(e: KeyboardEvent) {
         />
         <button class="btn btn-primary" type="submit" :disabled="asking || !question.trim()"><AdsIcon name="i-lucide-sparkles" />Ask</button>
       </form>
-      <p class="muted" style="margin-top: 8px; font-size: 12px">Read-only: the assistant cannot change orders, prices or settings. Check important figures before acting on them.</p>
+      <p class="muted" style="margin-top: 8px; font-size: 12px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+        <span>Read-only: the assistant cannot change orders, prices or settings. Check important figures before acting on them.</span>
+        <span>
+          <span v-if="usage">Today: {{ usage.calls }} AI requests · </span>
+          <button v-if="turns.length" class="btn btn-sm btn-ghost" type="button" @click="newChat">New chat</button>
+        </span>
+      </p>
     </section>
   </AdsPage>
 </template>

@@ -6,6 +6,7 @@
     "dev": "tsc -p tsconfig.build.json && concurrently -k -n tsc,api \"tsc -p tsconfig.build.json --watch --preserveWatchOutput\" \"node scripts/dev-server.mjs\"",
     "start": "node dist/main.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "tsx --test \"src/**/*.test.ts\"",
     "create-admin": "tsx prisma/create-admin.ts",
     "seed-locations": "tsx prisma/seed-locations.ts",
     "reset-test-data": "tsx prisma/reset-test-data.ts"

@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { MetaAdsService } from '../meta-ads/meta-ads.service'
+import { AiInsightService } from '../ai/ai-insight.service'
 import { ReportSettingsService } from './report-settings.service'
 import { TelegramService, escapeHtml } from './telegram.service'
 import type { ReportSettings } from '../generated/prisma/client'
@@ -27,7 +28,8 @@ export class ReportsService {
     private readonly prisma: PrismaService,
     private readonly settings: ReportSettingsService,
     private readonly telegram: TelegramService,
-    private readonly metaAds: MetaAdsService
+    private readonly metaAds: MetaAdsService,
+    private readonly insights: AiInsightService
   ) {}
 
   private async sendTo(s: ReportSettings, text: string): Promise<void> {
@@ -100,6 +102,18 @@ export class ReportsService {
         lines.push(`• ${escapeHtml(email.split('@')[0]!)}: ${a.calls} calls, ${a.confirmed} confirmed (${Math.round((a.confirmed / a.calls) * 100)}%)`)
       }
     }
+
+    // Best-effort AI paragraph (null when AI is off/unavailable): never blocks the report.
+    const insight = await this.insights.dailyInsight({
+      date: day.label,
+      created,
+      confirmed: confirmedIds.size,
+      cancelled: cancelledIds.size,
+      delivered: deliveredIds.size,
+      returned: returnedIds.size,
+      revenueDzd: Math.round(revenue)
+    })
+    if (insight) lines.push('', '🤖 <b>AI insight</b>', escapeHtml(insight.insight), `💡 ${escapeHtml(insight.suggestion)}`)
     return lines.join('\n')
   }
 

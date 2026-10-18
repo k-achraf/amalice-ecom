@@ -1,10 +1,40 @@
-import { BadGatewayException, BadRequestException, Injectable, Logger } from '@nestjs/common'
+import { BadGatewayException, BadRequestException, HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { z } from 'zod'
 import type { Env } from '../config/env.validation'
+import { RedisService } from '../redis/redis.service'
 
 const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models'
 const MAX_HTTP_ATTEMPTS = 3
+const USAGE_TTL_SECONDS = 35 * 86_400
+
+export interface AiUsageDay {
+  date: string
+  calls: number
+  tokens: number
+  byTask: Record<string, number>
+}
+
+// Google's quota errors say "Please retry in 1h27m33.5s" / "retry in 42.3s".
+// Returns that wait in seconds, or null when the message has none.
+export function retryAfterSeconds(message: string | undefined): number | null {
+  const match = message?.match(/retry in\s+((?:\d+h)?(?:\d+m(?!s))?(?:[\d.]+s)?)/i)
+  if (!match?.[1]) return null
+  const hours = /(\d+)h/.exec(match[1])
+  const minutes = /(\d+)m(?!s)/.exec(match[1])
+  const seconds = /([\d.]+)s/.exec(match[1])
+  const total = (hours ? Number(hours[1]) * 3600 : 0) + (minutes ? Number(minutes[1]) * 60 : 0) + (seconds ? parseFloat(seconds[1]!) : 0)
+  return total > 0 ? total : null
+}
+
+const formatWait = (seconds: number): string =>
+  seconds >= 3600 ? `${Math.floor(seconds / 3600)}h ${Math.round((seconds % 3600) / 60)}m` : seconds >= 60 ? `${Math.round(seconds / 60)} min` : `${Math.round(seconds)}s`
+
+// A quota that resets in more than this is not worth retrying in-request.
+const MAX_RETRYABLE_WAIT_SECONDS = 30
+
+// Algiers calendar day (UTC+1 all year), so "today" matches the daily report.
+const usageDay = (offsetDays = 0): string => new Date(Date.now() + 3_600_000 - offsetDays * 86_400_000).toISOString().slice(0, 10)
 
 export interface AiImage {
   base64: string
@@ -54,7 +84,53 @@ interface GeminiResponse {
 export class AiService {
   private readonly logger = new Logger(AiService.name)
 
-  constructor(private readonly config: ConfigService<Env, true>) {}
+  constructor(
+    private readonly config: ConfigService<Env, true>,
+    private readonly redis: RedisService
+  ) {}
+
+  // Counts one model call against today's cap (AI_DAILY_CALL_LIMIT, 0 = no cap)
+  // and records it per task. The counters live in Redis (one hash per Algiers
+  // day, kept 35 days) — usage tracking must never take a feature down, so a
+  // Redis failure only logs and lets the call through.
+  private async reserveCall(task: string): Promise<void> {
+    const limit = this.config.get('AI_DAILY_CALL_LIMIT', { infer: true }) ?? 0
+    const key = `ai:usage:${usageDay()}`
+    let calls: number
+    try {
+      calls = await this.redis.hincrby(key, 'calls', 1)
+      await this.redis.hincrby(key, `task:${task}`, 1)
+      await this.redis.expire(key, USAGE_TTL_SECONDS)
+    } catch (error) {
+      this.logger.warn(`AI usage tracking unavailable: ${(error as Error).message}`)
+      return
+    }
+    if (limit > 0 && calls > limit) {
+      throw new HttpException(`The daily AI limit (${limit} requests) has been reached. It resets at midnight (Algiers time).`, HttpStatus.TOO_MANY_REQUESTS)
+    }
+  }
+
+  private async recordTokens(tokens: number): Promise<void> {
+    if (!tokens) return
+    try {
+      await this.redis.hincrby(`ai:usage:${usageDay()}`, 'tokens', tokens)
+    } catch {
+      // best-effort
+    }
+  }
+
+  // Usage of the last `days` Algiers days, newest first (for the admin).
+  async usage(days = 7): Promise<AiUsageDay[]> {
+    const out: AiUsageDay[] = []
+    for (let i = 0; i < days; i++) {
+      const date = usageDay(i)
+      const hash = await this.redis.hgetall(`ai:usage:${date}`).catch(() => ({}) as Record<string, string>)
+      const byTask: Record<string, number> = {}
+      for (const [field, value] of Object.entries(hash)) if (field.startsWith('task:')) byTask[field.slice(5)] = Number(value)
+      out.push({ date, calls: Number(hash.calls ?? 0), tokens: Number(hash.tokens ?? 0), byTask })
+    }
+    return out
+  }
 
   isConfigured(): boolean {
     return !!this.config.get('GEMINI_API_KEY', { infer: true })
@@ -169,6 +245,7 @@ export class AiService {
   // Gemini's free tier rate-limits (429) and sometimes 5xx under load: retried
   // with backoff so a busy moment doesn't fail the whole feature.
   private async post(model: string, apiKey: string, task: string, body: Record<string, unknown>): Promise<GeminiResponse> {
+    await this.reserveCall(task)
     let lastError: Error | null = null
     for (let attempt = 0; attempt < MAX_HTTP_ATTEMPTS; attempt++) {
       if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, 2500 * attempt))
@@ -187,6 +264,15 @@ export class AiService {
 
       const json = (await response.json().catch(() => ({}))) as GeminiResponse
       if (response.status === 429 || response.status >= 500) {
+        // A quota that resets in an hour (the free tier's per-model daily
+        // limit) can't be fixed by retrying: fail fast with a clear message.
+        const wait = response.status === 429 ? retryAfterSeconds(json.error?.message) : null
+        if (wait !== null && wait > MAX_RETRYABLE_WAIT_SECONDS) {
+          throw new HttpException(
+            `The AI quota for model "${model}" is used up (the free tier allows only a limited number of requests per day). Try again in about ${formatWait(wait)}, or set AI_FAST_MODEL / AI_SMART_MODEL to another model, or enable billing.`,
+            HttpStatus.TOO_MANY_REQUESTS
+          )
+        }
         lastError = new BadGatewayException(`AI service error: ${json.error?.message ?? `HTTP ${response.status}`}`)
         continue
       }
@@ -195,6 +281,7 @@ export class AiService {
 
       const usage = json.usageMetadata
       this.logger.log(`${task} model=${model} tokens in=${usage?.promptTokenCount ?? '?'} out=${usage?.candidatesTokenCount ?? '?'}`)
+      await this.recordTokens(usage?.totalTokenCount ?? (usage?.promptTokenCount ?? 0) + (usage?.candidatesTokenCount ?? 0))
       return json
     }
     throw lastError ?? new BadGatewayException('The AI request failed.')

@@ -29,6 +29,10 @@ The admin implements the design in `/design` (Leezil brand: Outfit, teal/ivory/b
 
 `pages/settings/brand.vue` (SuperAdmin; nav: Online store → Brand identity): upload a logo (auto-runs `POST /admin/settings/brand/analyze-logo` → palette, primary colour, AI font suggestion), edit the primary colour (hex + picker + generated 50–950 ramp + white-text contrast warning), pick the typeface (10 Arabic Google Fonts, previewed live), favicon, live preview. Saves through `PUT /admin/settings/brand` — not the storefront settings PUT. The brand also re-skins the admin itself: `plugins/brand.client.ts` → `composables/useAdminBrand.ts` fetches the public `/settings` on boot (cached in localStorage), sets `--teal/--pine/--sage/--mist/--text-2` from `deriveAdminTheme` (teal darkened until white text passes 4.5:1), `--font`, the favicon, and shows the logo on an ivory chip in the sidebar/login. `leezil.css` is untouched. Shapes/ramp maths live in `packages/shared/src/store-settings.ts` (`BrandSchema`, `BRAND_FONTS`, `buildColorRamp`).
 
+## AI assistant
+
+`pages/ai/index.vue` (nav: AI → AI assistant; SuperAdmin/OpsManager/Finance): chat that asks `POST /admin/ai/assistant` (answers come from read-only data tools on the API; "Based on …" shows which). The model's light markdown is HTML-escaped first and only then turned into bold/italic/bullets. The conversation (last 30 turns) is kept in this browser's `localStorage` (`amalice.ai.chat`) — a per-viewer convenience, "New chat" clears it. The footer shows today's AI request count (`GET /admin/ai/usage`). The order page has a **Suggest** button on the shipping-address card (`POST /admin/orders/:id/address-suggestion`): a dialog compares the stored wilaya/commune/address line with the AI's match against the real lists and **Apply** sends only the differing fields through the audited `PATCH /admin/orders/:id/customer-info`.
+
 ## Reports & alerts
 
 `pages/settings/reports.vue` (SuperAdmin; nav: Online store → Reports & alerts): Telegram bot token/chat id, daily-summary hour, max cost per order, wilaya return-rate and courier-silence thresholds. API: `admin/reports/*` (see `apps/api/CLAUDE.md`).
