@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AI_PROVIDERS, type AiProviderId, type AiProviderModelsResult, type AiSettingsView, type AiTier, type AiTierTestResult } from '@amalice/shared'
+import { AI_PROVIDERS, type AiProviderId, type AiProviderModelsResult, type AiProviderView, type AiSettingsView, type AiTier, type AiTierTestResult } from '@amalice/shared'
 
 definePageMeta({ requiredRole: 'SuperAdmin' })
 useHead({ title: 'AI models' })
@@ -45,10 +45,31 @@ const dirty = computed(() => JSON.stringify(formPayload()) !== JSON.stringify(sa
 
 const providers = computed(() => settings.value?.providers ?? [])
 const withKey = computed(() => providers.value.filter((p) => p.hasKey))
+
+// Only services that already have a key are listed; the rest are added on demand
+// from the "Add a service" picker, so 11 cards don't bury the page.
+const adding = ref<AiProviderId[]>([])
+const visibleProviders = computed(() => providers.value.filter((p) => p.hasKey || adding.value.includes(p.id)))
+const addable = computed(() => providers.value.filter((p) => !p.hasKey && !adding.value.includes(p.id)))
+function addService(value: unknown) {
+  if (value) adding.value.push(String(value) as AiProviderId)
+}
 const providerOptions = (tier: AiTier) => [{ label: tier === 'fallback' ? 'None' : 'Default', value: '' }, ...withKey.value.map((p) => ({ label: p.label, value: p.id }))]
 
 // ---- provider keys + live model lists ---------------------------------------
 const keyInputs = reactive<Record<string, string>>({})
+// The custom endpoint's address (the only provider with one).
+const baseUrlInputs = reactive<Record<string, string>>({})
+for (const p of settings.value?.providers ?? []) if (p.custom) baseUrlInputs[p.id] = p.baseUrl ?? ''
+
+// Whether the Save key button should be enabled for a provider.
+function canSaveKey(p: AiProviderView): boolean {
+  const key = (keyInputs[p.id] ?? '').trim()
+  if (!p.custom) return key.length >= 8
+  const url = (baseUrlInputs[p.id] ?? '').trim()
+  // A key is optional for the custom endpoint (local servers need none).
+  return url.length > 0 && (key.length > 0 || !p.hasKey || url !== (p.baseUrl ?? ''))
+}
 const busyKey = ref<string | null>(null)
 const models = reactive<Record<string, (AiProviderModelsResult & { loading: boolean }) | undefined>>({})
 
@@ -65,12 +86,16 @@ async function loadModels(id: AiProviderId) {
 
 async function saveKey(id: AiProviderId) {
   const apiKey = (keyInputs[id] ?? '').trim()
-  if (apiKey.length < 8) return
+  const provider = providers.value.find((p) => p.id === id)
+  if (!provider || !canSaveKey(provider)) return
   busyKey.value = id
-  const view = await run(() => api<AiSettingsView>(`/admin/ai/providers/${id}/key`, { method: 'PUT', body: { apiKey } }), { success: 'Key saved', errorFallback: 'Could not save the key' })
+  const body = provider.custom ? { apiKey, baseUrl: (baseUrlInputs[id] ?? '').trim() } : { apiKey }
+  const view = await run(() => api<AiSettingsView>(`/admin/ai/providers/${id}/key`, { method: 'PUT', body }), { success: provider.custom ? 'Endpoint saved' : 'Key saved', errorFallback: 'Could not save the key' })
   busyKey.value = null
   if (!view) return
   keyInputs[id] = ''
+  // Show the address as the server normalised it (no trailing slash…).
+  if (provider.custom) baseUrlInputs[id] = view.providers.find((p) => p.id === id)?.baseUrl ?? baseUrlInputs[id] ?? ''
   mergeProviders(view)
   await loadModels(id) // verifies the key right away
 }
@@ -82,6 +107,8 @@ async function removeKey(id: AiProviderId) {
   busyKey.value = null
   if (!view) return
   models[id] = undefined
+  baseUrlInputs[id] = ''
+  adding.value = adding.value.filter((x) => x !== id)
   mergeProviders(view)
 }
 
@@ -91,6 +118,17 @@ async function onProviderChange(tier: AiTier, value: unknown) {
   // Start from the provider's suggested model; the owner can change it.
   form[tier].model = id ? AI_PROVIDERS[id].suggested[tier === 'fast' ? 'fast' : 'smart'] : ''
   if (id && !models[id]) await loadModels(id)
+}
+
+// Plain-words help under the model box.
+function modelHelp(tier: AiTier): string | undefined {
+  const id = form[tier].provider as AiProviderId | ''
+  if (!id) return undefined
+  const list = models[id]
+  if (!list?.ok) return 'Type a model id (use Test connection above to load the list).'
+  const model = form[tier].model.trim()
+  if (model && !list.models.includes(model)) return 'This model is not in the provider\'s list: check the spelling (the Test button tells for sure).'
+  return 'Pick from the list or type a model id.'
 }
 
 const modelChoices = (tier: AiTier): string[] => {
@@ -150,22 +188,28 @@ onMounted(loadUsage)
         <div class="card-head"><h2 id="prov-h">AI services</h2></div>
         <p class="card-sub">Keys are stored encrypted and are never shown again. Free plans have limits that differ per provider and change over time: check the provider's console for the current ones.</p>
 
-        <div v-for="p in providers" :key="p.id" style="border-top: 1px solid var(--line, #e5e2d8); padding: 14px 0">
+        <div v-for="p in visibleProviders" :key="p.id" style="border-top: 1px solid var(--line, #e5e2d8); padding: 14px 0">
           <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline">
             <b>{{ p.label }}</b>
             <span class="muted" style="font-size: 13px">
-              <template v-if="p.keySource === 'settings'">Key saved (…{{ p.keyHint }})</template>
+              <template v-if="p.keySource === 'settings'">{{ p.custom ? 'Saved' : 'Key saved' }}<template v-if="p.keyHint"> (…{{ p.keyHint }})</template></template>
               <template v-else-if="p.keySource === 'env'">Using the server's GEMINI_API_KEY</template>
+              <template v-else-if="p.custom && p.hasKey">Saved</template>
               <template v-else>No key</template>
             </span>
           </div>
           <p class="muted" style="margin: 4px 0 8px; font-size: 13px">{{ p.note }} <a :href="p.keyUrl" target="_blank" rel="noopener noreferrer">Get a key</a></p>
 
+          <div v-if="p.custom" style="margin-bottom: 8px">
+            <AdsField label="Base URL" help="Ends where the model API starts, e.g. https://…/v1 (it must be https; http is allowed only for localhost).">
+              <AdsInput v-model="baseUrlInputs[p.id]" placeholder="https://api.example.com/v1" autocomplete="off" />
+            </AdsField>
+          </div>
           <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
             <div style="flex: 1; min-width: 220px">
-              <AdsInput v-model="keyInputs[p.id]" type="password" autocomplete="off" :placeholder="p.keySource === 'settings' ? 'Paste a new key to replace it' : 'Paste the API key'" />
+              <AdsInput v-model="keyInputs[p.id]" type="password" autocomplete="off" :placeholder="p.keySource === 'settings' ? (p.custom ? 'Leave blank to keep the saved key' : 'Paste a new key to replace it') : p.custom ? 'API key (optional for a local server)' : 'Paste the API key'" />
             </div>
-            <button class="btn btn-primary" type="button" :disabled="busyKey === p.id || (keyInputs[p.id] ?? '').trim().length < 8" @click="saveKey(p.id)">{{ busyKey === p.id ? 'Saving…' : 'Save key' }}</button>
+            <button class="btn btn-primary" type="button" :disabled="busyKey === p.id || !canSaveKey(p)" @click="saveKey(p.id)">{{ busyKey === p.id ? 'Saving…' : p.custom ? 'Save endpoint' : 'Save key' }}</button>
             <button v-if="p.hasKey" class="btn" type="button" :disabled="models[p.id]?.loading" @click="loadModels(p.id)">{{ models[p.id]?.loading ? 'Testing…' : 'Test connection' }}</button>
             <button v-if="p.keySource === 'settings'" class="btn btn-ghost" type="button" :disabled="busyKey === p.id" @click="removeKey(p.id)">Remove</button>
           </div>
@@ -174,6 +218,12 @@ onMounted(loadUsage)
             <template v-if="models[p.id]!.ok">Connected: {{ models[p.id]!.models.length }} models available.</template>
             <template v-else>{{ models[p.id]!.error }}</template>
           </p>
+        </div>
+
+        <div v-if="addable.length" style="border-top: 1px solid var(--line, #e5e2d8); padding-top: 14px; max-width: 320px">
+          <AdsField label="Add a service" help="Free options and a custom endpoint for anything OpenAI-compatible.">
+            <AdsSelect :model-value="''" :options="[{ label: 'Choose a service…', value: '' }, ...addable.map((p) => ({ label: p.label, value: p.id }))]" @update:model-value="addService" />
+          </AdsField>
         </div>
       </section>
 
@@ -196,7 +246,7 @@ onMounted(loadUsage)
             <AdsField label="Service">
               <AdsSelect :model-value="form[t.id].provider" :options="providerOptions(t.id)" @update:model-value="(v) => onProviderChange(t.id, v)" />
             </AdsField>
-            <AdsField label="Model" :help="form[t.id].provider ? (models[form[t.id].provider]?.ok ? 'Pick from the list or type a model id.' : 'Type a model id (use Test connection above to load the list).') : undefined">
+            <AdsField label="Model" :help="modelHelp(t.id)">
               <AdsInput v-model="form[t.id].model" :list="`models-${t.id}`" :disabled="!form[t.id].provider" placeholder="Model id" autocomplete="off" />
               <datalist :id="`models-${t.id}`"><option v-for="m in modelChoices(t.id)" :key="m" :value="m" /></datalist>
             </AdsField>

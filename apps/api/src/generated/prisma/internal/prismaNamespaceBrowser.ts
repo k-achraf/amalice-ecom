@@ -1043,6 +1043,7 @@ export const AiProviderCredentialScalarFieldEnum = {
   provider: 'provider',
   apiKeyEncrypted: 'apiKeyEncrypted',
   keyHint: 'keyHint',
+  baseUrl: 'baseUrl',
   updatedAt: 'updatedAt'
 } as const
 

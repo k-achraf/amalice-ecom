@@ -28,6 +28,7 @@ export type AiProviderCredentialMinAggregateOutputType = {
   provider: string | null
   apiKeyEncrypted: string | null
   keyHint: string | null
+  baseUrl: string | null
   updatedAt: Date | null
 }
 
@@ -35,6 +36,7 @@ export type AiProviderCredentialMaxAggregateOutputType = {
   provider: string | null
   apiKeyEncrypted: string | null
   keyHint: string | null
+  baseUrl: string | null
   updatedAt: Date | null
 }
 
@@ -42,6 +44,7 @@ export type AiProviderCredentialCountAggregateOutputType = {
   provider: number
   apiKeyEncrypted: number
   keyHint: number
+  baseUrl: number
   updatedAt: number
   _all: number
 }
@@ -51,6 +54,7 @@ export type AiProviderCredentialMinAggregateInputType = {
   provider?: true
   apiKeyEncrypted?: true
   keyHint?: true
+  baseUrl?: true
   updatedAt?: true
 }
 
@@ -58,6 +62,7 @@ export type AiProviderCredentialMaxAggregateInputType = {
   provider?: true
   apiKeyEncrypted?: true
   keyHint?: true
+  baseUrl?: true
   updatedAt?: true
 }
 
@@ -65,6 +70,7 @@ export type AiProviderCredentialCountAggregateInputType = {
   provider?: true
   apiKeyEncrypted?: true
   keyHint?: true
+  baseUrl?: true
   updatedAt?: true
   _all?: true
 }
@@ -145,6 +151,7 @@ export type AiProviderCredentialGroupByOutputType = {
   provider: string
   apiKeyEncrypted: string
   keyHint: string
+  baseUrl: string | null
   updatedAt: Date
   _count: AiProviderCredentialCountAggregateOutputType | null
   _min: AiProviderCredentialMinAggregateOutputType | null
@@ -173,6 +180,7 @@ export type AiProviderCredentialWhereInput = {
   provider?: Prisma.StringFilter<"AiProviderCredential"> | string
   apiKeyEncrypted?: Prisma.StringFilter<"AiProviderCredential"> | string
   keyHint?: Prisma.StringFilter<"AiProviderCredential"> | string
+  baseUrl?: Prisma.StringNullableFilter<"AiProviderCredential"> | string | null
   updatedAt?: Prisma.DateTimeFilter<"AiProviderCredential"> | Date | string
 }
 
@@ -180,6 +188,7 @@ export type AiProviderCredentialOrderByWithRelationInput = {
   provider?: Prisma.SortOrder
   apiKeyEncrypted?: Prisma.SortOrder
   keyHint?: Prisma.SortOrder
+  baseUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
@@ -190,6 +199,7 @@ export type AiProviderCredentialWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.AiProviderCredentialWhereInput | Prisma.AiProviderCredentialWhereInput[]
   apiKeyEncrypted?: Prisma.StringFilter<"AiProviderCredential"> | string
   keyHint?: Prisma.StringFilter<"AiProviderCredential"> | string
+  baseUrl?: Prisma.StringNullableFilter<"AiProviderCredential"> | string | null
   updatedAt?: Prisma.DateTimeFilter<"AiProviderCredential"> | Date | string
 }, "provider">
 
@@ -197,6 +207,7 @@ export type AiProviderCredentialOrderByWithAggregationInput = {
   provider?: Prisma.SortOrder
   apiKeyEncrypted?: Prisma.SortOrder
   keyHint?: Prisma.SortOrder
+  baseUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.AiProviderCredentialCountOrderByAggregateInput
   _max?: Prisma.AiProviderCredentialMaxOrderByAggregateInput
@@ -210,6 +221,7 @@ export type AiProviderCredentialScalarWhereWithAggregatesInput = {
   provider?: Prisma.StringWithAggregatesFilter<"AiProviderCredential"> | string
   apiKeyEncrypted?: Prisma.StringWithAggregatesFilter<"AiProviderCredential"> | string
   keyHint?: Prisma.StringWithAggregatesFilter<"AiProviderCredential"> | string
+  baseUrl?: Prisma.StringNullableWithAggregatesFilter<"AiProviderCredential"> | string | null
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"AiProviderCredential"> | Date | string
 }
 
@@ -217,6 +229,7 @@ export type AiProviderCredentialCreateInput = {
   provider: string
   apiKeyEncrypted: string
   keyHint: string
+  baseUrl?: string | null
   updatedAt?: Date | string
 }
 
@@ -224,6 +237,7 @@ export type AiProviderCredentialUncheckedCreateInput = {
   provider: string
   apiKeyEncrypted: string
   keyHint: string
+  baseUrl?: string | null
   updatedAt?: Date | string
 }
 
@@ -231,6 +245,7 @@ export type AiProviderCredentialUpdateInput = {
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   apiKeyEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
   keyHint?: Prisma.StringFieldUpdateOperationsInput | string
+  baseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -238,6 +253,7 @@ export type AiProviderCredentialUncheckedUpdateInput = {
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   apiKeyEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
   keyHint?: Prisma.StringFieldUpdateOperationsInput | string
+  baseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -245,6 +261,7 @@ export type AiProviderCredentialCreateManyInput = {
   provider: string
   apiKeyEncrypted: string
   keyHint: string
+  baseUrl?: string | null
   updatedAt?: Date | string
 }
 
@@ -252,6 +269,7 @@ export type AiProviderCredentialUpdateManyMutationInput = {
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   apiKeyEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
   keyHint?: Prisma.StringFieldUpdateOperationsInput | string
+  baseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -259,6 +277,7 @@ export type AiProviderCredentialUncheckedUpdateManyInput = {
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   apiKeyEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
   keyHint?: Prisma.StringFieldUpdateOperationsInput | string
+  baseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -266,6 +285,7 @@ export type AiProviderCredentialCountOrderByAggregateInput = {
   provider?: Prisma.SortOrder
   apiKeyEncrypted?: Prisma.SortOrder
   keyHint?: Prisma.SortOrder
+  baseUrl?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
@@ -273,6 +293,7 @@ export type AiProviderCredentialMaxOrderByAggregateInput = {
   provider?: Prisma.SortOrder
   apiKeyEncrypted?: Prisma.SortOrder
   keyHint?: Prisma.SortOrder
+  baseUrl?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
@@ -280,6 +301,7 @@ export type AiProviderCredentialMinOrderByAggregateInput = {
   provider?: Prisma.SortOrder
   apiKeyEncrypted?: Prisma.SortOrder
   keyHint?: Prisma.SortOrder
+  baseUrl?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
@@ -289,6 +311,7 @@ export type AiProviderCredentialSelect<ExtArgs extends runtime.Types.Extensions.
   provider?: boolean
   apiKeyEncrypted?: boolean
   keyHint?: boolean
+  baseUrl?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["aiProviderCredential"]>
 
@@ -296,6 +319,7 @@ export type AiProviderCredentialSelectCreateManyAndReturn<ExtArgs extends runtim
   provider?: boolean
   apiKeyEncrypted?: boolean
   keyHint?: boolean
+  baseUrl?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["aiProviderCredential"]>
 
@@ -303,6 +327,7 @@ export type AiProviderCredentialSelectUpdateManyAndReturn<ExtArgs extends runtim
   provider?: boolean
   apiKeyEncrypted?: boolean
   keyHint?: boolean
+  baseUrl?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["aiProviderCredential"]>
 
@@ -310,10 +335,11 @@ export type AiProviderCredentialSelectScalar = {
   provider?: boolean
   apiKeyEncrypted?: boolean
   keyHint?: boolean
+  baseUrl?: boolean
   updatedAt?: boolean
 }
 
-export type AiProviderCredentialOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"provider" | "apiKeyEncrypted" | "keyHint" | "updatedAt", ExtArgs["result"]["aiProviderCredential"]>
+export type AiProviderCredentialOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"provider" | "apiKeyEncrypted" | "keyHint" | "baseUrl" | "updatedAt", ExtArgs["result"]["aiProviderCredential"]>
 
 export type $AiProviderCredentialPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "AiProviderCredential"
@@ -322,6 +348,7 @@ export type $AiProviderCredentialPayload<ExtArgs extends runtime.Types.Extension
     provider: string
     apiKeyEncrypted: string
     keyHint: string
+    baseUrl: string | null
     updatedAt: Date
   }, ExtArgs["result"]["aiProviderCredential"]>
   composites: {}
@@ -749,6 +776,7 @@ export interface AiProviderCredentialFieldRefs {
   readonly provider: Prisma.FieldRef<"AiProviderCredential", 'String'>
   readonly apiKeyEncrypted: Prisma.FieldRef<"AiProviderCredential", 'String'>
   readonly keyHint: Prisma.FieldRef<"AiProviderCredential", 'String'>
+  readonly baseUrl: Prisma.FieldRef<"AiProviderCredential", 'String'>
   readonly updatedAt: Prisma.FieldRef<"AiProviderCredential", 'DateTime'>
 }
     

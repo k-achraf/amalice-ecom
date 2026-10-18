@@ -67,7 +67,7 @@ export class AiController {
   @Put('providers/:provider/key')
   @Roles('SuperAdmin')
   setKey(@Param('provider') provider: string, @Body() body: SetAiProviderKeyDto, @Req() req: AuthedRequest) {
-    return this.settings.setKey(this.settings.assertProvider(provider), body.apiKey, { id: req.user.sub, email: req.user.email })
+    return this.settings.setKey(this.settings.assertProvider(provider), body.apiKey, body.baseUrl, { id: req.user.sub, email: req.user.email })
   }
 
   @Delete('providers/:provider/key')

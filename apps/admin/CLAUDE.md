@@ -31,7 +31,7 @@ The admin implements the design in `/design` (Leezil brand: Outfit, teal/ivory/b
 
 ## AI models (settings)
 
-`pages/settings/ai.vue` (SuperAdmin; nav: Online store → AI models): one card per AI service (Gemini, Groq, Cerebras, OpenRouter, Mistral) with a write-only API key field (saved encrypted, only "…last4" shown), **Test connection** (lists the provider's live models, which also proves the key) and Remove; then Fast / Smart / Fallback model pickers (only services with a key are offered; choosing one pre-fills a suggested model, the model box has a datalist of the live list) with a per-tier **Test** (one tiny real request against the *saved* settings, so it's disabled while the form is dirty); and the daily request limit. API: `admin/ai/settings|providers|test` (see `apps/api/CLAUDE.md`).
+`pages/settings/ai.vue` (SuperAdmin; nav: Online store → AI models): one card per AI service that already has a key, and an **Add a service** picker for the rest (Gemini, Groq, Cerebras, GitHub Models, NVIDIA NIM, SambaNova, OpenRouter, Mistral, Hugging Face, Z.ai and a **Custom endpoint** with a base URL field and an optional key), each with a write-only API key field (saved encrypted, only "…last4" shown), **Test connection** (lists the provider's live models, which also proves the key) and Remove; then Fast / Smart / Fallback model pickers (only services with a key are offered; choosing one pre-fills a suggested model, the model box has a datalist of the live list) with a per-tier **Test** (one tiny real request against the *saved* settings, so it's disabled while the form is dirty); and the daily request limit. API: `admin/ai/settings|providers|test` (see `apps/api/CLAUDE.md`).
 
 ## AI assistant
 

@@ -1936,6 +1936,8 @@ model AiProviderCredential {
   provider        String   @id
   apiKeyEncrypted String   @map("api_key_encrypted")
   keyHint         String   @map("key_hint")
+  // Only for the "custom" provider: the OpenAI-compatible base URL (https, or http to localhost).
+  baseUrl         String?  @map("base_url")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   @@map("ai_provider_credentials")

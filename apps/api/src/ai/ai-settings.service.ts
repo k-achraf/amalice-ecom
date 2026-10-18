@@ -4,6 +4,7 @@ import {
   AI_PROVIDER_IDS,
   AI_PROVIDERS,
   AiProviderIdSchema,
+  normalizeAiBaseUrl,
   type AiModelTarget,
   type AiProviderId,
   type AiProviderModelsResult,
@@ -16,10 +17,12 @@ import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
 import { decryptToken, encryptToken } from '../meta-ads/meta-crypto'
 import type { AiSettings } from '../generated/prisma/client'
-import { ADAPTERS } from './providers'
+import { adapterFor } from './providers'
 
 export interface AiResolvedTarget extends AiModelTarget {
   apiKey: string
+  // Only the custom endpoint: the owner's saved base URL.
+  baseUrl?: string
 }
 
 interface Snapshot {
@@ -27,6 +30,7 @@ interface Snapshot {
   settings: AiSettings | null
   keys: Partial<Record<AiProviderId, string>>
   hints: Partial<Record<AiProviderId, string>>
+  baseUrls: Partial<Record<AiProviderId, string>>
 }
 
 const SNAPSHOT_TTL_MS = 30_000
@@ -66,18 +70,20 @@ export class AiSettingsService implements OnModuleInit {
     const [settings, rows] = await Promise.all([this.prisma.aiSettings.findUnique({ where: { id: 'singleton' } }), this.prisma.aiProviderCredential.findMany()])
     const keys: Snapshot['keys'] = {}
     const hints: Snapshot['hints'] = {}
+    const baseUrls: Snapshot['baseUrls'] = {}
     for (const row of rows) {
       const id = AiProviderIdSchema.safeParse(row.provider)
       if (!id.success) continue
       try {
         keys[id.data] = decryptToken(row.apiKeyEncrypted, this.secret())
         hints[id.data] = row.keyHint
+        if (row.baseUrl) baseUrls[id.data] = row.baseUrl
       } catch {
         // The encryption secret changed: treat the key as missing so the owner re-enters it.
         this.logger.warn(`Could not decrypt the saved ${row.provider} key — enter it again in Settings → AI models.`)
       }
     }
-    this.snap = { at: Date.now(), settings, keys, hints }
+    this.snap = { at: Date.now(), settings, keys, hints, baseUrls }
     return this.snap
   }
 
@@ -87,8 +93,13 @@ export class AiSettingsService implements OnModuleInit {
     return this.snap?.keys[provider]
   }
 
-  private keyOf(snap: Snapshot, provider: AiProviderId): { key: string; source: 'settings' | 'env' } | null {
+  private keyOf(snap: Snapshot, provider: AiProviderId): { key: string; source: 'settings' | 'env'; baseUrl?: string } | null {
     const saved = snap.keys[provider]
+    if (provider === 'custom') {
+      // The custom endpoint is only usable with its base URL.
+      const baseUrl = snap.baseUrls.custom
+      return saved && baseUrl ? { key: saved, source: 'settings', baseUrl } : null
+    }
     if (saved) return { key: saved, source: 'settings' }
     const env = provider === 'gemini' ? this.config.get('GEMINI_API_KEY', { infer: true }) : undefined
     return env ? { key: env, source: 'env' } : null
@@ -114,7 +125,7 @@ export class AiSettingsService implements OnModuleInit {
     for (const target of candidates) {
       if (!target || out.some((t) => t.provider === target.provider && t.model === target.model)) continue
       const key = this.keyOf(snap, target.provider)
-      if (key) out.push({ ...target, apiKey: key.key })
+      if (key) out.push({ ...target, apiKey: key.key, ...(key.baseUrl && { baseUrl: key.baseUrl }) })
     }
     return out
   }
@@ -125,7 +136,7 @@ export class AiSettingsService implements OnModuleInit {
     const target = tier === 'fallback' ? this.chosen(snap, 'fallback') : (this.chosen(snap, tier) ?? this.defaultTarget(tier))
     if (!target) return null
     const key = this.keyOf(snap, target.provider)
-    return key ? { ...target, apiKey: key.key } : null
+    return key ? { ...target, apiKey: key.key, ...(key.baseUrl && { baseUrl: key.baseUrl }) } : null
   }
 
   async dailyLimit(): Promise<number> {
@@ -140,7 +151,7 @@ export class AiSettingsService implements OnModuleInit {
     return {
       providers: AI_PROVIDER_IDS.map((id) => {
         const key = this.keyOf(snap, id)
-        return { ...AI_PROVIDERS[id], hasKey: !!key, keySource: key?.source ?? null, keyHint: snap.hints[id] ?? null }
+        return { ...AI_PROVIDERS[id], hasKey: !!key, keySource: key?.source ?? null, keyHint: snap.hints[id] || null, baseUrl: id === 'custom' ? (snap.baseUrls.custom ?? null) : null }
       }),
       fast: this.chosen(snap, 'fast'),
       smart: this.chosen(snap, 'smart'),
@@ -180,8 +191,22 @@ export class AiSettingsService implements OnModuleInit {
     return this.view()
   }
 
-  async setKey(provider: AiProviderId, apiKey: string, actor: AuditActor): Promise<AiSettingsView> {
-    const row = { apiKeyEncrypted: encryptToken(apiKey, this.secret()), keyHint: apiKey.slice(-4) }
+  async setKey(provider: AiProviderId, apiKey: string, baseUrl: string | undefined, actor: AuditActor): Promise<AiSettingsView> {
+    let row: { apiKeyEncrypted: string; keyHint: string; baseUrl: string | null }
+    if (provider === 'custom') {
+      const normalized = normalizeAiBaseUrl(baseUrl ?? '')
+      if (!normalized) throw new BadRequestException('Enter a valid base URL: https://… (or http://localhost… for a server on this machine), with no password, query or fragment in it.')
+      if (apiKey) {
+        row = { apiKeyEncrypted: encryptToken(apiKey, this.secret()), keyHint: apiKey.slice(-4), baseUrl: normalized }
+      } else {
+        // Only the URL changed: keep the key already saved (or none, for a local server).
+        const existing = await this.prisma.aiProviderCredential.findUnique({ where: { provider } })
+        row = existing ? { apiKeyEncrypted: existing.apiKeyEncrypted, keyHint: existing.keyHint, baseUrl: normalized } : { apiKeyEncrypted: encryptToken('none', this.secret()), keyHint: '', baseUrl: normalized }
+      }
+    } else {
+      if (apiKey.length < 8) throw new BadRequestException('Paste the API key.')
+      row = { apiKeyEncrypted: encryptToken(apiKey, this.secret()), keyHint: apiKey.slice(-4), baseUrl: null }
+    }
     await this.prisma.aiProviderCredential.upsert({ where: { provider }, update: row, create: { provider, ...row } })
     // Never log the key itself.
     await this.audit.log({ actor, action: 'Update', entity: 'AiProviderCredential', entityId: provider, metadata: { provider, change: 'key-saved' } })
@@ -199,7 +224,7 @@ export class AiSettingsService implements OnModuleInit {
     const key = this.keyOf(await this.snapshot(true), provider)
     if (!key) return { ok: false, models: [], error: `No API key saved for ${AI_PROVIDERS[provider].label}.` }
     try {
-      return { ok: true, models: await ADAPTERS[provider].listModels(key.key), error: null }
+      return { ok: true, models: await adapterFor(provider, key.baseUrl).listModels(key.key), error: null }
     } catch (error) {
       return { ok: false, models: [], error: (error as Error).message }
     }

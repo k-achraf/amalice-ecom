@@ -31,6 +31,9 @@ function makeService(env: Record<string, unknown> = {}) {
       async findMany() {
         return [...store.creds.values()]
       },
+      async findUnique({ where }: any) {
+        return store.creds.get(where.provider) ?? null
+      },
       async upsert({ where, update, create }: any) {
         store.creds.set(where.provider, { ...(store.creds.get(where.provider) ?? create), ...update })
       },
@@ -47,7 +50,7 @@ function makeService(env: Record<string, unknown> = {}) {
 
 test('a saved key is stored encrypted, with only its last 4 characters as a hint', async () => {
   const { service, store } = makeService()
-  await service.setKey('groq', 'gsk_supersecretvalue1234', actor)
+  await service.setKey('groq', 'gsk_supersecretvalue1234', undefined, actor)
   const row = store.creds.get('groq')!
   assert.equal(row.keyHint, '1234')
   assert.doesNotMatch(row.apiKeyEncrypted, /supersecret/)
@@ -56,7 +59,7 @@ test('a saved key is stored encrypted, with only its last 4 characters as a hint
 
 test('the view never contains a key, and reports where each provider key comes from', async () => {
   const { service } = makeService({ GEMINI_API_KEY: 'env-gemini-key-aaaa' })
-  await service.setKey('groq', 'gsk_supersecretvalue1234', actor)
+  await service.setKey('groq', 'gsk_supersecretvalue1234', undefined, actor)
   const view = await service.view()
   const text = JSON.stringify(view)
   assert.doesNotMatch(text, /supersecret/)
@@ -69,7 +72,7 @@ test('the view never contains a key, and reports where each provider key comes f
 
 test('saving a key writes an audit row that never contains the key', async () => {
   const { service, store } = makeService()
-  await service.setKey('groq', 'gsk_supersecretvalue1234', actor)
+  await service.setKey('groq', 'gsk_supersecretvalue1234', undefined, actor)
   assert.equal(store.audits.length, 1)
   assert.doesNotMatch(JSON.stringify(store.audits), /supersecret/)
   assert.equal(store.audits[0].entity, 'AiProviderCredential')
@@ -91,7 +94,7 @@ test('with no key anywhere there is nothing to run', async () => {
 
 test('a chosen provider and model are used, with the fallback second', async () => {
   const { service } = makeService({ GEMINI_API_KEY: 'env-key' })
-  await service.setKey('groq', 'groq-key-0001', actor)
+  await service.setKey('groq', 'groq-key-0001', undefined, actor)
   await service.update({ smart: { provider: 'groq', model: 'big-model' }, fallback: { provider: 'gemini', model: 'gem-fallback' } }, actor)
   assert.deepEqual(await service.targets('smart'), [
     { provider: 'groq', model: 'big-model', apiKey: 'groq-key-0001' },
@@ -115,7 +118,7 @@ test('choosing a provider without a key is rejected', async () => {
 
 test('null clears a tier back to the default; omitted leaves it alone', async () => {
   const { service } = makeService({ GEMINI_API_KEY: 'env-key' })
-  await service.setKey('groq', 'groq-key-0001', actor)
+  await service.setKey('groq', 'groq-key-0001', undefined, actor)
   await service.update({ fast: { provider: 'groq', model: 'a' }, smart: { provider: 'groq', model: 'b' } }, actor)
   await service.update({ fast: null }, actor)
   const view = await service.view()
@@ -125,7 +128,7 @@ test('null clears a tier back to the default; omitted leaves it alone', async ()
 
 test('removing a key makes that provider unusable again', async () => {
   const { service } = makeService()
-  await service.setKey('groq', 'groq-key-0001', actor)
+  await service.setKey('groq', 'groq-key-0001', undefined, actor)
   await service.update({ smart: { provider: 'groq', model: 'b' } }, actor)
   assert.equal((await service.targets('smart')).length, 1)
   await service.clearKey('groq', actor)
@@ -134,7 +137,7 @@ test('removing a key makes that provider unusable again', async () => {
 
 test('a key that can no longer be decrypted (secret changed) is treated as missing', async () => {
   const { service, store } = makeService()
-  await service.setKey('groq', 'groq-key-0001', actor)
+  await service.setKey('groq', 'groq-key-0001', undefined, actor)
   // Same stored rows, but the server now has a different secret.
   const other = new AiSettingsService(
     { aiSettings: { findUnique: async () => store.settings }, aiProviderCredential: { findMany: async () => [...store.creds.values()] } } as never,
@@ -159,7 +162,7 @@ test('the daily limit comes from settings, else the server default', async () =>
 test('cachedKey serves the saved key synchronously (for the legacy Gemini service)', async () => {
   const { service } = makeService()
   assert.equal(service.cachedKey('gemini'), undefined)
-  await service.setKey('gemini', 'AIza-saved-key-9999', actor)
+  await service.setKey('gemini', 'AIza-saved-key-9999', undefined, actor)
   await service.view() // refreshes the snapshot
   assert.equal(service.cachedKey('gemini'), 'AIza-saved-key-9999')
 })
@@ -173,7 +176,7 @@ test('listModels reports a missing key, and the provider error when the key is b
   const { service } = makeService()
   assert.deepEqual(await service.listModels('groq'), { ok: false, models: [], error: 'No API key saved for Groq.' })
 
-  await service.setKey('groq', 'bad-key-value-0000', actor)
+  await service.setKey('groq', 'bad-key-value-0000', undefined, actor)
   globalThis.fetch = (async () => new Response(JSON.stringify({ error: { message: 'Invalid API Key' } }), { status: 401 })) as typeof fetch
   const result = await service.listModels('groq')
   assert.equal(result.ok, false)
@@ -203,4 +206,58 @@ test('listModels per provider keeps only usable chat models', async () => {
     ]
   })
   assert.deepEqual(await ADAPTERS.gemini.listModels('k'), ['gemini-3.1-flash-lite', 'gemini-3.5-flash'])
+})
+
+
+// ---- custom endpoint and key validation --------------------------------------
+
+test('a normal provider rejects a key that is too short or missing', async () => {
+  const { service } = makeService()
+  await assert.rejects(service.setKey('groq', '', undefined, actor), BadRequestException)
+  await assert.rejects(service.setKey('groq', 'short', undefined, actor), BadRequestException)
+})
+
+test('the base URL is ignored for normal providers', async () => {
+  const { service, store } = makeService()
+  await service.setKey('groq', 'gsk_realistic_key_1234', 'https://evil.example.com/v1', actor)
+  assert.equal(store.creds.get('groq')!.baseUrl, null)
+  assert.equal((await service.view()).providers.find((p) => p.id === 'groq')!.baseUrl, null)
+})
+
+test('the custom endpoint needs a valid base URL', async () => {
+  const { service } = makeService()
+  for (const bad of [undefined, '', 'not a url', 'http://example.com/v1', 'ftp://example.com', 'https://user:pass@example.com/v1', 'https://example.com/v1?key=1']) {
+    await assert.rejects(service.setKey('custom', 'k', bad, actor), BadRequestException, `should reject ${String(bad)}`)
+  }
+})
+
+test('the custom endpoint works without a key (a local model server) and is then usable', async () => {
+  const { service } = makeService()
+  await service.setKey('custom', '', 'http://localhost:11434/v1/', actor)
+  const view = await service.view()
+  const custom = view.providers.find((p) => p.id === 'custom')!
+  assert.deepEqual([custom.hasKey, custom.keySource, custom.keyHint, custom.baseUrl], [true, 'settings', null, 'http://localhost:11434/v1'])
+
+  await service.update({ smart: { provider: 'custom', model: 'llama3.2' } }, actor)
+  const [target] = await service.targets('smart')
+  assert.deepEqual([target!.provider, target!.model, target!.baseUrl], ['custom', 'llama3.2', 'http://localhost:11434/v1'])
+})
+
+test('saving only a new URL keeps the custom endpoint\'s existing key', async () => {
+  const { service } = makeService()
+  await service.setKey('custom', 'real-secret-key-7777', 'https://api.example.com/v1', actor)
+  await service.setKey('custom', '', 'https://api.example.com/v2', actor)
+  await service.update({ fast: { provider: 'custom', model: 'm' } }, actor)
+  const [target] = await service.targets('fast')
+  assert.equal(target!.apiKey, 'real-secret-key-7777')
+  assert.equal(target!.baseUrl, 'https://api.example.com/v2')
+  assert.equal((await service.view()).providers.find((p) => p.id === 'custom')!.keyHint, '7777')
+})
+
+test('other providers never carry a base URL into their targets', async () => {
+  const { service } = makeService({ GEMINI_API_KEY: 'env-key' })
+  await service.setKey('custom', '', 'http://localhost:11434/v1', actor)
+  const [target] = await service.targets('fast')
+  assert.equal(target!.provider, 'gemini')
+  assert.equal('baseUrl' in target!, false)
 })

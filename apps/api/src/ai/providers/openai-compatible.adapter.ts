@@ -6,6 +6,8 @@ interface OpenAiCompatibleConfig {
   id: AiProviderId
   label: string
   baseUrl: string
+  // Where the model list lives when it isn't `${baseUrl}/models` (GitHub Models).
+  modelsUrl?: string
   // Whether response_format {type:"json_object"} is reliably supported. When
   // false the prompt alone asks for JSON (AiService validates the answer anyway).
   jsonMode: boolean
@@ -35,7 +37,9 @@ function toMessages(request: ProviderRequest): Record<string, unknown>[] {
         role: 'assistant',
         content: message.text ?? null,
         ...(message.toolCalls?.length && {
-          tool_calls: message.toolCalls.map((c, i) => ({ id: c.id ?? `call_${i}`, type: 'function', function: { name: c.name, arguments: JSON.stringify(c.args) } }))
+          // Echo the provider's own tool_calls back verbatim when we have them: some
+          // add fields that must come back (Google's `extra_content` thought signature).
+          tool_calls: Array.isArray(message.raw) && message.raw.length ? message.raw : message.toolCalls.map((c, i) => ({ id: c.id ?? `call_${i}`, type: 'function', function: { name: c.name, arguments: JSON.stringify(c.args) } }))
         })
       })
     } else {
@@ -45,8 +49,14 @@ function toMessages(request: ProviderRequest): Record<string, unknown>[] {
   return out
 }
 
+interface RawToolCall {
+  id?: string
+  function?: { name?: string; arguments?: string }
+  [extra: string]: unknown
+}
+
 interface ChatCompletion {
-  choices?: { message?: { content?: string | null; tool_calls?: { id?: string; function?: { name?: string; arguments?: string } }[] } }[]
+  choices?: { message?: { content?: string | null; tool_calls?: RawToolCall[] } }[]
   usage?: { total_tokens?: number }
 }
 
@@ -83,13 +93,23 @@ export function openAiCompatible(config: OpenAiCompatibleConfig): AiProviderAdap
           }
           return { id: c.id ?? `call_${i}`, name: c.function!.name!, args }
         })
-      return { text: (message?.content ?? '').trim(), toolCalls, tokens: json.usage?.total_tokens ?? 0 }
+      // Only worth echoing back when every call carries an id (the tool results are matched by id).
+      const rawCalls = message?.tool_calls ?? []
+      return {
+        text: (message?.content ?? '').trim(),
+        toolCalls,
+        rawAssistant: toolCalls.length && rawCalls.length === toolCalls.length && rawCalls.every((c) => c.id) ? rawCalls : undefined,
+        tokens: json.usage?.total_tokens ?? 0
+      }
     },
 
     async listModels(apiKey: string): Promise<string[]> {
-      const json = await getJson<{ data?: { id: string }[] }>(config.label, `${config.baseUrl}/models`, { Authorization: `Bearer ${apiKey}` })
-      return (json.data ?? [])
-        .filter((m) => typeof m.id === 'string' && (config.keepModel?.(m) ?? true))
+      // Most providers answer { data: [{ id }] }; some a bare array, or { models: [...] }.
+      const json = await getJson<unknown>(config.label, config.modelsUrl ?? `${config.baseUrl}/models`, { Authorization: `Bearer ${apiKey}` })
+      const body = json as { data?: unknown; models?: unknown } | null
+      const list: { id?: unknown }[] = Array.isArray(json) ? json : Array.isArray(body?.data) ? body.data : Array.isArray(body?.models) ? body.models : []
+      return list
+        .filter((m): m is { id: string } => !!m && typeof m.id === 'string' && (config.keepModel?.({ id: m.id }) ?? true))
         .map((m) => m.id)
         .sort()
     }

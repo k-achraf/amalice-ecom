@@ -22,7 +22,8 @@ export const formatWait = (seconds: number): string =>
 // The human-readable message out of a provider's error body (shapes differ:
 // { error: { message } }, { error: "..." }, { message }).
 export function errorMessage(json: unknown, status: number): string {
-  const body = json as { error?: { message?: string } | string; message?: string } | null
+  // Some endpoints (Google's OpenAI-compatible one) wrap the error in an array: [{ error: {...} }].
+  const body = (Array.isArray(json) ? json[0] : json) as { error?: { message?: string } | string; message?: string } | null
   const fromError = typeof body?.error === 'string' ? body.error : body?.error?.message
   return fromError ?? body?.message ?? `HTTP ${status}`
 }

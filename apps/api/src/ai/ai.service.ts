@@ -3,7 +3,7 @@ import { z } from 'zod'
 import type { AiTier, AiTierTestResult } from '@amalice/shared'
 import { RedisService } from '../redis/redis.service'
 import { AiSettingsService, type AiResolvedTarget } from './ai-settings.service'
-import { ADAPTERS, type AiImage, type AiMessage, type ProviderRequest, type ProviderResponse } from './providers'
+import { adapterFor, type AiImage, type AiMessage, type ProviderRequest, type ProviderResponse } from './providers'
 
 const USAGE_TTL_SECONDS = 35 * 86_400
 
@@ -132,7 +132,7 @@ export class AiService {
     let lastError: unknown
     for (const [index, target] of targets.entries()) {
       try {
-        const response = await ADAPTERS[target.provider].chat({ ...request, apiKey: target.apiKey, model: target.model })
+        const response = await adapterFor(target.provider, target.baseUrl).chat({ ...request, apiKey: target.apiKey, model: target.model })
         this.logger.log(`${task} ${target.provider}/${target.model} tokens=${response.tokens || '?'}`)
         await this.recordTokens(response.tokens)
         return { response, target }
@@ -227,7 +227,7 @@ export class AiService {
     const started = Date.now()
     try {
       await this.reserveCall('test')
-      const response = await ADAPTERS[target.provider].chat({
+      const response = await adapterFor(target.provider, target.baseUrl).chat({
         apiKey: target.apiKey,
         model: target.model,
         messages: [{ role: 'user', text: 'Reply with the single word: ok' }],
