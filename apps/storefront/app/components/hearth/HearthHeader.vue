@@ -37,7 +37,7 @@ watch(() => route.path, () => { mobileOpen.value = false })
       <div class="flex min-w-0 items-center gap-8">
         <NuxtLink to="/" class="font-display flex shrink-0 items-center gap-2 text-2xl text-[var(--color-hearth-ink)]">
           <Icon name="i-lucide-home" class="size-6 text-primary-600" />
-          {{ settings.storeName }}
+          <BrandName />
         </NuxtLink>
 
         <nav class="hidden items-center gap-7 lg:flex">

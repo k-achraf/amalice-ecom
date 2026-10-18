@@ -7,6 +7,7 @@ import { renderPage, type Rendered } from './render'
 // background. Only a cold cache (first visit after a restart) or a very old entry waits for the API.
 interface Entry {
   rendered: Rendered | null // null = "no such funnel" (remembered briefly)
+  brandKey: string // brand identity the page was rendered with; a different live value invalidates the entry
   at: number
   refreshing: Promise<void> | null
 }
@@ -26,9 +27,30 @@ async function fetchFunnel(slug: string): Promise<PublicFunnel | null> {
   }
 }
 
+// The store's brand identity (Settings → Brand) is baked into every page. Instead of waiting out the cache
+// TTL (and serving the old page once more under stale-while-revalidate), the live brand is checked with a
+// tiny public request, at most once per BRAND_CHECK_MS: a change invalidates every cached page at once.
+const BRAND_CHECK_MS = 3000
+let liveBrandKey: string | null = null
+let brandCheckedAt = 0
+async function syncBrand(): Promise<void> {
+  if (Date.now() - brandCheckedAt < BRAND_CHECK_MS) return
+  brandCheckedAt = Date.now()
+  const ctl = new AbortController()
+  const timer = setTimeout(() => ctl.abort(), 1500)
+  try {
+    const res = await fetch(`${config.apiBase}/settings`, { signal: ctl.signal, headers: { accept: 'application/json' } })
+    if (res.ok) liveBrandKey = JSON.stringify(((await res.json()) as { brand?: unknown }).brand ?? null)
+  } catch {
+    /* API unreachable: keep serving what we have */
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 async function load(slug: string): Promise<Entry> {
   const funnel = await fetchFunnel(slug)
-  const entry: Entry = { rendered: funnel ? renderPage(funnel) : null, at: Date.now(), refreshing: null }
+  const entry: Entry = { rendered: funnel ? renderPage(funnel) : null, brandKey: JSON.stringify(funnel?.brand ?? null), at: Date.now(), refreshing: null }
   cache.set(slug, entry)
   return entry
 }
@@ -43,7 +65,18 @@ function loadOnce(slug: string): Promise<Entry> {
 }
 
 export async function getPage(slug: string): Promise<Rendered | null> {
+  await syncBrand()
   const hit = cache.get(slug)
+  if (hit?.rendered && liveBrandKey !== null && hit.brandKey !== liveBrandKey) {
+    // Brand changed since this page was rendered: never serve it, not even stale.
+    cache.delete(slug)
+    try {
+      return (await loadOnce(slug)).rendered
+    } catch (err) {
+      if (hit.rendered) return hit.rendered
+      throw err
+    }
+  }
   const now = Date.now()
   if (hit) {
     const age = now - hit.at

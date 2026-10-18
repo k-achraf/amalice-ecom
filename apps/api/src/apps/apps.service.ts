@@ -161,21 +161,22 @@ export class AppsService {
   // Returns null if the app isn't enabled or isn't fully configured for CAPI
   // (pixel id + access token + the capiEnabled toggle all required), so
   // callers can just check truthiness instead of re-deriving this logic.
-  async getMetaPixelCapiCredentials(): Promise<MetaCapiCredentials | null> {
+  async getMetaPixelCapiCredentials(pixelOverride?: string | null): Promise<MetaCapiCredentials | null> {
     const row = await this.prisma.appInstallation.findUnique({ where: { appId: 'meta-pixel' } })
     if (!row?.enabled) return null
     const parsed = MetaPixelConfigSchema.safeParse(row.config ?? {})
     if (!parsed.success || !parsed.data.capiEnabled || !parsed.data.pixelId || !parsed.data.accessToken) return null
-    return { pixelId: parsed.data.pixelId, accessToken: parsed.data.accessToken, testEventCode: parsed.data.testEventCode }
+    // A funnel's own pixel id replaces the store's; the access token is still the store's (same business).
+    return { pixelId: pixelOverride || parsed.data.pixelId, accessToken: parsed.data.accessToken, testEventCode: parsed.data.testEventCode }
   }
 
   // Same idea as getMetaPixelCapiCredentials, for TikTok's Events API.
-  async getTikTokPixelEapiCredentials(): Promise<TikTokEapiCredentials | null> {
+  async getTikTokPixelEapiCredentials(pixelOverride?: string | null): Promise<TikTokEapiCredentials | null> {
     const row = await this.prisma.appInstallation.findUnique({ where: { appId: 'tiktok-pixel' } })
     if (!row?.enabled) return null
     const parsed = TikTokPixelConfigSchema.safeParse(row.config ?? {})
     if (!parsed.success || !parsed.data.eapiEnabled || !parsed.data.pixelCode || !parsed.data.accessToken) return null
-    return { pixelCode: parsed.data.pixelCode, accessToken: parsed.data.accessToken, testEventCode: parsed.data.testEventCode }
+    return { pixelCode: pixelOverride || parsed.data.pixelCode, accessToken: parsed.data.accessToken, testEventCode: parsed.data.testEventCode }
   }
 
   // Admin "send a test event" action — always includes whatever

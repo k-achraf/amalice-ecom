@@ -18,6 +18,8 @@ const CHIPS: { label: string; value: string }[] = [
   { label: 'Delivered', value: 'Delivered' },
   { label: 'Cancelled', value: 'Cancelled' }
 ]
+const riskFilter = ref((route.query.riskLevel as string) ?? 'all')
+const riskOptions = [{ label: 'Any risk', value: 'all' }, { label: 'High risk', value: 'High' }, { label: 'Medium risk', value: 'Medium' }, { label: 'Low risk', value: 'Low' }]
 const OTHER_STATES = [
   'CallCenterNoAnswer', 'WrongNumber', 'Postponed', 'OnHold', 'HandedToCourier', 'CashCollected', 'Reconciled',
   'DeliveryFailed', 'ReturnedToOrigin', 'Settled', 'CancelledShipping'
@@ -38,7 +40,8 @@ const { data, pending } = await useAdminFetch<OrderListResponse>('/admin/orders'
     pageSize: route.query.pageSize ?? '20',
     ...(route.query.state && { state: route.query.state }),
     ...(route.query.search && { search: route.query.search }),
-    ...(route.query.archived === 'only' && { archived: 'only' })
+    ...(route.query.archived === 'only' && { archived: 'only' }),
+    ...(route.query.riskLevel && { riskLevel: route.query.riskLevel })
   }
 })
 
@@ -56,6 +59,7 @@ async function loadWithFilters() {
   if (route.query.state) q.state = route.query.state as string
   if (route.query.search) q.search = route.query.search as string
   if (route.query.archived === 'only') q.archived = 'only'
+  if (route.query.riskLevel) q.riskLevel = route.query.riskLevel as string
   data.value = await api<OrderListResponse>('/admin/orders', { query: q })
   selected.value = new Set()
 }
@@ -63,6 +67,12 @@ async function loadWithFilters() {
 async function applyFilters(state = stateFilter.value) {
   stateFilter.value = state
   await router.push({ query: { ...route.query, search: search.value || undefined, state: state !== 'all' ? state : undefined, page: 1 } })
+  await loadWithFilters()
+}
+
+async function applyRisk(v: string) {
+  riskFilter.value = v
+  await router.push({ query: { ...route.query, riskLevel: v !== 'all' ? v : undefined, page: 1 } })
   await loadWithFilters()
 }
 
@@ -163,6 +173,7 @@ const carrier = (o: OrderListResponse['items'][number]) => o.shipment?.courier.n
           <button v-for="c in CHIPS" :key="c.value" class="chip-btn" type="button" role="tab" :aria-selected="stateFilter === c.value" @click="applyFilters(c.value)">{{ c.label }}</button>
         </div>
         <AdsSelect :model-value="otherState" :options="otherOptions" size="sm" style="width: 170px" @update:model-value="(v) => applyFilters(String(v))" />
+        <AdsSelect :model-value="riskFilter" :options="riskOptions" size="sm" style="width: 130px" @update:model-value="(v) => applyRisk(String(v))" />
         <label class="search soft">
           <AdsIcon name="i-lucide-search" /><span class="sr">Search orders</span>
           <input v-model="search" type="search" placeholder="Order #, name or phone" @keydown.enter="applyFilters()">
@@ -201,6 +212,7 @@ const carrier = (o: OrderListResponse['items'][number]) => o.shipment?.courier.n
                   <AdsOrderStatus :state="CALL_CENTER_STATE_TO_ORDER_STATE[o.callCenterState]" />
                   <AdsOrderStatus v-if="o.shippingState" :state="SHIPPING_STATE_TO_ORDER_STATE[o.shippingState]" />
                   <span v-if="o.isDuplicate" class="pill returned" title="Same customer + product within the last 2 days">Duplicate?</span>
+                  <RiskBadge v-if="o.riskLevel && o.riskLevel !== 'Low'" :level="o.riskLevel" :score="o.riskScore" :factors="o.riskFactors" />
                 </div>
               </td>
               <td class="num" style="white-space: nowrap">

@@ -62,6 +62,7 @@ export type StoreSettingsCountAggregateOutputType = {
   displayCart: number
   leadFormConfig: number
   abandonedCartDelaySeconds: number
+  brand: number
   updatedAt: number
   _all: number
 }
@@ -103,6 +104,7 @@ export type StoreSettingsCountAggregateInputType = {
   displayCart?: true
   leadFormConfig?: true
   abandonedCartDelaySeconds?: true
+  brand?: true
   updatedAt?: true
   _all?: true
 }
@@ -201,6 +203,7 @@ export type StoreSettingsGroupByOutputType = {
   displayCart: boolean
   leadFormConfig: runtime.JsonValue | null
   abandonedCartDelaySeconds: number
+  brand: runtime.JsonValue | null
   updatedAt: Date
   _count: StoreSettingsCountAggregateOutputType | null
   _avg: StoreSettingsAvgAggregateOutputType | null
@@ -235,6 +238,7 @@ export type StoreSettingsWhereInput = {
   displayCart?: Prisma.BoolFilter<"StoreSettings"> | boolean
   leadFormConfig?: Prisma.JsonNullableFilter<"StoreSettings">
   abandonedCartDelaySeconds?: Prisma.IntFilter<"StoreSettings"> | number
+  brand?: Prisma.JsonNullableFilter<"StoreSettings">
   updatedAt?: Prisma.DateTimeFilter<"StoreSettings"> | Date | string
 }
 
@@ -246,6 +250,7 @@ export type StoreSettingsOrderByWithRelationInput = {
   displayCart?: Prisma.SortOrder
   leadFormConfig?: Prisma.SortOrderInput | Prisma.SortOrder
   abandonedCartDelaySeconds?: Prisma.SortOrder
+  brand?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
@@ -260,6 +265,7 @@ export type StoreSettingsWhereUniqueInput = Prisma.AtLeast<{
   displayCart?: Prisma.BoolFilter<"StoreSettings"> | boolean
   leadFormConfig?: Prisma.JsonNullableFilter<"StoreSettings">
   abandonedCartDelaySeconds?: Prisma.IntFilter<"StoreSettings"> | number
+  brand?: Prisma.JsonNullableFilter<"StoreSettings">
   updatedAt?: Prisma.DateTimeFilter<"StoreSettings"> | Date | string
 }, "id">
 
@@ -271,6 +277,7 @@ export type StoreSettingsOrderByWithAggregationInput = {
   displayCart?: Prisma.SortOrder
   leadFormConfig?: Prisma.SortOrderInput | Prisma.SortOrder
   abandonedCartDelaySeconds?: Prisma.SortOrder
+  brand?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.StoreSettingsCountOrderByAggregateInput
   _avg?: Prisma.StoreSettingsAvgOrderByAggregateInput
@@ -290,6 +297,7 @@ export type StoreSettingsScalarWhereWithAggregatesInput = {
   displayCart?: Prisma.BoolWithAggregatesFilter<"StoreSettings"> | boolean
   leadFormConfig?: Prisma.JsonNullableWithAggregatesFilter<"StoreSettings">
   abandonedCartDelaySeconds?: Prisma.IntWithAggregatesFilter<"StoreSettings"> | number
+  brand?: Prisma.JsonNullableWithAggregatesFilter<"StoreSettings">
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"StoreSettings"> | Date | string
 }
 
@@ -301,6 +309,7 @@ export type StoreSettingsCreateInput = {
   displayCart?: boolean
   leadFormConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   abandonedCartDelaySeconds?: number
+  brand?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   updatedAt?: Date | string
 }
 
@@ -312,6 +321,7 @@ export type StoreSettingsUncheckedCreateInput = {
   displayCart?: boolean
   leadFormConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   abandonedCartDelaySeconds?: number
+  brand?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   updatedAt?: Date | string
 }
 
@@ -323,6 +333,7 @@ export type StoreSettingsUpdateInput = {
   displayCart?: Prisma.BoolFieldUpdateOperationsInput | boolean
   leadFormConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   abandonedCartDelaySeconds?: Prisma.IntFieldUpdateOperationsInput | number
+  brand?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -334,6 +345,7 @@ export type StoreSettingsUncheckedUpdateInput = {
   displayCart?: Prisma.BoolFieldUpdateOperationsInput | boolean
   leadFormConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   abandonedCartDelaySeconds?: Prisma.IntFieldUpdateOperationsInput | number
+  brand?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -345,6 +357,7 @@ export type StoreSettingsCreateManyInput = {
   displayCart?: boolean
   leadFormConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   abandonedCartDelaySeconds?: number
+  brand?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   updatedAt?: Date | string
 }
 
@@ -356,6 +369,7 @@ export type StoreSettingsUpdateManyMutationInput = {
   displayCart?: Prisma.BoolFieldUpdateOperationsInput | boolean
   leadFormConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   abandonedCartDelaySeconds?: Prisma.IntFieldUpdateOperationsInput | number
+  brand?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -367,6 +381,7 @@ export type StoreSettingsUncheckedUpdateManyInput = {
   displayCart?: Prisma.BoolFieldUpdateOperationsInput | boolean
   leadFormConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   abandonedCartDelaySeconds?: Prisma.IntFieldUpdateOperationsInput | number
+  brand?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -378,6 +393,7 @@ export type StoreSettingsCountOrderByAggregateInput = {
   displayCart?: Prisma.SortOrder
   leadFormConfig?: Prisma.SortOrder
   abandonedCartDelaySeconds?: Prisma.SortOrder
+  brand?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
@@ -419,6 +435,7 @@ export type StoreSettingsSelect<ExtArgs extends runtime.Types.Extensions.Interna
   displayCart?: boolean
   leadFormConfig?: boolean
   abandonedCartDelaySeconds?: boolean
+  brand?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["storeSettings"]>
 
@@ -430,6 +447,7 @@ export type StoreSettingsSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   displayCart?: boolean
   leadFormConfig?: boolean
   abandonedCartDelaySeconds?: boolean
+  brand?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["storeSettings"]>
 
@@ -441,6 +459,7 @@ export type StoreSettingsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   displayCart?: boolean
   leadFormConfig?: boolean
   abandonedCartDelaySeconds?: boolean
+  brand?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["storeSettings"]>
 
@@ -452,10 +471,11 @@ export type StoreSettingsSelectScalar = {
   displayCart?: boolean
   leadFormConfig?: boolean
   abandonedCartDelaySeconds?: boolean
+  brand?: boolean
   updatedAt?: boolean
 }
 
-export type StoreSettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "activeTemplate" | "storeName" | "announcementText" | "displayCart" | "leadFormConfig" | "abandonedCartDelaySeconds" | "updatedAt", ExtArgs["result"]["storeSettings"]>
+export type StoreSettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "activeTemplate" | "storeName" | "announcementText" | "displayCart" | "leadFormConfig" | "abandonedCartDelaySeconds" | "brand" | "updatedAt", ExtArgs["result"]["storeSettings"]>
 
 export type $StoreSettingsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "StoreSettings"
@@ -468,6 +488,7 @@ export type $StoreSettingsPayload<ExtArgs extends runtime.Types.Extensions.Inter
     displayCart: boolean
     leadFormConfig: runtime.JsonValue | null
     abandonedCartDelaySeconds: number
+    brand: runtime.JsonValue | null
     updatedAt: Date
   }, ExtArgs["result"]["storeSettings"]>
   composites: {}
@@ -899,6 +920,7 @@ export interface StoreSettingsFieldRefs {
   readonly displayCart: Prisma.FieldRef<"StoreSettings", 'Boolean'>
   readonly leadFormConfig: Prisma.FieldRef<"StoreSettings", 'Json'>
   readonly abandonedCartDelaySeconds: Prisma.FieldRef<"StoreSettings", 'Int'>
+  readonly brand: Prisma.FieldRef<"StoreSettings", 'Json'>
   readonly updatedAt: Prisma.FieldRef<"StoreSettings", 'DateTime'>
 }
     

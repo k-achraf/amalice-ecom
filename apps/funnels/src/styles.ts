@@ -14,7 +14,9 @@ body{margin:0;background:#fff;color:var(--ink);font:400 15px/1.6 system-ui,-appl
 b,strong{font-weight:700}img{display:block;max-width:100%}h1,h2,h3,p,ul,ol,dl,dd,figure,fieldset,blockquote{margin:0}ul,ol{padding:0;list-style:none}fieldset{border:0;padding:0;min-width:0}
 button,input,select,textarea{font:inherit;color:inherit}[hidden]{display:none!important}
 svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.cd{display:flex;align-items:center;justify-content:center;gap:10px;min-height:40px;padding:6px var(--g);background:var(--s);color:var(--at);font-size:13px;font-weight:600}.cd[hidden]{display:none}.cd b{font-variant-numeric:tabular-nums;direction:ltr;font-size:18px;letter-spacing:.04em}
 .urg{display:flex;align-items:center;justify-content:center;min-height:36px;padding:6px var(--g);background:var(--a);color:var(--on);font-size:13px;font-weight:500;text-align:center}
+.brandbar{display:flex;justify-content:center;padding:12px var(--g) 0}.brandbar img{height:40px;width:auto;max-width:200px;object-fit:contain}
 .wrap{max-width:560px;margin:0 auto;padding-bottom:24px}
 .top{display:grid}
 .gal{position:relative;min-width:0}
@@ -90,6 +92,12 @@ details[open] summary::after{transform:rotate(180deg)}details p{padding-bottom:1
 .long{width:100%;height:auto;padding:0!important;border-top:1px solid var(--line)}
 body.hasbar .wrap{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 .bar{position:fixed;inset:auto 0 0 0;z-index:7;background:#fff;border-top:1px solid var(--line2);padding:12px var(--g) calc(12px + env(safe-area-inset-bottom))}
+.bar{transition:transform .25s ease}.bar.off{transform:translateY(100%);pointer-events:none}
+.bi .cta{position:relative;overflow:hidden;animation:cta-pulse 2s ease-in-out infinite}
+.bi .cta::after{content:"";position:absolute;inset-block:0;inset-inline-start:-60%;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);animation:cta-shine 3.2s ease-in-out infinite}
+@keyframes cta-pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 color-mix(in srgb,var(--a) 45%,transparent)}50%{transform:scale(1.03);box-shadow:0 0 0 8px transparent}}
+@keyframes cta-shine{0%,55%{inset-inline-start:-60%}100%{inset-inline-start:130%}}
+@media(prefers-reduced-motion:reduce){.bi .cta,.bi .cta::after{animation:none}}
 .bi{display:flex;align-items:center;gap:16px;max-width:560px;margin:0 auto}
 .bi .t{display:grid;line-height:1.25}.bi .t small{font-size:12px;color:var(--ink2)}.bi .t b{font-size:16px;font-weight:700;white-space:nowrap}
 .bi .cta{flex:1;min-height:48px}

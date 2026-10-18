@@ -6,6 +6,7 @@ import {
   type FunnelListItem,
   type FunnelStatus,
   type FunnelTemplateId,
+  type GeneratedFunnelResult,
   type ProductListResponse
 } from '@amalice/shared'
 
@@ -82,6 +83,39 @@ async function create() {
   }
 }
 
+// ---- AI generate: product in, complete Draft funnel out ----
+const showAi = ref(false)
+const aiProductId = ref('')
+const aiLanguage = ref<'ar' | 'fr'>('ar')
+const aiInstructions = ref('')
+const aiBusy = ref(false)
+const aiResult = ref<GeneratedFunnelResult | null>(null)
+const aiLanguages = [{ label: 'العربية (Arabic)', value: 'ar' }, { label: 'Français (French)', value: 'fr' }]
+
+function openAi() {
+  aiProductId.value = ''
+  aiInstructions.value = ''
+  aiResult.value = null
+  showAi.value = true
+}
+
+async function generateAi() {
+  if (!aiProductId.value) return
+  aiBusy.value = true
+  const result = await run(
+    () => api<GeneratedFunnelResult>('/admin/funnels/ai-generate', {
+      method: 'POST',
+      body: { productId: aiProductId.value, language: aiLanguage.value, instructions: aiInstructions.value.trim() || undefined }
+    }),
+    { success: 'Funnel generated as a draft', errorFallback: 'Could not generate the funnel' }
+  )
+  aiBusy.value = false
+  if (result) {
+    aiResult.value = result
+    await refreshFunnels()
+  }
+}
+
 // ---- Bulk select + permanent delete (SuperAdmin only) ----
 const { isSuperAdmin } = useDangerDelete()
 const { selected: selIds, allChecked: selAll, indeterminate: selSome, toggleAll: selToggleAll, toggle: selToggle, clear: selClear, count: selCount } = useBulkSelect(visible)
@@ -100,6 +134,7 @@ async function deleteSelected() {
 <template>
   <AdsPage title="Funnels" description="Guided paths from first click to confirmed order">
     <template #actions>
+      <button class="btn" type="button" @click="openAi"><AdsIcon name="i-lucide-sparkles" />Generate with AI</button>
       <button class="btn btn-primary" type="button" @click="openCreate"><AdsIcon name="i-lucide-plus" />New funnel</button>
     </template>
 
@@ -179,6 +214,35 @@ async function deleteSelected() {
       <template #footer>
         <button class="btn" type="button" @click="showCreate = false">Cancel</button>
         <AdsButton :loading="creating" :disabled="!canCreate" icon="i-lucide-check" @click="create">Create funnel</AdsButton>
+      </template>
+    </AdsDialog>
+
+    <AdsDialog v-model:open="showAi" title="Generate a funnel with AI" description="Pick a product. The AI chooses the workflow, landing layout, settings, copy and which products to offer, and saves it as a draft you can still edit." width="md">
+      <template v-if="!aiResult">
+        <AdsField label="Product" required><AdsSelect v-model="aiProductId" :items="productOptions" placeholder="Choose a product…" /></AdsField>
+        <AdsField label="Copy language" help="Applies to the AI-written texts. Fixed form and button labels of funnel pages stay in Arabic."><AdsSelect v-model="aiLanguage" :items="aiLanguages" /></AdsField>
+        <AdsField label="Instructions (optional)" help="e.g. target women 25–40, premium tone, push the bundle."><AdsTextarea v-model="aiInstructions" :rows="3" /></AdsField>
+        <p v-if="aiBusy" class="muted">Planning the funnel… this takes up to a minute.</p>
+      </template>
+      <template v-else>
+        <p><b>{{ aiResult.funnel.name }}</b> <span class="pill draft">Draft</span></p>
+        <p class="muted"><b>Workflow ({{ templateName(aiResult.funnel.templateId) }}):</b> {{ aiResult.plan.workflowReason }}</p>
+        <p v-if="aiResult.plan.templateReason" class="muted"><b>Landing layout:</b> {{ aiResult.plan.templateReason }}</p>
+        <ul v-if="aiResult.plan.offers.length" style="padding-inline-start: 18px">
+          <li v-for="o in aiResult.plan.offers" :key="o.stepType + o.productName"><b>{{ o.stepType }}:</b> {{ o.productName }}<template v-if="o.discountPercent"> — {{ o.discountPercent }}% off</template></li>
+        </ul>
+        <p v-for="n in aiResult.plan.notes" :key="n" class="muted">• {{ n }}</p>
+        <p class="muted">Review the copy before going live — the AI works only from the product's own information.</p>
+      </template>
+      <template #footer>
+        <template v-if="!aiResult">
+          <button class="btn" type="button" @click="showAi = false">Cancel</button>
+          <AdsButton :loading="aiBusy" :disabled="!aiProductId" icon="i-lucide-sparkles" @click="generateAi">Generate</AdsButton>
+        </template>
+        <template v-else>
+          <button class="btn" type="button" @click="showAi = false">Close</button>
+          <AdsButton icon="i-lucide-arrow-right" @click="router.push(`/funnels/${aiResult!.funnel.id}`)">Open funnel</AdsButton>
+        </template>
       </template>
     </AdsDialog>
   </AdsPage>

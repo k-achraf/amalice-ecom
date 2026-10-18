@@ -24,7 +24,7 @@ const settings = useStoreSettings()
 
     <div class="mx-auto flex h-16 max-w-3xl items-center justify-between px-4 sm:px-6">
       <NuxtLink to="/" class="font-display text-2xl font-black uppercase tracking-tight text-neutral-900">
-        {{ settings.storeName }}<span class="text-primary-500">.</span>
+        <BrandName><span class="text-primary-500">.</span></BrandName>
       </NuxtLink>
 
       <div class="flex items-center gap-3">

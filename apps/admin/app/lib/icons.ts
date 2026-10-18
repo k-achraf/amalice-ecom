@@ -3,6 +3,8 @@
 import type { Component } from 'vue'
 import {
   AlertTriangle,
+  ShieldAlert,
+  ShieldBan,
   BarChart3,
   Lock,
   MessageCircle,
@@ -126,6 +128,8 @@ export const ICONS: Record<string, Component> = {
   'users': Users,
   'user-check': UserCheck,
   'shield': Shield,
+  'shield-alert': ShieldAlert,
+  'shield-ban': ShieldBan,
   'monitor': Monitor,
   'filter': Filter,
   'trending-down': TrendingDown,

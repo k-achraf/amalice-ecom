@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import {
+  BrandSchema,
   LandingSettingsSchema,
   defaultLandingSettings,
   withDescriptionSection,
@@ -74,7 +75,7 @@ export class FunnelsPublicService {
 
     const [wilayas, settings, meta, tiktok, reviewRows, ratingAgg] = await Promise.all([
       this.prisma.wilaya.findMany({ orderBy: { name: 'asc' }, include: { shippingRate: true } }),
-      this.prisma.storeSettings.findUnique({ where: { id: 'singleton' }, select: { storeName: true, abandonedCartDelaySeconds: true } }),
+      this.prisma.storeSettings.findUnique({ where: { id: 'singleton' }, select: { storeName: true, abandonedCartDelaySeconds: true, brand: true } }),
       this.prisma.appInstallation.findUnique({ where: { appId: 'meta-pixel' } }),
       this.prisma.appInstallation.findUnique({ where: { appId: 'tiktok-pixel' } }),
       this.prisma.review.findMany({
@@ -86,14 +87,16 @@ export class FunnelsPublicService {
       this.prisma.review.aggregate({ where: { productId: product.id, approved: true }, _avg: { rating: true }, _count: { _all: true } })
     ])
 
-    const metaPixelId = meta?.enabled ? ((meta.config as { pixelId?: string } | null)?.pixelId ?? null) : null
-    const tiktokPixelCode = tiktok?.enabled ? ((tiktok.config as { pixelCode?: string } | null)?.pixelCode ?? null) : null
+    // A funnel's own pixel wins over the store-wide one (and works even if the store-wide app is off).
+    const metaPixelId = funnel.metaPixelId ?? (meta?.enabled ? ((meta.config as { pixelId?: string } | null)?.pixelId ?? null) : null)
+    const tiktokPixelCode = funnel.tiktokPixelCode ?? (tiktok?.enabled ? ((tiktok.config as { pixelCode?: string } | null)?.pixelCode ?? null) : null)
 
     return {
       id: funnel.id,
       slug: funnel.slug,
       name: funnel.name,
       storeName: settings?.storeName ?? 'Amalice',
+      brand: settings?.brand ? (BrandSchema.safeParse(settings.brand).data ?? null) : null,
       product: {
         id: product.id,
         slug: product.slug,

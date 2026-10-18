@@ -1,3 +1,4 @@
+import { CourierRecommendationService } from '../shipping-companies/courier-recommendation.service'
 import { Body, Controller, Get, Header, Param, Patch, Post, Query, Req, Res, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import type { Request, Response } from 'express'
@@ -30,12 +31,22 @@ interface AuthedRequest extends Request {
 export class FulfillmentController {
   constructor(
     private readonly fulfillment: FulfillmentService,
-    private readonly mockCourier: MockCourierProvider
+    private readonly mockCourier: MockCourierProvider,
+    private readonly recommendation: CourierRecommendationService
   ) {}
 
   @Get('fulfillment/health')
   health() {
     return { module: 'fulfillment', status: 'ok' }
+  }
+
+  // Ranked courier suggestion for the order's wilaya (delivery/return record + tariff).
+  @Get('admin/fulfillment/orders/:id/courier-suggestion')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager')
+  courierSuggestion(@Param('id') id: string) {
+    return this.recommendation.forOrder(id)
   }
 
   // Assign a shipping company to an order — required before dispatch.

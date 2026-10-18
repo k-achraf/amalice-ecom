@@ -26,6 +26,8 @@ export interface MetaCapiEvent {
   eventName: string
   eventId: string
   eventSourceUrl?: string
+  // Unix seconds; defaults to now. Meta rejects events older than 7 days.
+  eventTime?: number
   userData: MetaCapiUserData
   customData?: Record<string, unknown>
   // Only 'website' is used here — the storefront has no app/offline-CRM
@@ -86,7 +88,7 @@ export class MetaConversionsApiService {
       data: [
         {
           event_name: event.eventName,
-          event_time: Math.floor(Date.now() / 1000),
+          event_time: event.eventTime ?? Math.floor(Date.now() / 1000),
           event_id: event.eventId,
           action_source: event.actionSource ?? 'website',
           event_source_url: event.eventSourceUrl,

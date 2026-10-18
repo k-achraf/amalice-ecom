@@ -69,7 +69,9 @@ export const StockAdjustmentReason = {
   Correction: 'Correction',
   Damage: 'Damage',
   Sale: 'Sale',
-  Return: 'Return'
+  Return: 'Return',
+  Release: 'Release',
+  Stocktake: 'Stocktake'
 } as const
 
 export type StockAdjustmentReason = (typeof StockAdjustmentReason)[keyof typeof StockAdjustmentReason]
@@ -321,3 +323,36 @@ export const MetaConnectionStatus = {
 } as const
 
 export type MetaConnectionStatus = (typeof MetaConnectionStatus)[keyof typeof MetaConnectionStatus]
+
+
+export const RiskLevel = {
+  Low: 'Low',
+  Medium: 'Medium',
+  High: 'High'
+} as const
+
+export type RiskLevel = (typeof RiskLevel)[keyof typeof RiskLevel]
+
+
+export const BlacklistType = {
+  Phone: 'Phone',
+  Address: 'Address'
+} as const
+
+export type BlacklistType = (typeof BlacklistType)[keyof typeof BlacklistType]
+
+
+export const BlacklistAction = {
+  Warn: 'Warn',
+  Block: 'Block'
+} as const
+
+export type BlacklistAction = (typeof BlacklistAction)[keyof typeof BlacklistAction]
+
+
+export const BlacklistSource = {
+  Manual: 'Manual',
+  Auto: 'Auto'
+} as const
+
+export type BlacklistSource = (typeof BlacklistSource)[keyof typeof BlacklistSource]

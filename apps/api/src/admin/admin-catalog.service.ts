@@ -127,7 +127,7 @@ export class AdminCatalogService {
         data: { stockQuantity: newQuantity }
       })
       await tx.stockAdjustment.create({
-        data: { productId, delta: input.delta, reason: input.reason, note: input.note, actorId: actor.id }
+        data: { productId, delta: input.delta, reason: input.reason, note: input.note, actorId: actor.id, supplierId: input.supplierId }
       })
       await tx.auditLog.create({
         data: {

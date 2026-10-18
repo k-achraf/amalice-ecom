@@ -77,13 +77,32 @@ const adjusting = ref<Product | null>(null)
 const adjustDelta = ref(0)
 const adjustReason = ref<'Restock' | 'Correction' | 'Damage' | 'Sale' | 'Return'>('Restock')
 const adjustNote = ref('')
+const adjustSupplier = ref<string | null>(null)
+const adjustVariantId = ref<string | null>(null)
 const savingAdjust = ref(false)
+
+interface SupplierOpt { id: string; name: string; active: boolean }
+interface LowVariant { variantId: string; sku: string; stockQuantity: number; productId: string; productName: string; lowStockThreshold: number }
+const { data: suppliers } = await useAdminFetch<SupplierOpt[]>('/admin/suppliers', { key: 'admin-suppliers-opts' })
+const supplierItems = computed(() => [{ label: 'No supplier', value: null }, ...(suppliers.value ?? []).filter((s) => s.active).map((s) => ({ label: s.name, value: s.id }))])
+const showAllVariants = ref(false)
+const { data: lowVariants, refresh: refreshLowVariants } = await useAdminFetch<LowVariant[]>('/admin/inventory/low-stock-variants', { key: 'admin-low-variants' })
+
+// Variant alert rows reuse the same dialog, targeting the variant's own stock.
+function openAdjustVariant(v: LowVariant) {
+  const p = rows.value.find((r) => r.id === v.productId)
+  openAdjust(p ?? ({ id: v.productId, name: `${v.productName} · ${v.sku}`, stockQuantity: v.stockQuantity } as Product))
+  adjusting.value = { ...(adjusting.value as Product), name: `${v.productName} · ${v.sku}`, stockQuantity: v.stockQuantity }
+  adjustVariantId.value = v.variantId
+}
 
 function openAdjust(p: Product) {
   adjusting.value = p
   adjustDelta.value = 0
   adjustReason.value = 'Restock'
   adjustNote.value = ''
+  adjustSupplier.value = null
+  adjustVariantId.value = null
 }
 
 const showAdjust = computed({
@@ -110,10 +129,10 @@ async function saveAdjust() {
   try {
     await api(`/admin/products/${adjusting.value.id}/stock`, {
       method: 'POST',
-      body: { delta: adjustDelta.value, reason: adjustReason.value, note: adjustNote.value || undefined }
+      body: { delta: adjustDelta.value, reason: adjustReason.value, note: adjustNote.value || undefined, variantId: adjustVariantId.value ?? undefined, supplierId: adjustReason.value === 'Restock' ? adjustSupplier.value ?? undefined : undefined }
     })
     adjusting.value = null
-    await loadProducts()
+    await Promise.all([loadProducts(), refreshLowVariants()])
     toast.add({ title: 'Stock adjusted', color: 'success' })
   } finally {
     savingAdjust.value = false
@@ -188,6 +207,8 @@ async function deleteSelected() {
 <template>
   <AdsPage title="Products" description="Catalogue and inventory">
     <template #actions>
+      <NuxtLink class="btn" to="/inventory/stocktake"><AdsIcon name="i-lucide-boxes" />Stocktake</NuxtLink>
+      <NuxtLink class="btn" to="/inventory/suppliers">Suppliers</NuxtLink>
       <button class="btn btn-primary" type="button" @click="openCreate"><AdsIcon name="i-lucide-plus" />Add product</button>
     </template>
 
@@ -196,6 +217,24 @@ async function deleteSelected() {
       <AdsKpiCard label="Units in stock" :value="kpiUnits.toLocaleString('en-US')" meta="On this page" />
       <AdsKpiCard label="Low stock" :value="kpiLow" color="warning" meta="At or under the alert threshold" />
       <AdsKpiCard label="Out of stock" :value="kpiOut" color="error" meta="No units left" />
+    </section>
+
+    <section v-if="lowVariants?.length" class="card" aria-label="Low-stock variants">
+      <div class="card-head"><h2 class="strong">Variants running low ({{ lowVariants.length }})</h2></div>
+      <div class="table-wrap">
+        <table style="min-width: 520px">
+          <thead><tr><th>Product</th><th>SKU</th><th class="num">Stock</th><th><span class="sr">Actions</span></th></tr></thead>
+          <tbody>
+            <tr v-for="v in showAllVariants ? lowVariants : lowVariants.slice(0, 8)" :key="v.variantId">
+              <td><NuxtLink :to="`/products/${v.productId}`" class="strong" style="text-decoration: none; color: var(--pine)">{{ v.productName }}</NuxtLink></td>
+              <td>{{ v.sku }}</td>
+              <td class="num"><span class="pill" :class="v.stockQuantity <= 0 ? 'out' : 'low'">{{ v.stockQuantity }}</span></td>
+              <td class="num"><button class="row-btn" type="button" :aria-label="`Adjust stock for ${v.sku}`" title="Adjust stock" @click="openAdjustVariant(v)"><AdsIcon name="i-lucide-boxes" /></button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div v-if="lowVariants.length > 8" class="card-head"><button class="btn sm" type="button" @click="showAllVariants = !showAllVariants">{{ showAllVariants ? 'Show fewer' : `Show all ${lowVariants.length}` }}</button></div>
     </section>
 
     <section class="card" aria-label="Product list">
@@ -294,6 +333,7 @@ async function deleteSelected() {
       <p class="muted">Current stock: <b>{{ adjusting.stockQuantity }}</b></p>
       <AdsField label="Change (negative for stock-out)"><AdsNumberInput v-model="adjustDelta" /></AdsField>
       <AdsField label="Reason"><AdsSelect v-model="adjustReason" :items="['Restock', 'Correction', 'Damage', 'Sale', 'Return']" /></AdsField>
+      <AdsField v-if="adjustReason === 'Restock'" label="Supplier (optional)"><AdsSelect v-model="adjustSupplier" :items="supplierItems" /></AdsField>
       <AdsField label="Note (optional)"><AdsInput v-model="adjustNote" /></AdsField>
       <p>New stock: <b>{{ adjusting.stockQuantity + adjustDelta }}</b></p>
     </template>

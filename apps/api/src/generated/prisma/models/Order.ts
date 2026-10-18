@@ -30,12 +30,14 @@ export type OrderAvgAggregateOutputType = {
   totalCents: number | null
   shippingPriceCents: number | null
   callAttemptsCount: number | null
+  riskScore: number | null
 }
 
 export type OrderSumAggregateOutputType = {
   totalCents: number | null
   shippingPriceCents: number | null
   callAttemptsCount: number | null
+  riskScore: number | null
 }
 
 export type OrderMinAggregateOutputType = {
@@ -67,6 +69,9 @@ export type OrderMinAggregateOutputType = {
   courierOperation: $Enums.CourierOperation | null
   exchangeProduct: string | null
   funnelId: string | null
+  riskScore: number | null
+  riskLevel: $Enums.RiskLevel | null
+  deliveredEventSentAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -100,6 +105,9 @@ export type OrderMaxAggregateOutputType = {
   courierOperation: $Enums.CourierOperation | null
   exchangeProduct: string | null
   funnelId: string | null
+  riskScore: number | null
+  riskLevel: $Enums.RiskLevel | null
+  deliveredEventSentAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -133,6 +141,10 @@ export type OrderCountAggregateOutputType = {
   courierOperation: number
   exchangeProduct: number
   funnelId: number
+  riskScore: number
+  riskLevel: number
+  riskFactors: number
+  deliveredEventSentAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -143,12 +155,14 @@ export type OrderAvgAggregateInputType = {
   totalCents?: true
   shippingPriceCents?: true
   callAttemptsCount?: true
+  riskScore?: true
 }
 
 export type OrderSumAggregateInputType = {
   totalCents?: true
   shippingPriceCents?: true
   callAttemptsCount?: true
+  riskScore?: true
 }
 
 export type OrderMinAggregateInputType = {
@@ -180,6 +194,9 @@ export type OrderMinAggregateInputType = {
   courierOperation?: true
   exchangeProduct?: true
   funnelId?: true
+  riskScore?: true
+  riskLevel?: true
+  deliveredEventSentAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -213,6 +230,9 @@ export type OrderMaxAggregateInputType = {
   courierOperation?: true
   exchangeProduct?: true
   funnelId?: true
+  riskScore?: true
+  riskLevel?: true
+  deliveredEventSentAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -246,6 +266,10 @@ export type OrderCountAggregateInputType = {
   courierOperation?: true
   exchangeProduct?: true
   funnelId?: true
+  riskScore?: true
+  riskLevel?: true
+  riskFactors?: true
+  deliveredEventSentAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -366,6 +390,10 @@ export type OrderGroupByOutputType = {
   courierOperation: $Enums.CourierOperation
   exchangeProduct: string | null
   funnelId: string | null
+  riskScore: number | null
+  riskLevel: $Enums.RiskLevel | null
+  riskFactors: runtime.JsonValue | null
+  deliveredEventSentAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: OrderCountAggregateOutputType | null
@@ -422,6 +450,10 @@ export type OrderWhereInput = {
   courierOperation?: Prisma.EnumCourierOperationFilter<"Order"> | $Enums.CourierOperation
   exchangeProduct?: Prisma.StringNullableFilter<"Order"> | string | null
   funnelId?: Prisma.StringNullableFilter<"Order"> | string | null
+  riskScore?: Prisma.IntNullableFilter<"Order"> | number | null
+  riskLevel?: Prisma.EnumRiskLevelNullableFilter<"Order"> | $Enums.RiskLevel | null
+  riskFactors?: Prisma.JsonNullableFilter<"Order">
+  deliveredEventSentAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
@@ -470,6 +502,10 @@ export type OrderOrderByWithRelationInput = {
   courierOperation?: Prisma.SortOrder
   exchangeProduct?: Prisma.SortOrderInput | Prisma.SortOrder
   funnelId?: Prisma.SortOrderInput | Prisma.SortOrder
+  riskScore?: Prisma.SortOrderInput | Prisma.SortOrder
+  riskLevel?: Prisma.SortOrderInput | Prisma.SortOrder
+  riskFactors?: Prisma.SortOrderInput | Prisma.SortOrder
+  deliveredEventSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   customer?: Prisma.CustomerOrderByWithRelationInput
@@ -521,6 +557,10 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   courierOperation?: Prisma.EnumCourierOperationFilter<"Order"> | $Enums.CourierOperation
   exchangeProduct?: Prisma.StringNullableFilter<"Order"> | string | null
   funnelId?: Prisma.StringNullableFilter<"Order"> | string | null
+  riskScore?: Prisma.IntNullableFilter<"Order"> | number | null
+  riskLevel?: Prisma.EnumRiskLevelNullableFilter<"Order"> | $Enums.RiskLevel | null
+  riskFactors?: Prisma.JsonNullableFilter<"Order">
+  deliveredEventSentAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
@@ -569,6 +609,10 @@ export type OrderOrderByWithAggregationInput = {
   courierOperation?: Prisma.SortOrder
   exchangeProduct?: Prisma.SortOrderInput | Prisma.SortOrder
   funnelId?: Prisma.SortOrderInput | Prisma.SortOrder
+  riskScore?: Prisma.SortOrderInput | Prisma.SortOrder
+  riskLevel?: Prisma.SortOrderInput | Prisma.SortOrder
+  riskFactors?: Prisma.SortOrderInput | Prisma.SortOrder
+  deliveredEventSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.OrderCountOrderByAggregateInput
@@ -610,6 +654,10 @@ export type OrderScalarWhereWithAggregatesInput = {
   courierOperation?: Prisma.EnumCourierOperationWithAggregatesFilter<"Order"> | $Enums.CourierOperation
   exchangeProduct?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   funnelId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  riskScore?: Prisma.IntNullableWithAggregatesFilter<"Order"> | number | null
+  riskLevel?: Prisma.EnumRiskLevelNullableWithAggregatesFilter<"Order"> | $Enums.RiskLevel | null
+  riskFactors?: Prisma.JsonNullableWithAggregatesFilter<"Order">
+  deliveredEventSentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
 }
@@ -638,6 +686,10 @@ export type OrderCreateInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -686,6 +738,10 @@ export type OrderUncheckedCreateInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -724,6 +780,10 @@ export type OrderUpdateInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -772,6 +832,10 @@ export type OrderUncheckedUpdateInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -815,6 +879,10 @@ export type OrderCreateManyInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -843,6 +911,10 @@ export type OrderUpdateManyMutationInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -876,6 +948,10 @@ export type OrderUncheckedUpdateManyInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -924,6 +1000,10 @@ export type OrderCountOrderByAggregateInput = {
   courierOperation?: Prisma.SortOrder
   exchangeProduct?: Prisma.SortOrder
   funnelId?: Prisma.SortOrder
+  riskScore?: Prisma.SortOrder
+  riskLevel?: Prisma.SortOrder
+  riskFactors?: Prisma.SortOrder
+  deliveredEventSentAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -932,6 +1012,7 @@ export type OrderAvgOrderByAggregateInput = {
   totalCents?: Prisma.SortOrder
   shippingPriceCents?: Prisma.SortOrder
   callAttemptsCount?: Prisma.SortOrder
+  riskScore?: Prisma.SortOrder
 }
 
 export type OrderMaxOrderByAggregateInput = {
@@ -963,6 +1044,9 @@ export type OrderMaxOrderByAggregateInput = {
   courierOperation?: Prisma.SortOrder
   exchangeProduct?: Prisma.SortOrder
   funnelId?: Prisma.SortOrder
+  riskScore?: Prisma.SortOrder
+  riskLevel?: Prisma.SortOrder
+  deliveredEventSentAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -996,6 +1080,9 @@ export type OrderMinOrderByAggregateInput = {
   courierOperation?: Prisma.SortOrder
   exchangeProduct?: Prisma.SortOrder
   funnelId?: Prisma.SortOrder
+  riskScore?: Prisma.SortOrder
+  riskLevel?: Prisma.SortOrder
+  deliveredEventSentAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -1004,6 +1091,7 @@ export type OrderSumOrderByAggregateInput = {
   totalCents?: Prisma.SortOrder
   shippingPriceCents?: Prisma.SortOrder
   callAttemptsCount?: Prisma.SortOrder
+  riskScore?: Prisma.SortOrder
 }
 
 export type OrderScalarRelationFilter = {
@@ -1133,6 +1221,10 @@ export type NullableDateTimeFieldUpdateOperationsInput = {
 
 export type EnumCourierOperationFieldUpdateOperationsInput = {
   set?: $Enums.CourierOperation
+}
+
+export type NullableEnumRiskLevelFieldUpdateOperationsInput = {
+  set?: $Enums.RiskLevel | null
 }
 
 export type OrderUpdateOneWithoutDuplicateOrdersNestedInput = {
@@ -1413,6 +1505,10 @@ export type OrderCreateWithoutCustomerInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
@@ -1459,6 +1555,10 @@ export type OrderUncheckedCreateWithoutCustomerInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -1531,6 +1631,10 @@ export type OrderScalarWhereInput = {
   courierOperation?: Prisma.EnumCourierOperationFilter<"Order"> | $Enums.CourierOperation
   exchangeProduct?: Prisma.StringNullableFilter<"Order"> | string | null
   funnelId?: Prisma.StringNullableFilter<"Order"> | string | null
+  riskScore?: Prisma.IntNullableFilter<"Order"> | number | null
+  riskLevel?: Prisma.EnumRiskLevelNullableFilter<"Order"> | $Enums.RiskLevel | null
+  riskFactors?: Prisma.JsonNullableFilter<"Order">
+  deliveredEventSentAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
 }
@@ -1559,6 +1663,10 @@ export type OrderCreateWithoutAddressInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -1605,6 +1713,10 @@ export type OrderUncheckedCreateWithoutAddressInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -1669,6 +1781,10 @@ export type OrderCreateWithoutDuplicateOrdersInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -1716,6 +1832,10 @@ export type OrderUncheckedCreateWithoutDuplicateOrdersInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   callAttempts?: Prisma.CallAttemptUncheckedCreateNestedManyWithoutOrderInput
@@ -1758,6 +1878,10 @@ export type OrderCreateWithoutDuplicateOfOrderInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -1804,6 +1928,10 @@ export type OrderUncheckedCreateWithoutDuplicateOfOrderInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -1863,6 +1991,10 @@ export type OrderUpdateWithoutDuplicateOrdersInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -1910,6 +2042,10 @@ export type OrderUncheckedUpdateWithoutDuplicateOrdersInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   callAttempts?: Prisma.CallAttemptUncheckedUpdateManyWithoutOrderNestedInput
@@ -1963,6 +2099,10 @@ export type OrderCreateWithoutAttributionInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -2010,6 +2150,10 @@ export type OrderUncheckedCreateWithoutAttributionInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -2063,6 +2207,10 @@ export type OrderUpdateWithoutAttributionInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -2110,6 +2258,10 @@ export type OrderUncheckedUpdateWithoutAttributionInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -2147,6 +2299,10 @@ export type OrderCreateWithoutCallAttemptsInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -2194,6 +2350,10 @@ export type OrderUncheckedCreateWithoutCallAttemptsInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -2247,6 +2407,10 @@ export type OrderUpdateWithoutCallAttemptsInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -2294,6 +2458,10 @@ export type OrderUncheckedUpdateWithoutCallAttemptsInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -2331,6 +2499,10 @@ export type OrderCreateWithoutItemsInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -2378,6 +2550,10 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -2431,6 +2607,10 @@ export type OrderUpdateWithoutItemsInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -2478,6 +2658,10 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -2515,6 +2699,10 @@ export type OrderCreateWithoutShipmentInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -2562,6 +2750,10 @@ export type OrderUncheckedCreateWithoutShipmentInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -2615,6 +2807,10 @@ export type OrderUpdateWithoutShipmentInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -2662,6 +2858,10 @@ export type OrderUncheckedUpdateWithoutShipmentInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -2699,6 +2899,10 @@ export type OrderCreateWithoutCashReconciliationInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -2746,6 +2950,10 @@ export type OrderUncheckedCreateWithoutCashReconciliationInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -2799,6 +3007,10 @@ export type OrderUpdateWithoutCashReconciliationInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -2846,6 +3058,10 @@ export type OrderUncheckedUpdateWithoutCashReconciliationInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -2883,6 +3099,10 @@ export type OrderCreateWithoutLedgerEntriesInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -2930,6 +3150,10 @@ export type OrderUncheckedCreateWithoutLedgerEntriesInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -2983,6 +3207,10 @@ export type OrderUpdateWithoutLedgerEntriesInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -3030,6 +3258,10 @@ export type OrderUncheckedUpdateWithoutLedgerEntriesInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -3067,6 +3299,10 @@ export type OrderCreateWithoutNotificationsInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -3114,6 +3350,10 @@ export type OrderUncheckedCreateWithoutNotificationsInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -3167,6 +3407,10 @@ export type OrderUpdateWithoutNotificationsInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -3214,6 +3458,10 @@ export type OrderUncheckedUpdateWithoutNotificationsInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -3251,6 +3499,10 @@ export type OrderCreateWithoutGoogleSheetRowsInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -3298,6 +3550,10 @@ export type OrderUncheckedCreateWithoutGoogleSheetRowsInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -3351,6 +3607,10 @@ export type OrderUpdateWithoutGoogleSheetRowsInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -3398,6 +3658,10 @@ export type OrderUncheckedUpdateWithoutGoogleSheetRowsInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -3435,6 +3699,10 @@ export type OrderCreateWithoutShippingCompanyInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -3481,6 +3749,10 @@ export type OrderUncheckedCreateWithoutShippingCompanyInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -3545,6 +3817,10 @@ export type OrderCreateWithoutCourierWebhookEventsInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -3592,6 +3868,10 @@ export type OrderUncheckedCreateWithoutCourierWebhookEventsInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -3645,6 +3925,10 @@ export type OrderUpdateWithoutCourierWebhookEventsInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -3692,6 +3976,10 @@ export type OrderUncheckedUpdateWithoutCourierWebhookEventsInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -3729,6 +4017,10 @@ export type OrderCreateWithoutFunnelInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -3775,6 +4067,10 @@ export type OrderUncheckedCreateWithoutFunnelInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -3843,6 +4139,10 @@ export type OrderCreateManyCustomerInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -3871,6 +4171,10 @@ export type OrderUpdateWithoutCustomerInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
@@ -3917,6 +4221,10 @@ export type OrderUncheckedUpdateWithoutCustomerInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -3959,6 +4267,10 @@ export type OrderUncheckedUpdateManyWithoutCustomerInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -3991,6 +4303,10 @@ export type OrderCreateManyAddressInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -4019,6 +4335,10 @@ export type OrderUpdateWithoutAddressInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -4065,6 +4385,10 @@ export type OrderUncheckedUpdateWithoutAddressInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -4107,6 +4431,10 @@ export type OrderUncheckedUpdateManyWithoutAddressInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -4139,6 +4467,10 @@ export type OrderCreateManyDuplicateOfOrderInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -4167,6 +4499,10 @@ export type OrderUpdateWithoutDuplicateOfOrderInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -4213,6 +4549,10 @@ export type OrderUncheckedUpdateWithoutDuplicateOfOrderInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -4255,6 +4595,10 @@ export type OrderUncheckedUpdateManyWithoutDuplicateOfOrderInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -4287,6 +4631,10 @@ export type OrderCreateManyShippingCompanyInput = {
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
   funnelId?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -4315,6 +4663,10 @@ export type OrderUpdateWithoutShippingCompanyInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -4361,6 +4713,10 @@ export type OrderUncheckedUpdateWithoutShippingCompanyInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -4403,6 +4759,10 @@ export type OrderUncheckedUpdateManyWithoutShippingCompanyInput = {
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -4435,6 +4795,10 @@ export type OrderCreateManyFunnelInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  riskScore?: number | null
+  riskLevel?: $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -4463,6 +4827,10 @@ export type OrderUpdateWithoutFunnelInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -4509,6 +4877,10 @@ export type OrderUncheckedUpdateWithoutFunnelInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -4551,6 +4923,10 @@ export type OrderUncheckedUpdateManyWithoutFunnelInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
+  riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -4669,6 +5045,10 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   courierOperation?: boolean
   exchangeProduct?: boolean
   funnelId?: boolean
+  riskScore?: boolean
+  riskLevel?: boolean
+  riskFactors?: boolean
+  deliveredEventSentAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -4718,6 +5098,10 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   courierOperation?: boolean
   exchangeProduct?: boolean
   funnelId?: boolean
+  riskScore?: boolean
+  riskLevel?: boolean
+  riskFactors?: boolean
+  deliveredEventSentAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -4756,6 +5140,10 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   courierOperation?: boolean
   exchangeProduct?: boolean
   funnelId?: boolean
+  riskScore?: boolean
+  riskLevel?: boolean
+  riskFactors?: boolean
+  deliveredEventSentAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -4794,11 +5182,15 @@ export type OrderSelectScalar = {
   courierOperation?: boolean
   exchangeProduct?: boolean
   funnelId?: boolean
+  riskScore?: boolean
+  riskLevel?: boolean
+  riskFactors?: boolean
+  deliveredEventSentAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "addressId" | "state" | "totalCents" | "shippingType" | "shippingPriceCents" | "isAbandoned" | "fulfillmentMethod" | "shippingCompanyId" | "notes" | "postponedUntil" | "isDuplicate" | "duplicateOfOrderId" | "archived" | "archivedAt" | "assignedToId" | "assignedToEmail" | "lockedUntil" | "skippedUntil" | "callAttemptsCount" | "lastCalledAt" | "deliveryNote" | "isFragile" | "gpsLink" | "courierOperation" | "exchangeProduct" | "funnelId" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "addressId" | "state" | "totalCents" | "shippingType" | "shippingPriceCents" | "isAbandoned" | "fulfillmentMethod" | "shippingCompanyId" | "notes" | "postponedUntil" | "isDuplicate" | "duplicateOfOrderId" | "archived" | "archivedAt" | "assignedToId" | "assignedToEmail" | "lockedUntil" | "skippedUntil" | "callAttemptsCount" | "lastCalledAt" | "deliveryNote" | "isFragile" | "gpsLink" | "courierOperation" | "exchangeProduct" | "funnelId" | "riskScore" | "riskLevel" | "riskFactors" | "deliveredEventSentAt" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
   address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
@@ -4880,6 +5272,10 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     courierOperation: $Enums.CourierOperation
     exchangeProduct: string | null
     funnelId: string | null
+    riskScore: number | null
+    riskLevel: $Enums.RiskLevel | null
+    riskFactors: runtime.JsonValue | null
+    deliveredEventSentAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["order"]>
@@ -5348,6 +5744,10 @@ export interface OrderFieldRefs {
   readonly courierOperation: Prisma.FieldRef<"Order", 'CourierOperation'>
   readonly exchangeProduct: Prisma.FieldRef<"Order", 'String'>
   readonly funnelId: Prisma.FieldRef<"Order", 'String'>
+  readonly riskScore: Prisma.FieldRef<"Order", 'Int'>
+  readonly riskLevel: Prisma.FieldRef<"Order", 'RiskLevel'>
+  readonly riskFactors: Prisma.FieldRef<"Order", 'Json'>
+  readonly deliveredEventSentAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Order", 'DateTime'>
 }
@@ -6049,4 +6449,3 @@ export type OrderDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    */
   include?: Prisma.OrderInclude<ExtArgs> | null
 }
-

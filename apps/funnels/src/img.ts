@@ -55,7 +55,15 @@ export function parseImgQuery(url: URL): ImgQuery | null {
 
 const MAX_BYTES = 20 * 1024 * 1024
 
-async function produce(source: string, width: number): Promise<Buffer> {
+export type ImgFormat = 'avif' | 'webp'
+const MIME: Record<ImgFormat, string> = { avif: 'image/avif', webp: 'image/webp' }
+
+// AVIF is ~30% smaller than WebP at the same quality; use it only for browsers that say they accept it.
+export function pickFormat(accept: string | undefined): ImgFormat {
+  return accept && /image\/avif/.test(accept) ? 'avif' : 'webp'
+}
+
+async function produce(source: string, width: number, format: ImgFormat): Promise<Buffer> {
   const ctl = new AbortController()
   const timer = setTimeout(() => ctl.abort(), 8000)
   try {
@@ -65,29 +73,31 @@ async function produce(source: string, width: number): Promise<Buffer> {
     if (Number(res.headers.get('content-length') ?? 0) > MAX_BYTES) throw new Error('too large')
     const input = Buffer.from(await res.arrayBuffer())
     if (input.length > MAX_BYTES) throw new Error('too large')
-    return await sharp(input, { failOn: 'none' }).rotate().resize({ width, withoutEnlargement: true }).webp({ quality: 72, effort: 4 }).toBuffer()
+    const pipeline = sharp(input, { failOn: 'none' }).rotate().resize({ width, withoutEnlargement: true })
+    return await (format === 'avif' ? pipeline.avif({ quality: 50, effort: 3 }) : pipeline.webp({ quality: 72, effort: 4 })).toBuffer()
   } finally {
     clearTimeout(timer)
   }
 }
 
-export async function getImage(source: string, width: number): Promise<ImgResult> {
-  const key = createHash('sha1').update(`${source}|${width}`).digest('hex')
+export async function getImage(source: string, width: number, format: ImgFormat = 'webp'): Promise<ImgResult> {
+  const type = MIME[format]
+  const key = createHash('sha1').update(`${source}|${width}|${format}`).digest('hex')
   const hit = mem.get(key)
-  if (hit) return { body: hit, type: 'image/webp' }
+  if (hit) return { body: hit, type }
 
-  const file = join(DIR, `${key}.webp`)
+  const file = join(DIR, `${key}.${format}`)
   try {
     const disk = await readFile(file)
     remember(key, disk)
-    return { body: disk, type: 'image/webp' }
+    return { body: disk, type }
   } catch {
     // not on disk yet
   }
 
   let job = inflight.get(key)
   if (!job) {
-    job = produce(source, width)
+    job = produce(source, width, format)
       .then(async (buf) => {
         remember(key, buf)
         await mkdir(DIR, { recursive: true }).then(() => writeFile(file, buf)).catch(() => undefined)
@@ -96,5 +106,5 @@ export async function getImage(source: string, width: number): Promise<ImgResult
       .finally(() => inflight.delete(key))
     inflight.set(key, job)
   }
-  return { body: await job, type: 'image/webp' }
+  return { body: await job, type }
 }

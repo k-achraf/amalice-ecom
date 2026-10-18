@@ -312,24 +312,38 @@ enum StockAdjustmentReason {
   Damage
   Sale
   Return
+  // Stock given back when an order is cancelled before shipping.
+  Release
+  // Delta produced by a physical count (stocktake).
+  Stocktake
 }
 
 model StockAdjustment {
-  id        String                @id @default(uuid())
-  productId String                @map("product_id")
-  product   Product               @relation(fields: [productId], references: [id])
+  id         String                @id @default(uuid())
+  productId  String                @map("product_id")
+  product    Product               @relation(fields: [productId], references: [id])
   // Signed delta — positive for stock-in, negative for stock-out. The
   // absolute quantity is |delta|; sign carries direction.
-  delta     Int
-  reason    StockAdjustmentReason
-  note      String?
+  delta      Int
+  reason     StockAdjustmentReason
+  note       String?
   // Who made the change — nullable so the seed/initial stock doesn't require
   // a fake admin actor, but every real admin action is attributed.
-  actorId   String?               @map("actor_id")
-  createdAt DateTime              @default(now()) @map("created_at")
+  actorId    String?               @map("actor_id")
+  // Set when the change concerns one variant's own stock.
+  variantId  String?               @map("variant_id")
+  // Set for Release rows — also the idempotency key (one release per order).
+  orderId    String?               @map("order_id")
+  // Who the stock came from (Restock rows).
+  supplierId String?               @map("supplier_id")
+  supplier   Supplier?             @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  createdAt  DateTime              @default(now()) @map("created_at")
 
   @@index([productId])
   @@index([actorId])
+  @@index([variantId])
+  @@index([orderId])
+  @@index([supplierId])
   @@map("stock_adjustments")
 }
 
@@ -339,6 +353,20 @@ model StockAdjustment {
 // attributes it varies on. VariantOption links a variant to its chosen option
 // per attribute. This replaces the free-form JSON `attributes` blob on
 // ProductVariant as the source of truth — structured, validated, reusable.
+
+model Supplier {
+  id          String            @id @default(uuid())
+  name        String
+  phone       String?
+  email       String?
+  address     String?
+  notes       String?
+  active      Boolean           @default(true)
+  adjustments StockAdjustment[]
+  createdAt   DateTime          @default(now()) @map("created_at")
+
+  @@map("suppliers")
+}
 
 enum AttributeType {
   Text
@@ -552,11 +580,23 @@ model Order {
   // slug, never from the browser). SetNull so deleting a funnel keeps its orders.
   funnelId             String?               @map("funnel_id")
   funnel               Funnel?               @relation(fields: [funnelId], references: [id], onDelete: SetNull)
+  // Fake/returned-order risk, scored once when the order is placed (see
+  // packages/shared risk.ts and RiskService.assess). riskFactors is the
+  // [{code, points, detail}] list that explains the score. Null for orders
+  // placed before scoring existed and for abandoned-cart captures.
+  riskScore            Int?                  @map("risk_score")
+  riskLevel            RiskLevel?            @map("risk_level")
+  riskFactors          Json?                 @map("risk_factors")
+  // When the server-side "Delivered" event was sent to Meta CAPI / TikTok
+  // Events API (ReportsModule's delivery sweep). Null = not sent yet.
+  deliveredEventSentAt DateTime?             @map("delivered_event_sent_at")
   createdAt            DateTime              @default(now()) @map("created_at")
   updatedAt            DateTime              @updatedAt @map("updated_at")
 
   @@index([customerId])
   @@index([funnelId])
+  @@index([state, deliveredEventSentAt])
+  @@index([riskLevel])
   @@index([state])
   @@index([duplicateOfOrderId])
   @@index([shippingCompanyId])
@@ -1028,6 +1068,9 @@ model StoreSettings {
   // on the lead form, without submitting, before the storefront fires the
   // abandoned-cart order creation. See OrdersService.createAbandonedOrder.
   abandonedCartDelaySeconds Int      @default(60) @map("abandoned_cart_delay_seconds")
+  // Brand identity (BrandSchema in packages/shared): logo, favicon, primary
+  // colour, font. Written only via PUT admin/settings/brand; null = defaults.
+  brand                     Json?
   updatedAt                 DateTime @updatedAt @map("updated_at")
 
   @@map("store_settings")
@@ -1704,17 +1747,21 @@ enum FunnelStepType {
 }
 
 model Funnel {
-  id         String       @id @default(uuid())
-  name       String
-  slug       String       @unique
-  templateId String       @map("template_id")
-  status     FunnelStatus @default(Draft)
-  productId  String       @map("product_id")
-  product    Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
-  steps      FunnelStep[]
-  orders     Order[]
-  createdAt  DateTime     @default(now()) @map("created_at")
-  updatedAt  DateTime     @updatedAt @map("updated_at")
+  id              String       @id @default(uuid())
+  name            String
+  slug            String       @unique
+  templateId      String       @map("template_id")
+  status          FunnelStatus @default(Draft)
+  productId       String       @map("product_id")
+  product         Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  // Optional per-funnel pixels that replace the store-wide Meta / TikTok pixel
+  // on this funnel's page and in its server-side events. Null = use the store's.
+  metaPixelId     String?      @map("meta_pixel_id")
+  tiktokPixelCode String?      @map("tiktok_pixel_code")
+  steps           FunnelStep[]
+  orders          Order[]
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
 
   @@index([productId])
   @@index([status])
@@ -1811,4 +1858,81 @@ model MetaAppCredentials {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   @@map("meta_app_credentials")
+}
+
+enum RiskLevel {
+  Low
+  Medium
+  High
+}
+
+enum BlacklistType {
+  Phone
+  Address
+}
+
+// Warn: order is accepted but flagged High risk. Block: refused at checkout.
+enum BlacklistAction {
+  Warn
+  Block
+}
+
+enum BlacklistSource {
+  Manual
+  Auto
+}
+
+// One shared list for the whole store (every admin sees and edits the same
+// entries). `value` is canonical: E.164 phone for Phone entries, the
+// normalizeAddressKey() form for Address entries, so matching is an exact
+// lookup. Releasing an entry sets active=false instead of deleting it, so the
+// automatic rule never re-adds someone an admin deliberately cleared.
+model BlacklistEntry {
+  id             String          @id @default(uuid())
+  type           BlacklistType
+  value          String
+  // Readable form for the admin list (the raw address / formatted phone).
+  label          String
+  action         BlacklistAction
+  source         BlacklistSource @default(Manual)
+  reason         String?
+  active         Boolean         @default(true)
+  createdById    String?         @map("created_by_id")
+  createdByEmail String?         @map("created_by_email")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  @@unique([type, value])
+  @@index([active, type])
+  @@map("blacklist_entries")
+}
+
+// Daily Telegram summary + alert thresholds (singleton row). Edited from the
+// admin UI (SuperAdmin); the bot token is never returned to the browser.
+model ReportSettings {
+  id                  String   @id @default("singleton")
+  enabled             Boolean  @default(false)
+  telegramBotToken    String?  @map("telegram_bot_token")
+  telegramChatId      String?  @map("telegram_chat_id")
+  // Hour (0-23, Algiers time) the daily summary goes out.
+  dailyReportHour     Int      @default(21) @map("daily_report_hour")
+  // Alert when ad spend / orders of a campaign (or the whole account) exceeds this. Null = off.
+  maxCostPerOrderDzd  Int?     @map("max_cost_per_order_dzd")
+  // Alert when a wilaya's return rate (last 30 days) reaches this %, with at least returnRateMinOrders closed orders.
+  returnRateAlertPct  Int      @default(40) @map("return_rate_alert_pct")
+  returnRateMinOrders Int      @default(8) @map("return_rate_min_orders")
+  // Alert when a courier hasn't updated any in-transit parcel for this many hours. 0 = off.
+  carrierStaleHours   Int      @default(36) @map("carrier_stale_hours")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  @@map("report_settings")
+}
+
+// One row per alert already sent (key includes the day), so an alert fires
+// at most once per day per subject.
+model AlertLog {
+  key       String   @id
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("alert_logs")
 }

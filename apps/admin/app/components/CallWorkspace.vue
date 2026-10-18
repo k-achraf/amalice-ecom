@@ -3,6 +3,7 @@ import {
   CALL_CENTER_MAX_ATTEMPTS,
   CANCEL_REASONS,
   MESSAGE_TEMPLATES,
+  RISK_FACTOR_LABELS,
   buildSmsUrl,
   buildWhatsAppUrl,
   fillMessageTemplate,
@@ -382,6 +383,14 @@ onBeforeUnmount(() => {
 
 <template>
   <section class="card" aria-label="Current call">
+    <div v-if="order.riskLevel && order.riskLevel !== 'Low'" class="notice" :class="order.riskLevel === 'High' ? 'danger' : 'warn'">
+      <AdsIcon name="i-lucide-shield-alert" />
+      <span>
+        <strong>{{ order.riskLevel }} return risk ({{ order.riskScore }}/100).</strong>
+        {{ (order.riskFactors ?? []).filter((f) => f.points > 0).map((f) => RISK_FACTOR_LABELS[f.code] ?? f.code).join(' · ') }}
+        <NuxtLink :to="`/orders/${order.id}`">Details</NuxtLink>
+      </span>
+    </div>
     <div v-if="order.isDuplicate" class="notice danger"><AdsIcon name="i-lucide-alert-triangle" /><span>Possible duplicate: same customer and product within the last 2 days<template v-if="order.duplicateOfOrderId"> — <NuxtLink :to="`/orders/${order.duplicateOfOrderId}`">see the earlier order</NuxtLink></template>.</span></div>
     <div v-if="addressCheck && addressCheck.checked && !addressCheck.ok" class="notice danger">
       <AdsIcon name="i-lucide-alert-triangle" />

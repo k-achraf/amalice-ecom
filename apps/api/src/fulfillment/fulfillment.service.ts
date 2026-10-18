@@ -1,3 +1,4 @@
+import { StockService } from '../common/stock.service'
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import type { NormalizedCourierStatus } from './courier-provider.interface'
 import { CourierProvider, COURIER_PROVIDER } from './courier-provider.interface'
@@ -53,7 +54,8 @@ export class FulfillmentService {
     // DhdApiService rather than through the courier abstraction, since
     // there's no cross-provider equivalent for them to generalize into.
     private readonly dhd: DhdApiService,
-    private readonly googleSheets: GoogleSheetsService
+    private readonly googleSheets: GoogleSheetsService,
+    private readonly stock: StockService
   ) {}
 
   // Fire-and-forget, same rule as everywhere else GoogleSheetsService is
@@ -412,6 +414,8 @@ export class FulfillmentService {
       })
       await tx.order.update({ where: { id: shipment.order.id }, data: { state: targetState as never } })
     })
+    // The courier cancelled before delivery: the parcel never left, give the stock back.
+    if (targetState === 'CancelledShipping') await this.stock.releaseForOrder(shipment.order.id)
 
     await this.audit.log({
       action: 'StateTransition',
@@ -785,6 +789,7 @@ export class FulfillmentService {
     await this.prisma.$transaction(async (tx) => {
       for (const step of path) await tx.order.update({ where: { id: shipment.orderId }, data: { state: step } })
     })
+    if (path.includes('CancelledShipping' as OrderState)) await this.stock.releaseForOrder(shipment.orderId)
     let prev: OrderState = from
     for (const step of path) {
       await this.audit.log({

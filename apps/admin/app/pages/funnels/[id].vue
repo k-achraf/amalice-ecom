@@ -53,7 +53,7 @@ async function mutate(fn: () => Promise<FunnelDetail>, opts?: { success?: string
 }
 
 // ---- settings ----
-const form = reactive({ name: '', slug: '', productId: '' })
+const form = reactive({ name: '', slug: '', productId: '', metaPixelId: '', tiktokPixelCode: '' })
 watch(
   funnel,
   (f) => {
@@ -61,14 +61,16 @@ watch(
     form.name = f.name
     form.slug = f.slug
     form.productId = f.product.id
+    form.metaPixelId = f.metaPixelId ?? ''
+    form.tiktokPixelCode = f.tiktokPixelCode ?? ''
   },
   { immediate: true }
 )
-const dirty = computed(() => !!funnel.value && (form.name !== funnel.value.name || form.slug !== funnel.value.slug || form.productId !== funnel.value.product.id))
+const dirty = computed(() => !!funnel.value && (form.name !== funnel.value.name || form.slug !== funnel.value.slug || form.productId !== funnel.value.product.id || form.metaPixelId !== (funnel.value.metaPixelId ?? '') || form.tiktokPixelCode !== (funnel.value.tiktokPixelCode ?? '')))
 const saving = ref(false)
 async function saveSettings() {
   saving.value = true
-  await mutate(() => api<FunnelDetail>(`/admin/funnels/${id}`, { method: 'PATCH', body: { name: form.name, slug: form.slug, productId: form.productId } }), {
+  await mutate(() => api<FunnelDetail>(`/admin/funnels/${id}`, { method: 'PATCH', body: { name: form.name, slug: form.slug, productId: form.productId, metaPixelId: form.metaPixelId.trim(), tiktokPixelCode: form.tiktokPixelCode.trim() } }), {
     success: 'Funnel saved',
     errorFallback: 'Could not save the funnel'
   })
@@ -372,6 +374,8 @@ const warnings = computed(() => {
             <AdsField label="Name"><AdsInput v-model="form.name" /></AdsField>
             <AdsField label="Slug" help="Used in the funnel URL once the storefront serves funnels."><AdsInput v-model="form.slug" class="mono" /></AdsField>
             <AdsField label="Product"><AdsSelect v-model="form.productId" :items="productOptions" /></AdsField>
+            <AdsField label="Meta pixel ID (this funnel)" help="Leave empty to use the store's pixel. Server-side events for this funnel's orders go to this pixel too, using the store's access token (works when both pixels are in the same Meta business)."><AdsInput v-model="form.metaPixelId" class="mono" placeholder="e.g. 1234567890123" /></AdsField>
+            <AdsField label="TikTok pixel code (this funnel)" help="Leave empty to use the store's pixel."><AdsInput v-model="form.tiktokPixelCode" class="mono" placeholder="e.g. C1ABCDEFGH23" /></AdsField>
             <AdsButton :loading="saving" :disabled="!dirty || !form.name.trim() || !form.slug.trim()" icon="i-lucide-check" @click="saveSettings">Save settings</AdsButton>
           </section>
 

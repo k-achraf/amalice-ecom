@@ -41,6 +41,9 @@ export type StockAdjustmentMinAggregateOutputType = {
   reason: $Enums.StockAdjustmentReason | null
   note: string | null
   actorId: string | null
+  variantId: string | null
+  orderId: string | null
+  supplierId: string | null
   createdAt: Date | null
 }
 
@@ -51,6 +54,9 @@ export type StockAdjustmentMaxAggregateOutputType = {
   reason: $Enums.StockAdjustmentReason | null
   note: string | null
   actorId: string | null
+  variantId: string | null
+  orderId: string | null
+  supplierId: string | null
   createdAt: Date | null
 }
 
@@ -61,6 +67,9 @@ export type StockAdjustmentCountAggregateOutputType = {
   reason: number
   note: number
   actorId: number
+  variantId: number
+  orderId: number
+  supplierId: number
   createdAt: number
   _all: number
 }
@@ -81,6 +90,9 @@ export type StockAdjustmentMinAggregateInputType = {
   reason?: true
   note?: true
   actorId?: true
+  variantId?: true
+  orderId?: true
+  supplierId?: true
   createdAt?: true
 }
 
@@ -91,6 +103,9 @@ export type StockAdjustmentMaxAggregateInputType = {
   reason?: true
   note?: true
   actorId?: true
+  variantId?: true
+  orderId?: true
+  supplierId?: true
   createdAt?: true
 }
 
@@ -101,6 +116,9 @@ export type StockAdjustmentCountAggregateInputType = {
   reason?: true
   note?: true
   actorId?: true
+  variantId?: true
+  orderId?: true
+  supplierId?: true
   createdAt?: true
   _all?: true
 }
@@ -198,6 +216,9 @@ export type StockAdjustmentGroupByOutputType = {
   reason: $Enums.StockAdjustmentReason
   note: string | null
   actorId: string | null
+  variantId: string | null
+  orderId: string | null
+  supplierId: string | null
   createdAt: Date
   _count: StockAdjustmentCountAggregateOutputType | null
   _avg: StockAdjustmentAvgAggregateOutputType | null
@@ -231,8 +252,12 @@ export type StockAdjustmentWhereInput = {
   reason?: Prisma.EnumStockAdjustmentReasonFilter<"StockAdjustment"> | $Enums.StockAdjustmentReason
   note?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
   actorId?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
+  variantId?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
+  orderId?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
+  supplierId?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
   createdAt?: Prisma.DateTimeFilter<"StockAdjustment"> | Date | string
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
+  supplier?: Prisma.XOR<Prisma.SupplierNullableScalarRelationFilter, Prisma.SupplierWhereInput> | null
 }
 
 export type StockAdjustmentOrderByWithRelationInput = {
@@ -242,8 +267,12 @@ export type StockAdjustmentOrderByWithRelationInput = {
   reason?: Prisma.SortOrder
   note?: Prisma.SortOrderInput | Prisma.SortOrder
   actorId?: Prisma.SortOrderInput | Prisma.SortOrder
+  variantId?: Prisma.SortOrderInput | Prisma.SortOrder
+  orderId?: Prisma.SortOrderInput | Prisma.SortOrder
+  supplierId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   product?: Prisma.ProductOrderByWithRelationInput
+  supplier?: Prisma.SupplierOrderByWithRelationInput
 }
 
 export type StockAdjustmentWhereUniqueInput = Prisma.AtLeast<{
@@ -256,8 +285,12 @@ export type StockAdjustmentWhereUniqueInput = Prisma.AtLeast<{
   reason?: Prisma.EnumStockAdjustmentReasonFilter<"StockAdjustment"> | $Enums.StockAdjustmentReason
   note?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
   actorId?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
+  variantId?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
+  orderId?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
+  supplierId?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
   createdAt?: Prisma.DateTimeFilter<"StockAdjustment"> | Date | string
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
+  supplier?: Prisma.XOR<Prisma.SupplierNullableScalarRelationFilter, Prisma.SupplierWhereInput> | null
 }, "id">
 
 export type StockAdjustmentOrderByWithAggregationInput = {
@@ -267,6 +300,9 @@ export type StockAdjustmentOrderByWithAggregationInput = {
   reason?: Prisma.SortOrder
   note?: Prisma.SortOrderInput | Prisma.SortOrder
   actorId?: Prisma.SortOrderInput | Prisma.SortOrder
+  variantId?: Prisma.SortOrderInput | Prisma.SortOrder
+  orderId?: Prisma.SortOrderInput | Prisma.SortOrder
+  supplierId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.StockAdjustmentCountOrderByAggregateInput
   _avg?: Prisma.StockAdjustmentAvgOrderByAggregateInput
@@ -285,6 +321,9 @@ export type StockAdjustmentScalarWhereWithAggregatesInput = {
   reason?: Prisma.EnumStockAdjustmentReasonWithAggregatesFilter<"StockAdjustment"> | $Enums.StockAdjustmentReason
   note?: Prisma.StringNullableWithAggregatesFilter<"StockAdjustment"> | string | null
   actorId?: Prisma.StringNullableWithAggregatesFilter<"StockAdjustment"> | string | null
+  variantId?: Prisma.StringNullableWithAggregatesFilter<"StockAdjustment"> | string | null
+  orderId?: Prisma.StringNullableWithAggregatesFilter<"StockAdjustment"> | string | null
+  supplierId?: Prisma.StringNullableWithAggregatesFilter<"StockAdjustment"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"StockAdjustment"> | Date | string
 }
 
@@ -294,8 +333,11 @@ export type StockAdjustmentCreateInput = {
   reason: $Enums.StockAdjustmentReason
   note?: string | null
   actorId?: string | null
+  variantId?: string | null
+  orderId?: string | null
   createdAt?: Date | string
   product: Prisma.ProductCreateNestedOneWithoutStockAdjustmentsInput
+  supplier?: Prisma.SupplierCreateNestedOneWithoutAdjustmentsInput
 }
 
 export type StockAdjustmentUncheckedCreateInput = {
@@ -305,6 +347,9 @@ export type StockAdjustmentUncheckedCreateInput = {
   reason: $Enums.StockAdjustmentReason
   note?: string | null
   actorId?: string | null
+  variantId?: string | null
+  orderId?: string | null
+  supplierId?: string | null
   createdAt?: Date | string
 }
 
@@ -314,8 +359,11 @@ export type StockAdjustmentUpdateInput = {
   reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.ProductUpdateOneRequiredWithoutStockAdjustmentsNestedInput
+  supplier?: Prisma.SupplierUpdateOneWithoutAdjustmentsNestedInput
 }
 
 export type StockAdjustmentUncheckedUpdateInput = {
@@ -325,6 +373,9 @@ export type StockAdjustmentUncheckedUpdateInput = {
   reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -335,6 +386,9 @@ export type StockAdjustmentCreateManyInput = {
   reason: $Enums.StockAdjustmentReason
   note?: string | null
   actorId?: string | null
+  variantId?: string | null
+  orderId?: string | null
+  supplierId?: string | null
   createdAt?: Date | string
 }
 
@@ -344,6 +398,8 @@ export type StockAdjustmentUpdateManyMutationInput = {
   reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -354,6 +410,9 @@ export type StockAdjustmentUncheckedUpdateManyInput = {
   reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -374,6 +433,9 @@ export type StockAdjustmentCountOrderByAggregateInput = {
   reason?: Prisma.SortOrder
   note?: Prisma.SortOrder
   actorId?: Prisma.SortOrder
+  variantId?: Prisma.SortOrder
+  orderId?: Prisma.SortOrder
+  supplierId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -388,6 +450,9 @@ export type StockAdjustmentMaxOrderByAggregateInput = {
   reason?: Prisma.SortOrder
   note?: Prisma.SortOrder
   actorId?: Prisma.SortOrder
+  variantId?: Prisma.SortOrder
+  orderId?: Prisma.SortOrder
+  supplierId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -398,6 +463,9 @@ export type StockAdjustmentMinOrderByAggregateInput = {
   reason?: Prisma.SortOrder
   note?: Prisma.SortOrder
   actorId?: Prisma.SortOrder
+  variantId?: Prisma.SortOrder
+  orderId?: Prisma.SortOrder
+  supplierId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -451,13 +519,58 @@ export type EnumStockAdjustmentReasonFieldUpdateOperationsInput = {
   set?: $Enums.StockAdjustmentReason
 }
 
+export type StockAdjustmentCreateNestedManyWithoutSupplierInput = {
+  create?: Prisma.XOR<Prisma.StockAdjustmentCreateWithoutSupplierInput, Prisma.StockAdjustmentUncheckedCreateWithoutSupplierInput> | Prisma.StockAdjustmentCreateWithoutSupplierInput[] | Prisma.StockAdjustmentUncheckedCreateWithoutSupplierInput[]
+  connectOrCreate?: Prisma.StockAdjustmentCreateOrConnectWithoutSupplierInput | Prisma.StockAdjustmentCreateOrConnectWithoutSupplierInput[]
+  createMany?: Prisma.StockAdjustmentCreateManySupplierInputEnvelope
+  connect?: Prisma.StockAdjustmentWhereUniqueInput | Prisma.StockAdjustmentWhereUniqueInput[]
+}
+
+export type StockAdjustmentUncheckedCreateNestedManyWithoutSupplierInput = {
+  create?: Prisma.XOR<Prisma.StockAdjustmentCreateWithoutSupplierInput, Prisma.StockAdjustmentUncheckedCreateWithoutSupplierInput> | Prisma.StockAdjustmentCreateWithoutSupplierInput[] | Prisma.StockAdjustmentUncheckedCreateWithoutSupplierInput[]
+  connectOrCreate?: Prisma.StockAdjustmentCreateOrConnectWithoutSupplierInput | Prisma.StockAdjustmentCreateOrConnectWithoutSupplierInput[]
+  createMany?: Prisma.StockAdjustmentCreateManySupplierInputEnvelope
+  connect?: Prisma.StockAdjustmentWhereUniqueInput | Prisma.StockAdjustmentWhereUniqueInput[]
+}
+
+export type StockAdjustmentUpdateManyWithoutSupplierNestedInput = {
+  create?: Prisma.XOR<Prisma.StockAdjustmentCreateWithoutSupplierInput, Prisma.StockAdjustmentUncheckedCreateWithoutSupplierInput> | Prisma.StockAdjustmentCreateWithoutSupplierInput[] | Prisma.StockAdjustmentUncheckedCreateWithoutSupplierInput[]
+  connectOrCreate?: Prisma.StockAdjustmentCreateOrConnectWithoutSupplierInput | Prisma.StockAdjustmentCreateOrConnectWithoutSupplierInput[]
+  upsert?: Prisma.StockAdjustmentUpsertWithWhereUniqueWithoutSupplierInput | Prisma.StockAdjustmentUpsertWithWhereUniqueWithoutSupplierInput[]
+  createMany?: Prisma.StockAdjustmentCreateManySupplierInputEnvelope
+  set?: Prisma.StockAdjustmentWhereUniqueInput | Prisma.StockAdjustmentWhereUniqueInput[]
+  disconnect?: Prisma.StockAdjustmentWhereUniqueInput | Prisma.StockAdjustmentWhereUniqueInput[]
+  delete?: Prisma.StockAdjustmentWhereUniqueInput | Prisma.StockAdjustmentWhereUniqueInput[]
+  connect?: Prisma.StockAdjustmentWhereUniqueInput | Prisma.StockAdjustmentWhereUniqueInput[]
+  update?: Prisma.StockAdjustmentUpdateWithWhereUniqueWithoutSupplierInput | Prisma.StockAdjustmentUpdateWithWhereUniqueWithoutSupplierInput[]
+  updateMany?: Prisma.StockAdjustmentUpdateManyWithWhereWithoutSupplierInput | Prisma.StockAdjustmentUpdateManyWithWhereWithoutSupplierInput[]
+  deleteMany?: Prisma.StockAdjustmentScalarWhereInput | Prisma.StockAdjustmentScalarWhereInput[]
+}
+
+export type StockAdjustmentUncheckedUpdateManyWithoutSupplierNestedInput = {
+  create?: Prisma.XOR<Prisma.StockAdjustmentCreateWithoutSupplierInput, Prisma.StockAdjustmentUncheckedCreateWithoutSupplierInput> | Prisma.StockAdjustmentCreateWithoutSupplierInput[] | Prisma.StockAdjustmentUncheckedCreateWithoutSupplierInput[]
+  connectOrCreate?: Prisma.StockAdjustmentCreateOrConnectWithoutSupplierInput | Prisma.StockAdjustmentCreateOrConnectWithoutSupplierInput[]
+  upsert?: Prisma.StockAdjustmentUpsertWithWhereUniqueWithoutSupplierInput | Prisma.StockAdjustmentUpsertWithWhereUniqueWithoutSupplierInput[]
+  createMany?: Prisma.StockAdjustmentCreateManySupplierInputEnvelope
+  set?: Prisma.StockAdjustmentWhereUniqueInput | Prisma.StockAdjustmentWhereUniqueInput[]
+  disconnect?: Prisma.StockAdjustmentWhereUniqueInput | Prisma.StockAdjustmentWhereUniqueInput[]
+  delete?: Prisma.StockAdjustmentWhereUniqueInput | Prisma.StockAdjustmentWhereUniqueInput[]
+  connect?: Prisma.StockAdjustmentWhereUniqueInput | Prisma.StockAdjustmentWhereUniqueInput[]
+  update?: Prisma.StockAdjustmentUpdateWithWhereUniqueWithoutSupplierInput | Prisma.StockAdjustmentUpdateWithWhereUniqueWithoutSupplierInput[]
+  updateMany?: Prisma.StockAdjustmentUpdateManyWithWhereWithoutSupplierInput | Prisma.StockAdjustmentUpdateManyWithWhereWithoutSupplierInput[]
+  deleteMany?: Prisma.StockAdjustmentScalarWhereInput | Prisma.StockAdjustmentScalarWhereInput[]
+}
+
 export type StockAdjustmentCreateWithoutProductInput = {
   id?: string
   delta: number
   reason: $Enums.StockAdjustmentReason
   note?: string | null
   actorId?: string | null
+  variantId?: string | null
+  orderId?: string | null
   createdAt?: Date | string
+  supplier?: Prisma.SupplierCreateNestedOneWithoutAdjustmentsInput
 }
 
 export type StockAdjustmentUncheckedCreateWithoutProductInput = {
@@ -466,6 +579,9 @@ export type StockAdjustmentUncheckedCreateWithoutProductInput = {
   reason: $Enums.StockAdjustmentReason
   note?: string | null
   actorId?: string | null
+  variantId?: string | null
+  orderId?: string | null
+  supplierId?: string | null
   createdAt?: Date | string
 }
 
@@ -505,7 +621,60 @@ export type StockAdjustmentScalarWhereInput = {
   reason?: Prisma.EnumStockAdjustmentReasonFilter<"StockAdjustment"> | $Enums.StockAdjustmentReason
   note?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
   actorId?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
+  variantId?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
+  orderId?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
+  supplierId?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
   createdAt?: Prisma.DateTimeFilter<"StockAdjustment"> | Date | string
+}
+
+export type StockAdjustmentCreateWithoutSupplierInput = {
+  id?: string
+  delta: number
+  reason: $Enums.StockAdjustmentReason
+  note?: string | null
+  actorId?: string | null
+  variantId?: string | null
+  orderId?: string | null
+  createdAt?: Date | string
+  product: Prisma.ProductCreateNestedOneWithoutStockAdjustmentsInput
+}
+
+export type StockAdjustmentUncheckedCreateWithoutSupplierInput = {
+  id?: string
+  productId: string
+  delta: number
+  reason: $Enums.StockAdjustmentReason
+  note?: string | null
+  actorId?: string | null
+  variantId?: string | null
+  orderId?: string | null
+  createdAt?: Date | string
+}
+
+export type StockAdjustmentCreateOrConnectWithoutSupplierInput = {
+  where: Prisma.StockAdjustmentWhereUniqueInput
+  create: Prisma.XOR<Prisma.StockAdjustmentCreateWithoutSupplierInput, Prisma.StockAdjustmentUncheckedCreateWithoutSupplierInput>
+}
+
+export type StockAdjustmentCreateManySupplierInputEnvelope = {
+  data: Prisma.StockAdjustmentCreateManySupplierInput | Prisma.StockAdjustmentCreateManySupplierInput[]
+  skipDuplicates?: boolean
+}
+
+export type StockAdjustmentUpsertWithWhereUniqueWithoutSupplierInput = {
+  where: Prisma.StockAdjustmentWhereUniqueInput
+  update: Prisma.XOR<Prisma.StockAdjustmentUpdateWithoutSupplierInput, Prisma.StockAdjustmentUncheckedUpdateWithoutSupplierInput>
+  create: Prisma.XOR<Prisma.StockAdjustmentCreateWithoutSupplierInput, Prisma.StockAdjustmentUncheckedCreateWithoutSupplierInput>
+}
+
+export type StockAdjustmentUpdateWithWhereUniqueWithoutSupplierInput = {
+  where: Prisma.StockAdjustmentWhereUniqueInput
+  data: Prisma.XOR<Prisma.StockAdjustmentUpdateWithoutSupplierInput, Prisma.StockAdjustmentUncheckedUpdateWithoutSupplierInput>
+}
+
+export type StockAdjustmentUpdateManyWithWhereWithoutSupplierInput = {
+  where: Prisma.StockAdjustmentScalarWhereInput
+  data: Prisma.XOR<Prisma.StockAdjustmentUpdateManyMutationInput, Prisma.StockAdjustmentUncheckedUpdateManyWithoutSupplierInput>
 }
 
 export type StockAdjustmentCreateManyProductInput = {
@@ -514,6 +683,9 @@ export type StockAdjustmentCreateManyProductInput = {
   reason: $Enums.StockAdjustmentReason
   note?: string | null
   actorId?: string | null
+  variantId?: string | null
+  orderId?: string | null
+  supplierId?: string | null
   createdAt?: Date | string
 }
 
@@ -523,7 +695,10 @@ export type StockAdjustmentUpdateWithoutProductInput = {
   reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  supplier?: Prisma.SupplierUpdateOneWithoutAdjustmentsNestedInput
 }
 
 export type StockAdjustmentUncheckedUpdateWithoutProductInput = {
@@ -532,6 +707,9 @@ export type StockAdjustmentUncheckedUpdateWithoutProductInput = {
   reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -541,6 +719,57 @@ export type StockAdjustmentUncheckedUpdateManyWithoutProductInput = {
   reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type StockAdjustmentCreateManySupplierInput = {
+  id?: string
+  productId: string
+  delta: number
+  reason: $Enums.StockAdjustmentReason
+  note?: string | null
+  actorId?: string | null
+  variantId?: string | null
+  orderId?: string | null
+  createdAt?: Date | string
+}
+
+export type StockAdjustmentUpdateWithoutSupplierInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  delta?: Prisma.IntFieldUpdateOperationsInput | number
+  reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
+  note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  product?: Prisma.ProductUpdateOneRequiredWithoutStockAdjustmentsNestedInput
+}
+
+export type StockAdjustmentUncheckedUpdateWithoutSupplierInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.StringFieldUpdateOperationsInput | string
+  delta?: Prisma.IntFieldUpdateOperationsInput | number
+  reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
+  note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type StockAdjustmentUncheckedUpdateManyWithoutSupplierInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.StringFieldUpdateOperationsInput | string
+  delta?: Prisma.IntFieldUpdateOperationsInput | number
+  reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
+  note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -553,8 +782,12 @@ export type StockAdjustmentSelect<ExtArgs extends runtime.Types.Extensions.Inter
   reason?: boolean
   note?: boolean
   actorId?: boolean
+  variantId?: boolean
+  orderId?: boolean
+  supplierId?: boolean
   createdAt?: boolean
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
+  supplier?: boolean | Prisma.StockAdjustment$supplierArgs<ExtArgs>
 }, ExtArgs["result"]["stockAdjustment"]>
 
 export type StockAdjustmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -564,8 +797,12 @@ export type StockAdjustmentSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   reason?: boolean
   note?: boolean
   actorId?: boolean
+  variantId?: boolean
+  orderId?: boolean
+  supplierId?: boolean
   createdAt?: boolean
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
+  supplier?: boolean | Prisma.StockAdjustment$supplierArgs<ExtArgs>
 }, ExtArgs["result"]["stockAdjustment"]>
 
 export type StockAdjustmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -575,8 +812,12 @@ export type StockAdjustmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   reason?: boolean
   note?: boolean
   actorId?: boolean
+  variantId?: boolean
+  orderId?: boolean
+  supplierId?: boolean
   createdAt?: boolean
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
+  supplier?: boolean | Prisma.StockAdjustment$supplierArgs<ExtArgs>
 }, ExtArgs["result"]["stockAdjustment"]>
 
 export type StockAdjustmentSelectScalar = {
@@ -586,24 +827,31 @@ export type StockAdjustmentSelectScalar = {
   reason?: boolean
   note?: boolean
   actorId?: boolean
+  variantId?: boolean
+  orderId?: boolean
+  supplierId?: boolean
   createdAt?: boolean
 }
 
-export type StockAdjustmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "delta" | "reason" | "note" | "actorId" | "createdAt", ExtArgs["result"]["stockAdjustment"]>
+export type StockAdjustmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "delta" | "reason" | "note" | "actorId" | "variantId" | "orderId" | "supplierId" | "createdAt", ExtArgs["result"]["stockAdjustment"]>
 export type StockAdjustmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
+  supplier?: boolean | Prisma.StockAdjustment$supplierArgs<ExtArgs>
 }
 export type StockAdjustmentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
+  supplier?: boolean | Prisma.StockAdjustment$supplierArgs<ExtArgs>
 }
 export type StockAdjustmentIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
+  supplier?: boolean | Prisma.StockAdjustment$supplierArgs<ExtArgs>
 }
 
 export type $StockAdjustmentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "StockAdjustment"
   objects: {
     product: Prisma.$ProductPayload<ExtArgs>
+    supplier: Prisma.$SupplierPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -612,6 +860,9 @@ export type $StockAdjustmentPayload<ExtArgs extends runtime.Types.Extensions.Int
     reason: $Enums.StockAdjustmentReason
     note: string | null
     actorId: string | null
+    variantId: string | null
+    orderId: string | null
+    supplierId: string | null
     createdAt: Date
   }, ExtArgs["result"]["stockAdjustment"]>
   composites: {}
@@ -1008,6 +1259,7 @@ readonly fields: StockAdjustmentFieldRefs;
 export interface Prisma__StockAdjustmentClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   product<T extends Prisma.ProductDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductDefaultArgs<ExtArgs>>): Prisma.Prisma__ProductClient<runtime.Types.Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  supplier<T extends Prisma.StockAdjustment$supplierArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.StockAdjustment$supplierArgs<ExtArgs>>): Prisma.Prisma__SupplierClient<runtime.Types.Result.GetResult<Prisma.$SupplierPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1043,6 +1295,9 @@ export interface StockAdjustmentFieldRefs {
   readonly reason: Prisma.FieldRef<"StockAdjustment", 'StockAdjustmentReason'>
   readonly note: Prisma.FieldRef<"StockAdjustment", 'String'>
   readonly actorId: Prisma.FieldRef<"StockAdjustment", 'String'>
+  readonly variantId: Prisma.FieldRef<"StockAdjustment", 'String'>
+  readonly orderId: Prisma.FieldRef<"StockAdjustment", 'String'>
+  readonly supplierId: Prisma.FieldRef<"StockAdjustment", 'String'>
   readonly createdAt: Prisma.FieldRef<"StockAdjustment", 'DateTime'>
 }
     
@@ -1442,6 +1697,25 @@ export type StockAdjustmentDeleteManyArgs<ExtArgs extends runtime.Types.Extensio
    * Limit how many StockAdjustments to delete.
    */
   limit?: number
+}
+
+/**
+ * StockAdjustment.supplier
+ */
+export type StockAdjustment$supplierArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Supplier
+   */
+  select?: Prisma.SupplierSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Supplier
+   */
+  omit?: Prisma.SupplierOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SupplierInclude<ExtArgs> | null
+  where?: Prisma.SupplierWhereInput
 }
 
 /**

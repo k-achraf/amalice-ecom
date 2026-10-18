@@ -1,3 +1,4 @@
+import { StockService } from '../common/stock.service'
 import { BadRequestException, HttpException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common'
 import * as crypto from 'crypto'
 import type { IncomingHttpHeaders } from 'http'
@@ -32,7 +33,8 @@ export class DhdWebhookService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
-    private readonly googleSheets: GoogleSheetsService
+    private readonly googleSheets: GoogleSheetsService,
+    private readonly stock: StockService
   ) {}
 
   // Signature header is "sha256=<hex hmac>" — verified against the RAW
@@ -217,6 +219,8 @@ export class DhdWebhookService {
         await tx.order.update({ where: { id: shipment.orderId }, data: { state: targetState as never } })
       }
     })
+
+    if (canTransition && targetState === 'CancelledShipping') await this.stock.releaseForOrder(shipment.orderId)
 
     if (canTransition) {
       await this.audit.log({

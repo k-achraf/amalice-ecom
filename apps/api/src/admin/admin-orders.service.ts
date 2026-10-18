@@ -1,5 +1,6 @@
+import { StockService } from '../common/stock.service'
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { ADDRESS_EDITABLE_STATES, CALL_CENTER_WORK_STATES, STATES_REQUIRING_SHIPMENT, deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, type OrderState, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
+import { ADDRESS_EDITABLE_STATES, CALL_CENTER_WORK_STATES, STATES_REQUIRING_SHIPMENT, deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, type OrderState, type RiskLevel, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
 import type { Prisma } from '../generated/prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
@@ -76,7 +77,8 @@ export class AdminOrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
-    private readonly googleSheets: GoogleSheetsService
+    private readonly googleSheets: GoogleSheetsService,
+    private readonly stock: StockService
   ) {}
 
   async list(args: {
@@ -91,6 +93,7 @@ export class AdminOrdersService {
     courierId?: string
     // Only the orders placed on this funnel.
     funnelId?: string
+    riskLevel?: RiskLevel
     from?: Date
     to?: Date
     page: number
@@ -114,6 +117,7 @@ export class AdminOrdersService {
       ...(args.states && { state: { in: args.state ? args.states.filter((x) => x === args.state) : [...args.states] } }),
       ...(args.courierId && { shipment: { courierId: args.courierId } }),
       ...(args.funnelId && { funnelId: args.funnelId }),
+      ...(args.riskLevel && { riskLevel: args.riskLevel }),
       ...((args.from || args.to) && {
         createdAt: { ...(args.from && { gte: args.from }), ...(args.to && { lte: args.to }) }
       }),
@@ -257,6 +261,9 @@ export class AdminOrdersService {
         ...(clearsAbandoned && { isAbandoned: false })
       }
     })
+    if (clearsAbandoned) await this.stock.reserveForOrder(id, actor.id)
+    if (to === 'Cancelled' || to === 'CancelledShipping') await this.stock.releaseForOrder(id, actor.id)
+    if (to === 'Restocked') await this.stock.restockForOrder(id, actor.id)
     await this.audit.log({
       actor,
       action: 'StateTransition',
@@ -275,6 +282,22 @@ export class AdminOrdersService {
     })
 
     return this.findOne(id)
+  }
+
+  // Confirms returned parcels are physically back: each order still in
+  // ReturnedToOrigin moves to Restocked, which puts its units back in stock
+  // (see transition). Anything else is skipped with the reason, not forced.
+  async bulkRestock(orderIds: string[], actor: AuditActor) {
+    const restocked: string[] = []
+    const skipped: { id: string; reason: string }[] = []
+    for (const id of orderIds) {
+      const order = await this.prisma.order.findUnique({ where: { id }, select: { state: true } })
+      if (!order) { skipped.push({ id, reason: 'not found' }); continue }
+      if (order.state !== 'ReturnedToOrigin') { skipped.push({ id, reason: `state is ${order.state}` }); continue }
+      await this.transition(id, 'Restocked', actor)
+      restocked.push(id)
+    }
+    return { restocked, skipped }
   }
 
   // Call-center price override (ADM-12) — lets an agent adjust the shipping

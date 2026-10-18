@@ -52,7 +52,7 @@ watch(() => route.path, () => { mobileOpen.value = false })
         @click="mobileOpen = true"
       />
 
-      <NuxtLink to="/" class="text-xl font-bold text-highlighted">{{ settings.storeName }}</NuxtLink>
+      <NuxtLink to="/" class="text-xl font-bold text-highlighted"><BrandName /></NuxtLink>
 
       <!-- Desktop category nav -->
       <nav class="hidden items-center gap-6 text-sm font-medium lg:flex">

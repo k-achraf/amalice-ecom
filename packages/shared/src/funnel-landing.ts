@@ -135,6 +135,9 @@ export const LandingSettingsSchema = z.object({
   // funnel always has one.)
   urgency: z.boolean(),
   urgencyText: z.string().trim().max(120).nullable().optional(),
+  // A real deadline (ISO date-time) shown as a live countdown under the banner; the block disappears once it passes.
+  countdownEndsAt: z.string().datetime({ offset: true }).nullable().optional(),
+  countdownLabel: z.string().trim().max(80).nullable().optional(),
   // Conversion levers (all default on/short so older saved settings still parse):
   //  addressField     — fewer fields convert better; the call centre confirms the address by phone
   //  showNotes        — an optional notes box (off keeps the form short)
@@ -167,6 +170,8 @@ export function defaultLandingSettings(templateId: LandingTemplateId): LandingSe
     accent: t.defaults.accent,
     urgency: t.defaults.urgency,
     urgencyText: null,
+    countdownEndsAt: null,
+    countdownLabel: null,
     addressField: t.defaults.addressField,
     showNotes: false,
     trustBadges: true,
@@ -193,6 +198,8 @@ export function switchLandingTemplate(current: LandingSettings, templateId: Land
     showOffers: current.showOffers,
     accent: current.accent,
     urgencyText: current.urgencyText ?? null,
+    countdownEndsAt: current.countdownEndsAt ?? null,
+    countdownLabel: current.countdownLabel ?? null,
     addressField: current.addressField,
     showNotes: current.showNotes,
     trustBadges: current.trustBadges,

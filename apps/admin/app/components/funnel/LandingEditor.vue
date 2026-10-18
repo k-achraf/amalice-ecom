@@ -123,6 +123,26 @@ const urgencyText = computed({
   }
 })
 
+// Countdown: a native datetime-local input mapped to/from the stored ISO deadline.
+const countdownLocal = computed({
+  get: () => {
+    const iso = draft.value?.countdownEndsAt
+    if (!iso) return ''
+    const d = new Date(iso)
+    const p = (n: number) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`
+  },
+  set: (v: string) => {
+    if (draft.value) draft.value.countdownEndsAt = v ? new Date(v).toISOString() : null
+  }
+})
+const countdownLabel = computed({
+  get: () => draft.value?.countdownLabel ?? '',
+  set: (v: string) => {
+    if (draft.value) draft.value.countdownLabel = v || null
+  }
+})
+
 // "Write with AI": headline, subheadline and button text from the product's own
 // content (validated server-side: right language, no invented numbers or promos).
 // It only fills the fields; nothing is saved until the admin presses Save.
@@ -262,6 +282,12 @@ function save() {
           </div>
           <AdsField v-if="draft.urgency" label="Banner text" help="Leave blank for the default line.">
             <AdsInput v-model="urgencyText" placeholder="e.g. Only a few pieces left" />
+          </AdsField>
+          <AdsField label="Countdown to a deadline" help="A live timer under the banner until this date and time (your local time). Use it only for a real offer end; it hides itself afterwards. Leave empty for no timer.">
+            <input v-model="countdownLocal" type="datetime-local" class="input">
+          </AdsField>
+          <AdsField v-if="draft.countdownEndsAt" label="Countdown text" help="Leave blank for the default line.">
+            <AdsInput v-model="countdownLabel" placeholder="e.g. The offer ends in" />
           </AdsField>
         </section>
 

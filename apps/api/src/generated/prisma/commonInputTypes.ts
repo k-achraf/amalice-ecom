@@ -386,6 +386,13 @@ export type EnumCourierOperationFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumCourierOperationFilter<$PrismaModel> | $Enums.CourierOperation
 }
 
+export type EnumRiskLevelNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.RiskLevel | Prisma.EnumRiskLevelFieldRefInput<$PrismaModel> | null
+  in?: $Enums.RiskLevel[] | Prisma.ListEnumRiskLevelFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.RiskLevel[] | Prisma.ListEnumRiskLevelFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumRiskLevelNullableFilter<$PrismaModel> | $Enums.RiskLevel | null
+}
+
 export type EnumOrderStateWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.OrderState | Prisma.EnumOrderStateFieldRefInput<$PrismaModel>
   in?: $Enums.OrderState[] | Prisma.ListEnumOrderStateFieldRefInput<$PrismaModel>
@@ -438,6 +445,16 @@ export type EnumCourierOperationWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumCourierOperationFilter<$PrismaModel>
   _max?: Prisma.NestedEnumCourierOperationFilter<$PrismaModel>
+}
+
+export type EnumRiskLevelNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RiskLevel | Prisma.EnumRiskLevelFieldRefInput<$PrismaModel> | null
+  in?: $Enums.RiskLevel[] | Prisma.ListEnumRiskLevelFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.RiskLevel[] | Prisma.ListEnumRiskLevelFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumRiskLevelNullableWithAggregatesFilter<$PrismaModel> | $Enums.RiskLevel | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRiskLevelNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRiskLevelNullableFilter<$PrismaModel>
 }
 
 export type EnumAttributionPlatformFilter<$PrismaModel = never> = {
@@ -871,6 +888,57 @@ export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedFloatNullableFilter<$PrismaModel>
 }
 
+export type EnumBlacklistTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.BlacklistType | Prisma.EnumBlacklistTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.BlacklistType[] | Prisma.ListEnumBlacklistTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BlacklistType[] | Prisma.ListEnumBlacklistTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBlacklistTypeFilter<$PrismaModel> | $Enums.BlacklistType
+}
+
+export type EnumBlacklistActionFilter<$PrismaModel = never> = {
+  equals?: $Enums.BlacklistAction | Prisma.EnumBlacklistActionFieldRefInput<$PrismaModel>
+  in?: $Enums.BlacklistAction[] | Prisma.ListEnumBlacklistActionFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BlacklistAction[] | Prisma.ListEnumBlacklistActionFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBlacklistActionFilter<$PrismaModel> | $Enums.BlacklistAction
+}
+
+export type EnumBlacklistSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.BlacklistSource | Prisma.EnumBlacklistSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.BlacklistSource[] | Prisma.ListEnumBlacklistSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BlacklistSource[] | Prisma.ListEnumBlacklistSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBlacklistSourceFilter<$PrismaModel> | $Enums.BlacklistSource
+}
+
+export type EnumBlacklistTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BlacklistType | Prisma.EnumBlacklistTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.BlacklistType[] | Prisma.ListEnumBlacklistTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BlacklistType[] | Prisma.ListEnumBlacklistTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBlacklistTypeWithAggregatesFilter<$PrismaModel> | $Enums.BlacklistType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBlacklistTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBlacklistTypeFilter<$PrismaModel>
+}
+
+export type EnumBlacklistActionWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BlacklistAction | Prisma.EnumBlacklistActionFieldRefInput<$PrismaModel>
+  in?: $Enums.BlacklistAction[] | Prisma.ListEnumBlacklistActionFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BlacklistAction[] | Prisma.ListEnumBlacklistActionFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBlacklistActionWithAggregatesFilter<$PrismaModel> | $Enums.BlacklistAction
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBlacklistActionFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBlacklistActionFilter<$PrismaModel>
+}
+
+export type EnumBlacklistSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BlacklistSource | Prisma.EnumBlacklistSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.BlacklistSource[] | Prisma.ListEnumBlacklistSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BlacklistSource[] | Prisma.ListEnumBlacklistSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBlacklistSourceWithAggregatesFilter<$PrismaModel> | $Enums.BlacklistSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBlacklistSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBlacklistSourceFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -1202,6 +1270,13 @@ export type NestedEnumCourierOperationFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumCourierOperationFilter<$PrismaModel> | $Enums.CourierOperation
 }
 
+export type NestedEnumRiskLevelNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.RiskLevel | Prisma.EnumRiskLevelFieldRefInput<$PrismaModel> | null
+  in?: $Enums.RiskLevel[] | Prisma.ListEnumRiskLevelFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.RiskLevel[] | Prisma.ListEnumRiskLevelFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumRiskLevelNullableFilter<$PrismaModel> | $Enums.RiskLevel | null
+}
+
 export type NestedEnumOrderStateWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.OrderState | Prisma.EnumOrderStateFieldRefInput<$PrismaModel>
   in?: $Enums.OrderState[] | Prisma.ListEnumOrderStateFieldRefInput<$PrismaModel>
@@ -1254,6 +1329,16 @@ export type NestedEnumCourierOperationWithAggregatesFilter<$PrismaModel = never>
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumCourierOperationFilter<$PrismaModel>
   _max?: Prisma.NestedEnumCourierOperationFilter<$PrismaModel>
+}
+
+export type NestedEnumRiskLevelNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RiskLevel | Prisma.EnumRiskLevelFieldRefInput<$PrismaModel> | null
+  in?: $Enums.RiskLevel[] | Prisma.ListEnumRiskLevelFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.RiskLevel[] | Prisma.ListEnumRiskLevelFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumRiskLevelNullableWithAggregatesFilter<$PrismaModel> | $Enums.RiskLevel | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRiskLevelNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRiskLevelNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumAttributionPlatformFilter<$PrismaModel = never> = {
@@ -1674,6 +1759,57 @@ export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedFloatNullableFilter<$PrismaModel>
   _min?: Prisma.NestedFloatNullableFilter<$PrismaModel>
   _max?: Prisma.NestedFloatNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumBlacklistTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.BlacklistType | Prisma.EnumBlacklistTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.BlacklistType[] | Prisma.ListEnumBlacklistTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BlacklistType[] | Prisma.ListEnumBlacklistTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBlacklistTypeFilter<$PrismaModel> | $Enums.BlacklistType
+}
+
+export type NestedEnumBlacklistActionFilter<$PrismaModel = never> = {
+  equals?: $Enums.BlacklistAction | Prisma.EnumBlacklistActionFieldRefInput<$PrismaModel>
+  in?: $Enums.BlacklistAction[] | Prisma.ListEnumBlacklistActionFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BlacklistAction[] | Prisma.ListEnumBlacklistActionFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBlacklistActionFilter<$PrismaModel> | $Enums.BlacklistAction
+}
+
+export type NestedEnumBlacklistSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.BlacklistSource | Prisma.EnumBlacklistSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.BlacklistSource[] | Prisma.ListEnumBlacklistSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BlacklistSource[] | Prisma.ListEnumBlacklistSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBlacklistSourceFilter<$PrismaModel> | $Enums.BlacklistSource
+}
+
+export type NestedEnumBlacklistTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BlacklistType | Prisma.EnumBlacklistTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.BlacklistType[] | Prisma.ListEnumBlacklistTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BlacklistType[] | Prisma.ListEnumBlacklistTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBlacklistTypeWithAggregatesFilter<$PrismaModel> | $Enums.BlacklistType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBlacklistTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBlacklistTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumBlacklistActionWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BlacklistAction | Prisma.EnumBlacklistActionFieldRefInput<$PrismaModel>
+  in?: $Enums.BlacklistAction[] | Prisma.ListEnumBlacklistActionFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BlacklistAction[] | Prisma.ListEnumBlacklistActionFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBlacklistActionWithAggregatesFilter<$PrismaModel> | $Enums.BlacklistAction
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBlacklistActionFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBlacklistActionFilter<$PrismaModel>
+}
+
+export type NestedEnumBlacklistSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BlacklistSource | Prisma.EnumBlacklistSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.BlacklistSource[] | Prisma.ListEnumBlacklistSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BlacklistSource[] | Prisma.ListEnumBlacklistSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBlacklistSourceWithAggregatesFilter<$PrismaModel> | $Enums.BlacklistSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBlacklistSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBlacklistSourceFilter<$PrismaModel>
 }
 
 

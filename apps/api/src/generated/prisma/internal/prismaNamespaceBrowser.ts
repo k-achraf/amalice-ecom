@@ -59,6 +59,7 @@ export const ModelName = {
   ProductImage: 'ProductImage',
   ProductVariant: 'ProductVariant',
   StockAdjustment: 'StockAdjustment',
+  Supplier: 'Supplier',
   Attribute: 'Attribute',
   AttributeOption: 'AttributeOption',
   ProductAttribute: 'ProductAttribute',
@@ -106,7 +107,10 @@ export const ModelName = {
   FunnelStep: 'FunnelStep',
   MetaConnection: 'MetaConnection',
   MetaAdAccount: 'MetaAdAccount',
-  MetaAppCredentials: 'MetaAppCredentials'
+  MetaAppCredentials: 'MetaAppCredentials',
+  BlacklistEntry: 'BlacklistEntry',
+  ReportSettings: 'ReportSettings',
+  AlertLog: 'AlertLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -241,10 +245,27 @@ export const StockAdjustmentScalarFieldEnum = {
   reason: 'reason',
   note: 'note',
   actorId: 'actorId',
+  variantId: 'variantId',
+  orderId: 'orderId',
+  supplierId: 'supplierId',
   createdAt: 'createdAt'
 } as const
 
 export type StockAdjustmentScalarFieldEnum = (typeof StockAdjustmentScalarFieldEnum)[keyof typeof StockAdjustmentScalarFieldEnum]
+
+
+export const SupplierScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  phone: 'phone',
+  email: 'email',
+  address: 'address',
+  notes: 'notes',
+  active: 'active',
+  createdAt: 'createdAt'
+} as const
+
+export type SupplierScalarFieldEnum = (typeof SupplierScalarFieldEnum)[keyof typeof SupplierScalarFieldEnum]
 
 
 export const AttributeScalarFieldEnum = {
@@ -344,6 +365,10 @@ export const OrderScalarFieldEnum = {
   courierOperation: 'courierOperation',
   exchangeProduct: 'exchangeProduct',
   funnelId: 'funnelId',
+  riskScore: 'riskScore',
+  riskLevel: 'riskLevel',
+  riskFactors: 'riskFactors',
+  deliveredEventSentAt: 'deliveredEventSentAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -585,6 +610,7 @@ export const StoreSettingsScalarFieldEnum = {
   displayCart: 'displayCart',
   leadFormConfig: 'leadFormConfig',
   abandonedCartDelaySeconds: 'abandonedCartDelaySeconds',
+  brand: 'brand',
   updatedAt: 'updatedAt'
 } as const
 
@@ -906,6 +932,8 @@ export const FunnelScalarFieldEnum = {
   templateId: 'templateId',
   status: 'status',
   productId: 'productId',
+  metaPixelId: 'metaPixelId',
+  tiktokPixelCode: 'tiktokPixelCode',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -975,6 +1003,48 @@ export const MetaAppCredentialsScalarFieldEnum = {
 export type MetaAppCredentialsScalarFieldEnum = (typeof MetaAppCredentialsScalarFieldEnum)[keyof typeof MetaAppCredentialsScalarFieldEnum]
 
 
+export const BlacklistEntryScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  value: 'value',
+  label: 'label',
+  action: 'action',
+  source: 'source',
+  reason: 'reason',
+  active: 'active',
+  createdById: 'createdById',
+  createdByEmail: 'createdByEmail',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BlacklistEntryScalarFieldEnum = (typeof BlacklistEntryScalarFieldEnum)[keyof typeof BlacklistEntryScalarFieldEnum]
+
+
+export const ReportSettingsScalarFieldEnum = {
+  id: 'id',
+  enabled: 'enabled',
+  telegramBotToken: 'telegramBotToken',
+  telegramChatId: 'telegramChatId',
+  dailyReportHour: 'dailyReportHour',
+  maxCostPerOrderDzd: 'maxCostPerOrderDzd',
+  returnRateAlertPct: 'returnRateAlertPct',
+  returnRateMinOrders: 'returnRateMinOrders',
+  carrierStaleHours: 'carrierStaleHours',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ReportSettingsScalarFieldEnum = (typeof ReportSettingsScalarFieldEnum)[keyof typeof ReportSettingsScalarFieldEnum]
+
+
+export const AlertLogScalarFieldEnum = {
+  key: 'key',
+  createdAt: 'createdAt'
+} as const
+
+export type AlertLogScalarFieldEnum = (typeof AlertLogScalarFieldEnum)[keyof typeof AlertLogScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1021,5 +1091,4 @@ export const JsonNullValueFilter = {
 } as const
 
 export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
-
 

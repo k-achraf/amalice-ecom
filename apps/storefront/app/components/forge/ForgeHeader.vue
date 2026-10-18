@@ -39,7 +39,7 @@ watch(() => route.path, () => { mobileOpen.value = false })
 
       <!-- Wordmark -->
       <NuxtLink to="/" class="font-display flex items-center gap-1 text-2xl uppercase text-[var(--color-forge-ink)]">
-        <span class="text-primary-600">[</span>{{ settings.storeName }}<span class="text-primary-600">]</span>
+        <span v-if="!settings.brand?.logoUrl" class="text-primary-600">[</span><BrandName /><span v-if="!settings.brand?.logoUrl" class="text-primary-600">]</span>
       </NuxtLink>
 
       <!-- Desktop nav -->

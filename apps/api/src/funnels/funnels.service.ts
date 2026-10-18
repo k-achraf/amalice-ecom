@@ -46,6 +46,8 @@ type FunnelRow = {
   slug: string
   status: string
   templateId: string
+  metaPixelId: string | null
+  tiktokPixelCode: string | null
   createdAt: Date
   updatedAt: Date
   product: { id: string; name: string; slug: string; imageUrl: string | null }
@@ -60,6 +62,8 @@ function toListItem(row: FunnelRow, stepCount: number): FunnelListItem {
     templateId: row.templateId,
     product: row.product,
     stepCount,
+    metaPixelId: row.metaPixelId,
+    tiktokPixelCode: row.tiktokPixelCode,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString()
   }
@@ -108,6 +112,26 @@ export class FunnelsService {
       }
     })
     await this.audit.log({ actor, action: 'Create', entity: 'Funnel', entityId: row.id, metadata: { name: input.name, templateId: template.id } })
+    return this.get(row.id)
+  }
+
+  // Creates a funnel with explicit steps and per-step config (used by the AI
+  // generator); the template id is recorded as the starting workflow.
+  async createWithSteps(
+    input: { name: string; productId: string; templateId: string; slugBase: string; steps: { type: FunnelStepType; name: string; config: FunnelStepConfig }[] },
+    _actor: AuditActor
+  ): Promise<FunnelDetail> {
+    await this.ensureProduct(input.productId)
+    const slug = await this.uniqueSlug(slugify(input.slugBase))
+    const row = await this.prisma.funnel.create({
+      data: {
+        name: input.name,
+        slug,
+        templateId: input.templateId,
+        productId: input.productId,
+        steps: { create: input.steps.map((s, position) => ({ position, type: s.type, name: s.name, config: s.config as object })) }
+      }
+    })
     return this.get(row.id)
   }
 

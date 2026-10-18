@@ -37,10 +37,10 @@ watch(() => route.path, () => {
       <!-- Logo + nav (left) -->
       <div class="flex items-center gap-8">
         <NuxtLink to="/" class="flex items-center gap-2">
-          <div class="flex size-8 items-center justify-center rounded-lg bg-primary-600">
+          <div v-if="!settings.brand?.logoUrl" class="flex size-8 items-center justify-center rounded-lg bg-primary-600">
             <span class="text-sm font-bold text-white">{{ settings.storeName.charAt(0) }}</span>
           </div>
-          <span class="text-xl font-bold text-neutral-900">{{ settings.storeName }}</span>
+          <span class="text-xl font-bold text-neutral-900"><BrandName /></span>
         </NuxtLink>
 
         <nav class="hidden items-center gap-6 lg:flex">

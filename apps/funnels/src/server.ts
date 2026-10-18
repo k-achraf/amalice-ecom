@@ -1,7 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { getPage } from './api'
 import { config } from './config'
-import { getImage, parseImgQuery } from './img'
+import { getImage, parseImgQuery, pickFormat } from './img'
 import type { Rendered } from './render'
 import { esc } from './util'
 
@@ -40,8 +40,9 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
     const q = parseImgQuery(url)
     if (!q) return send(res, 400, {}, 'bad request')
     try {
-      const img = await getImage(q.source, q.width)
-      return send(res, 200, { 'content-type': img.type, 'cache-control': 'public, max-age=31536000, immutable', 'content-length': img.body.length }, method === 'HEAD' ? undefined : img.body)
+      const img = await getImage(q.source, q.width, pickFormat(req.headers.accept))
+      // The same URL serves AVIF or WebP depending on the browser, so caches must key on Accept.
+      return send(res, 200, { 'content-type': img.type, vary: 'Accept', 'cache-control': 'public, max-age=31536000, immutable', 'content-length': img.body.length }, method === 'HEAD' ? undefined : img.body)
     } catch {
       // Could not produce a resized copy: send the visitor to the original rather than a broken image.
       return send(res, 302, { location: q.fallback, 'cache-control': 'public, max-age=60' })

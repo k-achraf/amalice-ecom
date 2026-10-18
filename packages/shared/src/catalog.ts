@@ -87,16 +87,40 @@ export interface RatingSummary {
 }
 
 // ADM-07 — stock adjustment reason codes. Matches the Prisma enum exactly.
-export const StockAdjustmentReasonSchema = z.enum(['Restock', 'Correction', 'Damage', 'Sale', 'Return'])
+export const StockAdjustmentReasonSchema = z.enum(['Restock', 'Correction', 'Damage', 'Sale', 'Return', 'Release', 'Stocktake'])
 export type StockAdjustmentReason = z.infer<typeof StockAdjustmentReasonSchema>
 
 export const AdjustStockSchema = z.object({
   // Signed delta — positive for stock-in, negative for stock-out.
   delta: z.number().int().refine((n) => n !== 0, 'delta must be non-zero'),
   reason: StockAdjustmentReasonSchema,
-  note: z.string().max(500).optional()
+  note: z.string().max(500).optional(),
+  // Only meaningful for a variant's own stock; omit to adjust the product.
+  variantId: z.string().uuid().optional(),
+  supplierId: z.string().uuid().optional()
 })
 export type AdjustStock = z.infer<typeof AdjustStockSchema>
+
+export const SupplierInputSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  phone: z.string().trim().max(40).nullish(),
+  email: z.string().trim().max(120).nullish(),
+  address: z.string().trim().max(300).nullish(),
+  notes: z.string().trim().max(1000).nullish(),
+  active: z.boolean().optional()
+})
+export type SupplierInput = z.infer<typeof SupplierInputSchema>
+
+// Physical count: the counted quantity per product (or per variant) replaces
+// the recorded one; the difference is booked as a Stocktake adjustment.
+export const StocktakeSchema = z.object({
+  note: z.string().max(500).optional(),
+  counts: z
+    .array(z.object({ productId: z.string().uuid(), variantId: z.string().uuid().optional(), counted: z.number().int().min(0) }))
+    .min(1)
+    .max(500)
+})
+export type Stocktake = z.infer<typeof StocktakeSchema>
 
 // SEC-03 — audit log entry. Read-only from the admin viewer (ADM-08);
 // written by order/product/reconciliation services.

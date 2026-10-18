@@ -5,9 +5,10 @@ import { IdentityModule } from '../identity/identity.module'
 import { NotificationsModule } from '../notifications/notifications.module'
 import { AppsModule } from '../apps/apps.module'
 import { OrderItemsModule } from '../order-items/order-items.module'
+import { RiskModule } from '../risk/risk.module'
 
 @Module({
-  imports: [IdentityModule, NotificationsModule, AppsModule, OrderItemsModule],
+  imports: [IdentityModule, NotificationsModule, AppsModule, OrderItemsModule, RiskModule],
   controllers: [OrdersController],
   providers: [OrdersService],
   exports: [OrdersService]

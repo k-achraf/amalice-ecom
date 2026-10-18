@@ -8,6 +8,7 @@ import { MetaCredentialsService } from './meta-credentials.service'
 @Module({
   imports: [CommonModule],
   controllers: [MetaAdsController],
-  providers: [MetaAdsService, MetaGraphService, MetaCredentialsService]
+  providers: [MetaAdsService, MetaGraphService, MetaCredentialsService],
+  exports: [MetaAdsService]
 })
 export class MetaAdsModule {}

@@ -37,7 +37,7 @@ watch(() => route.path, () => { mobileOpen.value = false })
       <!-- Left cluster: wordmark + nav, hard-anchored left like a spec-sheet header row -->
       <div class="flex min-w-0 items-center gap-7">
         <NuxtLink to="/" class="font-display shrink-0 text-xl text-white">
-          {{ settings.storeName }}<span class="text-primary-400">.</span>
+          <BrandName><span class="text-primary-400">.</span></BrandName>
         </NuxtLink>
 
         <nav class="hidden items-center gap-6 lg:flex">

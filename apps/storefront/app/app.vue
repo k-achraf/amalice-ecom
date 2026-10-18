@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { StoreTemplate } from '@amalice/shared'
+import type { StoreSettings, StoreTemplate } from '@amalice/shared'
 
 // Resolves the active storefront template from /settings and binds it to
 // NuxtLayout. CRITICAL: the settings fetch is awaited here so the layout
@@ -15,10 +15,13 @@ import type { StoreTemplate } from '@amalice/shared'
 const config = useRuntimeConfig()
 const { data: settings } = await useAsyncData(
   'store-settings',
-  () => $fetch<{ activeTemplate: StoreTemplate }>('/settings', { baseURL: config.public.apiBase }),
-  { default: () => ({ activeTemplate: 'minimal' as StoreTemplate, storeName: 'Amalice', announcementText: null }) }
+  () => $fetch<StoreSettings>('/settings', { baseURL: config.public.apiBase }),
+  { default: () => ({ activeTemplate: 'minimal' as StoreTemplate, storeName: 'Amalice', announcementText: null }) as StoreSettings }
 )
 const template = computed(() => settings.value?.activeTemplate ?? 'minimal')
+
+// Brand identity (colour ramp, font, favicon) from Settings → Brand.
+useBrandHead()
 
 // A page can opt out of the active template's chrome entirely via
 // definePageMeta({ layout: 'blank' }) (currently only app/pages/lp/ — the AI

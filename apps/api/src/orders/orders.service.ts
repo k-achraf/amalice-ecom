@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { normalizeAlgerianPhone, type AbandonedLeadOrder, type AcceptOrderUpsell, type Checkout, type CheckoutItem, type LeadOrder, type RecentOrderActivityItem, type ShippingType } from '@amalice/shared'
+import { addRiskFactor, normalizeAlgerianPhone, type AbandonedLeadOrder, type AcceptOrderUpsell, type Checkout, type CheckoutItem, type LeadOrder, type RecentOrderActivityItem, type ShippingType } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import type { Product, ProductVariant, Prisma } from '../generated/prisma/client'
 import { NotificationsService } from '../notifications/notifications.service'
@@ -9,6 +9,7 @@ import { TikTokEventsApiService } from '../apps/tiktok-events-api.service'
 import { GoogleSheetsService } from '../apps/google-sheets.service'
 import { OrderItemsService, canAddOrderItems } from '../order-items/order-items.service'
 import { RedisService } from '../redis/redis.service'
+import { RiskService } from '../risk/risk.service'
 import { deviceTypeOf, fbcFromFbclid, resolvePlatform } from './order-attribution.util'
 
 // Request-derived context for the pixel apps' server-side purchase events —
@@ -48,7 +49,8 @@ export class OrdersService {
     private readonly tiktokEvents: TikTokEventsApiService,
     private readonly orderItems: OrderItemsService,
     private readonly googleSheets: GoogleSheetsService,
-    private readonly redis: RedisService
+    private readonly redis: RedisService,
+    private readonly risk: RiskService
   ) {}
 
   // Don't let the client submit the same order twice — double-click,
@@ -204,8 +206,13 @@ export class OrdersService {
     const valueDzd = Math.round(totalCents) / 100
     const contentIds = items.map((i) => i.productId)
 
-    this.apps
-      .getMetaPixelCapiCredentials()
+    // A funnel can carry its own pixels; look them up once for both platforms.
+    const funnelPixels = context.funnelId
+      ? this.prisma.funnel.findUnique({ where: { id: context.funnelId }, select: { metaPixelId: true, tiktokPixelCode: true } }).catch(() => null)
+      : Promise.resolve(null)
+
+    funnelPixels
+      .then((fp) => this.apps.getMetaPixelCapiCredentials(fp?.metaPixelId))
       .then((credentials) => {
         if (!credentials) return
         this.metaConversions.fireAndForget(credentials, {
@@ -222,8 +229,8 @@ export class OrdersService {
         // best-effort side channel, not part of the order's correctness.
       })
 
-    this.apps
-      .getTikTokPixelEapiCredentials()
+    funnelPixels
+      .then((fp) => this.apps.getTikTokPixelEapiCredentials(fp?.tiktokPixelCode))
       .then((credentials) => {
         if (!credentials) return
         // TikTok's Events API validates content_id inside properties.
@@ -404,6 +411,11 @@ export class OrdersService {
     const { priceCents: shippingPriceCents } = await this.priceShipping(checkout.wilayaId, checkout.shippingType)
     const totalCents = itemsTotalCents + shippingPriceCents
 
+    // Fake/returned-order screening — refuses blacklisted phones/addresses
+    // before any row is created, otherwise the score is stored on the order.
+    const assessment = await this.risk.assess(checkout.phone, checkout.address)
+    this.risk.assertNotBlocked(assessment, checkout.phone)
+
     const customer = await this.prisma.customer.upsert({
       where: { phone: checkout.phone },
       update: checkout.name ? { name: checkout.name } : {},
@@ -417,6 +429,7 @@ export class OrdersService {
     let resolvedIdempotencyKey = false
     try {
       const duplicateOfOrderId = await this.findRecentDuplicate(customer.id, productIds)
+      const risk = duplicateOfOrderId ? addRiskFactor(assessment.risk, { code: 'DUPLICATE_ORDER', points: 10 }) : assessment.risk
 
       const order = await this.prisma.$transaction(async (tx) => {
         // Atomic conditional decrement — the WHERE clause makes the update
@@ -438,6 +451,9 @@ export class OrdersService {
             shippingPriceCents,
             isDuplicate: !!duplicateOfOrderId,
             duplicateOfOrderId,
+            riskScore: risk.score,
+            riskLevel: risk.level,
+            riskFactors: risk.factors,
             items: { create: pricedItems }
           },
           include: { items: true }
@@ -530,6 +546,10 @@ export class OrdersService {
       if (!coreKeys.has(key) && val) extras[key] = String(val)
     }
 
+    const addressLine2 = Object.keys(extras).length > 0 ? JSON.stringify(extras) : null
+    const assessment = await this.risk.assess(phone, { line1: commune || wilaya, line2: addressLine2, city: commune, region: wilaya })
+    this.risk.assertNotBlocked(assessment, phone)
+
     const customer = await this.prisma.customer.upsert({
       where: { phone },
       update: { name },
@@ -565,6 +585,7 @@ export class OrdersService {
       // Only relevant for a genuinely new row — converting this visit's own
       // abandoned capture into a real order isn't a second submission.
       const duplicateOfOrderId = convertingAbandoned ? null : await this.findRecentDuplicate(customer.id, productIds)
+      const risk = duplicateOfOrderId ? addRiskFactor(assessment.risk, { code: 'DUPLICATE_ORDER', points: 10 }) : assessment.risk
 
       order = await this.prisma.$transaction(async (tx) => {
         // Atomic stock decrement for each item
@@ -582,6 +603,9 @@ export class OrdersService {
               shippingType: lead.shippingType,
               shippingPriceCents,
               isAbandoned: false,
+              riskScore: risk.score,
+              riskLevel: risk.level,
+              riskFactors: risk.factors,
               ...(context.funnelId && { funnelId: context.funnelId }),
               items: { create: pricedItems }
             },
@@ -600,6 +624,9 @@ export class OrdersService {
             isDuplicate: !!duplicateOfOrderId,
             duplicateOfOrderId,
             funnelId: context.funnelId ?? null,
+            riskScore: risk.score,
+            riskLevel: risk.level,
+            riskFactors: risk.factors,
             items: { create: pricedItems }
           },
           include: { items: true }

@@ -143,3 +143,7 @@
      leftover page height whenever the content below is short (loading, empty or few rows). */
   .main > .chips { flex-grow: 0; align-self: flex-start; }
 }
+
+/* Uploaded brand logo in the sidebar: sits on an ivory chip so any logo colour stays legible on the teal sidebar. */
+.sidebar .brand-chip { display: flex; align-items: center; justify-content: center; margin: 4px 10px; padding: 8px 12px; border-radius: 8px; background: var(--ivory); }
+.sidebar .brand-chip img { max-height: 36px; max-width: 150px; width: auto; object-fit: contain; }

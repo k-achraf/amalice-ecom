@@ -20,6 +20,28 @@ export interface InlineImage {
   mimeType: string
 }
 
+export interface FunnelPlanDraft {
+  name: string
+  workflowId: string
+  workflowReason: string
+  landingTemplateId: string
+  templateReason: string
+  accent: string
+  headline: string
+  subheadline: string
+  ctaLabel: string
+  urgency: boolean
+  urgencyText?: string
+  showStock: boolean
+  trustBadges: boolean
+  quickBenefits: boolean
+  preselectBestOffer: boolean
+  showNotes: boolean
+  addressField: string
+  sections: string[]
+  offers: { stepType: string; productId: string; discountPercent: number; headline: string }[]
+}
+
 export interface ProductBrief {
   category: string
   audience: string
@@ -142,6 +164,28 @@ export class GeminiService {
     }
     if (language === 'fr') return 'STRICT LANGUAGE REQUIREMENT: write everything in clear, correct standard French. No slang, no emoji.'
     return 'STRICT LANGUAGE REQUIREMENT: write everything in clear, correct English. No slang, no emoji.'
+  }
+
+  isConfigured(): boolean {
+    return !!this.config.get('GEMINI_API_KEY', { infer: true })
+  }
+
+  // Brand identity: look at a logo and pick the closest typeface from a fixed
+  // list of Arabic-capable fonts (weight, geometry, formality), so the
+  // storefront's text feels like the logo.
+  async suggestBrandFont(input: { logo: InlineImage; fonts: ReadonlyArray<{ id: string; label: string; tone: string }> }): Promise<{ fontId: string; reason: string }> {
+    const list = input.fonts.map((f) => `- ${f.id}: ${f.label} (${f.tone})`).join('\n')
+    const prompt = `You are a brand designer. The attached image is a store's logo. Choose the ONE typeface from the list below whose personality best matches the logo's lettering and overall style (weight, geometry, formality, warmth). It will be used for the Arabic website text of this store.
+
+${list}
+
+Return fontId (exactly one id from the list) and reason (one short English sentence).`
+    const schema = {
+      type: 'OBJECT',
+      properties: { fontId: { type: 'STRING', enum: input.fonts.map((f) => f.id) }, reason: { type: 'STRING' } },
+      required: ['fontId', 'reason']
+    }
+    return this.generateJson<{ fontId: string; reason: string }>(prompt, schema, [{ inlineData: { mimeType: input.logo.mimeType, data: input.logo.base64 } }], 0.2)
   }
 
   // Step 1 — understand the product before writing anything: what it is, who
@@ -268,6 +312,89 @@ Never invent specs, numbers, promotions, discounts, free delivery, guarantees or
       required: ['headline', 'subheadline', 'ctaLabel']
     }
     return this.generateJson(prompt, schema, [], 0.6)
+  }
+
+  // Whole-funnel plan for one product: the workflow, the landing layout and every
+  // landing setting + copy, and which catalogue products to offer. Everything
+  // is re-validated by FunnelsAiService before anything is saved.
+  async planFunnel(input: {
+    product: { name: string; description: string; priceDa: number; keyBenefits: string[]; category: string | null; stock: number }
+    candidates: { id: string; name: string; priceDa: number }[]
+    language: LandingLanguage
+    instructions?: string
+  }): Promise<FunnelPlanDraft> {
+    const list = input.candidates.length
+      ? input.candidates.map((c) => `- ${c.id} | ${c.name} | ${c.priceDa} DA`).join('\n')
+      : '(none — the catalogue has no other product, so choose a workflow without offers)'
+    const prompt = `You are a conversion specialist configuring a complete cash-on-delivery sales funnel for ONE product in Algeria. Decide everything below.
+
+Product: ${input.product.name}${input.product.category ? ` (category: ${input.product.category})` : ''}
+Price: ${input.product.priceDa} DA. Units in stock: ${input.product.stock}.
+Key benefits already written by the owner: ${input.product.keyBenefits.join(' | ') || '(none)'}
+Product information (the ONLY source of truth for claims):
+"""
+${input.product.description || '(no description)'}
+"""
+${input.instructions ? `\nStore owner's instructions (follow them): ${input.instructions}\n` : ''}
+Other catalogue products that may be offered as an order bump / upsell / downsell:
+${list}
+
+CHOICES
+1. workflowId — one of:
+   classic-cod (sales page → form → thank you; simplest, low-priced or impulse items),
+   quick-order (form only; warm/retargeting traffic),
+   upsell-booster (adds one upsell; needs a companion product),
+   value-ladder (order bump + upsell + downsell; higher-priced items/bundles, needs 2+ companion products).
+   Only pick a workflow with offers when suitable catalogue products exist.
+2. landingTemplateId — one of: classic (full product story), side-by-side (desktop heavy), compact (impulse buys, short page), bold (big discounts/trending, urgency banner).
+3. accent — teal | pine | brass | clay (colour mood fitting the product: clay = warm/urgent, brass = premium, teal/pine = calm/health).
+4. Copy: headline (max 9 words), subheadline (one sentence, max 22 words), ctaLabel (max 5 words, mentions ordering), urgencyText (max 12 words; ONLY if urgency is true, and with no invented numbers, deadlines or discounts).
+5. Toggles: urgency, showStock (true only if stock is low or limited), trustBadges, quickBenefits, preselectBestOffer, showNotes, addressField (required | optional | hidden — fewer fields convert better; use optional/hidden for cheap impulse items, required for high-value items).
+6. sections — the ORDERED list of detail sections to show, from: description, benefits, specs, howItWorks, testimonials, guarantee, faq. Put the strongest persuaders first; omit weak ones (e.g. specs for a product with no specs).
+7. offers — for each offer step of the chosen workflow (OrderBump, Upsell, Downsell as applicable) pick one catalogue product id from the list above (never the main product, no repeats) that complements the main product, a discountPercent (0-30; only discount when it plausibly helps conversion, 0 otherwise), and a short offer headline. Leave the list empty for workflows without offers.
+8. name — a short internal funnel name. workflowReason / templateReason — one short sentence each saying why (for the store owner).
+
+${this.languageRule(input.language, input.instructions)} This applies to headline, subheadline, ctaLabel, urgencyText, offer headlines, name and the reasons.
+Never invent specs, numbers, promotions, free delivery or guarantees that are not in the product information.`
+
+    const schema = {
+      type: 'OBJECT',
+      properties: {
+        name: { type: 'STRING' },
+        workflowId: { type: 'STRING', enum: ['classic-cod', 'quick-order', 'upsell-booster', 'value-ladder'] },
+        workflowReason: { type: 'STRING' },
+        landingTemplateId: { type: 'STRING', enum: ['classic', 'side-by-side', 'compact', 'bold'] },
+        templateReason: { type: 'STRING' },
+        accent: { type: 'STRING', enum: ['teal', 'pine', 'brass', 'clay'] },
+        headline: { type: 'STRING' },
+        subheadline: { type: 'STRING' },
+        ctaLabel: { type: 'STRING' },
+        urgency: { type: 'BOOLEAN' },
+        urgencyText: { type: 'STRING' },
+        showStock: { type: 'BOOLEAN' },
+        trustBadges: { type: 'BOOLEAN' },
+        quickBenefits: { type: 'BOOLEAN' },
+        preselectBestOffer: { type: 'BOOLEAN' },
+        showNotes: { type: 'BOOLEAN' },
+        addressField: { type: 'STRING', enum: ['required', 'optional', 'hidden'] },
+        sections: { type: 'ARRAY', items: { type: 'STRING', enum: ['description', 'benefits', 'specs', 'howItWorks', 'testimonials', 'guarantee', 'faq'] } },
+        offers: {
+          type: 'ARRAY',
+          items: {
+            type: 'OBJECT',
+            properties: {
+              stepType: { type: 'STRING', enum: ['OrderBump', 'Upsell', 'Downsell'] },
+              productId: { type: 'STRING' },
+              discountPercent: { type: 'NUMBER' },
+              headline: { type: 'STRING' }
+            },
+            required: ['stepType', 'productId', 'discountPercent', 'headline']
+          }
+        }
+      },
+      required: ['name', 'workflowId', 'workflowReason', 'landingTemplateId', 'templateReason', 'accent', 'headline', 'subheadline', 'ctaLabel', 'urgency', 'showStock', 'trustBadges', 'quickBenefits', 'preselectBestOffer', 'showNotes', 'addressField', 'sections', 'offers']
+    }
+    return this.generateJson<FunnelPlanDraft>(prompt, schema, [], 0.5)
   }
 
   // Admin product editor's "generate with AI" — turns a raw, messy content

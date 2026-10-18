@@ -165,6 +165,21 @@
     }
   } catch (e) {}
 
+  // Countdown to the admin's real deadline; hides itself when it passes.
+  var cd = $('.cd')
+  if (cd) {
+    var cdEnd = +cd.getAttribute('data-end'), cdNum = $('[data-cd]', cd)
+    var two = function (n) { return (n < 10 ? '0' : '') + n }
+    var cdTick = function () {
+      var left = Math.floor((cdEnd - Date.now()) / 1000)
+      if (left <= 0) { cd.hidden = true; clearInterval(cdTimer); return }
+      var d = Math.floor(left / 86400), h = Math.floor((left % 86400) / 3600)
+      cdNum.textContent = (d ? d + ':' : '') + two(h) + ':' + two(Math.floor((left % 3600) / 60)) + ':' + two(left % 60)
+    }
+    var cdTimer = setInterval(cdTick, 1000)
+    cdTick()
+  }
+
   if (!form) return
 
   // ---------- price maths (the server re-prices everything; this is only what the visitor sees) ----------
@@ -445,9 +460,9 @@
       .catch(function () { a.disabled = false; err.textContent = L.network; err.className = 'fe on' })
   })
 
-  // ---------- pinned order bar: always visible ----------
+  // ---------- pinned order bar ----------
   if (bar) {
-    // The bar never hides: while the form is on screen it submits the order, otherwise it takes the visitor to the form.
+    // While the form is on screen the bar submits the order, otherwise it takes the visitor to the form.
     $('#bb').addEventListener('click', function () {
       startCheckout()
       var r = form.getBoundingClientRect()
@@ -455,6 +470,15 @@
       form.scrollIntoView({ block: 'start' })
       setTimeout(function () { form.name.focus({ preventScroll: true }) }, 450)
     })
+    // Always visible, except while the form's own order button is on screen.
+    var subBtn = $('#sub')
+    function syncBar() {
+      var r = subBtn ? subBtn.getBoundingClientRect() : null
+      bar.classList.toggle('off', !!r && r.top < innerHeight && r.bottom > 0)
+    }
+    addEventListener('scroll', syncBar, { passive: true })
+    addEventListener('resize', syncBar, { passive: true })
+    syncBar()
   }
 
   onWilaya()

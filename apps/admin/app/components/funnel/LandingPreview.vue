@@ -120,6 +120,7 @@ const plainDescription = computed(() => {
 
     <div class="scroller" :dir="T.dir" :lang="T.lang">
       <div v-if="settings.urgency" class="urg">{{ settings.urgencyText?.trim() || T.defaultUrgency }}</div>
+      <div v-if="settings.countdownEndsAt && Date.parse(settings.countdownEndsAt) > Date.now()" class="urg" style="background: var(--s); color: var(--at)">{{ settings.countdownLabel?.trim() || T.countdownDefault }} <b dir="ltr">00:00:00</b></div>
 
       <main class="wrap">
         <div class="top">

@@ -122,6 +122,9 @@ export const FunnelListItemSchema = z.object({
   templateId: z.string(),
   product: FunnelProductRefSchema,
   stepCount: z.number().int().nonnegative(),
+  // Per-funnel pixel overrides (null = the store-wide pixel).
+  metaPixelId: z.string().nullable(),
+  tiktokPixelCode: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string()
 })
@@ -149,7 +152,10 @@ export const UpdateFunnelSchema = z.object({
   name: z.string().trim().min(1).max(100).optional(),
   productId: z.uuid().optional(),
   status: FunnelStatusSchema.optional(),
-  slug: SlugSchema.optional()
+  slug: SlugSchema.optional(),
+  // Empty string / null clears the override.
+  metaPixelId: z.union([z.string().trim().regex(/^[0-9]{5,20}$/, 'Meta pixel id is 5-20 digits'), z.literal('').transform(() => null), z.null()]).optional(),
+  tiktokPixelCode: z.union([z.string().trim().regex(/^[A-Za-z0-9]{6,40}$/, 'TikTok pixel code is 6-40 letters/digits'), z.literal('').transform(() => null), z.null()]).optional()
 })
 export type UpdateFunnel = z.infer<typeof UpdateFunnelSchema>
 
@@ -168,3 +174,29 @@ export type UpdateFunnelStep = z.infer<typeof UpdateFunnelStepSchema>
 
 export const ReorderFunnelStepsSchema = z.object({ stepIds: z.array(z.uuid()).min(1) })
 export type ReorderFunnelSteps = z.infer<typeof ReorderFunnelStepsSchema>
+
+// ---- AI funnel generator --------------------------------------------------
+// One click from a product: the AI picks the workflow (template), the landing
+// layout, every landing setting and the copy, and which catalogue products to
+// offer as bump/upsell/downsell. The result is a normal Draft funnel the admin
+// can still edit. Copy language applies to the AI-written texts only; the
+// fixed form/button labels of funnel pages stay as FUNNEL_COPY_AR.
+export const FUNNEL_AI_LANGUAGES = ['ar', 'fr'] as const
+export const GenerateFunnelSchema = z.object({
+  productId: z.uuid(),
+  language: z.enum(FUNNEL_AI_LANGUAGES).default('ar'),
+  // Free-text steer, e.g. "target women 25-40, premium tone".
+  instructions: z.string().trim().max(600).optional()
+})
+export type GenerateFunnel = z.infer<typeof GenerateFunnelSchema>
+
+export interface GeneratedFunnelResult {
+  funnel: FunnelDetail
+  // Why the AI chose what it chose, shown to the admin after generation.
+  plan: {
+    workflowReason: string
+    templateReason: string
+    offers: { stepType: 'OrderBump' | 'Upsell' | 'Downsell'; productName: string; discountPercent: number }[]
+    notes: string[]
+  }
+}

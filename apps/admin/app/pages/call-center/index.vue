@@ -142,6 +142,7 @@ function onLogged() {
               <span class="muted">{{ waited(o.createdAt) }}</span>
               <span v-if="o.callAttemptsCount" class="pill" :class="o.callAttemptsCount >= CALL_CENTER_MAX_ATTEMPTS ? 'returned' : 'neutral'">{{ o.callAttemptsCount }} call{{ o.callAttemptsCount > 1 ? 's' : '' }}</span>
               <span v-if="o.isDuplicate" class="pill returned">Duplicate?</span>
+              <RiskBadge v-if="o.riskLevel && o.riskLevel !== 'Low'" :level="o.riskLevel" :score="o.riskScore" :factors="o.riskFactors" />
               <span v-if="heldByOther(o)" class="pill outline" :title="`Being handled by ${o.assignedToEmail}`"><AdsIcon name="i-lucide-lock" style="width: 12px; height: 12px" /> {{ o.assignedToEmail?.split('@')[0] }}</span>
             </span>
           </button>

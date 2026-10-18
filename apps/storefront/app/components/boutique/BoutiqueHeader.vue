@@ -41,7 +41,7 @@ watch(() => route.path, () => { mobileOpen.value = false })
         <BoutiqueButton class="lg:hidden" icon="i-lucide-menu" color="neutral" variant="ghost" square aria-label="Open menu" @click="mobileOpen = true" />
         <NuxtLink to="/track" class="hidden text-xs uppercase tracking-widest text-muted hover:text-highlighted lg:inline">Track order</NuxtLink>
         <NuxtLink to="/" class="font-display text-2xl tracking-[0.2em] uppercase text-highlighted">
-          {{ settings.storeName }}
+          <BrandName />
         </NuxtLink>
         <div class="flex items-center gap-4">
           <BoutiqueButton to="/orders" color="neutral" variant="ghost" size="sm" class="hidden lg:inline-flex">Account</BoutiqueButton>

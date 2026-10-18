@@ -4,7 +4,7 @@ Nuxt 4 **SPA** (`ssr: false` — this is a back-office tool, not a public page; 
 
 ## Structure
 
-- `app/pages/` — one directory per feature area: `orders`, `products`, `inventory`, `shipping`, `fulfillment`, `call-center`, `reconciliation`, `customers`, `funnels` (template picker on create, step editor, Landing-page tab with template gallery + live preview in `components/funnel/`), `sourcing`, `apps` (integrations), `abandoned-carts`, `audit-log`, `server-performance`, `settings`, `users`.
+- `app/pages/` — one directory per feature area: `orders`, `products`, `inventory`, `shipping`, `fulfillment`, `call-center`, `reconciliation`, `customers`, `blacklist` (shared phone/address blacklist; order-level risk is shown by `components/risk/RiskBadge.vue` in the orders list, call center and `CallWorkspace`, and `RiskPanel.vue` on the order page), `funnels` ("Generate with AI" dialog on the list: product + language + instructions → Draft funnel with a summary of the AI's choices; template picker on create, step editor, Landing-page tab with template gallery + live preview in `components/funnel/`), `sourcing`, `apps` (integrations), `abandoned-carts`, `audit-log`, `server-performance`, `settings`, `users`.
 - `app/stores/auth.ts` — Pinia store holding the JWT session + role.
 - `app/middleware/auth.global.ts` — global route guard; only `/login` is public. Per-page role gating via `definePageMeta({ middleware: 'role', requiredRole })`. **This is UX only** — the server (`JwtAuthGuard`/`RolesGuard` in `apps/api`) is the real enforcement boundary; never treat this middleware as the security control.
 - `app/tiptap/` — rich-text editor (product descriptions, landing pages) built directly on Tiptap primitives.
@@ -24,6 +24,14 @@ The admin implements the design in `/design` (Leezil brand: Outfit, teal/ivory/b
 - Money is shown the design's way ("4,900 DA") via `<AdsPrice>`.
 - Toasts: `useToast().add({ title, color })` (adapter in `composables/useToast.ts`) or `toast` from `vue-sonner`; `<Toaster>` is in `app.vue`.
 - `useAdminApi()` is deliberately typed as a plain `(url, opts) => Promise<T>` client — inferring full `$fetch` overloads against Nuxt's route types overflows TypeScript's stack.
+
+## Brand identity
+
+`pages/settings/brand.vue` (SuperAdmin; nav: Online store → Brand identity): upload a logo (auto-runs `POST /admin/settings/brand/analyze-logo` → palette, primary colour, AI font suggestion), edit the primary colour (hex + picker + generated 50–950 ramp + white-text contrast warning), pick the typeface (10 Arabic Google Fonts, previewed live), favicon, live preview. Saves through `PUT /admin/settings/brand` — not the storefront settings PUT. The brand also re-skins the admin itself: `plugins/brand.client.ts` → `composables/useAdminBrand.ts` fetches the public `/settings` on boot (cached in localStorage), sets `--teal/--pine/--sage/--mist/--text-2` from `deriveAdminTheme` (teal darkened until white text passes 4.5:1), `--font`, the favicon, and shows the logo on an ivory chip in the sidebar/login. `leezil.css` is untouched. Shapes/ramp maths live in `packages/shared/src/store-settings.ts` (`BrandSchema`, `BRAND_FONTS`, `buildColorRamp`).
+
+## Reports & alerts
+
+`pages/settings/reports.vue` (SuperAdmin; nav: Online store → Reports & alerts): Telegram bot token/chat id, daily-summary hour, max cost per order, wilaya return-rate and courier-silence thresholds. API: `admin/reports/*` (see `apps/api/CLAUDE.md`).
 
 ## Call center
 

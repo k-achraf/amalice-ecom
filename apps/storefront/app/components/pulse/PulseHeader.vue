@@ -42,7 +42,7 @@ watch(() => route.path, () => { mobileOpen.value = false })
       </div>
 
       <NuxtLink to="/" class="font-display justify-self-center bg-gradient-to-r from-primary-600 to-[var(--color-pulse-cyan)] bg-clip-text text-2xl font-bold text-transparent">
-        {{ settings.storeName }}
+        <BrandName />
       </NuxtLink>
 
       <div class="flex items-center justify-end gap-2">

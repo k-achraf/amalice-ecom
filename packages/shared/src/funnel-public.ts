@@ -7,6 +7,7 @@ import type { FunnelStepType } from './funnel'
 import type { LandingSettings } from './funnel-landing'
 import type { ProductFaq, ProductSpecification } from './product'
 import type { ProductOfferType } from './offer'
+import type { Brand } from './store-settings'
 
 // The public face of a funnel — what the standalone funnels site (apps/funnels)
 // reads from GET /public/funnels/:slug, and what it posts back. Everything a
@@ -76,6 +77,8 @@ export interface PublicFunnel {
   slug: string
   name: string
   storeName: string
+  // Brand identity (logo / colour / font) from Settings → Brand; null = funnel's own accent and system font.
+  brand: Brand | null
   product: PublicFunnelProduct
   // Real approved reviews (newest first, at most 6) and the overall average; empty / null when there are none.
   reviews: PublicFunnelReview[]
@@ -126,6 +129,7 @@ export const FUNNEL_COPY_AR = {
   dir: 'rtl' as const,
   lang: 'ar',
   defaultCta: 'اطلب الآن والدفع عند الاستلام',
+  countdownDefault: 'ينتهي العرض خلال',
   defaultUrgency: 'الكمية محدودة: اطلب اليوم قبل نفاد المخزون',
   payOnDelivery: 'الدفع عند الاستلام',
   orderNow: 'اطلب الآن',

@@ -80,6 +80,11 @@ export type ProductVariant = Prisma.ProductVariantModel
  */
 export type StockAdjustment = Prisma.StockAdjustmentModel
 /**
+ * Model Supplier
+ * 
+ */
+export type Supplier = Prisma.SupplierModel
+/**
  * Model Attribute
  * 
  */
@@ -319,3 +324,18 @@ export type MetaAdAccount = Prisma.MetaAdAccountModel
  * 
  */
 export type MetaAppCredentials = Prisma.MetaAppCredentialsModel
+/**
+ * Model BlacklistEntry
+ * 
+ */
+export type BlacklistEntry = Prisma.BlacklistEntryModel
+/**
+ * Model ReportSettings
+ * 
+ */
+export type ReportSettings = Prisma.ReportSettingsModel
+/**
+ * Model AlertLog
+ * 
+ */
+export type AlertLog = Prisma.AlertLogModel

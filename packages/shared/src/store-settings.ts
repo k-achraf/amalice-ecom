@@ -108,6 +108,142 @@ export const TEMPLATE_META: Record<
   }
 }
 
+// ---- Brand identity ----
+// Colour, typeface and logos the admin controls from Settings → Brand. The
+// storefront turns this into CSS variables at SSR time (see
+// apps/storefront/app/composables/useBrandHead.ts), so every template — each
+// with its own palette — can be re-branded without touching template CSS.
+
+// Arabic-capable Google Fonts the storefront can load on demand. `cairo` is the
+// build-time default (already self-hosted); the rest are fetched from Google
+// Fonts only when selected. `tone` is what the logo analysis matches against.
+export const BRAND_FONTS = [
+  { id: 'cairo', label: 'Cairo', family: 'Cairo', tone: 'modern, clean, neutral', weights: '300;400;500;600;700;900' },
+  { id: 'tajawal', label: 'Tajawal', family: 'Tajawal', tone: 'light, contemporary, friendly', weights: '300;400;500;700;900' },
+  { id: 'almarai', label: 'Almarai', family: 'Almarai', tone: 'simple, corporate, readable', weights: '300;400;700;800' },
+  { id: 'ibm-plex-sans-arabic', label: 'IBM Plex Sans Arabic', family: 'IBM Plex Sans Arabic', tone: 'technical, precise, tech', weights: '300;400;500;600;700' },
+  { id: 'noto-kufi-arabic', label: 'Noto Kufi Arabic', family: 'Noto Kufi Arabic', tone: 'geometric, bold, strong', weights: '300;400;500;600;700;900' },
+  { id: 'readex-pro', label: 'Readex Pro', family: 'Readex Pro', tone: 'soft, rounded, approachable', weights: '300;400;500;600;700' },
+  { id: 'changa', label: 'Changa', family: 'Changa', tone: 'energetic, youthful, sporty', weights: '300;400;500;600;700' },
+  { id: 'el-messiri', label: 'El Messiri', family: 'El Messiri', tone: 'elegant, classic, premium', weights: '400;500;600;700' },
+  { id: 'amiri', label: 'Amiri', family: 'Amiri', tone: 'traditional calligraphic serif, heritage, luxury', weights: '400;700' },
+  { id: 'lalezar', label: 'Lalezar', family: 'Lalezar', tone: 'heavy display, playful, headline impact', weights: '400' }
+] as const
+export type BrandFontId = (typeof BRAND_FONTS)[number]['id']
+export const BRAND_FONT_IDS = BRAND_FONTS.map((f) => f.id) as [BrandFontId, ...BrandFontId[]]
+
+// Google Fonts stylesheet for a brand font. null for the build-time default
+// (Cairo is self-hosted by @nuxt/fonts, no extra request needed).
+export function brandFontStylesheetUrl(fontId: BrandFontId | null | undefined): string | null {
+  const font = BRAND_FONTS.find((f) => f.id === fontId)
+  if (!font || font.id === 'cairo') return null
+  const family = font.family.replace(/ /g, '+')
+  return `https://fonts.googleapis.com/css2?family=${family}:wght@${font.weights}&display=swap`
+}
+
+// CSS-font-family string for a brand font, always falling back to Cairo.
+export function brandFontFamily(fontId: BrandFontId | null | undefined): string {
+  const font = BRAND_FONTS.find((f) => f.id === fontId)
+  const first = font && font.id !== 'cairo' ? `'${font.family}', ` : ''
+  return `${first}'Cairo', ui-sans-serif, system-ui, sans-serif`
+}
+
+export const HexColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use a 6-digit hex colour like #1a73e8')
+
+export const BrandSchema = z.object({
+  // Relative /uploads/... path or absolute URL (resolve with resolveImageUrl).
+  logoUrl: z.string().max(500).nullable().default(null),
+  // Falls back to the logo when empty.
+  faviconUrl: z.string().max(500).nullable().default(null),
+  // Brand colour anchored at the 500 stop; the full 50–950 ramp is derived
+  // (buildColorRamp). null = keep each template's own palette.
+  primaryColor: HexColorSchema.nullable().default(null),
+  // null = keep the default (Cairo).
+  fontId: z.enum(BRAND_FONT_IDS).nullable().default(null)
+})
+export type Brand = z.infer<typeof BrandSchema>
+export const DEFAULT_BRAND: Brand = { logoUrl: null, faviconUrl: null, primaryColor: null, fontId: null }
+
+export const RAMP_STOPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const
+
+function hexToRgb(hex: string): [number, number, number] {
+  const n = parseInt(hex.slice(1), 16)
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+}
+function rgbToHex(r: number, g: number, b: number): string {
+  const c = (v: number) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')
+  return `#${c(r)}${c(g)}${c(b)}`
+}
+function mix(a: [number, number, number], b: [number, number, number], t: number): string {
+  return rgbToHex(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t)
+}
+
+// 11-stop ramp with `hex` as the 500 stop: lighter stops mix toward white,
+// darker toward black. Deterministic and dependency-free so the admin preview
+// and the storefront render identical colours.
+export function buildColorRamp(hex: string): Record<(typeof RAMP_STOPS)[number], string> {
+  const base = hexToRgb(hex)
+  const white: [number, number, number] = [255, 255, 255]
+  const black: [number, number, number] = [0, 0, 0]
+  return {
+    50: mix(base, white, 0.94),
+    100: mix(base, white, 0.86),
+    200: mix(base, white, 0.72),
+    300: mix(base, white, 0.52),
+    400: mix(base, white, 0.26),
+    500: rgbToHex(...base),
+    600: mix(base, black, 0.14),
+    700: mix(base, black, 0.3),
+    800: mix(base, black, 0.46),
+    900: mix(base, black, 0.62),
+    950: mix(base, black, 0.78)
+  }
+}
+
+// WCAG contrast ratio of white text on `hex` — the admin warns below 4.5.
+export function contrastWithWhite(hex: string): number {
+  const lin = (v: number) => {
+    const s = v / 255
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+  }
+  const [r, g, b] = hexToRgb(hex)
+  const l = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+  return 1.05 / (l + 0.05)
+}
+
+// Admin dashboard colour tokens (apps/admin leezil.css: --teal sidebar/buttons,
+// --pine darkest text, --sage/--sage-light/--mist supporting tints, --text-2
+// secondary text) derived from the brand colour. --teal carries white text, so
+// the brand colour is darkened until it reaches 4.5:1 against white.
+export function deriveAdminTheme(hex: string): Record<'teal' | 'pine' | 'sage' | 'sageLight' | 'mist' | 'text2' | 'okBg', string> {
+  const ramp = buildColorRamp(hex)
+  const teal = [hex, ramp[600], ramp[700], ramp[800], ramp[900]].find((c) => contrastWithWhite(c) >= 4.5) ?? ramp[900]
+  const t = hexToRgb(teal)
+  const white: [number, number, number] = [255, 255, 255]
+  const black: [number, number, number] = [0, 0, 0]
+  return {
+    teal,
+    pine: mix(t, black, 0.42),
+    sage: mix(t, white, 0.33),
+    sageLight: mix(t, white, 0.6),
+    mist: mix(t, white, 0.86),
+    text2: mix(t, white, 0.25),
+    okBg: mix(t, white, 0.9)
+  }
+}
+
+// What POST admin/settings/brand/analyze-logo returns.
+export const LogoAnalysisSchema = z.object({
+  // Dominant brand colours, most prominent first (hex).
+  palette: z.array(HexColorSchema),
+  primaryColor: HexColorSchema.nullable(),
+  // null when AI isn't configured or couldn't decide.
+  fontId: z.enum(BRAND_FONT_IDS).nullable(),
+  fontReason: z.string().nullable(),
+  aiUsed: z.boolean()
+})
+export type LogoAnalysis = z.infer<typeof LogoAnalysisSchema>
+
 // The public storefront-facing config (GET /settings) — what the storefront
 // server-plugin prefetches to resolve the active template + chrome copy.
 export const StoreSettingsSchema = z.object({
@@ -140,7 +276,10 @@ export const StoreSettingsSchema = z.object({
   // How long (seconds) a customer can go idle after typing a phone number on
   // a lead form, without submitting, before the storefront auto-creates an
   // abandoned-cart order (see AbandonedLeadOrderSchema in order.ts).
-  abandonedCartDelaySeconds: z.number().int().min(10).max(3600).default(60)
+  abandonedCartDelaySeconds: z.number().int().min(10).max(3600).default(60),
+  // Brand identity (colour / font / logos). Edited via its own endpoint
+  // (PUT admin/settings/brand) so the settings form can't wipe it.
+  brand: BrandSchema.nullable().optional()
 })
 export type StoreSettings = z.infer<typeof StoreSettingsSchema>
 

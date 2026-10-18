@@ -40,7 +40,7 @@ watch(() => route.path, () => { mobileOpen.value = false })
 
       <!-- Wordmark — bold serif, logo-left, the sole anchor of the bar -->
       <NuxtLink to="/" class="font-display text-3xl text-black">
-        {{ settings.storeName }}<span class="text-primary-600">.</span>
+        <BrandName><span class="text-primary-600">.</span></BrandName>
       </NuxtLink>
 
       <!-- Desktop nav — deliberately sparse: three words, nothing more. Category browsing

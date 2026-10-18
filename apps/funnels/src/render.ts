@@ -5,6 +5,9 @@ import { brotliCompressSync, gzipSync, constants as zc } from 'node:zlib'
 import {
   FUNNEL_COPY_AR as T,
   LANDING_ACCENT_HEX,
+  brandFontFamily,
+  brandFontStylesheetUrl,
+  buildColorRamp,
   formatDa,
   getLandingTemplate,
   offerPriceCents,
@@ -86,7 +89,17 @@ function build(f: PublicFunnel): string {
   const p = f.product
   const tpl = getLandingTemplate(s.templateId)
   const layout = tpl?.layout ?? 'stacked'
-  const accent = LANDING_ACCENT_HEX[s.accent]
+  const brand = f.brand
+  // The store's brand colour (Settings → Brand) replaces each funnel's own accent so every funnel matches the store.
+  const accent = brand?.primaryColor ? { solid: brand.primaryColor, soft: buildColorRamp(brand.primaryColor)[50] } : LANDING_ACCENT_HEX[s.accent]
+  const brandLogo = brand?.logoUrl ? `<div class="brandbar"><img src="${esc(imgUrl(brand.logoUrl, 320))}" alt="${esc(f.storeName)}" width="160" height="40"></div>` : ''
+  const brandIcon = brand?.faviconUrl || brand?.logoUrl
+  const fontHref = brandFontStylesheetUrl(brand?.fontId)
+  // A chosen brand font is the one webfont this page ever loads (display=swap: text paints in the system font first).
+  const brandHead =
+    (brandIcon ? `<link rel="icon" href="${esc(imgUrl(brandIcon, 320))}">` : '') +
+    (fontHref ? `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="${esc(fontHref)}">` : '') +
+    (fontHref ? `<style>html body{font-family:${brandFontFamily(brand?.fontId)},system-ui,sans-serif}</style>` : '')
   const headline = s.headline?.trim() || p.name
 
   // ---- variants, stock, price ----
@@ -278,13 +291,32 @@ ${s.trustBadges ? `<ul class="trust"><li>${ico('truck')}${T.trust[0]}</li><li>${
   const ogImg = lcp && lcp.url.startsWith('/uploads/') ? null : lcp?.url
   const head = `<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${esc(headline)} — ${esc(f.storeName)}</title><meta name="description" content="${esc(description)}"><meta name="theme-color" content="${accent.solid}"><meta property="og:title" content="${esc(headline)}"><meta property="og:description" content="${esc(description)}">${ogImg ? `<meta property="og:image" content="${esc(ogImg)}">` : ''}<link rel="preconnect" href="${esc(config.publicApiBase)}" crossorigin>${
     lcp ? `<link rel="preload" as="image" href="${esc(imgUrl(lcp.url, 800))}"${imgSrcset(lcp.url) ? ` imagesrcset="${esc(imgSrcset(lcp.url))}" imagesizes="${SIZES}"` : ''} fetchpriority="high">` : ''
-  }<style>${CSS}</style>`
+  }<style>${CSS}</style>${brandHead}`
 
+  // Structured data for search engines: Product with price, availability and (real, approved) rating.
+  const ld = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: p.name,
+    description,
+    ...(ogImg || lcp ? { image: (p.images.length ? p.images.map((i) => i.url) : [p.imageUrl ?? '']).filter(Boolean).map((u) => (u.startsWith('/') ? `${config.publicApiBase}${u}` : u)) } : {}),
+    brand: { '@type': 'Brand', name: f.storeName },
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'DZD',
+      price: (p.priceCents / 100).toFixed(2),
+      availability: soldOut ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock'
+    },
+    ...(f.rating ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: f.rating.avg, reviewCount: f.rating.count } } : {})
+  }
+  const jsonLd = `<script type="application/ld+json">${escJson(ld)}</script>`
   const urgency = s.urgency ? `<div class="urg">${esc(s.urgencyText?.trim() || T.defaultUrgency)}</div>` : ''
+  const endMs = s.countdownEndsAt ? Date.parse(s.countdownEndsAt) : NaN
+  const countdown = Number.isFinite(endMs) && endMs > Date.now() ? `<div class="cd" data-end="${endMs}"><span>${esc(s.countdownLabel?.trim() || T.countdownDefault)}</span><b data-cd>--:--:--</b></div>` : ''
   // Always present (the visitor can always reach the order button), unless there is nothing left to sell.
   const hasBar = !soldOut
 
-  return `<!doctype html><html lang="${T.lang}" dir="${T.dir}" style="${accentVars(accent.solid, accent.soft)}"><head>${head}</head><body class="${layout === 'split' ? 'split ' : ''}t-${tpl?.id ?? 'classic'}${hasBar ? ' hasbar' : ''}">${SPRITE}<div id="m" data-screen="landing">${urgency}<main class="wrap"><div class="top">${gallery}<div class="buy">${buy}</div></div><div class="det">${details.join('')}</div></main></div>${after.map(offerScreen).join('')}${thanks}${
+  return `<!doctype html><html lang="${T.lang}" dir="${T.dir}" style="${accentVars(accent.solid, accent.soft)}"><head>${head}</head><body class="${layout === 'split' ? 'split ' : ''}t-${tpl?.id ?? 'classic'}${hasBar ? ' hasbar' : ''}">${SPRITE}<div id="m" data-screen="landing">${urgency}${countdown}${brandLogo}<main class="wrap"><div class="top">${gallery}<div class="buy">${buy}</div></div><div class="det">${details.join('')}</div></main></div>${after.map(offerScreen).join('')}${thanks}${
     hasBar ? `<div class="bar" id="bar"><div class="bi"><div class="t"><small>${T.total}</small><b data-total>${formatDa(subtotal)}</b></div><button type="button" class="cta" id="bb"><span>${esc(s.ctaLabel)}</span></button></div></div>` : ''
-  }<script type="application/json" id="fd">${escJson(fd)}</script><script>${CLIENT_JS}</script></body></html>`
+  }<script type="application/json" id="fd">${escJson(fd)}</script>${jsonLd}<script>${CLIENT_JS}</script></body></html>`
 }

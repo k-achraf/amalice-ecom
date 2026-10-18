@@ -34,7 +34,7 @@ watch(() => route.path, () => { mobileOpen.value = false })
       </AtelierButton>
 
       <NuxtLink to="/" class="font-display text-3xl tracking-wide text-[var(--color-atelier-cream)] lg:mx-auto">
-        {{ settings.storeName }}
+        <BrandName />
       </NuxtLink>
 
       <div class="flex items-center gap-2">

@@ -22,6 +22,8 @@ export interface TikTokEapiEvent {
   eventName: string
   eventId: string
   eventSourceUrl?: string
+  // Unix seconds; defaults to now.
+  eventTime?: number
   userData: TikTokEapiUserData
   properties?: Record<string, unknown>
 }
@@ -74,7 +76,7 @@ export class TikTokEventsApiService {
       data: [
         {
           event: event.eventName,
-          event_time: Math.floor(Date.now() / 1000),
+          event_time: event.eventTime ?? Math.floor(Date.now() / 1000),
           event_id: event.eventId,
           user: this.buildUserData(event.userData),
           page: event.eventSourceUrl ? { url: event.eventSourceUrl } : undefined,

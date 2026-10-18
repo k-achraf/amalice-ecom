@@ -532,6 +532,11 @@ export interface AdminOrderListItem {
   // flags it so call-center can spot an accidental/bot-driven repeat.
   isDuplicate: boolean
   duplicateOfOrderId: string | null
+  // Fake/returned-order risk scored at placement (see risk.ts); null for
+  // orders that predate scoring.
+  riskScore: number | null
+  riskLevel: 'Low' | 'Medium' | 'High' | null
+  riskFactors: Array<{ code: string; points: number; detail?: string }> | null
   // Set when transitioning to Postponed (now required — see
   // TransitionOrderSchema) — the Drop Queue hides the order until this is
   // reached. Null for legacy Postponed orders from before this field
@@ -596,6 +601,11 @@ export interface AdminOrderDetail {
   notes: string | null
   isDuplicate: boolean
   duplicateOfOrderId: string | null
+  // Fake/returned-order risk scored at placement (see risk.ts); null for
+  // orders that predate scoring.
+  riskScore: number | null
+  riskLevel: 'Low' | 'Medium' | 'High' | null
+  riskFactors: Array<{ code: string; points: number; detail?: string }> | null
   postponedUntil: string | null
   // ---- Call-center work tracking (see Order's Prisma comment) ----
   assignedToEmail: string | null

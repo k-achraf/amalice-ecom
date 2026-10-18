@@ -51,7 +51,7 @@ watch(() => route.path, () => { mobileOpen.value = false })
         <span class="flex size-9 items-center justify-center rounded-full bg-primary-500 text-[var(--color-trove-ink)]">
           <Icon name="i-lucide-gem" class="size-4" />
         </span>
-        {{ settings.storeName }}
+        <BrandName />
       </NuxtLink>
 
       <div class="flex items-center justify-end gap-3">

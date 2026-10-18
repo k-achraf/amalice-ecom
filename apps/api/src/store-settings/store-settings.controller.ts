@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Put, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Post, Put, Req, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { SkipThrottle } from '@nestjs/throttler'
-import { UpdateStoreSettingsSchema, type UpdateStoreSettings } from '@amalice/shared'
+import { BrandSchema, UpdateStoreSettingsSchema, type Brand, type UpdateStoreSettings } from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
+import { z } from 'zod'
 import type { Request } from 'express'
 import { StoreSettingsService } from './store-settings.service'
 import { JwtAuthGuard } from '../identity/admin-auth/jwt-auth.guard'
@@ -12,6 +13,8 @@ import type { AdminJwtPayload } from '../identity/admin-auth/jwt-payload.interfa
 import type { AuditActor } from '../common/audit.service'
 
 class UpdateStoreSettingsDto extends createZodDto(UpdateStoreSettingsSchema) {}
+class UpdateBrandDto extends createZodDto(BrandSchema) {}
+class AnalyzeLogoDto extends createZodDto(z.object({ logoUrl: z.string().max(500) })) {}
 
 interface AuthedRequest extends Request {
   user: AdminJwtPayload
@@ -50,5 +53,22 @@ export class StoreSettingsController {
   update(@Body() body: UpdateStoreSettingsDto, @Req() req: AuthedRequest) {
     const actor: AuditActor = { id: req.user.sub, email: req.user.email }
     return this.settings.update(body as UpdateStoreSettings, actor)
+  }
+
+  @Put('admin/settings/brand')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin')
+  updateBrand(@Body() body: UpdateBrandDto, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.settings.updateBrand(body as Brand, actor)
+  }
+
+  @Post('admin/settings/brand/analyze-logo')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin')
+  analyzeLogo(@Body() body: AnalyzeLogoDto) {
+    return this.settings.analyzeLogo(body.logoUrl)
   }
 }

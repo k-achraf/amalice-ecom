@@ -1,3 +1,4 @@
+import { StockService } from '../common/stock.service'
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import {
   CALL_CENTER_MAX_ATTEMPTS,
@@ -72,7 +73,8 @@ export class AdminCallCenterService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly googleSheets: GoogleSheetsService,
-    private readonly orders: AdminOrdersService
+    private readonly orders: AdminOrdersService,
+    private readonly stock: StockService
   ) {}
 
   // ---- queue ---------------------------------------------------------------
@@ -259,6 +261,9 @@ export class AdminCallCenterService {
       }
     })
     if (updated.count === 0) throw new ConflictException('This order was just updated by someone else — reload it')
+
+    if (clearsAbandoned) await this.stock.reserveForOrder(id, actor.id)
+    if (input.outcome === 'Cancelled') await this.stock.releaseForOrder(id, actor.id)
 
     const attempt = await this.prisma.callAttempt.create({
       data: {

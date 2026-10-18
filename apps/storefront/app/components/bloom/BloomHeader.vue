@@ -33,7 +33,7 @@ watch(() => route.path, () => { mobileOpen.value = false })
       </BloomButton>
 
       <NuxtLink to="/" class="font-display text-3xl text-[var(--color-bloom-ink)]">
-        {{ settings.storeName }}
+        <BrandName />
       </NuxtLink>
 
       <nav class="hidden items-center gap-7 lg:flex">

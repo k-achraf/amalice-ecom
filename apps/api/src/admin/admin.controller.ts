@@ -1,4 +1,6 @@
+import { AdminInventoryService } from './admin-inventory.service'
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -16,7 +18,7 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Throttle } from '@nestjs/throttler'
 import {
-  AdjustStockSchema,
+  AdjustStockSchema, SupplierInputSchema, StocktakeSchema,
   CreateProductSchema,
   CreateProductOfferSchema,
   UpdateProductOfferSchema,
@@ -38,6 +40,11 @@ import {
   type TimelineCategory,
   ProductListQuerySchema,
   GenerateProductContentSchema,
+  CreateBlacklistEntrySchema,
+  UpdateBlacklistEntrySchema,
+  BlacklistTypeSchema,
+  BlacklistActionSchema,
+  RiskLevelSchema,
   type AdjustStock,
   type CreateProduct
 } from '@amalice/shared'
@@ -59,6 +66,7 @@ import { Roles } from '../identity/admin-auth/roles.decorator'
 import type { AdminJwtPayload } from '../identity/admin-auth/jwt-payload.interface'
 import { AuditService, type AuditActor } from '../common/audit.service'
 import { OrderItemsService } from '../order-items/order-items.service'
+import { RiskService } from '../risk/risk.service'
 
 // The admin-facing API surface. Every route is JwtAuthGuard + role-gated
 // (client-side nav hiding is UX only — plan §ADM-02). The actor for audit
@@ -67,6 +75,8 @@ import { OrderItemsService } from '../order-items/order-items.service'
 
 class CreateProductDto extends createZodDto(CreateProductSchema) {}
 class AdjustStockDto extends createZodDto(AdjustStockSchema) {}
+class SupplierDto extends createZodDto(SupplierInputSchema) {}
+class StocktakeDto extends createZodDto(StocktakeSchema) {}
 class CreateProductOfferDto extends createZodDto(CreateProductOfferSchema) {}
 class UpdateProductOfferDto extends createZodDto(UpdateProductOfferSchema) {}
 class UpdateWilayaShippingRatesDto extends createZodDto(UpdateWilayaShippingRatesSchema) {}
@@ -76,6 +86,8 @@ class UpdateProductUpsellDto extends createZodDto(UpdateProductUpsellSchema) {}
 class UpdateOrderNotesDto extends createZodDto(UpdateOrderNotesSchema) {}
 class UpdateOrderPriceDto extends createZodDto(UpdateOrderPriceSchema) {}
 class TransitionOrderDto extends createZodDto(TransitionOrderSchema) {}
+class CreateBlacklistEntryDto extends createZodDto(CreateBlacklistEntrySchema) {}
+class UpdateBlacklistEntryDto extends createZodDto(UpdateBlacklistEntrySchema) {}
 class LogCallDto extends createZodDto(LogCallSchema) {}
 class BulkDeleteOrdersDto extends createZodDto(BulkDeleteOrdersSchema) {}
 class UpdateOrderCustomerInfoDto extends createZodDto(UpdateOrderCustomerInfoSchema) {}
@@ -107,7 +119,9 @@ export class AdminController {
     private readonly productMgmt: AdminProductManagementService,
     private readonly shipping: AdminShippingService,
     private readonly audit: AuditService,
-    private readonly orderItems: OrderItemsService
+    private readonly orderItems: OrderItemsService,
+    private readonly risk: RiskService,
+    private readonly inventory: AdminInventoryService
   ) {}
 
   // ---- ADM-09 dashboard ---------------------------------------------------
@@ -138,6 +152,7 @@ export class AdminController {
     @Query('search') search: string | undefined,
     @Query('courierId') courierId: string | undefined,
     @Query('funnelId') funnelId: string | undefined,
+    @Query('riskLevel') riskLevel: string | undefined,
     @Query('from') fromIso: string | undefined,
     @Query('to') toIso: string | undefined,
     @Query('page') page: string = '1',
@@ -160,6 +175,7 @@ export class AdminController {
       search,
       courierId,
       funnelId,
+      riskLevel: riskLevel ? RiskLevelSchema.parse(riskLevel) : undefined,
       from: fromIso ? new Date(fromIso) : undefined,
       to: toIso ? new Date(toIso) : undefined,
       page: Number(page),
@@ -411,7 +427,58 @@ export class AdminController {
     @Body() body: AdjustStockDto,
     @Req() req: AuthedRequest
   ) {
-    return this.catalog.adjustStock(id, body as AdjustStock, actorFrom(req))
+    const input = body as AdjustStock
+    if (input.variantId) return this.inventory.adjustVariant(input.variantId, input, actorFrom(req))
+    return this.catalog.adjustStock(id, input, actorFrom(req))
+  }
+
+  @Get('inventory/low-stock-variants')
+  @Roles('SuperAdmin', 'OpsManager', 'Warehouse')
+  lowStockVariants() {
+    return this.inventory.lowStockVariants()
+  }
+
+  @Post('orders/restock-returns')
+  @Roles('SuperAdmin', 'OpsManager', 'Warehouse')
+  restockReturns(@Body() body: { orderIds: string[] }, @Req() req: AuthedRequest) {
+    if (!Array.isArray(body?.orderIds) || !body.orderIds.length || body.orderIds.length > 200) throw new BadRequestException('orderIds required (max 200)')
+    return this.orders.bulkRestock(body.orderIds, actorFrom(req))
+  }
+
+  @Get('inventory/count-sheet')
+  @Roles('SuperAdmin', 'OpsManager', 'Warehouse')
+  countSheet() {
+    return this.inventory.countSheet()
+  }
+
+  @Post('inventory/stocktake')
+  @Roles('SuperAdmin', 'OpsManager', 'Warehouse')
+  stocktake(@Body() body: StocktakeDto, @Req() req: AuthedRequest) {
+    return this.inventory.applyStocktake(body, actorFrom(req))
+  }
+
+  @Get('suppliers')
+  @Roles('SuperAdmin', 'OpsManager', 'Warehouse')
+  suppliers() {
+    return this.inventory.listSuppliers()
+  }
+
+  @Post('suppliers')
+  @Roles('SuperAdmin', 'OpsManager')
+  createSupplier(@Body() body: SupplierDto) {
+    return this.inventory.createSupplier(body)
+  }
+
+  @Patch('suppliers/:id')
+  @Roles('SuperAdmin', 'OpsManager')
+  updateSupplier(@Param('id') id: string, @Body() body: SupplierDto) {
+    return this.inventory.updateSupplier(id, body)
+  }
+
+  @Get('suppliers/:id/history')
+  @Roles('SuperAdmin', 'OpsManager', 'Warehouse')
+  supplierHistory(@Param('id') id: string) {
+    return this.inventory.supplierHistory(id)
   }
 
   @Get('products/:id/stock-history')
@@ -631,6 +698,54 @@ export class AdminController {
   @Roles('SuperAdmin')
   reactivate(@Param('id') id: string, @Req() req: AuthedRequest) {
     return this.usersSvc.setActive(id, true, actorFrom(req))
+  }
+
+  // ---- Fake / returned-order blacklist --------------------------------------
+  // One list shared by every admin. Agents see the risk badge on orders but
+  // only managers/support edit the list.
+  @Get('blacklist')
+  @Roles('SuperAdmin', 'OpsManager', 'Support')
+  listBlacklist(
+    @Query('type') type: string | undefined,
+    @Query('action') action: string | undefined,
+    @Query('search') search: string | undefined,
+    @Query('released') released: string | undefined,
+    @Query('page') page: string = '1',
+    @Query('pageSize') pageSize: string = '20'
+  ) {
+    return this.risk.list({
+      type: type ? BlacklistTypeSchema.parse(type) : undefined,
+      action: action ? BlacklistActionSchema.parse(action) : undefined,
+      search,
+      includeReleased: released === '1',
+      page: Number(page),
+      pageSize: Number(pageSize)
+    })
+  }
+
+  @Post('blacklist')
+  @Roles('SuperAdmin', 'OpsManager', 'Support')
+  addToBlacklist(@Body() body: CreateBlacklistEntryDto, @Req() req: AuthedRequest) {
+    return this.risk.create(body, actorFrom(req))
+  }
+
+  @Patch('blacklist/:id')
+  @Roles('SuperAdmin', 'OpsManager', 'Support')
+  updateBlacklist(@Param('id') id: string, @Body() body: UpdateBlacklistEntryDto, @Req() req: AuthedRequest) {
+    return this.risk.update(id, body, actorFrom(req))
+  }
+
+  @Delete('blacklist/:id')
+  @Roles('SuperAdmin', 'OpsManager', 'Support')
+  releaseBlacklist(@Param('id') id: string, @Req() req: AuthedRequest) {
+    return this.risk.release(id, actorFrom(req))
+  }
+
+  // Active blacklist entries matching this order's phone / address.
+  @Get('orders/:id/blacklist')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  orderBlacklist(@Param('id') id: string) {
+    return this.risk.entriesForOrder(id)
   }
 
   // ---- ADM-10 customers ---------------------------------------------------

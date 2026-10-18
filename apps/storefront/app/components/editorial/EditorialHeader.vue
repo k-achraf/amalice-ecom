@@ -41,7 +41,7 @@ watch(() => route.path, () => { mobileOpen.value = false })
         <EditorialButton class="lg:hidden" icon="i-lucide-menu" color="neutral" variant="ghost" square aria-label="Open menu" @click="mobileOpen = true" />
         <div class="flex-1" />
         <NuxtLink to="/" class="text-center text-3xl font-bold uppercase tracking-tight text-highlighted">
-          {{ settings.storeName }}
+          <BrandName />
         </NuxtLink>
         <div class="flex flex-1 items-center justify-end gap-3">
           <EditorialButton to="/track" color="neutral" variant="ghost" size="sm" class="hidden sm:inline-flex">Track</EditorialButton>

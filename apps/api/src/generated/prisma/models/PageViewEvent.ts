@@ -1397,4 +1397,3 @@ export type PageViewEventDefaultArgs<ExtArgs extends runtime.Types.Extensions.In
    */
   omit?: Prisma.PageViewEventOmit<ExtArgs> | null
 }
-

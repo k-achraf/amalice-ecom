@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import type { AdminRoleName, DashboardStats } from '@amalice/shared'
-import { Filter, SearchCode, PackageCheck, Receipt, History, Server, FileWarning, Truck, PackageSearch, LayoutDashboard, Megaphone, Link2, Wallet } from 'lucide-vue-next'
+import { Filter, SearchCode, PackageCheck, Receipt, History, Server, FileWarning, Truck, PackageSearch, LayoutDashboard, Megaphone, Link2, Wallet, ShieldBan, Palette, BellRing, ClipboardList, Handshake } from 'lucide-vue-next'
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -23,13 +23,16 @@ const groups: NavGroup[] = [
       { label: 'Orders', design: 'orders', to: '/orders', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Support'] },
       { label: 'Call center', design: 'headset', to: '/call-center', roles: ['SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent'], count: 'calls', short: 'Calls' },
       { label: 'Abandoned carts', design: 'cart', to: '/abandoned-carts', roles: ['SuperAdmin', 'OpsManager', 'Support'] },
-      { label: 'Customers', design: 'customers', to: '/customers', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Support'] }
+      { label: 'Customers', design: 'customers', to: '/customers', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Support'] },
+      { label: 'Blacklist', icon: ShieldBan, to: '/blacklist', roles: ['SuperAdmin', 'OpsManager', 'Support'] }
     ]
   },
   {
     title: 'Catalogue',
     items: [
       { label: 'Products', design: 'products', to: '/inventory', roles: ['SuperAdmin', 'OpsManager', 'Warehouse'] },
+      { label: 'Stocktake', icon: ClipboardList, to: '/inventory/stocktake', roles: ['SuperAdmin', 'OpsManager', 'Warehouse'] },
+      { label: 'Suppliers', icon: Handshake, to: '/inventory/suppliers', roles: ['SuperAdmin', 'OpsManager', 'Warehouse'] },
       { label: 'Attributes & options', design: 'layers', to: '/settings/attributes', roles: ['SuperAdmin'] },
       { label: 'Funnels', icon: Filter, to: '/funnels', roles: ['SuperAdmin', 'OpsManager'] },
       { label: 'Product sourcing', icon: SearchCode, to: '/sourcing', roles: ['SuperAdmin', 'OpsManager'] }
@@ -64,6 +67,8 @@ const groups: NavGroup[] = [
     title: 'Online store',
     items: [
       { label: 'Storefront', design: 'store', to: '/settings/storefront', roles: ['SuperAdmin'] },
+      { label: 'Brand identity', icon: Palette, to: '/settings/brand', roles: ['SuperAdmin'] },
+      { label: 'Reports & alerts', icon: BellRing, to: '/settings/reports', roles: ['SuperAdmin'] },
       { label: 'Apps', design: 'apps', to: '/apps', roles: ['SuperAdmin'] }
     ]
   },
@@ -117,6 +122,8 @@ onMounted(() => {
   onBeforeUnmount(() => clearInterval(t))
 })
 
+const { logoSrc } = useAdminBrand()
+
 const menuOpen = ref(false)
 watch(() => route.path, () => { menuOpen.value = false })
 onMounted(() => {
@@ -138,7 +145,7 @@ async function logout() {
 <template>
   <div class="app">
     <aside id="sidebar" class="sidebar" :class="{ open: menuOpen }">
-      <NuxtLink to="/" aria-label="Leezil admin home"><img class="logo" src="/img/leezil-logo-ivory.svg" alt="Leezil"></NuxtLink>
+      <NuxtLink to="/" aria-label="Admin home"><span v-if="logoSrc" class="brand-chip"><img :src="logoSrc" alt="Logo"></span><img v-else class="logo" src="/img/leezil-logo-ivory.svg" alt="Leezil"></NuxtLink>
       <nav class="nav" aria-label="Main">
         <template v-for="g in visibleGroups" :key="g.title">
           <span class="nav-label">{{ g.title }}</span>
@@ -167,8 +174,8 @@ async function logout() {
 
     <div class="mobile-bar">
       <button class="icon-btn" type="button" aria-label="Open menu" aria-controls="sidebar" @click="menuOpen = true"><AdsDesignIcon name="menu" /></button>
-      <img src="/img/leezil-icon-teal.svg" alt="">
-      <span class="grow">Leezil Admin</span>
+      <img :src="logoSrc ?? '/img/leezil-icon-teal.svg'" alt="" style="height: 28px; width: auto; max-width: 120px; object-fit: contain">
+      <span class="grow">{{ logoSrc ? 'Admin' : 'Leezil Admin' }}</span>
     </div>
 
     <main class="main">

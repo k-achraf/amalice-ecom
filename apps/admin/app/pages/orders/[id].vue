@@ -17,6 +17,7 @@ useHead({ title: `Order ${id.slice(0, 8)}` })
 
 const api = useAdminApi()
 const { run } = useApiAction()
+const auth = useAuthStore()
 const { isSuperAdmin, confirmDelete } = useDangerDelete()
 // Bumped after each read of the courier so the tracking card re-reads what that read stored.
 const timelineKey = ref(0)
@@ -254,6 +255,26 @@ const { data: shippingCompanies } = await useAdminFetch<ShippingCompanyView[]>('
 const linkedCompanies = computed(() => (shippingCompanies.value ?? []).filter((c) => c.isLinked && c.id))
 const companyOptions = computed(() => linkedCompanies.value.map((c) => ({ label: c.name, value: c.id as string })))
 const selectedCompanyId = ref<string | undefined>(undefined)
+
+// Courier suggestion — ranked from delivered/returned history in this wilaya
+// against each company's tariff. Only once the call center has confirmed.
+interface CourierSuggestion {
+  shippingCompanyId: string; name: string; deliveryRate: number; delivered: number; returned: number; lowSample: boolean
+  expectedCostCents: number | null; expectedNetCents: number | null; coverage: 'ok' | 'no' | 'unknown'; recommended: boolean
+}
+const suggestable = computed(() => !!order.value && !order.value.shipment && !['PendingCallCenter', 'CallCenterNoAnswer', 'WrongNumber', 'Postponed', 'Cancelled', 'CancelledShipping'].includes(order.value.state))
+type CourierSuggestionResponse = { wilaya: string | null; suggestions: CourierSuggestion[]; basis: string }
+const courierSuggestion = ref<CourierSuggestionResponse | null>(null)
+async function loadCourierSuggestion() {
+  if (!suggestable.value) return
+  try {
+    courierSuggestion.value = await api<CourierSuggestionResponse>(`/admin/fulfillment/orders/${id}/courier-suggestion`)
+  } catch {
+    courierSuggestion.value = null
+  }
+}
+onMounted(loadCourierSuggestion)
+const pct = (r: number) => `${Math.round(r * 100)}%`
 const assigning = ref(false)
 
 async function assignCompany() {
@@ -450,8 +471,11 @@ function initials(name: string | null) {
         </div>
       </section>
 
+      <AdsBanner v-if="order.riskLevel === 'High'" tone="danger">High return risk (score {{ order.riskScore }}/100): confirm the address and the customer's intent on the call. Details are in the "Return risk" card.</AdsBanner>
+
       <div class="split">
         <div class="stack">
+          <RiskPanel :order-id="order.id" :level="order.riskLevel" :score="order.riskScore" :factors="order.riskFactors" :can-manage="['SuperAdmin', 'OpsManager', 'Support'].includes(auth.role ?? '')" />
           <section class="card flush" aria-labelledby="it-h">
             <div class="card-head">
               <h2 id="it-h">Items</h2>
@@ -500,6 +524,19 @@ function initials(name: string | null) {
               <template v-if="order.fulfillmentMethod === 'Unassigned'">Assign a shipping company or manual (in-house) delivery before this order can be dispatched.</template>
               <template v-else>Assigned to <b>{{ order.fulfillmentMethod === 'Manual' ? 'manual delivery' : order.shippingCompanyName }}</b>. Reassign below if needed.</template>
             </p>
+            <div v-if="suggestable && courierSuggestion?.suggestions.length" style="margin: 4px 0 12px">
+              <p class="muted" style="font-size: 12px; text-transform: uppercase; letter-spacing: .12em; font-weight: 600; margin-bottom: 6px">Suggested courier{{ courierSuggestion.wilaya ? ` — ${courierSuggestion.wilaya}` : '' }}</p>
+              <div v-for="c in courierSuggestion.suggestions" :key="c.shippingCompanyId" style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line, #e5e5e5)">
+                <div style="flex: 1">
+                  <span class="strong">{{ c.name }}</span>
+                  <span v-if="c.recommended" class="pill instock" style="margin-left: 6px">Best</span>
+                  <span v-if="c.coverage === 'no'" class="pill out" style="margin-left: 6px">Address not covered</span>
+                  <span class="sub">Delivery {{ pct(c.deliveryRate) }} · {{ c.delivered }} delivered / {{ c.returned }} returned<template v-if="c.lowSample"> · few orders yet</template><template v-if="c.expectedCostCents != null"> · expected cost <AdsPrice :amount-cents="c.expectedCostCents" /></template><template v-else> · no tariff</template></span>
+                </div>
+                <button class="btn sm" type="button" @click="selectedCompanyId = c.shippingCompanyId">Use</button>
+              </div>
+              <p class="hint muted" style="margin-top: 6px">{{ courierSuggestion.basis }}</p>
+            </div>
             <div class="grid-2">
               <div class="field"><label class="label">Shipping company</label><AdsSelect v-model="selectedCompanyId" :options="companyOptions" placeholder="Choose a shipping company…" /></div>
               <div class="field" style="justify-content: flex-end; flex-direction: row; gap: 8px; align-items: flex-end">

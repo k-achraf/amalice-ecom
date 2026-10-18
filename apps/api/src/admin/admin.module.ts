@@ -6,6 +6,7 @@ import { AdminCallCenterService } from './admin-call-center.service'
 import { AdminDeleteService } from './admin-delete.service'
 import { AdminOrderTimelineService } from './admin-order-timeline.service'
 import { AdminDeliveriesService } from './admin-deliveries.service'
+import { AdminInventoryService } from './admin-inventory.service'
 import { AdminCatalogService } from './admin-catalog.service'
 import { AdminUsersService } from './admin-users.service'
 import { AdminStatsService } from './admin-stats.service'
@@ -15,6 +16,7 @@ import { CommonModule } from '../common/common.module'
 import { OrderItemsModule } from '../order-items/order-items.module'
 import { AppsModule } from '../apps/apps.module'
 import { LandingPagesModule } from '../landing-pages/landing-pages.module'
+import { RiskModule } from '../risk/risk.module'
 import { ShippingCompaniesModule } from '../shipping-companies/shipping-companies.module'
 
 @Global()
@@ -23,9 +25,9 @@ import { ShippingCompaniesModule } from '../shipping-companies/shipping-companie
   // product editor's "generate with AI" content drafter (see
   // AdminProductManagementService.generateContent) reuses the same free
   // Gemini client the landing-page builder uses, rather than a second one.
-  imports: [CommonModule, OrderItemsModule, AppsModule, LandingPagesModule, ShippingCompaniesModule],
+  imports: [CommonModule, OrderItemsModule, AppsModule, LandingPagesModule, ShippingCompaniesModule, RiskModule],
   controllers: [AdminController, UploadController],
-  providers: [AdminOrdersService, AdminCallCenterService, AdminDeleteService, AdminOrderTimelineService, AdminDeliveriesService, AdminCatalogService, AdminUsersService, AdminStatsService, AdminProductManagementService, AdminShippingService],
-  exports: [AdminOrdersService, AdminCallCenterService, AdminCatalogService, AdminUsersService, AdminStatsService, AdminProductManagementService, AdminShippingService]
+  providers: [AdminOrdersService, AdminCallCenterService, AdminDeleteService, AdminOrderTimelineService, AdminDeliveriesService, AdminCatalogService, AdminUsersService, AdminStatsService, AdminProductManagementService, AdminShippingService, AdminInventoryService],
+  exports: [AdminInventoryService, AdminOrdersService, AdminCallCenterService, AdminCatalogService, AdminUsersService, AdminStatsService, AdminProductManagementService, AdminShippingService]
 })
 export class AdminModule {}
