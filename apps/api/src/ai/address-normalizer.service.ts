@@ -14,6 +14,29 @@ const fold = (value: string): string =>
     .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim()
 
+// Guards the cleaned street line against the model rewriting it. Every word of
+// `cleaned` must already exist in `original` (compared folded, so accents and
+// case don't count as a difference); each one is then written back with the
+// ORIGINAL spelling, so the customer's accents/letters survive even if the model
+// dropped them. Returns null when the model introduced a word that was not in
+// the original — the caller then keeps the original line untouched.
+export function restoreOriginalWords(cleaned: string, original: string): string | null {
+  const originalByFold = new Map<string, string>()
+  for (const word of original.split(/\s+/)) {
+    const key = fold(word)
+    if (key && !originalByFold.has(key)) originalByFold.set(key, word)
+  }
+  const restored: string[] = []
+  for (const word of cleaned.split(/\s+/).filter(Boolean)) {
+    const key = fold(word)
+    if (!key) continue // bare punctuation
+    const source = originalByFold.get(key)
+    if (source === undefined) return null
+    restored.push(source)
+  }
+  return restored.length ? restored.join(' ') : null
+}
+
 const WilayaPick = z.object({ wilayaId: z.string().nullable() })
 
 const CommunePick = z.object({
@@ -87,14 +110,16 @@ ${communes.map((c) => `${c.id} | ${c.name}`).join('\n')}
 
 Return:
 - communeId: the id of the commune the customer means, or null if it is not clearly one of these. Do not guess.
-- addressLine1: the street / neighbourhood / landmark part of the address, with the wilaya and commune names removed and obvious typos and noise fixed. Keep the customer's language. Do NOT add or invent any detail that is not in the original text; if nothing is left, return the original text.
+- addressLine1: the street / neighbourhood / landmark part of the address, with ONLY the wilaya and commune names (and pure noise such as repeated or stray punctuation) removed. Copy every remaining word EXACTLY as the customer wrote it: same letters, same accents and diacritics (é, è, à…), same language and script, same numbers. Do NOT correct spelling, translate, transliterate, add, or invent any word. If nothing is left, return the original text.
 - confidence: high | medium | low.
 - reason: one short English sentence for the agent.`,
       schema: CommunePick
     })
 
     const commune = pick.communeId ? (communeById.get(pick.communeId) ?? null) : null
-    const addressLine1 = pick.addressLine1.trim().slice(0, 200) || line1
+    // Never trust the model's wording: keep only words the customer wrote, in
+    // the customer's spelling; anything else falls back to the original line.
+    const addressLine1 = restoreOriginalWords(pick.addressLine1, line1)?.slice(0, 200) ?? line1
     const changed = wilaya.name !== region || (commune ? commune.name !== city : false) || addressLine1 !== line1
 
     return {
