@@ -69,6 +69,12 @@ export class FunnelsController {
     return this.stats.stats(id, Math.min(365, Math.max(1, Math.floor(Number(days)) || 30)))
   }
 
+  // Which A/B test to run next, from the funnel's own stats (rules, no AI).
+  @Get(':id/next-test')
+  nextTest(@Param('id') id: string, @Query('days') days = '30') {
+    return this.stats.nextTest(id, Math.min(365, Math.max(1, Math.floor(Number(days)) || 30)))
+  }
+
   @Get(':id')
   get(@Param('id') id: string) {
     return this.funnels.get(id)

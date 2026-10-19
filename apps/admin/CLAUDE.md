@@ -37,6 +37,10 @@ The admin implements the design in `/design` (Leezil brand: Outfit, teal/ivory/b
 
 `pages/ai/index.vue` (nav: AI → AI assistant; SuperAdmin/OpsManager/Finance): chat that asks `POST /admin/ai/assistant` (answers come from read-only data tools on the API; "Based on …" shows which). The model's light markdown is HTML-escaped first and only then turned into bold/italic/bullets. The conversation (last 30 turns) is kept in this browser's `localStorage` (`amalice.ai.chat`) — a per-viewer convenience, "New chat" clears it. The footer shows today's AI request count (`GET /admin/ai/usage`). The order page has a **Suggest** button on the shipping-address card (`POST /admin/orders/:id/address-suggestion`): a dialog compares the stored wilaya/commune/address line with the AI's match against the real lists and **Apply** sends only the differing fields through the audited `PATCH /admin/orders/:id/customer-info`.
 
+The courier card (`components/ShipmentPanel.vue`) has an **Analyze notes with AI** button (`POST /admin/orders/:id/delivery-triage`) that shows the problem category, a summary and the suggested next step above the courier history. New risk factors `FAKE_NAME`/`FAKE_ADDRESS` appear in the risk panel through `RISK_FACTOR_LABELS`.
+
+`pages/ai/ad-copy.vue` (nav: AI → Meta ad copy; SuperAdmin/OpsManager) generates Meta ad angles for a product with copy buttons. The funnel Stats tab starts with a **Next test** card (`components/funnel/NextTest.vue`), and the sourcing detail page has a **Research analysis** card (`components/sourcing/Analysis.vue`, on demand).
+
 ## Reports & alerts
 
 `pages/settings/reports.vue` (SuperAdmin; nav: Online store → Reports & alerts): Telegram bot token/chat id, daily-summary hour, max cost per order, wilaya return-rate and courier-silence thresholds. API: `admin/reports/*` (see `apps/api/CLAUDE.md`).

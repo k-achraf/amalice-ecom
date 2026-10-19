@@ -76,7 +76,8 @@ const groups: NavGroup[] = [
   {
     title: 'AI',
     items: [
-      { label: 'AI assistant', icon: Sparkles, to: '/ai', roles: ['SuperAdmin', 'OpsManager', 'Finance'] }
+      { label: 'AI assistant', icon: Sparkles, to: '/ai', roles: ['SuperAdmin', 'OpsManager', 'Finance'] },
+      { label: 'Meta ad copy', icon: Megaphone, to: '/ai/ad-copy', roles: ['SuperAdmin', 'OpsManager'] }
     ]
   },
   {

@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Req, UseGuards } from '@nestjs/common'
+import { Throttle } from '@nestjs/throttler'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import {
   CreateProductAdTestSchema,
@@ -20,6 +21,7 @@ import {
 } from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
+import { SourcingAnalysisService } from './sourcing-analysis.service'
 import { SourcedProductsService } from './sourced-products.service'
 import { JwtAuthGuard } from '../identity/admin-auth/jwt-auth.guard'
 import { RolesGuard } from '../identity/admin-auth/roles.guard'
@@ -54,7 +56,19 @@ interface AuthedRequest extends Request {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('SuperAdmin', 'OpsManager')
 export class SourcedProductsController {
-  constructor(private readonly sourcedProducts: SourcedProductsService) {}
+  constructor(
+    private readonly sourcedProducts: SourcedProductsService,
+    private readonly analysis: SourcingAnalysisService
+  ) {}
+
+  // Research aid: competitor summary (AI, from the recorded listings) + the
+  // return risk of the product's category from our own orders. Read-only.
+  @Post(':id/analysis')
+  @HttpCode(200)
+  @Throttle({ default: { ttl: 60_000, limit: 10 } })
+  analyze(@Param('id') id: string) {
+    return this.analysis.analyze(id)
+  }
 
   @Get()
   list() {

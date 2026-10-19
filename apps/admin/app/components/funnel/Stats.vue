@@ -134,6 +134,8 @@ const empty = computed(() => !!s.value && s.value.traffic.views === 0 && s.value
     <template v-else-if="stats">
       <p v-if="empty" class="notice"><AdsIcon name="i-lucide-info" /><span>No visit or order on this funnel in the last {{ days }} days. Statistics appear as soon as visitors open the page.</span></p>
 
+      <FunnelNextTest :funnel-id="funnelId" :days="days" />
+
       <div class="kpis">
         <MetaStatCard v-for="c in cards" :key="c.label" :label="c.label" :value="c.value" :hint="c.hint" :dark="c.dark" />
       </div>

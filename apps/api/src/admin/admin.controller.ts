@@ -6,6 +6,7 @@ import {
   Delete,
   ForbiddenException,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Patch,
@@ -68,6 +69,7 @@ import { AuditService, type AuditActor } from '../common/audit.service'
 import { OrderItemsService } from '../order-items/order-items.service'
 import { RiskService } from '../risk/risk.service'
 import { AddressNormalizerService } from '../ai/address-normalizer.service'
+import { DeliveryTriageService } from '../ai/delivery-triage.service'
 
 // The admin-facing API surface. Every route is JwtAuthGuard + role-gated
 // (client-side nav hiding is UX only — plan §ADM-02). The actor for audit
@@ -123,7 +125,8 @@ export class AdminController {
     private readonly orderItems: OrderItemsService,
     private readonly risk: RiskService,
     private readonly inventory: AdminInventoryService,
-    private readonly addressNormalizer: AddressNormalizerService
+    private readonly addressNormalizer: AddressNormalizerService,
+    private readonly deliveryTriage: DeliveryTriageService
   ) {}
 
   // ---- ADM-09 dashboard ---------------------------------------------------
@@ -359,6 +362,16 @@ export class AdminController {
   @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
   addressSuggestion(@Param('id') id: string) {
     return this.addressNormalizer.suggestForOrder(id)
+  }
+
+  // AI triage of the delivery company's notes (driver remarks, failed-attempt
+  // reasons): category + suggested next step. Read-only; cached per set of notes.
+  @Post('orders/:id/delivery-triage')
+  @HttpCode(200)
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  @Throttle({ default: { ttl: 60_000, limit: 20 } })
+  triageDelivery(@Param('id') id: string) {
+    return this.deliveryTriage.triageOrder(id)
   }
 
   // Call-center price override (ADM-12) — same role set as transition()/

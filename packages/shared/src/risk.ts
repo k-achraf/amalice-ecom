@@ -68,6 +68,8 @@ export interface RiskInput {
   phoneBlacklist: BlacklistAction | null
   addressBlacklist: BlacklistAction | null
   isDuplicate: boolean
+  // Placeholder name/address findings (see order-quality.ts); a warning only.
+  fakeIdentity?: { name: string | null; address: string | null }
 }
 
 export const RISK_FACTOR_LABELS: Record<string, string> = {
@@ -78,6 +80,8 @@ export const RISK_FACTOR_LABELS: Record<string, string> = {
   PREVIOUS_CANCELLED: 'Previous cancelled / wrong-number orders',
   UNREACHABLE: 'Previously unreachable by phone',
   DUPLICATE_ORDER: 'Possible duplicate order',
+  FAKE_NAME: 'Name looks fake or placeholder',
+  FAKE_ADDRESS: 'Address looks fake or placeholder',
   FIRST_ORDER: 'First order, no history',
   ORDER_BURST: 'Several orders in 24 hours',
   WILAYA_RETURN_RATE: 'Wilaya has a high return rate',
@@ -123,6 +127,8 @@ export function computeOrderRisk(input: RiskInput): RiskResult {
   if (h.cancelled > 0) add('PREVIOUS_CANCELLED', Math.min(15, h.cancelled * 5), `${h.cancelled} cancelled`)
   if (h.unreachable > 0) add('UNREACHABLE', Math.min(15, h.unreachable * 5), `${h.unreachable} no answer / wrong number`)
   if (input.isDuplicate) add('DUPLICATE_ORDER', 10)
+  if (input.fakeIdentity?.name) add('FAKE_NAME', 20, input.fakeIdentity.name)
+  if (input.fakeIdentity?.address) add('FAKE_ADDRESS', 25, input.fakeIdentity.address)
   if (h.total === 0) add('FIRST_ORDER', 5)
   if (h.last24h >= 2) add('ORDER_BURST', 15, `${h.last24h + 1} orders in 24h`)
 

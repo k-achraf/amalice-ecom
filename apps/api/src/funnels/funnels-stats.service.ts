@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
-import type { FunnelStats, FunnelStatsBreakdownRow } from '@amalice/shared'
+import { suggestFunnelTests, type FunnelStats, type FunnelStatsBreakdownRow, type FunnelSuggestionResult } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import { addOrder, emptyAcc, finalize } from '../meta-ads/meta-orders.util'
 
@@ -169,6 +169,16 @@ export class FunnelsStatsService {
       campaigns: breakdown(campaignRows.filter((r) => r.key), ordersBy.campaign, 10),
       wilayas: [...wilayas].map(([key, n]) => ({ key, orders: n })).sort((a, b) => b.orders - a.orders).slice(0, 10)
     }
+  }
+
+  // The next A/B test to run, picked by rules over this funnel's own stats (see
+  // packages/shared funnel-suggestions.ts). Pure arithmetic: no AI call, no quota.
+  async nextTest(funnelId: string, days: number): Promise<FunnelSuggestionResult> {
+    const [stats, steps] = await Promise.all([
+      this.stats(funnelId, days),
+      this.prisma.funnelStep.findMany({ where: { funnelId }, select: { type: true, enabled: true } })
+    ])
+    return suggestFunnelTests(stats, steps)
   }
 
   // Distinct visitors of the funnel grouped by one of the visit columns (fixed set, never user input).

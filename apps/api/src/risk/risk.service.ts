@@ -8,6 +8,7 @@ import {
   UNREACHABLE_STATES,
   autoBlacklistAction,
   computeOrderRisk,
+  detectFakeIdentity,
   formatPhoneLocal,
   normalizeAddressKey,
   normalizeAlgerianPhone,
@@ -98,7 +99,7 @@ export class RiskService {
   // Scores an order about to be placed by `phone` for `address`. Safe to call
   // before the customer/address rows exist. Side effect: applies the
   // automatic blacklist rule (see applyAutoRule).
-  async assess(phone: string, address: AddressInput): Promise<RiskAssessment> {
+  async assess(phone: string, address: AddressInput, name?: string | null): Promise<RiskAssessment> {
     const customer = await this.prisma.customer.findUnique({ where: { phone }, select: { id: true } })
     const history = customer ? await this.customerHistory(customer.id) : { delivered: 0, returned: 0, cancelled: 0, unreachable: 0, total: 0, last24h: 0 }
 
@@ -116,7 +117,9 @@ export class RiskService {
       commune,
       phoneBlacklist: phoneEntry?.action ?? null,
       addressBlacklist: addressEntry?.action ?? null,
-      isDuplicate: false
+      isDuplicate: false,
+      // Warning only (never a block): the call center decides.
+      fakeIdentity: detectFakeIdentity({ name, addressText: [address.line1, addressText(address.line2)].filter(Boolean).join(' ') })
     })
     const blockedBy = phoneEntry?.action === 'Block' ? 'Phone' : addressEntry?.action === 'Block' ? 'Address' : null
     return { risk, blockedBy }

@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Req, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Throttle } from '@nestjs/throttler'
-import { AiTierTestSchema, AskAssistantSchema, SetAiProviderKeySchema, UpdateAiSettingsSchema } from '@amalice/shared'
+import { AiTierTestSchema, GenerateMetaAdCopySchema, AskAssistantSchema, SetAiProviderKeySchema, UpdateAiSettingsSchema } from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
 import { JwtAuthGuard } from '../identity/admin-auth/jwt-auth.guard'
@@ -10,6 +10,7 @@ import { Roles } from '../identity/admin-auth/roles.decorator'
 import type { AdminJwtPayload } from '../identity/admin-auth/jwt-payload.interface'
 import { AiAssistantService } from './ai-assistant.service'
 import { AiService } from './ai.service'
+import { MetaAdCopyService } from './meta-ad-copy.service'
 import { AiSettingsService } from './ai-settings.service'
 
 interface AuthedRequest extends Request {
@@ -20,6 +21,7 @@ class AskAssistantDto extends createZodDto(AskAssistantSchema) {}
 class UpdateAiSettingsDto extends createZodDto(UpdateAiSettingsSchema) {}
 class SetAiProviderKeyDto extends createZodDto(SetAiProviderKeySchema) {}
 class AiTierTestDto extends createZodDto(AiTierTestSchema) {}
+class GenerateMetaAdCopyDto extends createZodDto(GenerateMetaAdCopySchema) {}
 
 @ApiTags('ai')
 @ApiBearerAuth()
@@ -29,7 +31,8 @@ export class AiController {
   constructor(
     private readonly assistant: AiAssistantService,
     private readonly ai: AiService,
-    private readonly settings: AiSettingsService
+    private readonly settings: AiSettingsService,
+    private readonly metaAdCopy: MetaAdCopyService
   ) {}
 
   // Each question can fan out into several model calls, so it gets its own
@@ -40,6 +43,16 @@ export class AiController {
   @Throttle({ default: { ttl: 60_000, limit: 10 } })
   ask(@Body() body: AskAssistantDto, @Req() req: AuthedRequest) {
     return this.assistant.ask(body, { adminUserId: req.user.sub })
+  }
+
+  // Meta ad angles + headlines for a product, checked against the product's own
+  // data (no invented numbers, discounts or guarantees). Nothing is saved.
+  @Post('meta-ad-copy')
+  @HttpCode(200)
+  @Roles('SuperAdmin', 'OpsManager')
+  @Throttle({ default: { ttl: 5 * 60_000, limit: 10 } })
+  adCopy(@Body() body: GenerateMetaAdCopyDto) {
+    return this.metaAdCopy.generate(body)
   }
 
   // Model requests and tokens per Algiers day (last 7).

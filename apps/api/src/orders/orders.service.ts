@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { addRiskFactor, normalizeAlgerianPhone, type AbandonedLeadOrder, type AcceptOrderUpsell, type Checkout, type CheckoutItem, type LeadOrder, type RecentOrderActivityItem, type ShippingType } from '@amalice/shared'
+import { addRiskFactor, isFuzzyDuplicate, normalizeAlgerianPhone, type AbandonedLeadOrder, type AcceptOrderUpsell, type Checkout, type CheckoutItem, type LeadOrder, type RecentOrderActivityItem, type ShippingType } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import type { Product, ProductVariant, Prisma } from '../generated/prisma/client'
 import { NotificationsService } from '../notifications/notifications.service'
@@ -121,7 +121,7 @@ export class OrdersService {
   // treating it as a normal second order. Abandoned rows are excluded —
   // those aren't a real second submission, and createLeadOrder already
   // converts a matching one in place instead of creating a new row.
-  private async findRecentDuplicate(customerId: string, productIds: string[]): Promise<string | null> {
+  private async findRecentDuplicate(customerId: string, productIds: string[], who?: { phone: string; name?: string | null; region: string; city: string }): Promise<string | null> {
     const since = new Date(Date.now() - DUPLICATE_WINDOW_MS)
     const prior = await this.prisma.order.findFirst({
       where: {
@@ -134,7 +134,27 @@ export class OrdersService {
       orderBy: { createdAt: 'desc' },
       select: { id: true }
     })
-    return prior?.id ?? null
+    if (prior || !who) return prior?.id ?? null
+
+    // Same person under a slightly different phone/name (a typo, a second
+    // spelling): look at other customers' recent orders for the same product
+    // in the same wilaya and compare fuzzily.
+    const candidates = await this.prisma.order.findMany({
+      where: {
+        customerId: { not: customerId },
+        isAbandoned: false,
+        archived: false,
+        createdAt: { gte: since },
+        items: { some: { productId: { in: productIds } } },
+        address: { region: who.region }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 300,
+      select: { id: true, customer: { select: { phone: true, name: true } }, address: { select: { region: true, city: true } } }
+    })
+    const current = { phone: who.phone, name: who.name ?? null, region: who.region, city: who.city }
+    const match = candidates.find((c) => isFuzzyDuplicate(current, { phone: c.customer.phone, name: c.customer.name, region: c.address.region, city: c.address.city }))
+    return match?.id ?? null
   }
 
   // Stores where the order came from (see OrderAttribution's Prisma comment).
@@ -413,7 +433,7 @@ export class OrdersService {
 
     // Fake/returned-order screening — refuses blacklisted phones/addresses
     // before any row is created, otherwise the score is stored on the order.
-    const assessment = await this.risk.assess(checkout.phone, checkout.address)
+    const assessment = await this.risk.assess(checkout.phone, checkout.address, checkout.name)
     this.risk.assertNotBlocked(assessment, checkout.phone)
 
     const customer = await this.prisma.customer.upsert({
@@ -428,7 +448,7 @@ export class OrdersService {
 
     let resolvedIdempotencyKey = false
     try {
-      const duplicateOfOrderId = await this.findRecentDuplicate(customer.id, productIds)
+      const duplicateOfOrderId = await this.findRecentDuplicate(customer.id, productIds, { phone: checkout.phone, name: checkout.name, region: checkout.address.region, city: checkout.address.city })
       const risk = duplicateOfOrderId ? addRiskFactor(assessment.risk, { code: 'DUPLICATE_ORDER', points: 10 }) : assessment.risk
 
       const order = await this.prisma.$transaction(async (tx) => {
@@ -547,7 +567,7 @@ export class OrdersService {
     }
 
     const addressLine2 = Object.keys(extras).length > 0 ? JSON.stringify(extras) : null
-    const assessment = await this.risk.assess(phone, { line1: commune || wilaya, line2: addressLine2, city: commune, region: wilaya })
+    const assessment = await this.risk.assess(phone, { line1: commune || wilaya, line2: addressLine2, city: commune, region: wilaya }, name)
     this.risk.assertNotBlocked(assessment, phone)
 
     const customer = await this.prisma.customer.upsert({
@@ -584,7 +604,7 @@ export class OrdersService {
     try {
       // Only relevant for a genuinely new row — converting this visit's own
       // abandoned capture into a real order isn't a second submission.
-      const duplicateOfOrderId = convertingAbandoned ? null : await this.findRecentDuplicate(customer.id, productIds)
+      const duplicateOfOrderId = convertingAbandoned ? null : await this.findRecentDuplicate(customer.id, productIds, { phone, name, region: wilaya, city: commune })
       const risk = duplicateOfOrderId ? addRiskFactor(assessment.risk, { code: 'DUPLICATE_ORDER', points: 10 }) : assessment.risk
 
       order = await this.prisma.$transaction(async (tx) => {

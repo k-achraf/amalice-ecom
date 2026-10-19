@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AdminOrderDetail, ShipmentTrackingView } from '@amalice/shared'
+import { DELIVERY_ACTION_LABELS, DELIVERY_CATEGORY_LABELS, type AdminOrderDetail, type DeliveryTriage, type ShipmentTrackingView } from '@amalice/shared'
 import { toast } from 'vue-sonner'
 
 // The courier's view of an order's parcel (all Ecotrack-based shipping
@@ -19,6 +19,19 @@ const confirmed = computed(() => !!shipment.value.carrierConfirmedAt)
 const tracking = ref<ShipmentTrackingView | null>(null)
 const acting = ref<'confirm' | 'refresh' | 'label' | 'note' | 'return' | 'cancel' | null>(null)
 const noteText = ref('')
+
+// AI reading of the courier's notes (POST admin/orders/:id/delivery-triage): read-only,
+// a category and a suggested next step; nothing on the order changes.
+const triage = ref<DeliveryTriage | null>(null)
+const triaging = ref(false)
+async function analyzeNotes() {
+  triaging.value = true
+  const res = await run(() => api<DeliveryTriage>(`/admin/orders/${props.order.id}/delivery-triage`, { method: 'POST' }), {
+    errorFallback: 'Could not analyze the courier notes'
+  })
+  triaging.value = false
+  if (res) triage.value = res
+}
 
 async function load(refresh: boolean) {
   const res = await run(() => api<ShipmentTrackingView>(`/admin/fulfillment/orders/${props.order.id}/tracking`, { query: refresh ? { refresh: '1' } : {} }), {
@@ -182,6 +195,17 @@ const courierCancelled = computed(() => /annul/i.test(tracking.value?.courierSta
         <input id="courier-note" v-model="noteText" class="input" maxlength="255" placeholder="e.g. Customer asks to be called before 17:00" @keydown.enter="sendNote">
         <button class="btn" type="button" :disabled="acting === 'note' || !noteText.trim()" @click="sendNote"><AdsIcon name="i-lucide-send" />Send</button>
       </div>
+    </div>
+
+    <!-- AI reading of the courier's notes -->
+    <div v-if="activity.length || tracking?.updates.length" class="stack" style="gap: 6px">
+      <div v-if="triage" class="notice" style="display: block">
+        <b>{{ DELIVERY_CATEGORY_LABELS[triage.category] }}</b>
+        <span class="muted"> · confidence {{ triage.confidence }}</span>
+        <p style="margin: 4px 0 0">{{ triage.summary }}</p>
+        <p v-if="triage.hasNotes" style="margin: 4px 0 0"><b>{{ DELIVERY_ACTION_LABELS[triage.nextAction] }}:</b> {{ triage.nextStep }}</p>
+      </div>
+      <div><button class="btn" type="button" :disabled="triaging" @click="analyzeNotes"><AdsIcon name="i-lucide-sparkles" />{{ triaging ? 'Reading the notes…' : triage ? 'Analyze again' : 'Analyze notes with AI' }}</button></div>
     </div>
 
     <!-- Courier history -->

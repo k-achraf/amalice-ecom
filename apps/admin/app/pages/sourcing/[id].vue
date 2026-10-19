@@ -720,6 +720,8 @@ async function deleteCompetitor(competitorId: string) {
         <p v-else class="muted">No video creatives yet.</p>
       </div>
 
+      <SourcingAnalysis :sourced-id="id" />
+
       <!-- Competitors -->
       <div class="card">
         <div class="card-head">
