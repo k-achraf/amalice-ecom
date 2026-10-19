@@ -506,7 +506,11 @@ export class MetaAdsService {
 
     let list: GraphList<GraphAd>
     let parent: { id: string; name?: string; account_id?: string; campaign?: { id: string; name?: string } }
-    const filtering = JSON.stringify([{ field: 'adset.id', operator: 'EQUAL', value: adsetId }, ...(query.status ? [{ field: 'effective_status', operator: 'IN', value: [query.status] }] : [])])
+    // Read through the ad set's own `ads` edge: Meta resolves it directly. The account-wide
+    // `act_x/ads?filtering=adset.id` form scans every ad of the account, which on a big account
+    // runs past the proxy timeout (the page then fails with no readable error). Account
+    // ownership is still checked below against the ad set's account_id.
+    const filtering = query.status ? JSON.stringify([{ field: 'effective_status', operator: 'IN', value: [query.status] }]) : undefined
     const insightsField = `insights.date_preset(${query.datePreset}){${INSIGHT_FIELDS}}`
     // The creative thumbnail and the nested insights are the heavy / permission-sensitive parts: if Meta
     // rejects the full request, retry with less rather than leaving the page unusable.
@@ -515,14 +519,18 @@ export class MetaAdsService {
       `id,name,status,effective_status,${insightsField}`,
       'id,name,status,effective_status'
     ]
+    const startedAt = Date.now()
     const fetchAds = async (): Promise<GraphList<GraphAd>> => {
       let lastError: unknown
       for (const fields of fieldSets) {
+        // Each Graph call can take up to 20 s; stop retrying early enough that the whole request
+        // stays under a typical reverse-proxy timeout (60 s) and the page gets a real error.
+        if (Date.now() - startedAt > 25_000) break
         try {
-          return await this.call<GraphList<GraphAd>>(connection, `${accountId}/ads`, { fields, filtering, limit: 25, after: query.after }, token)
+          return await this.call<GraphList<GraphAd>>(connection, `${adsetId}/ads`, { fields, filtering, limit: 25, after: query.after }, token)
         } catch (error) {
           if (!(error instanceof MetaGraphError) || error.isAuthError || error.isRateLimit) throw error
-          this.logger.warn(`Meta ads request failed (${error.code ?? ''}: ${error.message}) — retrying with fewer fields`)
+          this.logger.warn(`Meta ads request failed after ${Date.now() - startedAt} ms (${error.code ?? 'no code'}: ${error.message}) — retrying with fewer fields`)
           lastError = error
         }
       }
