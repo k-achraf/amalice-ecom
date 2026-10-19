@@ -35,6 +35,13 @@ async function bootstrap() {
   // bufferLogs: true — hold Nest's own bootstrap log lines in memory instead
   // of dropping them, until app.useLogger() below swaps in PersistentLogger.
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true, bufferLogs: true })
+  // Behind nginx every request reaches Node from 127.0.0.1. Without "trust proxy" Express reports that
+  // as the client IP, so the rate limiter (keyed by IP) puts ALL visitors in one bucket: once ~30 people
+  // a minute open a funnel, the rest are answered 429 and their visit is never recorded (and the same
+  // happens to the shared 60/min default on other public endpoints). Production has exactly one proxy
+  // hop (nginx, see DEPLOYMENT.md); TRUST_PROXY overrides the hop count ("0"/"false" = off).
+  const trust = process.env.TRUST_PROXY ?? (process.env.NODE_ENV === 'production' ? '1' : 'false')
+  app.set('trust proxy', /^\d+$/.test(trust) ? Number(trust) : trust === 'false' ? false : trust)
   // Every `new Logger(context).warn/error()` call anywhere in the codebase
   // routes through this same instance once set here — see
   // PersistentLogger's own comment for why (persists warn/error to
