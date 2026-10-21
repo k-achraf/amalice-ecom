@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { z } from 'zod'
 
+const settings = useStoreSettings()
 useSeoMeta({
   title: 'اتصل بنا',
-  description: 'تواصل مع خدمة زبائن أماليس.'
+  description: () => `تواصل مع خدمة زبائن ${settings.value.storeName}.`
 })
 
 const config = useRuntimeConfig()

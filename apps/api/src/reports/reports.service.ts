@@ -32,9 +32,12 @@ export class ReportsService {
     private readonly insights: AiInsightService
   ) {}
 
+  // Every message starts with the store name: several stores (one deployment each) can report to the same chat.
   private async sendTo(s: ReportSettings, text: string): Promise<void> {
     if (!s.telegramBotToken || !s.telegramChatId) return
-    await this.telegram.send(s.telegramBotToken, s.telegramChatId, text)
+    const store = await this.prisma.storeSettings.findUnique({ where: { id: 'singleton' }, select: { storeName: true } })
+    const header = store?.storeName ? `🏪 <b>${escapeHtml(store.storeName)}</b>\n` : ''
+    await this.telegram.send(s.telegramBotToken, s.telegramChatId, header + text)
   }
 
   // True the first time a key is seen — makes each alert fire once per subject per day.
@@ -46,7 +49,7 @@ export class ReportsService {
   async sendTest(): Promise<void> {
     const s = await this.settings.get()
     if (!s.telegramBotToken || !s.telegramChatId) throw new BadRequestException('Telegram is not configured')
-    await this.sendTo(s, '✅ <b>Amalice</b>: Telegram is connected. Daily reports and alerts will arrive here.')
+    await this.sendTo(s, '✅ Telegram is connected. Daily reports and alerts will arrive here.')
   }
 
   // ---- daily summary ----

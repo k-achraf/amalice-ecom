@@ -1,7 +1,8 @@
 <script setup lang="ts">
+const settings = useStoreSettings()
 useSeoMeta({
   title: 'الأسئلة الشائعة',
-  description: 'أسئلة شائعة حول التسوق بنظام الدفع عند الاستلام في أماليس.'
+  description: () => `أسئلة شائعة حول التسوق بنظام الدفع عند الاستلام في ${settings.value.storeName}.`
 })
 
 const faqs = [

@@ -47,7 +47,7 @@ Validated via Zod at boot (`validateEnv`) — an invalid/missing required var cr
 
 ## CORS
 
-Hardcoded in `src/main.ts` (`app.enableCors`) — `amalice.shop` / `www.amalice.shop` / `admin.amalice.shop` always, plus `localhost:3000`/`localhost:3001` (storefront/admin dev servers) whenever `NODE_ENV !== 'production'`. If you add a new storefront/admin domain (staging, a new tenant, etc.), it has to be added here explicitly or requests will fail with an opaque CORS error, not a helpful one. Only client-side (browser) fetches go through this at all — SSR calls (Nuxt server-to-server) are unaffected, which is why a CORS gap here only ever shows up on client-only calls (login, wilaya/commune pickers, etc.), never on a page that renders fully server-side.
+`src/main.ts` (`app.enableCors`). The same code is deployed once per store (amalice.shop, nayo.site — see `DEPLOYMENT.nayo.site.md`), so the deployment's own storefront/admin origins come from `CORS_ORIGINS` (comma-separated); unset, it falls back to `amalice.shop` / `www.amalice.shop` / `admin.amalice.shop`. `CORS_EXTRA_ORIGINS` adds the funnels site on top, and `localhost:3000/3001/3002` are added whenever `NODE_ENV !== 'production'`. A domain missing from these fails with an opaque CORS error, not a helpful one. Customer- and admin-facing copy must use `StoreSettings.storeName`, never a hardcoded store name. Only client-side (browser) fetches go through this at all — SSR calls (Nuxt server-to-server) are unaffected, which is why a CORS gap here only ever shows up on client-only calls (login, wilaya/commune pickers, etc.), never on a page that renders fully server-side.
 
 ## Uploads
 

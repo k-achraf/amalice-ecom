@@ -1,7 +1,8 @@
 <script setup lang="ts">
+const settings = useStoreSettings()
 useSeoMeta({
   title: 'كيف يعمل المتجر',
-  description: 'كيف يعمل التسوق بنظام الدفع عند الاستلام في أماليس — اطلب، نتصل للتأكيد، استلم، ثم ادفع نقداً.'
+  description: () => `كيف يعمل التسوق بنظام الدفع عند الاستلام في ${settings.value.storeName} — اطلب، نتصل للتأكيد، استلم، ثم ادفع نقداً.`
 })
 
 const steps = [

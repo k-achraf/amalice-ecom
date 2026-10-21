@@ -80,10 +80,10 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-07-17',
   devServer: { port: 3000 },
   // SF-19 — site URL feeds the sitemap/robots canonical URLs and structured
-  // data. Override via NUXT_PUBLIC_SITE_URL in production.
+  // data. Override via NUXT_PUBLIC_SITE_URL / NUXT_PUBLIC_SITE_NAME in production (exported at build time).
   site: {
-    url: 'https://amalice.example',
-    name: 'Amalice'
+    url: process.env.NUXT_PUBLIC_SITE_URL || 'https://amalice.example',
+    name: process.env.NUXT_PUBLIC_SITE_NAME || 'Amalice'
   },
   image: {
     // External image domains (seed uses picsum.photos; production points at
@@ -122,14 +122,8 @@ export default defineNuxtConfig({
         lang: 'ar',
         dir: 'rtl'
       },
-      titleTemplate: '%s · أماليس',
-      title: 'أماليس',
-      meta: [
-        {
-          name: 'description',
-          content: 'أماليس — تسوق مع الدفع عند الاستلام، بدون حساب.'
-        }
-      ],
+      // Title template and default title/description carry the store name from /settings, so they are
+      // set in app.vue: the same code runs for several stores (amalice.shop, nayo.site, ...).
       // PageSpeed's "preconnect candidates" flag: the LCP product image and
       // every API call go to a different origin (api.*) than the document
       // itself, and the pixel scripts (when enabled) go to Meta/TikTok's

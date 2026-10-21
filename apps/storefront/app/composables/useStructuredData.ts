@@ -11,6 +11,7 @@ interface RatingSummaryLike {
 export function useStructuredData() {
   const config = useRuntimeConfig()
   const siteUrl = config.public.siteUrl as string
+  const settings = useStoreSettings()
 
   // Product (PDP). Includes offers; aggregateRating + image gallery when present.
   function product(p: Product, opts?: { rating?: RatingSummaryLike; images?: string[] }) {
@@ -75,7 +76,7 @@ export function useStructuredData() {
     const data = {
       '@context': 'https://schema.org',
       '@type': 'Organization',
-      name: 'Amalice',
+      name: settings.value.storeName,
       url: siteUrl,
       description: 'Cash on delivery shopping, no account required.'
     }
@@ -86,7 +87,7 @@ export function useStructuredData() {
     const data = {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
-      name: 'Amalice',
+      name: settings.value.storeName,
       url: siteUrl
     }
     useHead({ script: [{ type: 'application/ld+json', innerHTML: JSON.stringify(data) }] })

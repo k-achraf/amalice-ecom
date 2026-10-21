@@ -6,8 +6,9 @@ import type { Category, ProductListResponse } from '@amalice/shared'
 // Each template can override HomeHero / HomeUsps / ProductCard; the grids reuse
 // HomeProductGrid (which itself uses the overridable card).
 
+// app.vue's title template appends the store name: "<title> · <store name>".
 useSeoMeta({
-  title: 'أماليس — التسوق بنظام الدفع عند الاستلام',
+  title: 'التسوق بنظام الدفع عند الاستلام',
   description: 'تسوّق منتجاتك اليومية وادفع عند وصولها. لا حساب، لا دفع مسبق — نتصل بك للتأكيد، ثم تدفع نقداً عند الاستلام.'
 })
 

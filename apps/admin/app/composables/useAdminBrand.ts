@@ -1,6 +1,7 @@
 import { BrandSchema, brandFontFamily, brandFontStylesheetUrl, deriveAdminTheme, type Brand } from '@amalice/shared'
 
 const CACHE_KEY = 'amalice-admin-brand'
+const NAME_CACHE_KEY = 'amalice-admin-store-name'
 const STYLE_ID = 'brand-identity'
 const FONT_LINK_ID = 'brand-font'
 
@@ -11,6 +12,18 @@ const FONT_LINK_ID = 'brand-font'
 // last value is cached in localStorage so the first paint already has it.
 export function useAdminBrand() {
   const brand = useState<Brand | null>('admin-brand', () => null)
+  // Settings → store name: the same admin build serves several stores (amalice.shop, nayo.site, ...),
+  // so the title and login heading use it instead of a fixed product name.
+  const storeName = useState<string | null>('admin-store-name', () => null)
+
+  function applyStoreName(next: string | null | undefined) {
+    storeName.value = next?.trim() || null
+    if (!import.meta.client) return
+    try {
+      if (storeName.value) localStorage.setItem(NAME_CACHE_KEY, storeName.value)
+      else localStorage.removeItem(NAME_CACHE_KEY)
+    } catch { /* private mode */ }
+  }
 
   function apply(next: Brand | null | undefined) {
     const value = next ?? null
@@ -59,17 +72,21 @@ export function useAdminBrand() {
       const raw = localStorage.getItem(CACHE_KEY)
       const parsed = raw ? BrandSchema.safeParse(JSON.parse(raw)) : null
       if (parsed?.success) apply(parsed.data)
+      storeName.value = localStorage.getItem(NAME_CACHE_KEY) || null
     } catch { /* ignore */ }
   }
 
   async function refresh() {
     try {
-      const s = await $fetch<{ brand?: Brand | null }>('/settings', { baseURL: useRuntimeConfig().public.apiBase })
+      const s = await $fetch<{ brand?: Brand | null; storeName?: string }>('/settings', { baseURL: useRuntimeConfig().public.apiBase })
       apply(s.brand ?? null)
+      applyStoreName(s.storeName)
     } catch { /* keep cached brand */ }
   }
 
   const logoSrc = computed(() => (brand.value?.logoUrl ? resolveBrandUrl(brand.value.logoUrl) : null))
+  // "Nayo Admin", or the design's default name until the store has one.
+  const adminTitle = computed(() => (storeName.value ? `${storeName.value} Admin` : 'Leezil Admin'))
 
-  return { brand, logoSrc, apply, hydrateFromCache, refresh }
+  return { brand, logoSrc, storeName, adminTitle, apply, applyStoreName, hydrateFromCache, refresh }
 }

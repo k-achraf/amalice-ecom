@@ -4,9 +4,10 @@ import type { Category, ProductListResponse } from '@amalice/shared'
 // LOGIC ONLY — presentation is resolved by <TemplatePage name="Catalog">.
 // Every template's CatalogPage consumes the same state/handlers from here,
 // so filter/pagination behavior can't drift between templates.
+const settings = useStoreSettings()
 useSeoMeta({
   title: 'Shop',
-  description: 'Browse the full Amalice catalog — cash on delivery, no account required.'
+  description: () => `Browse the full ${settings.value.storeName} catalog — cash on delivery, no account required.`
 })
 
 const route = useRoute()
@@ -50,7 +51,7 @@ const totalPages = computed(() => (data.value ? Math.ceil(data.value.total / dat
 const currentPage = computed(() => Number(route.query.page ?? 1))
 
 watchEffect(() => {
-  if (data.value?.items.length) sd.itemList(data.value.items, 'Amalice catalog')
+  if (data.value?.items.length) sd.itemList(data.value.items, `${settings.value.storeName} catalog`)
 })
 </script>
 

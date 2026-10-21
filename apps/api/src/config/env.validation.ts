@@ -38,6 +38,9 @@ const envSchema = z.object({
   // client unescapes them at read time).
   GOOGLE_SHEETS_CLIENT_EMAIL: z.string().min(1).optional(),
   GOOGLE_SHEETS_PRIVATE_KEY: z.string().min(1).optional(),
+  // Comma-separated storefront/admin origins of THIS deployment (e.g. https://nayo.site,https://admin.nayo.site).
+  // Unset = the amalice.shop defaults. Read in main.ts.
+  CORS_ORIGINS: z.string().optional(),
   // Comma-separated extra browser origins allowed by CORS — the standalone funnels site
   // (apps/funnels), e.g. https://offers.example.com. Read in main.ts.
   CORS_EXTRA_ORIGINS: z.string().optional(),

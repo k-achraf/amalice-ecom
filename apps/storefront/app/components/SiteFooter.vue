@@ -31,13 +31,13 @@ const { data: categories } = await useApiFetch<Category[]>('/categories', { key:
       <div>
         <h3 class="mb-3 text-sm font-semibold text-highlighted">الشركة</h3>
         <ul class="space-y-2 text-sm text-muted">
-          <li><NuxtLink to="/about" class="hover:text-highlighted">عن أماليس</NuxtLink></li>
+          <li><NuxtLink to="/about" class="hover:text-highlighted">عن {{ settings.storeName }}</NuxtLink></li>
           <li><NuxtLink to="/terms" class="hover:text-highlighted">الشروط والأحكام</NuxtLink></li>
           <li><NuxtLink to="/privacy" class="hover:text-highlighted">سياسة الخصوصية</NuxtLink></li>
         </ul>
       </div>
       <div>
-        <h3 class="mb-3 text-sm font-semibold text-highlighted">لماذا أماليس</h3>
+        <h3 class="mb-3 text-sm font-semibold text-highlighted">لماذا {{ settings.storeName }}</h3>
         <ul class="space-y-2 text-sm text-muted">
           <li class="flex items-center gap-2"><Icon name="i-lucide-banknote" class="size-4" /> الدفع عند الاستلام</li>
           <li class="flex items-center gap-2"><Icon name="i-lucide-shield-check" class="size-4" /> تأكيد الطلبات هاتفياً</li>

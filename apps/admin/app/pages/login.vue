@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { logoSrc } = useAdminBrand()
+const { logoSrc, adminTitle } = useAdminBrand()
 // ADM-03 — admin login. On success, redirect to the original destination
 // (preserved in the ?redirect= query by the auth middleware) or the dashboard.
 definePageMeta({ layout: false })
@@ -41,7 +41,7 @@ async function onSubmit() {
       <img :src="logoSrc ?? '/img/leezil-icon-teal.svg'" alt="Logo" style="max-width: 180px; max-height: 64px; width: auto; height: 56px; object-fit: contain; align-self: center">
       <section class="card" style="padding: 32px; gap: 24px">
         <div style="text-align: center">
-          <h1 style="font-size: 28px; letter-spacing: -0.01em">Leezil Admin</h1>
+          <h1 style="font-size: 28px; letter-spacing: -0.01em">{{ adminTitle }}</h1>
           <p class="muted" style="margin: 6px 0 0; font-size: 14px">Sign in to the operations dashboard</p>
         </div>
 

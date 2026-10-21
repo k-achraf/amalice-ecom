@@ -1,5 +1,6 @@
 <script setup lang="ts">
-useSeoMeta({ title: 'الإرجاع', description: 'سياسة الإرجاع والاسترداد في أماليس لطلبات الدفع عند الاستلام.' })
+const settings = useStoreSettings()
+useSeoMeta({ title: 'الإرجاع', description: () => `سياسة الإرجاع والاسترداد في ${settings.value.storeName} لطلبات الدفع عند الاستلام.` })
 </script>
 <template>
   <main class="mx-auto max-w-3xl space-y-6 px-4 py-12">

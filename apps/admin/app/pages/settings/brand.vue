@@ -249,7 +249,7 @@ const previewVars = computed(() => {
               :style="{ fontFamily: `'${f.family}', 'Cairo', sans-serif` }"
               @click="pickFont(f.id)"
             >
-              <b>أماليس للتسوق</b>
+              <b>{{ storeName }}</b>
               <span class="sample">الدفع عند الاستلام 1234</span>
               <small class="meta">{{ f.label }}{{ f.id === 'cairo' ? ' · default' : '' }}</small>
             </button>

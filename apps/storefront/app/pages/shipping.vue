@@ -1,5 +1,6 @@
 <script setup lang="ts">
-useSeoMeta({ title: 'الشحن والتوصيل', description: 'كيف تشحن أماليس طلبات الدفع عند الاستلام.' })
+const settings = useStoreSettings()
+useSeoMeta({ title: 'الشحن والتوصيل', description: () => `كيف تشحن ${settings.value.storeName} طلبات الدفع عند الاستلام.` })
 </script>
 <template>
   <main class="mx-auto max-w-3xl space-y-6 px-4 py-12">

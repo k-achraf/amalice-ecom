@@ -1,5 +1,6 @@
 <script setup lang="ts">
-useSeoMeta({ title: 'سياسة الخصوصية', description: 'كيف تجمع أماليس معلوماتك وتستخدمها وتحميها.' })
+const settings = useStoreSettings()
+useSeoMeta({ title: 'سياسة الخصوصية', description: () => `كيف تجمع ${settings.value.storeName} معلوماتك وتستخدمها وتحميها.` })
 </script>
 <template>
   <main class="mx-auto max-w-3xl space-y-6 px-4 py-12">

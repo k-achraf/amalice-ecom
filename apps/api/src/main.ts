@@ -59,18 +59,21 @@ async function bootstrap() {
   // server-to-server) were never affected — CORS only applies to browser
   // fetches — which is why this went unnoticed for pages that render fully
   // server-side.
-  // CORS_EXTRA_ORIGINS: comma-separated origins for sites that call this API from the browser but are
-  // not hardcoded here — the standalone funnels site (apps/funnels, e.g. https://offers.example.com).
-  const extraOrigins = (process.env.CORS_EXTRA_ORIGINS ?? '')
-    .split(',')
-    .map((o) => o.trim())
-    .filter(Boolean)
+  // CORS_ORIGINS: this deployment's own storefront/admin origins (comma-separated). The same code runs
+  // for several stores (amalice.shop, nayo.site, ...), one deployment each, so the list comes from .env;
+  // when unset it falls back to amalice.shop, the original deployment.
+  // CORS_EXTRA_ORIGINS: added on top — the standalone funnels site (apps/funnels, e.g. https://offers.example.com).
+  const originList = (value: string | undefined) =>
+    (value ?? '')
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean)
+  const ownOrigins = originList(process.env.CORS_ORIGINS)
   app.enableCors({
     origin: [
-      ...(process.env.NODE_ENV === 'production'
-        ? ['https://amalice.shop', 'https://www.amalice.shop', 'https://admin.amalice.shop']
-        : ['https://amalice.shop', 'https://www.amalice.shop', 'https://admin.amalice.shop', 'http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002']),
-      ...extraOrigins
+      ...(ownOrigins.length ? ownOrigins : ['https://amalice.shop', 'https://www.amalice.shop', 'https://admin.amalice.shop']),
+      ...(process.env.NODE_ENV === 'production' ? [] : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002']),
+      ...originList(process.env.CORS_EXTRA_ORIGINS)
     ],
     credentials: true
   })

@@ -6,6 +6,7 @@ useHead({ title: 'Storefront' })
 
 const api = useAdminApi()
 const toast = useToast()
+const { applyStoreName } = useAdminBrand()
 
 const { data: settings, pending, error: settingsError } = await useAdminFetch<StoreSettings>('/admin/settings', { key: 'admin-settings' })
 
@@ -76,6 +77,7 @@ async function apply() {
       }
     })
     settings.value = updated
+    applyStoreName(updated.storeName)
     toast.add({ title: 'Storefront updated', color: 'success' })
   } catch {
     toast.add({ title: 'Update failed', color: 'error' })

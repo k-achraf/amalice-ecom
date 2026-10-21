@@ -23,6 +23,14 @@ const template = computed(() => settings.value?.activeTemplate ?? 'minimal')
 // Brand identity (colour ramp, font, favicon) from Settings → Brand.
 useBrandHead()
 
+// The store's own name in every page title and the default description — one codebase serves several
+// stores (amalice.shop, nayo.site, ...), each with its own Settings → store name.
+const storeName = computed(() => settings.value?.storeName ?? 'Amalice')
+useHead({
+  titleTemplate: (title) => (title ? `${title} · ${storeName.value}` : storeName.value),
+  meta: [{ name: 'description', content: () => `${storeName.value} — تسوق مع الدفع عند الاستلام، بدون حساب.` }]
+})
+
 // A page can opt out of the active template's chrome entirely via
 // definePageMeta({ layout: 'blank' }) (currently only app/pages/lp/ — the AI
 // landing-page funnel, which must never show the store's navbar/header).

@@ -130,7 +130,7 @@ onMounted(() => {
   onBeforeUnmount(() => clearInterval(t))
 })
 
-const { logoSrc } = useAdminBrand()
+const { logoSrc, adminTitle } = useAdminBrand()
 
 const menuOpen = ref(false)
 watch(() => route.path, () => { menuOpen.value = false })
@@ -183,7 +183,7 @@ async function logout() {
     <div class="mobile-bar">
       <button class="icon-btn" type="button" aria-label="Open menu" aria-controls="sidebar" @click="menuOpen = true"><AdsDesignIcon name="menu" /></button>
       <img :src="logoSrc ?? '/img/leezil-icon-teal.svg'" alt="" style="height: 28px; width: auto; max-width: 120px; object-fit: contain">
-      <span class="grow">{{ logoSrc ? 'Admin' : 'Leezil Admin' }}</span>
+      <span class="grow">{{ logoSrc ? 'Admin' : adminTitle }}</span>
     </div>
 
     <main class="main">
