@@ -27,7 +27,7 @@ export class FunnelsPublicController {
 
   // Same per-IP budget as POST /orders/lead: a real visitor submits once.
   @Post(':slug/orders')
-  @Throttle({ default: { limit: 5, ttl: 60 * 1000 } })
+  @Throttle({ default: { limit: 15, ttl: 60 * 1000 } })
   placeOrder(@Param('slug') slug: string, @Body() body: FunnelOrderDto, @Req() req: Request) {
     return this.funnels.placeOrder(slug, body, { ip: clientIp(req), userAgent: req.headers['user-agent'] })
   }

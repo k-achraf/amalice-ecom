@@ -495,8 +495,7 @@ function discard() {
 
           <section class="card" aria-labelledby="ab-h">
             <div class="card-head"><h2 id="ab-h">Abandoned carts</h2></div>
-            <p class="card-sub">On the Impulse template's lead form, if a customer types a phone number and goes idle without submitting, an order is created automatically and marked abandoned. Follow up on <NuxtLink to="/abandoned-carts">Abandoned carts</NuxtLink>.</p>
-            <AdsField label="Idle delay before creating the abandoned order" help="10–3600 seconds."><AdsNumberInput v-model="abandonedCartDelaySeconds" :min="10" :max="3600" /></AdsField>
+            <p class="card-sub">On the Impulse template's lead form (and funnel pages), as soon as a customer has typed a complete phone number an order is created automatically and marked abandoned. It is updated in place as they fill in more, and becomes a real order when they submit. Follow up on <NuxtLink to="/abandoned-carts">Abandoned carts</NuxtLink>.</p>
           </section>
         </div>
       </div>

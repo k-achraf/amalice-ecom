@@ -188,10 +188,10 @@ ${field('name', T.fullName, '<input class="in" name="name" autocomplete="name" r
 ${field('phone', T.phone, `<input class="in" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="${T.phoneHint}" dir="ltr" style="text-align:start" required>`, T.errPhone)}
 <div class="two">
 ${field('wilaya', T.wilaya, `<select class="in" name="wilaya" autocomplete="off" required><option value="">${T.chooseWilaya}</option>${[...f.wilayas].sort((a, b) => Number(a.id) - Number(b.id) || a.name.localeCompare(b.name)).map((w) => `<option value="${esc(w.id)}">${esc(`${w.id} - ${w.name}`)}</option>`).join('')}</select>`, T.errWilaya)}
-${field('commune', T.commune, `<select class="in" name="commune" autocomplete="off" required disabled><option value="">${T.chooseCommune}</option></select>`, T.errCommune)}
+${field('commune', `${T.commune} ${T.optional}`, `<select class="in" name="commune" autocomplete="off" disabled><option value="">${T.chooseCommune}</option></select>`, T.errCommune)}
 </div>
 ${s.addressField === 'hidden' ? '' : field('address', addrLabel, '<input class="in" name="address" autocomplete="street-address">', T.errAddress)}
-<div class="fl" data-f="ship"><span>${T.delivery}</span><div class="opts"><label class="opt"><input type="radio" name="ship" value="Home" disabled><i class="rd"></i><span data-sl="Home">${T.homeDelivery}</span></label><label class="opt"><input type="radio" name="ship" value="Desk" disabled><i class="rd"></i><span data-sl="Desk">${T.deskDelivery}</span></label></div><span class="em">${T.errDelivery}</span></div>
+<div class="fl" data-f="ship"><span>${T.delivery}</span><div class="opts"><label class="opt"><input type="radio" name="ship" value="Home" checked disabled><i class="rd"></i><span data-sl="Home">${T.homeDelivery}</span></label><label class="opt"><input type="radio" name="ship" value="Desk" disabled><i class="rd"></i><span data-sl="Desk">${T.deskDelivery}</span></label></div><span class="em">${T.errDelivery}</span></div>
 ${s.showNotes ? `<div class="fl"><span>${T.notes}</span><textarea class="in" name="notes" maxlength="300"></textarea></div>` : ''}
 ${
   s.showPrice

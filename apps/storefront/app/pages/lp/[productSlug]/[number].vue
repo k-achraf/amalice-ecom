@@ -180,55 +180,34 @@ if (import.meta.client) {
 // Scoped to Impulse only, mirroring the PDP's own gate, even though every
 // /lp page is itself an ad-funnel entry point — kept consistent with "same
 // method as product page form" rather than silently widening the scope.
-const abandonedOrderId = ref<string | null>(null)
-let abandonedTimer: ReturnType<typeof setTimeout> | undefined
-
-function stopAbandonedTimer() {
-  if (abandonedTimer) clearTimeout(abandonedTimer)
-  abandonedTimer = undefined
-}
-
-async function fireAbandonedOrder() {
-  if (abandonedOrderId.value || placing.value) return
-  try {
-    const apiClient = useApiClient()
-    const created = await apiClient<{ id: string }>('/orders/abandoned', {
-      method: 'POST',
-      body: {
-        fields: leadFormData,
-        wilayaId: leadFormData.wilayaId || undefined,
-        shippingType: leadFormData.shippingType || undefined,
-        items: [{
-          productId: page.product.id,
-          variantId: selectedVariantId.value ?? undefined,
-          quantity: quantity.value,
-          offerId: selectedOfferId.value ?? undefined
-        }],
-        tracking: { ...metaPixel.getFbCookies(), ...tiktokPixel.getTtCookie(), attribution: useAttribution().getAttribution('landing_page') }
-      }
-    })
-    abandonedOrderId.value = created.id
-  } catch {
-    // Best-effort — a failed abandoned-cart capture must never surface to
-    // the customer or block them from still completing checkout normally.
+const attributionForCart = useAttribution()
+const { orderId: abandonedOrderId, schedule: scheduleAbandoned, stop: stopAbandonedTimer } = useAbandonedCart(() => {
+  if (placing.value) return null
+  if (!isCompletePhone(leadFormData.phone || leadFormData.phoneNumber)) return null
+  return {
+    fields: leadFormData,
+    wilayaId: leadFormData.wilayaId || undefined,
+    shippingType: leadFormData.shippingType || undefined,
+    items: [{
+      productId: page.product.id,
+      variantId: selectedVariantId.value ?? undefined,
+      quantity: quantity.value,
+      offerId: selectedOfferId.value ?? undefined
+    }],
+    tracking: { ...metaPixel.getFbCookies(), ...tiktokPixel.getTtCookie(), attribution: attributionForCart.getAttribution('landing_page') }
   }
-}
+})
 
+// Create on a complete phone, then keep the same row up to date as the
+// customer fills in the rest.
 watch(
-  () => ({ ...leadFormData }),
+  () => [{ ...leadFormData }, selectedVariantId.value, selectedOfferId.value, quantity.value],
   () => {
-    if (settings.value.activeTemplate !== 'impulse') return
-    if (abandonedOrderId.value || placing.value) return
-    const phone = leadFormData.phone || leadFormData.phoneNumber
-    stopAbandonedTimer()
-    if (!phone?.trim()) return
-    const delayMs = (settings.value.abandonedCartDelaySeconds || 60) * 1000
-    abandonedTimer = setTimeout(fireAbandonedOrder, delayMs)
+    if (settings.value.activeTemplate !== 'impulse' || placing.value) return
+    scheduleAbandoned()
   },
   { deep: true }
 )
-
-onBeforeUnmount(stopAbandonedTimer)
 
 async function onSubmitLead() {
   for (const f of leadFields.value) {

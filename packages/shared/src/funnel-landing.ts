@@ -72,7 +72,7 @@ export const LANDING_TEMPLATES: LandingTemplate[] = [
     bestFor: 'Most single-product ads',
     layout: 'stacked',
     sections: ['description', 'benefits', 'specs', 'guarantee', 'faq'],
-    defaults: { ctaLabel: 'اطلب الآن والدفع عند الاستلام', accent: 'teal', urgency: false, addressField: 'required' }
+    defaults: { ctaLabel: 'اطلب الآن والدفع عند الاستلام', accent: 'teal', urgency: false, addressField: 'hidden' }
   },
   {
     id: 'side-by-side',
@@ -81,7 +81,7 @@ export const LANDING_TEMPLATES: LandingTemplate[] = [
     bestFor: 'Visitors on desktop and tablets',
     layout: 'split',
     sections: ['benefits', 'description', 'specs', 'testimonials', 'faq'],
-    defaults: { ctaLabel: 'اطلب الآن والدفع عند الاستلام', accent: 'pine', urgency: false, addressField: 'required' }
+    defaults: { ctaLabel: 'اطلب الآن والدفع عند الاستلام', accent: 'pine', urgency: false, addressField: 'hidden' }
   },
   {
     id: 'compact',
@@ -90,7 +90,7 @@ export const LANDING_TEMPLATES: LandingTemplate[] = [
     bestFor: 'Impulse buys and warm traffic',
     layout: 'compact',
     sections: ['description', 'benefits', 'guarantee'],
-    defaults: { ctaLabel: 'اطلب الآن', accent: 'teal', urgency: false, addressField: 'optional' }
+    defaults: { ctaLabel: 'اطلب الآن', accent: 'teal', urgency: false, addressField: 'hidden' }
   },
   {
     id: 'bold',
@@ -99,7 +99,7 @@ export const LANDING_TEMPLATES: LandingTemplate[] = [
     bestFor: 'Big discounts and trending products',
     layout: 'stacked',
     sections: ['benefits', 'howItWorks', 'testimonials', 'guarantee', 'faq'],
-    defaults: { ctaLabel: 'اطلب الآن، الكمية محدودة', accent: 'clay', urgency: true, addressField: 'optional' }
+    defaults: { ctaLabel: 'اطلب الآن، الكمية محدودة', accent: 'clay', urgency: true, addressField: 'hidden' }
   },
   {
     id: 'image-page',
@@ -108,7 +108,7 @@ export const LANDING_TEMPLATES: LandingTemplate[] = [
     bestFor: 'Ads already built around a long image',
     layout: 'image',
     sections: ['guarantee'],
-    defaults: { ctaLabel: 'اطلب الآن والدفع عند الاستلام', accent: 'brass', urgency: false, addressField: 'required' }
+    defaults: { ctaLabel: 'اطلب الآن والدفع عند الاستلام', accent: 'brass', urgency: false, addressField: 'hidden' }
   }
 ]
 
@@ -145,7 +145,7 @@ export const LandingSettingsSchema = z.object({
   //  quickBenefits    — the first three key benefits right under the price, before the form
   //  showStock        — "Only N left" when real stock is low
   //  preselectBestOffer — start with the best-value offer selected instead of a single unit
-  addressField: AddressFieldSchema.default('required'),
+  addressField: AddressFieldSchema.default('hidden'),
   showNotes: z.boolean().default(false),
   trustBadges: z.boolean().default(true),
   quickBenefits: z.boolean().default(true),

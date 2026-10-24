@@ -267,50 +267,31 @@ if (import.meta.client) {
 // decision — this same leadFormData/[slug].vue page is shared by every
 // other template's lead-form flow too, but only Impulse's funnel design is
 // meant to trigger this.
-const abandonedOrderId = ref<string | null>(null)
-let abandonedTimer: ReturnType<typeof setTimeout> | undefined
-
-function stopAbandonedTimer() {
-  if (abandonedTimer) clearTimeout(abandonedTimer)
-  abandonedTimer = undefined
-}
-
-async function fireAbandonedOrder() {
-  if (!product.value || abandonedOrderId.value || leadPlacing.value) return
-  try {
-    const apiClient = useApiClient()
-    const created = await apiClient<{ id: string }>('/orders/abandoned', {
-      method: 'POST',
-      body: {
-        fields: leadFormData,
-        wilayaId: leadFormData.wilayaId || undefined,
-        shippingType: leadFormData.shippingType || undefined,
-        items: [{ productId: product.value.id, variantId: selectedVariantId.value ?? undefined, quantity: quantity.value, offerId: selectedOfferId.value ?? undefined }],
-        tracking: { ...useMetaPixel().getFbCookies(), ...useTikTokPixel().getTtCookie(), attribution: useAttribution().getAttribution('storefront') }
-      }
-    })
-    abandonedOrderId.value = created.id
-  } catch {
-    // Best-effort — a failed abandoned-cart capture must never surface to
-    // the customer or block them from still completing checkout normally.
+const metaPixelForCart = useMetaPixel()
+const tiktokPixelForCart = useTikTokPixel()
+const attributionForCart = useAttribution()
+const { orderId: abandonedOrderId, schedule: scheduleAbandoned, stop: stopAbandonedTimer } = useAbandonedCart(() => {
+  if (!product.value || leadPlacing.value) return null
+  if (!isCompletePhone(leadFormData.phone || leadFormData.phoneNumber)) return null
+  return {
+    fields: leadFormData,
+    wilayaId: leadFormData.wilayaId || undefined,
+    shippingType: leadFormData.shippingType || undefined,
+    items: [{ productId: product.value.id, variantId: selectedVariantId.value ?? undefined, quantity: quantity.value, offerId: selectedOfferId.value ?? undefined }],
+    tracking: { ...metaPixelForCart.getFbCookies(), ...tiktokPixelForCart.getTtCookie(), attribution: attributionForCart.getAttribution('storefront') }
   }
-}
+})
 
+// Create on a complete phone, then keep the same row up to date as the
+// customer fills in the rest (name, wilaya, shipping, offer, quantity…).
 watch(
-  () => ({ ...leadFormData }),
+  () => [{ ...leadFormData }, selectedVariantId.value, selectedOfferId.value, quantity.value],
   () => {
-    if (settings.value.activeTemplate !== 'impulse') return
-    if (abandonedOrderId.value || leadPlacing.value) return
-    const phone = leadFormData.phone || leadFormData.phoneNumber
-    stopAbandonedTimer()
-    if (!phone?.trim()) return
-    const delayMs = (settings.value.abandonedCartDelaySeconds || 60) * 1000
-    abandonedTimer = setTimeout(fireAbandonedOrder, delayMs)
+    if (settings.value.activeTemplate !== 'impulse' || leadPlacing.value) return
+    scheduleAbandoned()
   },
   { deep: true }
 )
-
-onBeforeUnmount(stopAbandonedTimer)
 
 // Priced client-side only for display (the "Total — cash on delivery" line);
 // the API re-prices from WilayaShippingRate server-side and never trusts this.

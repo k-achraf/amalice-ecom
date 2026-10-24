@@ -89,8 +89,10 @@
     pq = []
     q.forEach(function (f) { try { f() } catch (e) {} })
   }
-  ;['pointerdown', 'touchstart', 'scroll', 'keydown'].forEach(function (n) { addEventListener(n, loadPx, { once: true, passive: true }) })
-  addEventListener('load', function () { ('requestIdleCallback' in window) ? requestIdleCallback(loadPx, { timeout: 2500 }) : setTimeout(loadPx, 2000) })
+  // Loaded right away (the vendor scripts are async, so first paint is unaffected). Deferring them
+  // until the first interaction / idle meant a visitor who clicked the ad and left within a couple of
+  // seconds never fired PageView / ViewContent, so Meta never counted the landing page view.
+  loadPx()
 
   function metaEv(n, p, id) { if (fd.px.m) px(function () { window.fbq && fbq('track', n, p, id ? { eventID: id } : undefined) }) }
   function ttEv(n, p, id) { if (fd.px.t) px(function () { if (window.ttq) { if (id) p.event_id = id; ttq.track(n, p) } }) }
@@ -183,7 +185,7 @@
   if (!form) return
 
   // ---------- price maths (the server re-prices everything; this is only what the visitor sees) ----------
-  var st = { off: 'one', ship: '', wil: null, bump: false }
+  var st = { off: 'one', ship: 'Home', wil: null, bump: false }
   var checked = form.querySelector('[name=offer]:checked')
   if (checked) st.off = checked.value
   function vsel() { var r = form.querySelector('[name=variant]:checked'); return r ? r.value : null }
@@ -233,6 +235,7 @@
   function onWilaya() {
     var id = form.wilaya.value
     st.wil = null
+    if (!id) { loadCommunes(id); return }
     for (var i = 0; i < fd.w.length; i++) if (fd.w[i][0] === id) st.wil = fd.w[i]
     var kinds = [['Home', 2], ['Desk', 3]]
     kinds.forEach(function (k) {
@@ -354,7 +357,7 @@
   }
   form.addEventListener('focusin', startCheckout)
 
-  var abTimer = 0, abId = null, abDone = false, submitted = false
+  var abTimer = 0, abId = null, abSending = false, abDirty = false, abLast = '', submitted = false
   function items() {
     var it = { productId: fd.pid, quantity: qty() }
     var v = vsel(), o = offer()
@@ -362,24 +365,38 @@
     if (o) it.offerId = o.id
     return [it]
   }
+  // Abandoned cart: created the moment the phone number is complete, then the
+  // same order is updated (debounced) as the visitor fills in more of the form.
+  // Requests are serialized so two quick edits can't create two orders; an
+  // unchanged payload isn't re-sent. A real submit converts it (abId).
   function fireAbandoned() {
-    if (abDone || submitted) return
-    abDone = true
-    var fields = { phone: form.phone.value }
+    if (submitted) return
+    var phone = phoneOf(form.phone.value)
+    if (!PHONE.test(phone)) return
+    if (abSending) { abDirty = true; return }
+    var fields = { phone: phone }
     ;['name', 'commune', 'address'].forEach(function (k) { if (form[k] && form[k].value.trim()) fields[k] = form[k].value.trim() })
     var body = { fields: fields, items: items(), tracking: { fbp: cookie('_fbp'), fbc: cookie('_fbc'), ttp: cookie('_ttp'), attribution: attribution() } }
     if (st.wil) body.wilayaId = st.wil[0]
     if (st.ship) body.shippingType = st.ship
-    fetch(fd.api + '/orders/abandoned', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).then(function (r) { return r.json() }).then(function (j) { if (j && j.id) abId = j.id }).catch(function () {})
+    var sig = JSON.stringify(body)
+    if (sig === abLast) return
+    if (abId) body.abandonedOrderId = abId
+    abSending = true
+    fetch(fd.api + '/orders/abandoned', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json() })
+      .then(function (j) { if (j && j.id) { abId = j.id; abLast = sig } })
+      .catch(function () {})
+      .then(function () { abSending = false; if (abDirty) { abDirty = false; fireAbandoned() } })
   }
+  function scheduleAbandoned() { clearTimeout(abTimer); abTimer = setTimeout(fireAbandoned, 800) }
   form.addEventListener('input', function (e) {
     var f = e.target.closest && e.target.closest('.fl')
     if (f) f.classList.remove('er')
-    if (e.target.name === 'phone') {
-      clearTimeout(abTimer)
-      if (!abDone && PHONE.test(phoneOf(e.target.value))) abTimer = setTimeout(fireAbandoned, fd.ab * 1000)
-    }
+    scheduleAbandoned()
   })
+  form.addEventListener('change', scheduleAbandoned)
+  form.addEventListener('click', scheduleAbandoned)
 
   // ---------- validate + submit ----------
   function flag(name, ok, bad) { var e = $('[data-f="' + name + '"]', form); if (e) e.classList.toggle('er', !ok); if (!ok) bad.push(name) }
@@ -388,8 +405,7 @@
     flag('name', form.name.value.trim().length >= 2, bad)
     flag('phone', PHONE.test(phoneOf(form.phone.value)), bad)
     flag('wilaya', !!form.wilaya.value, bad)
-    flag('commune', !!form.commune.value, bad)
-    if (fd.addr === 'required') flag('address', form.address.value.trim().length >= 3, bad)
+        if (fd.addr === 'required') flag('address', form.address.value.trim().length >= 3, bad)
     flag('ship', !!st.ship, bad)
     return bad
   }
@@ -410,7 +426,7 @@
     busyUi(true)
     fe.className = 'fe'
     clearTimeout(abTimer)
-    var fields = { name: form.name.value.trim(), phone: form.phone.value.trim(), commune: form.commune.value }
+    var fields = { name: form.name.value.trim(), phone: phoneOf(form.phone.value), commune: form.commune.value }
     if (form.address && form.address.value.trim()) fields.address = form.address.value.trim()
     if (form.notes && form.notes.value.trim()) fields.notes = form.notes.value.trim()
     var body = { fields: fields, wilayaId: st.wil[0], shippingType: st.ship, quantity: 1, idempotencyKey: key, formLoadedAt: loadedAt, tracking: { fbp: cookie('_fbp'), fbc: cookie('_fbc'), ttp: cookie('_ttp'), attribution: attribution() } }

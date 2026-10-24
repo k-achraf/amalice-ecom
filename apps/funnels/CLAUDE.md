@@ -14,7 +14,7 @@ Standalone funnel pages (landing + order form + order bump + upsell/downsell + t
 
 - Page content, prices, offers, wilayas + shipping prices, pixel IDs, abandoned-cart delay, real approved reviews: all in the one `PublicFunnel` payload (`packages/shared/src/funnel-public.ts`) from `apps/api/src/funnels/funnels-public.*`. Only **Live** funnels are served; anything else is a 404.
 - The browser calls the API directly (CORS) for: `GET /communes`, `POST /public/funnels/:slug/orders`, `POST …/orders/:id/offers/:stepId`, `POST /orders/abandoned`, `POST /analytics/view` (with a per-visit `viewId` + the visitor's ad touch), `POST /analytics/engagement` (visible seconds, scroll depth, form touched — sent cumulatively whenever the page is hidden/closed). The order goes through the same `OrdersService.createLeadOrder` as the storefront, so idempotency, bot-pace check, duplicate flagging, stock, server-side pricing, Meta CAPI / TikTok Events API and Google Sheets sync all apply unchanged. **Prices are never taken from the browser.**
-- Pixels: a funnel can carry its own Meta pixel ID / TikTok code (`Funnel.metaPixelId`/`tiktokPixelCode`, set in the funnel's Settings card) that replaces the store-wide one in the page and in the server-side Purchase/Delivered events (store access token is reused). Meta and TikTok stubs are defined at once (events queue), the vendor scripts load on first interaction or idle. `ViewContent`, `InitiateCheckout`, `Purchase`/`CompletePayment` (event id = order id, matching the server-side event so each platform dedupes).
+- Pixels: a funnel can carry its own Meta pixel ID / TikTok code (`Funnel.metaPixelId`/`tiktokPixelCode`, set in the funnel's Settings card) that replaces the store-wide one in the page and in the server-side Purchase/Delivered events (store access token is reused). Meta and TikTok stubs are defined at once (events queue), the async vendor scripts start loading immediately (deferring them lost PageView/ViewContent for visitors who left within seconds, so no landing page view was ever counted). `ViewContent`, `InitiateCheckout`, `Purchase`/`CompletePayment` (event id = order id, matching the server-side event so each platform dedupes).
 - Copy lives in `FUNNEL_COPY_AR` (`packages/shared`), shared with the admin's landing-page preview so they never drift.
 
 ## Brand identity
@@ -39,7 +39,7 @@ After changing `packages/shared`, rebuild it (`pnpm --filter @amalice/shared bui
 
 - No framework, no webfonts, no external CSS/JS request on the critical path; the page is one cached, compressed document.
 - Every image has a reserved box (no layout shift); the first photo is preloaded with `fetchpriority=high`, the rest are `loading=lazy`.
-- Third-party pixel scripts never load before the first interaction / idle.
+- Third-party pixel scripts load async right at page start (never defer them: bounce visitors would not be tracked).
 - Keep `client.js` free of dependencies and new network calls on page load.
 
 - Countdown: `LandingSettings.countdownEndsAt` (+ `countdownLabel`) renders a live timer under the urgency banner; it is a real deadline set in the admin and hides itself (server render and client tick) once passed. Every page also carries `Product` JSON-LD (price, availability, real approved rating).

@@ -45,7 +45,7 @@ export class OrdersController {
   // key, form-pace check, duplicate-order flagging) — this is just the
   // blunt per-IP backstop.
   @Post()
-  @Throttle({ default: { limit: 5, ttl: 60 * 1000 } })
+  @Throttle({ default: { limit: 15, ttl: 60 * 1000 } })
   create(@Body() body: CheckoutDto, @Req() req: Request) {
     return this.orders.createOrder(body, requestContext(req))
   }
@@ -53,7 +53,7 @@ export class OrdersController {
   // Lead-form order — creates it in PendingCallCenter directly. Used when
   // displayCart=false: the customer fills name/phone/wilaya/commune on the PDP.
   @Post('lead')
-  @Throttle({ default: { limit: 5, ttl: 60 * 1000 } })
+  @Throttle({ default: { limit: 15, ttl: 60 * 1000 } })
   createLead(@Body() body: LeadOrderDto, @Req() req: Request) {
     return this.orders.createLeadOrder(body, requestContext(req))
   }
@@ -64,7 +64,7 @@ export class OrdersController {
   // unauthenticated write endpoints below — a client-side timer firing
   // repeatedly from a stuck tab shouldn't be able to hammer this.
   @Post('abandoned')
-  @Throttle({ default: { limit: 20, ttl: 5 * 60 * 1000 } })
+  @Throttle({ default: { limit: 60, ttl: 5 * 60 * 1000 } })
   createAbandoned(@Body() body: AbandonedLeadOrderDto, @Req() req: Request) {
     return this.orders.createAbandonedOrder(body, requestContext(req))
   }

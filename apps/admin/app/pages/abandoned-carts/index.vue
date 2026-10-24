@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { OrderListResponse } from '@amalice/shared'
 
-// Orders auto-created when a customer typed a phone number on the Impulse
-// lead form and went idle past the store's configured delay (Storefront
-// settings) without submitting — see OrdersService.createAbandonedOrder.
+// Orders auto-created as soon as a customer typed a complete phone number on
+// a lead form (kept up to date as they fill in more; converted in place into a
+// real order on submit) — see OrdersService.createAbandonedOrder.
 // Kept off the main Orders/Call Center queues (admin-orders.service.ts's
 // list() excludes isAbandoned by default) so they don't read as real
 // confirmed leads; this page is where staff follow up on them specifically.
@@ -19,6 +19,11 @@ const { data: queue, pending, refresh } = await useAdminFetch<OrderListResponse>
   '/admin/orders?abandoned=only&pageSize=100',
   { key: 'admin-abandoned-carts' }
 )
+
+// Carts now appear the moment a phone number is complete and update while the
+// customer keeps typing, so keep the list fresh without a manual reload.
+const refreshTimer = setInterval(() => { if (!acting.value) refresh() }, 30_000)
+onBeforeUnmount(() => clearInterval(refreshTimer))
 
 // Terminal states (Cancelled, or converted-away isAbandoned rows that
 // completed) shouldn't clutter the follow-up queue — only show ones still

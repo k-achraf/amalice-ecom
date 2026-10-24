@@ -426,17 +426,23 @@ export const LeadOrderSchema = z.object({
 })
 export type LeadOrder = z.infer<typeof LeadOrderSchema>
 
-// Abandoned-cart order — fired by the storefront when a customer has typed a
-// phone number on a lead form and gone idle past the store's configured
-// abandonedCartDelaySeconds (StoreSettings) without submitting. Deliberately
-// far more lenient than LeadOrderSchema: wilaya/shipping/most fields may not
-// be filled in yet, only `fields` (must contain a phone) and the item being
-// viewed are guaranteed. See OrdersService.createAbandonedOrder.
+// Abandoned-cart order — fired by the storefront/funnel as soon as the
+// customer has typed a COMPLETE phone number on a lead form, then re-sent
+// (debounced) every time they fill in more data. The first call creates the
+// order; later calls carry `abandonedOrderId` and update that same row in
+// place. Deliberately far more lenient than LeadOrderSchema: wilaya/shipping/
+// most fields may not be filled in yet, only `fields` (must contain a
+// complete phone) and the item being viewed are guaranteed. A real submit
+// converts the row via LeadOrderSchema.convertsAbandonedOrderId. See
+// OrdersService.createAbandonedOrder.
 export const AbandonedLeadOrderSchema = z.object({
   fields: z.record(z.string()),
   wilayaId: z.string().optional(),
   shippingType: ShippingTypeSchema.optional(),
   items: z.array(CheckoutItemSchema).min(1),
+  // Set by the client after the first call returns — update that row instead
+  // of creating another one for the same visit.
+  abandonedOrderId: z.uuid().optional(),
   // Same ad-source context as a real order — see CheckoutTrackingSchema.
   tracking: CheckoutTrackingSchema.optional()
 })

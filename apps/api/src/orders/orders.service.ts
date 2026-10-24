@@ -594,8 +594,11 @@ export class OrdersService {
     // still exists, is still abandoned (not already converted/handled by
     // staff), and belongs to this same phone number (never let one phone's
     // submit silently overwrite another customer's abandoned order).
-    const abandonedOrder = lead.convertsAbandonedOrderId
-      ? await this.prisma.order.findUnique({ where: { id: lead.convertsAbandonedOrderId }, include: { customer: true } })
+    // Falls back to this customer's latest open capture when the client lost
+    // its id (page reload) so a real order never leaves a stale cart behind.
+    const openAbandoned = await this.findOpenAbandonedOrder(customer.id, lead.convertsAbandonedOrderId)
+    const abandonedOrder = openAbandoned
+      ? await this.prisma.order.findUnique({ where: { id: openAbandoned.id }, include: { customer: true } })
       : null
     const convertingAbandoned = !!abandonedOrder && abandonedOrder.isAbandoned && abandonedOrder.customer.phone === phone
 
@@ -720,6 +723,9 @@ export class OrdersService {
     const phone: string = rawPhone ? normalizeAlgerianPhone(rawPhone) : ''
     const commune: string = f.commune || f.city || ''
     if (!phone) throw new ConflictException('Phone is required')
+    // Captured as soon as the number is complete, so a half-typed one must not
+    // create a customer row.
+    if (!/^\+213[567]\d{8}$/.test(phone)) throw new BadRequestException('Phone number is incomplete')
 
     // wilayaId/shippingType/shippingPriceCents: the Impulse-style lead form
     // sets these directly on the shared fields object (see
@@ -744,17 +750,45 @@ export class OrdersService {
       create: { phone, name: name || null }
     })
 
-    const address = await this.prisma.address.create({
-      data: {
-        customerId: customer.id,
-        line1: commune || wilayaName || '(not provided)',
-        city: commune,
-        region: wilayaName,
-        postalCode: '00000',
-        country: 'DZ',
-        line2: Object.keys(extras).length > 0 ? JSON.stringify(extras) : null
-      }
-    })
+    const addressData = {
+      customerId: customer.id,
+      line1: commune || wilayaName || '(not provided)',
+      city: commune,
+      region: wilayaName,
+      postalCode: '00000',
+      country: 'DZ',
+      line2: Object.keys(extras).length > 0 ? JSON.stringify(extras) : null
+    }
+
+    // The same visit keeps re-sending as the customer fills in more of the
+    // form: update the capture it already made instead of stacking rows. The
+    // client's id wins; failing that (page reloaded, id lost) fall back to
+    // this customer's most recent still-abandoned capture from the last day.
+    // Never touches an order staff already handled (isAbandoned cleared) —
+    // that one is no longer a cart.
+    const existing = await this.findOpenAbandonedOrder(customer.id, lead.abandonedOrderId)
+    if (existing) {
+      const order = await this.prisma.$transaction(async (tx) => {
+        await tx.orderItem.deleteMany({ where: { orderId: existing.id } })
+        if (existing.addressId) await tx.address.update({ where: { id: existing.addressId }, data: addressData })
+        const addressId = existing.addressId ?? (await tx.address.create({ data: addressData })).id
+        return tx.order.update({
+          where: { id: existing.id },
+          data: {
+            customerId: customer.id,
+            addressId,
+            totalCents,
+            shippingType: lead.shippingType ?? null,
+            shippingPriceCents,
+            items: { create: pricedItems }
+          },
+          include: { items: true }
+        })
+      })
+      return order
+    }
+
+    const address = await this.prisma.address.create({ data: addressData })
 
     const order = await this.prisma.order.create({
       data: {
@@ -771,6 +805,21 @@ export class OrdersService {
     })
     await this.recordAttribution(order.id, lead.tracking, context)
     return order
+  }
+
+  // The still-open abandoned capture a new call should continue: the exact
+  // row the client says it made (if it is still abandoned and recent), else
+  // this customer's latest abandoned one from the last day.
+  private async findOpenAbandonedOrder(customerId: string, orderId?: string) {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    if (orderId) {
+      const byId = await this.prisma.order.findFirst({ where: { id: orderId, isAbandoned: true, state: 'PendingCallCenter', createdAt: { gte: since } } })
+      if (byId) return byId
+    }
+    return this.prisma.order.findFirst({
+      where: { customerId, isAbandoned: true, state: 'PendingCallCenter', archived: false, createdAt: { gte: since } },
+      orderBy: { createdAt: 'desc' }
+    })
   }
 
   async trackOrder(orderId: string, phone: string) {
