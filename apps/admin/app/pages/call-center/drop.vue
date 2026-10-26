@@ -59,7 +59,7 @@ onBeforeUnmount(() => {
 })
 
 const myCalls = computed(() => (stats.value ? Object.values(stats.value.me).reduce((a, b) => a + b, 0) : 0))
-const remaining = computed(() => (stats.value ? stats.value.queue.new + stats.value.queue.noAnswer + stats.value.queue.postponed : 0))
+const remaining = computed(() => stats.value?.queue.ready ?? 0)
 </script>
 
 <template>

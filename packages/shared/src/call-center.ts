@@ -103,8 +103,9 @@ export interface CallCenterStatsResponse {
   team: CallCenterCounts
   // The requesting agent only.
   me: CallCenterCounts
-  // Orders waiting right now, per tier.
-  queue: { new: number; noAnswer: number; postponed: number; wrongNumber: number; abandoned: number; dueNow: number }
+  // Orders per queue (real totals), plus callbacks due now and how many can be dialed right now.
+  // team/me count orders called today by the result of their latest call.
+  queue: { new: number; noAnswer: number; postponed: number; wrongNumber: number; abandoned: number; dueNow: number; ready: number }
 }
 
 export interface AgentPerformanceRow {

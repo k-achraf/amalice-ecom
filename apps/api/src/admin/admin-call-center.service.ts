@@ -381,32 +381,49 @@ export class AdminCallCenterService {
   async stats(actor: AuditActor): Promise<CallCenterStatsResponse> {
     const now = new Date()
     const since = algiersDayStart(now)
-    const rows = await this.prisma.callAttempt.groupBy({
-      by: ['outcome', 'agentId'],
+    // Orders, not calls: each order called today counts once, under the result
+    // of its latest call (an order that was "no answer" and then confirmed is a
+    // confirmation, not both).
+    const attempts = await this.prisma.callAttempt.findMany({
       // Calls on archived orders don't count.
       where: { createdAt: { gte: since }, order: { archived: false } },
-      _count: { _all: true }
+      select: { orderId: true, agentId: true, outcome: true },
+      orderBy: { createdAt: 'asc' }
     })
+    const lastTeam = new Map<string, CallOutcome>()
+    const lastMe = new Map<string, CallOutcome>()
+    for (const a of attempts) {
+      lastTeam.set(a.orderId, a.outcome)
+      if (a.agentId === actor.id) lastMe.set(a.orderId, a.outcome)
+    }
     const team = emptyCounts()
     const me = emptyCounts()
-    for (const r of rows) {
-      team[r.outcome] += r._count._all
-      if (r.agentId === actor.id) me[r.outcome] += r._count._all
-    }
+    for (const o of lastTeam.values()) team[o]++
+    for (const o of lastMe.values()) me[o]++
 
+    // Queue sizes are the real totals per state (what the queue lists and the
+    // overview show); `ready` is the part the dialer can hand out right now.
+    const live = { archived: false }
+    const [pending, noAnswer, postponed, wrongNumber, abandoned] = await Promise.all([
+      this.prisma.order.count({ where: { ...live, state: 'PendingCallCenter' } }),
+      this.prisma.order.count({ where: { ...live, state: 'CallCenterNoAnswer' } }),
+      this.prisma.order.count({ where: { ...live, state: 'Postponed' } }),
+      this.prisma.order.count({ where: { ...live, state: 'WrongNumber' } }),
+      this.prisma.order.count({ where: { ...live, isAbandoned: true, state: { in: WORK_STATES } } })
+    ])
     const workable = await this.loadWorkable(now)
     const available = workable.filter((o) => !AdminCallCenterService.heldByOther(o, actor.id, now))
-    const wrongNumber = await this.prisma.order.count({ where: { state: 'WrongNumber', archived: false } })
     return {
       team,
       me,
       queue: {
-        new: available.filter((o) => o.state === 'PendingCallCenter').length,
-        noAnswer: available.filter((o) => o.state === 'CallCenterNoAnswer').length,
-        postponed: available.filter((o) => o.state === 'Postponed').length,
+        new: pending,
+        noAnswer,
+        postponed,
         wrongNumber,
-        abandoned: available.filter((o) => o.isAbandoned).length,
-        dueNow: available.filter((o) => tierOf(o) === 0).length
+        abandoned,
+        dueNow: available.filter((o) => tierOf(o) === 0).length,
+        ready: available.length
       }
     }
   }
