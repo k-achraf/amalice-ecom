@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { suggestFunnelTests, type FunnelStats, type FunnelStatsBreakdownRow, type FunnelSuggestionResult } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
-import { addOrder, emptyAcc, finalize } from '../meta-ads/meta-orders.util'
+import { addOrder, bucketOf, emptyAcc, finalize } from '../meta-ads/meta-orders.util'
 
 // A visit that lasted less than this, never scrolled a quarter of the page and never touched the
 // order form is a bounce.
@@ -38,7 +38,10 @@ export class FunnelsStatsService {
   async stats(funnelId: string, days: number): Promise<FunnelStats> {
     const funnel = await this.prisma.funnel.findUnique({ where: { id: funnelId }, select: { id: true } })
     if (!funnel) throw new NotFoundException('Funnel not found')
-    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+    // The window is whole shop days (Algeria, UTC+1 all year): today plus the days-1 before it, so the
+    // first day is complete and the daily rows add up to the totals.
+    const firstDay = dayKey(new Date(Date.now() - (days - 1) * 24 * 60 * 60 * 1000))
+    const since = new Date(`${firstDay}T00:00:00+01:00`)
 
     const [visitRows, dayRows, deviceRows, sourceRows, campaignRows, orders, products] = await Promise.all([
       this.prisma.$queryRaw<VisitRow[]>`
@@ -84,6 +87,7 @@ export class FunnelsStatsService {
     const costById = new Map(products.map((p) => [p.id, p.costCents]))
     const acc = emptyAcc()
     let grossCents = 0
+    let valued = 0
     let withUpsell = 0
     let upsellCents = 0
     const dayOrders = new Map<string, number>()
@@ -99,8 +103,13 @@ export class FunnelsStatsService {
         carrierFeeCents: o.shipment?.carrierFeeCents ?? null,
         returnFeeCents: o.shipment?.returnFeeCents ?? null
       })
-      grossCents += o.totalCents
-      const upsell = o.items.filter((i) => i.isUpsell)
+      // Order value and upsell figures cover orders still alive; a cancelled order sold nothing.
+      const cancelled = ['cancelledByCallCenter', 'cancelledAfterConfirm'].includes(bucketOf(o.state))
+      if (!cancelled) {
+        grossCents += o.totalCents
+        valued += 1
+      }
+      const upsell = cancelled ? [] : o.items.filter((i) => i.isUpsell)
       if (upsell.length) {
         withUpsell += 1
         upsellCents += upsell.reduce((s, i) => s + i.lineTotalCents, 0)
@@ -149,6 +158,7 @@ export class FunnelsStatsService {
         avgScrollDepth: visit?.avg_scroll ?? null,
         bounceRate: pct(visit?.bounced ?? 0, tracked),
         formStarts: visit?.form_starts ?? 0,
+        formVisitors,
         formStartRate: pct(visit?.form_starts ?? 0, views)
       },
       sales: {
@@ -156,9 +166,9 @@ export class FunnelsStatsService {
         conversionRate: pct(orders.length, visitors),
         conversionPerView: pct(orders.length, views),
         grossValue: grossCents / 100,
-        avgOrderValue: orders.length ? grossCents / 100 / orders.length : null,
+        avgOrderValue: valued ? grossCents / 100 / valued : null,
         ordersWithUpsell: withUpsell,
-        upsellRate: pct(withUpsell, orders.length),
+        upsellRate: pct(withUpsell, valued),
         upsellRevenue: upsellCents / 100,
         formDropOffRate: formVisitors > 0 ? Math.max(0, ((formVisitors - orders.length) / formVisitors) * 100) : null
       },

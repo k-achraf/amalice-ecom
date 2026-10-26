@@ -49,7 +49,7 @@ const cards = computed(() => {
     { label: 'Avg. time on page', value: duration(t.avgDurationSeconds), hint: t.trackedVisits ? `Over ${formatCount(t.trackedVisits)} measured visits` : 'Measured from now on' },
     { label: 'Bounce rate', value: formatPct(t.bounceRate), hint: 'Left in <10s without scrolling or ordering' },
     { label: 'Avg. scroll depth', value: t.avgScrollDepth == null ? '—' : formatPct(t.avgScrollDepth, 0), hint: 'Share of the page seen' },
-    { label: 'Started the form', value: formatCount(t.formStarts), hint: `${formatPct(t.formStartRate)} of visits` },
+    { label: 'Started the form', value: formatCount(t.formStarts), hint: `${formatCount(t.formVisitors)} visitors · ${formatPct(t.formStartRate)} of visits` },
     { label: 'Form drop-off', value: formatPct(m.formDropOffRate), hint: 'Started the form, did not order' },
     { label: 'Order value', value: formatDz(m.grossValue), hint: m.avgOrderValue == null ? undefined : `${formatDz(m.avgOrderValue)} per order` },
     { label: 'Upsell take rate', value: formatPct(m.upsellRate), hint: `${formatCount(m.ordersWithUpsell)} orders · ${formatDz(m.upsellRevenue)}` },
@@ -77,7 +77,7 @@ const stagesChart = computed(() => {
   if (!x) return {}
   return funnelOption([
     { name: 'Visitors', value: x.traffic.uniqueVisitors },
-    { name: 'Started the form', value: Math.min(x.traffic.formStarts, x.traffic.uniqueVisitors || x.traffic.formStarts) },
+    { name: 'Started the form', value: x.traffic.formVisitors },
     { name: 'Ordered', value: x.sales.orders },
     { name: 'Confirmed', value: x.fulfilment.confirmed },
     { name: 'Delivered', value: x.fulfilment.delivered }
@@ -87,7 +87,7 @@ const stagesTable = computed(() => {
   const x = s.value
   const v = x?.traffic.uniqueVisitors ?? 0
   const row = (name: string, n: number) => [name, formatCount(n), v ? formatPct((n / v) * 100, 1) : '—']
-  return x ? { columns: ['Stage', 'Count', 'Of visitors'], rows: [row('Visitors', v), row('Started the form', x.traffic.formStarts), row('Ordered', x.sales.orders), row('Confirmed', x.fulfilment.confirmed), row('Delivered', x.fulfilment.delivered)] } : undefined
+  return x ? { columns: ['Stage', 'Count', 'Of visitors'], rows: [row('Visitors', v), row('Started the form', x.traffic.formVisitors), row('Ordered', x.sales.orders), row('Confirmed', x.fulfilment.confirmed), row('Delivered', x.fulfilment.delivered)] } : undefined
 })
 
 const outcomeChart = computed(() => {

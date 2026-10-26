@@ -421,7 +421,7 @@
     if (abSending) { abDirty = true; return }
     var fields = { phone: phone }
     ;['name', 'commune', 'address'].forEach(function (k) { if (form[k] && form[k].value.trim()) fields[k] = form[k].value.trim() })
-    var body = { fields: fields, items: items(), tracking: { fbp: cookie('_fbp'), fbc: cookie('_fbc'), ttp: cookie('_ttp'), attribution: attribution() } }
+    var body = { fields: fields, funnelSlug: fd.slug, items: items(), tracking: { fbp: cookie('_fbp'), fbc: cookie('_fbc'), ttp: cookie('_ttp'), attribution: attribution() } }
     if (st.wil) body.wilayaId = st.wil[0]
     if (st.ship) body.shippingType = st.ship
     var sig = JSON.stringify(body)

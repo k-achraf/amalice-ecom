@@ -444,6 +444,9 @@ export const AbandonedLeadOrderSchema = z.object({
   // Set by the client after the first call returns — update that row instead
   // of creating another one for the same visit.
   abandonedOrderId: z.uuid().optional(),
+  // The funnel page this capture comes from (its slug), so an order an agent later confirms from the
+  // cart still counts in that funnel's stats.
+  funnelSlug: z.string().max(120).optional(),
   // Same ad-source context as a real order — see CheckoutTrackingSchema.
   tracking: CheckoutTrackingSchema.optional()
 })
@@ -736,6 +739,17 @@ export const UpdateOrderItemSchema = z
   })
   .refine((v) => v.quantity !== undefined || v.lineTotalCents !== undefined || v.offerId !== undefined, { message: 'Provide quantity, lineTotalCents and/or offerId' })
 export type UpdateOrderItem = z.infer<typeof UpdateOrderItemSchema>
+
+// Result of re-sending an order's Purchase event to the ad platforms (admin "Resend pixel event").
+// A platform is null when it is not configured for this order.
+export interface PixelResendPlatform {
+  ok: boolean
+  message: string
+}
+export interface PixelResendResult {
+  meta: PixelResendPlatform | null
+  tiktok: PixelResendPlatform | null
+}
 
 // Public, unauthenticated social-proof feed — real recent orders (never
 // fabricated/static copy), for storefront "recent activity" tickers (e.g.

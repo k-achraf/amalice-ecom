@@ -143,6 +143,24 @@ async function savePrice() {
   await refresh()
 }
 
+// ---- Resend the Purchase event to the ad pixels (Conversions API / Events API).
+// Same event id as the original, so a platform that already has it counts it once (within 48 h).
+const resendingPixel = ref(false)
+const RESEND_CONFIRM = 'Send this order’s Purchase event to Meta / TikTok again? It carries the same event id, so a platform that already received it (within 48 hours) counts it once.'
+async function resendPixel() {
+  if (!window.confirm(RESEND_CONFIRM)) return
+  resendingPixel.value = true
+  const res = await run(() => api<{ meta: { ok: boolean; message: string } | null; tiktok: { ok: boolean; message: string } | null }>(`/admin/orders/${id}/pixel-resend`, { method: 'POST' }), { errorFallback: 'Could not resend the event' })
+  resendingPixel.value = false
+  if (!res) return
+  if (!res.meta && !res.tiktok) return void toast.warning('No pixel with the Conversions API enabled is set up for this order.')
+  for (const [name, r] of [['Meta', res.meta], ['TikTok', res.tiktok]] as const) {
+    if (!r) continue
+    if (r.ok) toast.success(`${name}: ${r.message}`)
+    else toast.error(`${name}: ${r.message}`)
+  }
+}
+
 // ---- Notes — free text per order, mirrored into the Google Sheets
 // integration's Notes column (see GoogleSheetsService.updateNotes), so this
 // generic order page and the call-center pages stay in sync either way.
@@ -671,7 +689,10 @@ function initials(name: string | null) {
 
           <!-- Where the order came from: ad platform, campaign / ad set / ad, click ids, IP… (see packages/shared attribution.ts). -->
           <section class="card" aria-labelledby="src-h">
-            <div class="card-head"><h2 id="src-h">Order source</h2></div>
+            <div class="card-head">
+              <h2 id="src-h">Order source</h2>
+              <button v-if="['SuperAdmin', 'OpsManager'].includes(auth.role ?? '') && !order.isAbandoned && !['Cancelled', 'CancelledShipping'].includes(order.state)" class="btn btn-sm" type="button" :disabled="resendingPixel" title="Send the Purchase event to Meta / TikTok again" @click="resendPixel"><AdsIcon name="i-lucide-send" />Resend pixel event</button>
+            </div>
             <p v-if="!order.attribution" class="muted">No source was recorded for this order.</p>
             <template v-else>
               <p style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">

@@ -343,6 +343,13 @@ export class AdminController {
 
   // Call-center notes — free text, same role set as transition() since it's
   // the same call-center queue action.
+  // Re-send the order's Purchase event to the ad pixels (Conversions API / Events API).
+  @Post('orders/:id/pixel-resend')
+  @Roles('SuperAdmin', 'OpsManager')
+  resendPixel(@Param('id') id: string, @Req() req: AuthedRequest) {
+    return this.orders.resendPixelEvent(id, actorFrom(req))
+  }
+
   @Patch('orders/:id/notes')
   @Roles('SuperAdmin', 'OpsManager', 'Finance', 'Support', 'CallCenterAgent')
   updateNotes(@Param('id') id: string, @Body() body: UpdateOrderNotesDto, @Req() req: AuthedRequest) {

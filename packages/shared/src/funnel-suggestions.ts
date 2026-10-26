@@ -93,11 +93,11 @@ export function suggestFunnelTests(stats: FunnelStats, stepTypes: { type: Funnel
       metric: 'Form-start rate', minVisitorsPerVariant: 200
     })
   }
-  if (s.formDropOffRate != null && t.formStarts >= 30 && s.formDropOffRate >= 50) {
+  if (s.formDropOffRate != null && t.formVisitors >= 30 && s.formDropOffRate >= 50) {
     add({
       id: 'form', area: 'form', priority: 85,
       title: 'Test a shorter order form',
-      evidence: `${p(s.formDropOffRate)} of the visitors who start the form never order (${t.formStarts} starts, ${s.orders} orders).`,
+      evidence: `${p(s.formDropOffRate)} of the visitors who start the form never order (${t.formVisitors} visitors started the form, ${s.orders} orders).`,
       change: 'Variant B: only name, phone, wilaya and commune; move optional fields out or after the order.',
       metric: 'Orders ÷ form starts', minVisitorsPerVariant: 100
     })

@@ -1,6 +1,6 @@
 import { StockService } from '../common/stock.service'
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { FUNNEL_COPY_AR, offerPriceCents, offerTotalQuantity, ADDRESS_EDITABLE_STATES, CALL_CENTER_WORK_STATES, STATES_REQUIRING_SHIPMENT, deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, STATE_TO_CALL_OUTCOME, type OrderState, type RiskLevel, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
+import { FUNNEL_COPY_AR, offerPriceCents, offerTotalQuantity, ADDRESS_EDITABLE_STATES, CALL_CENTER_WORK_STATES, STATES_REQUIRING_SHIPMENT, deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, STATE_TO_CALL_OUTCOME, type OrderState, type PixelResendResult, type RiskLevel, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
 import type { Prisma } from '../generated/prisma/client'
 import { PurchaseEventsService } from '../apps/purchase-events.service'
 import { PrismaService } from '../prisma/prisma.service'
@@ -430,6 +430,18 @@ export class AdminOrdersService {
     })
 
     return this.findOne(id)
+  }
+
+  // Re-sends the order's Purchase event to Meta / TikTok (same event id, so a platform that already
+  // has it counts it once) and reports what each platform answered.
+  async resendPixelEvent(id: string, actor: AuditActor): Promise<PixelResendResult> {
+    const order = await this.prisma.order.findUnique({ where: { id }, select: { isAbandoned: true, state: true } })
+    if (!order) throw new NotFoundException('Order not found')
+    if (order.isAbandoned) throw new BadRequestException('This cart was never submitted, so there is no purchase to send.')
+    if (order.state === 'Cancelled' || order.state === 'CancelledShipping') throw new BadRequestException('A cancelled order is not a purchase.')
+    const result = await this.purchaseEvents.resend(id)
+    await this.audit.log({ actor, action: 'Update', entity: 'Order', entityId: id, metadata: { field: 'pixelResend', meta: result.meta?.ok ?? null, tiktok: result.tiktok?.ok ?? null } })
+    return result
   }
 
   // Call-center notes — free text, not part of the state machine (no

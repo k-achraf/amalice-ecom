@@ -670,6 +670,9 @@ export class OrdersService {
       update: name ? { name } : {},
       create: { phone, name: name || null }
     })
+    const funnelId = lead.funnelSlug
+      ? ((await this.prisma.funnel.findUnique({ where: { slug: lead.funnelSlug }, select: { id: true } }))?.id ?? context.funnelId ?? null)
+      : (context.funnelId ?? null)
 
     const addressData = {
       customerId: customer.id,
@@ -701,6 +704,7 @@ export class OrdersService {
             totalCents,
             shippingType: lead.shippingType ?? null,
             shippingPriceCents,
+            ...(funnelId && { funnelId }),
             items: { create: pricedItems }
           },
           include: { items: true }
@@ -721,6 +725,7 @@ export class OrdersService {
         shippingPriceCents,
         isAbandoned: true,
         fromAbandoned: true,
+        funnelId,
         items: { create: pricedItems }
       },
       include: { items: true }

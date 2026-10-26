@@ -72,7 +72,7 @@ test('ad copy: Arabic output with Latin words not in the product data is rejecte
 function stats(over: Partial<FunnelStats['traffic']> = {}, sales: Partial<FunnelStats['sales']> = {}): FunnelStats {
   return {
     days: 30,
-    traffic: { views: 400, uniqueVisitors: 300, trackedVisits: 200, avgDurationSeconds: 40, avgScrollDepth: 60, bounceRate: 30, formStarts: 80, formStartRate: 20, ...over },
+    traffic: { views: 400, uniqueVisitors: 300, trackedVisits: 200, avgDurationSeconds: 40, avgScrollDepth: 60, bounceRate: 30, formStarts: 80, formVisitors: 70, formStartRate: 20, ...over },
     sales: { orders: 24, conversionRate: 8, conversionPerView: 6, grossValue: 100000, avgOrderValue: 4000, ordersWithUpsell: 5, upsellRate: 20, upsellRevenue: 5000, formDropOffRate: 30, ...sales },
     fulfilment: { confirmationRate: 80, finalDeliveryRate: 85, delivered: 10, returned: 2 } as FunnelStats['fulfilment'],
     daily: [],

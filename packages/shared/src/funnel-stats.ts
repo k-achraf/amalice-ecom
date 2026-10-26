@@ -13,6 +13,8 @@ export interface FunnelStatsTraffic {
   // Share of tracked visits that left quickly without scrolling or touching the form.
   bounceRate: number | null
   formStarts: number
+  // Unique visitors who started the form (formStarts counts visits).
+  formVisitors: number
   // formStarts / views, in percent.
   formStartRate: number | null
 }
@@ -24,7 +26,7 @@ export interface FunnelStatsSales {
   conversionRate: number | null
   // Orders ÷ views, in percent.
   conversionPerView: number | null
-  // Value of every order placed (cash due), cancelled included.
+  // Value of the orders placed that were not cancelled (cash due).
   grossValue: number
   avgOrderValue: number | null
   // Orders with at least one upsell / downsell / bump line.
