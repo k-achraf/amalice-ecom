@@ -132,8 +132,11 @@ export const LandingSettingsSchema = z.object({
   showOffers: z.boolean(),
   // Hide the delivery price: the buyer sees no shipping cost and the total shown is the product price.
   hideShipping: z.boolean().default(false),
-  // Pieces in one unit of the product (a pack of 4 = 4): offers read "buy 8 pieces" instead of "buy 2".
-  unitPieces: z.number().int().min(1).max(100).default(1),
+  // Custom text for the order form's options, e.g. a product sold as a pack of 4 reads "اشترِ 4 قطع" for the
+  // default option and "اشترِ 8 قطع" for the buy-2 offer. Empty/missing = the automatic text. A custom text
+  // replaces the option's whole title and its small note; prices and quantities are unchanged.
+  singleLabel: z.string().trim().max(60).nullable().optional(),
+  offerLabels: z.record(z.string(), z.string().trim().max(60)).default({}),
   // Record visits as replayable sessions (typed text is masked in the visitor's browser, never sent).
   recordSessions: z.boolean().default(true),
   accent: LandingAccentSchema,
@@ -174,7 +177,8 @@ export function defaultLandingSettings(templateId: LandingTemplateId): LandingSe
     showPrice: true,
     showOffers: true,
     hideShipping: false,
-    unitPieces: 1,
+    singleLabel: null,
+    offerLabels: {},
     recordSessions: true,
     accent: t.defaults.accent,
     urgency: t.defaults.urgency,
@@ -206,7 +210,8 @@ export function switchLandingTemplate(current: LandingSettings, templateId: Land
     showPrice: current.showPrice,
     showOffers: current.showOffers,
     hideShipping: current.hideShipping,
-    unitPieces: current.unitPieces,
+    singleLabel: current.singleLabel ?? null,
+    offerLabels: current.offerLabels,
     recordSessions: current.recordSessions,
     accent: current.accent,
     urgencyText: current.urgencyText ?? null,

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  FUNNEL_COPY_AR,
   LANDING_ACCENTS,
   LANDING_ACCENT_HEX,
   LANDING_SECTION_META,
@@ -143,6 +144,28 @@ const countdownLabel = computed({
   }
 })
 
+// Custom option texts (empty = the automatic text, shown as the placeholder). A custom text replaces the
+// option's title and small note; it never changes prices or quantities.
+const singleLabel = computed({
+  get: () => draft.value?.singleLabel ?? '',
+  set: (v: string) => {
+    if (draft.value) draft.value.singleLabel = v.trim() ? v : null
+  }
+})
+function offerLabel(id: string) {
+  return draft.value?.offerLabels[id] ?? ''
+}
+function setOfferLabel(id: string, v: string) {
+  if (!draft.value) return
+  const next = { ...draft.value.offerLabels }
+  if (v.trim()) next[id] = v
+  else delete next[id]
+  draft.value.offerLabels = next
+}
+const autoOfferText = (o: AdminProductDetail['offers'][number]) =>
+  o.type === 'FixedBundlePrice' ? FUNNEL_COPY_AR.buyX(o.requiredQuantity) : o.type === 'BuyXGetYFree' ? FUNNEL_COPY_AR.buyXGetY(o.requiredQuantity, o.freeQuantity) : FUNNEL_COPY_AR.buyXFreeShipping(o.requiredQuantity)
+const enabledOfferList = computed(() => props.product.offers.filter((o) => o.enabled))
+
 // "Write with AI": headline, subheadline and button text from the product's own
 // content (validated server-side: right language, no invented numbers or promos).
 // It only fills the fields; nothing is saved until the admin presses Save.
@@ -249,12 +272,18 @@ function save() {
             <div class="text"><b>Show the price</b><span>In the title area and the order total.</span></div>
             <AdsSwitch v-model="draft.showPrice" aria-label="Show the price" />
           </div>
-          <AdsField label="Pieces in one unit" help="For a product sold as a pack (e.g. 4 pieces together). Offers then read “Buy 4 pieces” / “Buy 8 pieces” instead of “one piece” / “buy 2”. Leave 1 for single pieces.">
-            <AdsNumberInput :model-value="draft.unitPieces" :min="1" :max="100" @update:model-value="draft.unitPieces = Math.min(100, Math.max(1, Math.round(Number($event) || 1)))" />
-          </AdsField>
           <div class="setting">
             <div class="text"><b>Show the product’s offers</b><span>Let the customer pick a quantity offer in the form.</span></div>
             <AdsSwitch v-model="draft.showOffers" aria-label="Show the product's offers" />
+          </div>
+          <div class="setting" style="display: block">
+            <div class="text"><b>Offer texts</b><span>Write what each option says, e.g. for a pack of 4: “اشترِ 4 قطع” and “اشترِ 8 قطع”. Leave empty for the automatic text. Prices and quantities do not change.</span></div>
+            <div style="display: grid; gap: 8px; margin-top: 8px">
+              <AdsField label="Default option (one unit)"><AdsInput v-model="singleLabel" placeholder="قطعة واحدة" maxlength="60" dir="rtl" /></AdsField>
+              <AdsField v-for="o in enabledOfferList" :key="o.id" :label="`Offer: ${o.type === 'BuyXGetYFree' ? `buy ${o.requiredQuantity} get ${o.freeQuantity} free` : o.type === 'FreeShipping' ? `buy ${o.requiredQuantity}, free delivery` : `buy ${o.requiredQuantity}`}`">
+                <AdsInput :model-value="offerLabel(o.id)" :placeholder="autoOfferText(o)" maxlength="60" dir="rtl" @update:model-value="setOfferLabel(o.id, String($event ?? ''))" />
+              </AdsField>
+            </div>
           </div>
           <div class="setting">
             <div class="text"><b>Hide delivery prices</b><span>The customer sees no delivery cost; the total shown is the product price.</span></div>

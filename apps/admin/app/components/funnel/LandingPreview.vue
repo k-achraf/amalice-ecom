@@ -5,11 +5,8 @@ import {
   formatDa,
   getLandingTemplate,
   offerPriceCents,
-  offerLabelAr,
-  offerNoteAr,
   offerTotalQuantity,
-  singleUnitLabelAr,
-  singleUnitNoteAr,
+  unitsLabel,
   type LandingSettings,
   type ProductOffer
 } from '@amalice/shared'
@@ -82,11 +79,13 @@ const mobile = computed(() => props.device === 'mobile')
 // Offers as the form shows them; the one that saves the most is flagged.
 const offers = computed(() => {
   const unit = props.product.priceCents
-  const list = [{ key: 'one', label: singleUnitLabelAr(props.settings.unitPieces), note: singleUnitNoteAr(props.settings.unitPieces), total: unit, save: 0, best: false }]
+  const list = [{ key: 'one', label: props.settings.singleLabel?.trim() || T.singleUnit, note: props.settings.singleLabel?.trim() ? '' : T.singleItemNote, total: unit, save: 0, best: false }]
   for (const o of props.product.offers.filter((x) => x.enabled)) {
     const qty = offerTotalQuantity(o)
     const total = offerPriceCents(o, unit)
-    list.push({ key: o.id, label: offerLabelAr(o, props.settings.unitPieces), note: offerNoteAr(o, qty, props.settings.unitPieces), total, save: Math.max(0, unit * qty - total), best: false })
+    const label = o.type === 'FixedBundlePrice' ? T.buyX(o.requiredQuantity) : o.type === 'BuyXGetYFree' ? T.buyXGetY(o.requiredQuantity, o.freeQuantity) : T.buyXFreeShipping(o.requiredQuantity)
+    const custom = props.settings.offerLabels[o.id]?.trim()
+    list.push({ key: o.id, label: custom || label, note: custom ? '' : o.type === 'FreeShipping' ? T.freeShippingNote(unitsLabel(qty)) : unitsLabel(qty), total, save: Math.max(0, unit * qty - total), best: false })
   }
   const top = list.reduce((a, b) => (b.save > a.save ? b : a), list[0]!)
   if (top.save > 0) top.best = true
