@@ -474,7 +474,7 @@ onBeforeUnmount(() => {
       <div class="stack" style="gap: 6px">
         <div style="display: flex; align-items: center; justify-content: space-between">
           <h3 style="font-size: 14px">Notes</h3>
-          <button class="btn btn-ghost btn-sm" type="button" @click="openNotes"><AdsIcon name="i-lucide-pencil" />Edit</button>
+          <button class="btn btn-primary btn-sm" type="button" @click="openNotes"><AdsIcon name="i-lucide-sticky-note" />{{ order.notes ? 'Edit note' : 'Add note' }}</button>
         </div>
         <p v-if="order.notes" style="white-space: pre-wrap; font-size: 13px">{{ order.notes }}</p>
         <p v-else class="muted" style="font-size: 13px">No notes yet.</p>

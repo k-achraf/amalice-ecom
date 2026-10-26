@@ -528,6 +528,16 @@ function initials(name: string | null) {
       <div class="split">
         <div class="stack">
           <RiskPanel :order-id="order.id" :level="order.riskLevel" :score="order.riskScore" :factors="order.riskFactors" :can-manage="['SuperAdmin', 'OpsManager', 'Support'].includes(auth.role ?? '')" />
+          <!-- Notes: always available, whatever the order's state. -->
+          <section class="card" aria-labelledby="nt-h">
+            <div class="card-head">
+              <h2 id="nt-h">Notes</h2>
+              <button class="btn btn-primary btn-sm" type="button" @click="openNotes"><AdsIcon name="i-lucide-sticky-note" />{{ order.notes ? 'Edit note' : 'Add note' }}</button>
+            </div>
+            <p v-if="order.notes" style="white-space: pre-wrap; line-height: 1.6">{{ order.notes }}</p>
+            <p v-else class="muted">No notes yet. Add one for the team.</p>
+          </section>
+
           <section class="card flush" aria-labelledby="it-h">
             <div class="card-head">
               <h2 id="it-h">Items</h2>
@@ -617,9 +627,7 @@ function initials(name: string | null) {
           <ShipmentPanel v-else :order="order" @changed="refresh" @refreshed="timelineKey++" />
 
           <section class="card" aria-labelledby="tl-h">
-            <div class="card-head"><h2 id="tl-h">Activity</h2><button class="btn btn-sm" type="button" @click="openNotes"><AdsIcon name="i-lucide-sticky-note" />{{ order.notes ? 'Edit note' : 'Add note' }}</button></div>
-            <p v-if="order.notes" style="white-space: pre-wrap; line-height: 1.6">{{ order.notes }}</p>
-            <p v-else class="muted">No notes yet.</p>
+            <div class="card-head"><h2 id="tl-h">Activity</h2></div>
             <ol class="timeline">
               <li v-if="order.postponedUntil" class="current"><span class="dot" /><div><b>Postponed</b><span>Follow up {{ fmtDateTime(order.postponedUntil) }}</span></div></li>
               <li class="done"><span class="dot" /><div><b>Last update</b><span>{{ fmtDateTime(order.updatedAt) }}</span></div></li>

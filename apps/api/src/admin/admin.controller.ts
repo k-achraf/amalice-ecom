@@ -344,7 +344,7 @@ export class AdminController {
   // Call-center notes — free text, same role set as transition() since it's
   // the same call-center queue action.
   @Patch('orders/:id/notes')
-  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  @Roles('SuperAdmin', 'OpsManager', 'Finance', 'Support', 'CallCenterAgent')
   updateNotes(@Param('id') id: string, @Body() body: UpdateOrderNotesDto, @Req() req: AuthedRequest) {
     return this.orders.updateNotes(id, body.notes, actorFrom(req))
   }
