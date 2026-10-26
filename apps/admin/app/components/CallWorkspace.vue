@@ -428,7 +428,7 @@ onBeforeUnmount(() => {
         <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
           <NuxtLink :to="`/orders/${order.id}`" class="link-cell">#{{ order.id.slice(0, 8) }}</NuxtLink>
           <span class="pill neutral">{{ tierLabel[order.state] ?? order.state }}</span>
-          <span v-if="order.isAbandoned" class="pill outline" title="Customer never finished submitting the form.">Abandoned cart</span>
+          <span v-if="order.fromAbandoned || order.isAbandoned" class="pill outline" title="Customer never finished submitting the form.">Abandoned cart</span>
           <span v-if="attempts" class="pill returned">Attempt {{ attempts + 1 }}</span>
           <AdsBadge :color="ageColor(order.createdAt)" variant="subtle">waiting {{ ageLabel(order.createdAt) }}</AdsBadge>
         </div>

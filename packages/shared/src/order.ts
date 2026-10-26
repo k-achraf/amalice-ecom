@@ -532,6 +532,8 @@ export interface AdminOrderListItem {
   shipment?: { courier: { name: string }; trackingReference?: string | null; carrierConfirmedAt?: string | null } | null
   // See Order.isAbandoned's Prisma comment.
   isAbandoned: boolean
+  // Started as an abandoned cart; stays true after the order is confirmed (label).
+  fromAbandoned: boolean
   // See FulfillmentMethodSchema's comment — dispatch requires this to be
   // ShippingCompany (with shippingCompanyName set) or Manual, never
   // Unassigned.
@@ -610,6 +612,7 @@ export interface AdminOrderDetail {
   cashReconciliation: { expectedCents: number; collectedCents: number | null } | null
   // See Order.isAbandoned's Prisma comment.
   isAbandoned: boolean
+  fromAbandoned: boolean
   fulfillmentMethod: FulfillmentMethod
   shippingCompanyId: string | null
   shippingCompanyName: string | null

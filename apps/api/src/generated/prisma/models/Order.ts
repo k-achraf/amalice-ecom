@@ -49,6 +49,7 @@ export type OrderMinAggregateOutputType = {
   shippingType: $Enums.ShippingType | null
   shippingPriceCents: number | null
   isAbandoned: boolean | null
+  fromAbandoned: boolean | null
   fulfillmentMethod: $Enums.FulfillmentMethod | null
   shippingCompanyId: string | null
   notes: string | null
@@ -85,6 +86,7 @@ export type OrderMaxAggregateOutputType = {
   shippingType: $Enums.ShippingType | null
   shippingPriceCents: number | null
   isAbandoned: boolean | null
+  fromAbandoned: boolean | null
   fulfillmentMethod: $Enums.FulfillmentMethod | null
   shippingCompanyId: string | null
   notes: string | null
@@ -121,6 +123,7 @@ export type OrderCountAggregateOutputType = {
   shippingType: number
   shippingPriceCents: number
   isAbandoned: number
+  fromAbandoned: number
   fulfillmentMethod: number
   shippingCompanyId: number
   notes: number
@@ -174,6 +177,7 @@ export type OrderMinAggregateInputType = {
   shippingType?: true
   shippingPriceCents?: true
   isAbandoned?: true
+  fromAbandoned?: true
   fulfillmentMethod?: true
   shippingCompanyId?: true
   notes?: true
@@ -210,6 +214,7 @@ export type OrderMaxAggregateInputType = {
   shippingType?: true
   shippingPriceCents?: true
   isAbandoned?: true
+  fromAbandoned?: true
   fulfillmentMethod?: true
   shippingCompanyId?: true
   notes?: true
@@ -246,6 +251,7 @@ export type OrderCountAggregateInputType = {
   shippingType?: true
   shippingPriceCents?: true
   isAbandoned?: true
+  fromAbandoned?: true
   fulfillmentMethod?: true
   shippingCompanyId?: true
   notes?: true
@@ -370,6 +376,7 @@ export type OrderGroupByOutputType = {
   shippingType: $Enums.ShippingType | null
   shippingPriceCents: number
   isAbandoned: boolean
+  fromAbandoned: boolean
   fulfillmentMethod: $Enums.FulfillmentMethod
   shippingCompanyId: string | null
   notes: string | null
@@ -430,6 +437,7 @@ export type OrderWhereInput = {
   shippingType?: Prisma.EnumShippingTypeNullableFilter<"Order"> | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFilter<"Order"> | number
   isAbandoned?: Prisma.BoolFilter<"Order"> | boolean
+  fromAbandoned?: Prisma.BoolFilter<"Order"> | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFilter<"Order"> | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.StringNullableFilter<"Order"> | string | null
   notes?: Prisma.StringNullableFilter<"Order"> | string | null
@@ -482,6 +490,7 @@ export type OrderOrderByWithRelationInput = {
   shippingType?: Prisma.SortOrderInput | Prisma.SortOrder
   shippingPriceCents?: Prisma.SortOrder
   isAbandoned?: Prisma.SortOrder
+  fromAbandoned?: Prisma.SortOrder
   fulfillmentMethod?: Prisma.SortOrder
   shippingCompanyId?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -537,6 +546,7 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   shippingType?: Prisma.EnumShippingTypeNullableFilter<"Order"> | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFilter<"Order"> | number
   isAbandoned?: Prisma.BoolFilter<"Order"> | boolean
+  fromAbandoned?: Prisma.BoolFilter<"Order"> | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFilter<"Order"> | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.StringNullableFilter<"Order"> | string | null
   notes?: Prisma.StringNullableFilter<"Order"> | string | null
@@ -589,6 +599,7 @@ export type OrderOrderByWithAggregationInput = {
   shippingType?: Prisma.SortOrderInput | Prisma.SortOrder
   shippingPriceCents?: Prisma.SortOrder
   isAbandoned?: Prisma.SortOrder
+  fromAbandoned?: Prisma.SortOrder
   fulfillmentMethod?: Prisma.SortOrder
   shippingCompanyId?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -634,6 +645,7 @@ export type OrderScalarWhereWithAggregatesInput = {
   shippingType?: Prisma.EnumShippingTypeNullableWithAggregatesFilter<"Order"> | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntWithAggregatesFilter<"Order"> | number
   isAbandoned?: Prisma.BoolWithAggregatesFilter<"Order"> | boolean
+  fromAbandoned?: Prisma.BoolWithAggregatesFilter<"Order"> | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodWithAggregatesFilter<"Order"> | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
@@ -669,6 +681,7 @@ export type OrderCreateInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
   postponedUntil?: Date | string | null
@@ -718,6 +731,7 @@ export type OrderUncheckedCreateInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -763,6 +777,7 @@ export type OrderUpdateInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -812,6 +827,7 @@ export type OrderUncheckedUpdateInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -859,6 +875,7 @@ export type OrderCreateManyInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -894,6 +911,7 @@ export type OrderUpdateManyMutationInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -928,6 +946,7 @@ export type OrderUncheckedUpdateManyInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -980,6 +999,7 @@ export type OrderCountOrderByAggregateInput = {
   shippingType?: Prisma.SortOrder
   shippingPriceCents?: Prisma.SortOrder
   isAbandoned?: Prisma.SortOrder
+  fromAbandoned?: Prisma.SortOrder
   fulfillmentMethod?: Prisma.SortOrder
   shippingCompanyId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
@@ -1024,6 +1044,7 @@ export type OrderMaxOrderByAggregateInput = {
   shippingType?: Prisma.SortOrder
   shippingPriceCents?: Prisma.SortOrder
   isAbandoned?: Prisma.SortOrder
+  fromAbandoned?: Prisma.SortOrder
   fulfillmentMethod?: Prisma.SortOrder
   shippingCompanyId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
@@ -1060,6 +1081,7 @@ export type OrderMinOrderByAggregateInput = {
   shippingType?: Prisma.SortOrder
   shippingPriceCents?: Prisma.SortOrder
   isAbandoned?: Prisma.SortOrder
+  fromAbandoned?: Prisma.SortOrder
   fulfillmentMethod?: Prisma.SortOrder
   shippingCompanyId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
@@ -1488,6 +1510,7 @@ export type OrderCreateWithoutCustomerInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
   postponedUntil?: Date | string | null
@@ -1535,6 +1558,7 @@ export type OrderUncheckedCreateWithoutCustomerInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -1611,6 +1635,7 @@ export type OrderScalarWhereInput = {
   shippingType?: Prisma.EnumShippingTypeNullableFilter<"Order"> | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFilter<"Order"> | number
   isAbandoned?: Prisma.BoolFilter<"Order"> | boolean
+  fromAbandoned?: Prisma.BoolFilter<"Order"> | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFilter<"Order"> | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.StringNullableFilter<"Order"> | string | null
   notes?: Prisma.StringNullableFilter<"Order"> | string | null
@@ -1646,6 +1671,7 @@ export type OrderCreateWithoutAddressInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
   postponedUntil?: Date | string | null
@@ -1693,6 +1719,7 @@ export type OrderUncheckedCreateWithoutAddressInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -1764,6 +1791,7 @@ export type OrderCreateWithoutDuplicateOrdersInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
   postponedUntil?: Date | string | null
@@ -1812,6 +1840,7 @@ export type OrderUncheckedCreateWithoutDuplicateOrdersInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -1861,6 +1890,7 @@ export type OrderCreateWithoutDuplicateOfOrderInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
   postponedUntil?: Date | string | null
@@ -1909,6 +1939,7 @@ export type OrderUncheckedCreateWithoutDuplicateOfOrderInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -1974,6 +2005,7 @@ export type OrderUpdateWithoutDuplicateOrdersInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2022,6 +2054,7 @@ export type OrderUncheckedUpdateWithoutDuplicateOrdersInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2082,6 +2115,7 @@ export type OrderCreateWithoutAttributionInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
   postponedUntil?: Date | string | null
@@ -2130,6 +2164,7 @@ export type OrderUncheckedCreateWithoutAttributionInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -2190,6 +2225,7 @@ export type OrderUpdateWithoutAttributionInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2238,6 +2274,7 @@ export type OrderUncheckedUpdateWithoutAttributionInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2282,6 +2319,7 @@ export type OrderCreateWithoutCallAttemptsInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
   postponedUntil?: Date | string | null
@@ -2330,6 +2368,7 @@ export type OrderUncheckedCreateWithoutCallAttemptsInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -2390,6 +2429,7 @@ export type OrderUpdateWithoutCallAttemptsInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2438,6 +2478,7 @@ export type OrderUncheckedUpdateWithoutCallAttemptsInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2482,6 +2523,7 @@ export type OrderCreateWithoutItemsInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
   postponedUntil?: Date | string | null
@@ -2530,6 +2572,7 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -2590,6 +2633,7 @@ export type OrderUpdateWithoutItemsInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2638,6 +2682,7 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2682,6 +2727,7 @@ export type OrderCreateWithoutShipmentInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
   postponedUntil?: Date | string | null
@@ -2730,6 +2776,7 @@ export type OrderUncheckedCreateWithoutShipmentInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -2790,6 +2837,7 @@ export type OrderUpdateWithoutShipmentInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2838,6 +2886,7 @@ export type OrderUncheckedUpdateWithoutShipmentInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2882,6 +2931,7 @@ export type OrderCreateWithoutCashReconciliationInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
   postponedUntil?: Date | string | null
@@ -2930,6 +2980,7 @@ export type OrderUncheckedCreateWithoutCashReconciliationInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -2990,6 +3041,7 @@ export type OrderUpdateWithoutCashReconciliationInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3038,6 +3090,7 @@ export type OrderUncheckedUpdateWithoutCashReconciliationInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3082,6 +3135,7 @@ export type OrderCreateWithoutLedgerEntriesInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
   postponedUntil?: Date | string | null
@@ -3130,6 +3184,7 @@ export type OrderUncheckedCreateWithoutLedgerEntriesInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -3190,6 +3245,7 @@ export type OrderUpdateWithoutLedgerEntriesInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3238,6 +3294,7 @@ export type OrderUncheckedUpdateWithoutLedgerEntriesInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3282,6 +3339,7 @@ export type OrderCreateWithoutNotificationsInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
   postponedUntil?: Date | string | null
@@ -3330,6 +3388,7 @@ export type OrderUncheckedCreateWithoutNotificationsInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -3390,6 +3449,7 @@ export type OrderUpdateWithoutNotificationsInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3438,6 +3498,7 @@ export type OrderUncheckedUpdateWithoutNotificationsInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3482,6 +3543,7 @@ export type OrderCreateWithoutGoogleSheetRowsInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
   postponedUntil?: Date | string | null
@@ -3530,6 +3592,7 @@ export type OrderUncheckedCreateWithoutGoogleSheetRowsInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -3590,6 +3653,7 @@ export type OrderUpdateWithoutGoogleSheetRowsInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3638,6 +3702,7 @@ export type OrderUncheckedUpdateWithoutGoogleSheetRowsInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3682,6 +3747,7 @@ export type OrderCreateWithoutShippingCompanyInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
   postponedUntil?: Date | string | null
@@ -3730,6 +3796,7 @@ export type OrderUncheckedCreateWithoutShippingCompanyInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
   postponedUntil?: Date | string | null
@@ -3800,6 +3867,7 @@ export type OrderCreateWithoutCourierWebhookEventsInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
   postponedUntil?: Date | string | null
@@ -3848,6 +3916,7 @@ export type OrderUncheckedCreateWithoutCourierWebhookEventsInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -3908,6 +3977,7 @@ export type OrderUpdateWithoutCourierWebhookEventsInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3956,6 +4026,7 @@ export type OrderUncheckedUpdateWithoutCourierWebhookEventsInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4000,6 +4071,7 @@ export type OrderCreateWithoutFunnelInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
   postponedUntil?: Date | string | null
@@ -4048,6 +4120,7 @@ export type OrderUncheckedCreateWithoutFunnelInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -4119,6 +4192,7 @@ export type OrderCreateManyCustomerInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -4154,6 +4228,7 @@ export type OrderUpdateWithoutCustomerInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4201,6 +4276,7 @@ export type OrderUncheckedUpdateWithoutCustomerInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4247,6 +4323,7 @@ export type OrderUncheckedUpdateManyWithoutCustomerInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4283,6 +4360,7 @@ export type OrderCreateManyAddressInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -4318,6 +4396,7 @@ export type OrderUpdateWithoutAddressInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4365,6 +4444,7 @@ export type OrderUncheckedUpdateWithoutAddressInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4411,6 +4491,7 @@ export type OrderUncheckedUpdateManyWithoutAddressInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4448,6 +4529,7 @@ export type OrderCreateManyDuplicateOfOrderInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -4482,6 +4564,7 @@ export type OrderUpdateWithoutDuplicateOfOrderInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4530,6 +4613,7 @@ export type OrderUncheckedUpdateWithoutDuplicateOfOrderInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4576,6 +4660,7 @@ export type OrderUncheckedUpdateManyWithoutDuplicateOfOrderInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4612,6 +4697,7 @@ export type OrderCreateManyShippingCompanyInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   notes?: string | null
   postponedUntil?: Date | string | null
@@ -4646,6 +4732,7 @@ export type OrderUpdateWithoutShippingCompanyInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4694,6 +4781,7 @@ export type OrderUncheckedUpdateWithoutShippingCompanyInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4740,6 +4828,7 @@ export type OrderUncheckedUpdateManyWithoutShippingCompanyInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4776,6 +4865,7 @@ export type OrderCreateManyFunnelInput = {
   shippingType?: $Enums.ShippingType | null
   shippingPriceCents?: number
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: $Enums.FulfillmentMethod
   shippingCompanyId?: string | null
   notes?: string | null
@@ -4810,6 +4900,7 @@ export type OrderUpdateWithoutFunnelInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postponedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4858,6 +4949,7 @@ export type OrderUncheckedUpdateWithoutFunnelInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4904,6 +4996,7 @@ export type OrderUncheckedUpdateManyWithoutFunnelInput = {
   shippingType?: Prisma.NullableEnumShippingTypeFieldUpdateOperationsInput | $Enums.ShippingType | null
   shippingPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   isAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fromAbandoned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fulfillmentMethod?: Prisma.EnumFulfillmentMethodFieldUpdateOperationsInput | $Enums.FulfillmentMethod
   shippingCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -5025,6 +5118,7 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   shippingType?: boolean
   shippingPriceCents?: boolean
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: boolean
   shippingCompanyId?: boolean
   notes?: boolean
@@ -5078,6 +5172,7 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   shippingType?: boolean
   shippingPriceCents?: boolean
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: boolean
   shippingCompanyId?: boolean
   notes?: boolean
@@ -5120,6 +5215,7 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   shippingType?: boolean
   shippingPriceCents?: boolean
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: boolean
   shippingCompanyId?: boolean
   notes?: boolean
@@ -5162,6 +5258,7 @@ export type OrderSelectScalar = {
   shippingType?: boolean
   shippingPriceCents?: boolean
   isAbandoned?: boolean
+  fromAbandoned?: boolean
   fulfillmentMethod?: boolean
   shippingCompanyId?: boolean
   notes?: boolean
@@ -5190,7 +5287,7 @@ export type OrderSelectScalar = {
   updatedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "addressId" | "state" | "totalCents" | "shippingType" | "shippingPriceCents" | "isAbandoned" | "fulfillmentMethod" | "shippingCompanyId" | "notes" | "postponedUntil" | "isDuplicate" | "duplicateOfOrderId" | "archived" | "archivedAt" | "assignedToId" | "assignedToEmail" | "lockedUntil" | "skippedUntil" | "callAttemptsCount" | "lastCalledAt" | "deliveryNote" | "isFragile" | "gpsLink" | "courierOperation" | "exchangeProduct" | "funnelId" | "riskScore" | "riskLevel" | "riskFactors" | "deliveredEventSentAt" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "addressId" | "state" | "totalCents" | "shippingType" | "shippingPriceCents" | "isAbandoned" | "fromAbandoned" | "fulfillmentMethod" | "shippingCompanyId" | "notes" | "postponedUntil" | "isDuplicate" | "duplicateOfOrderId" | "archived" | "archivedAt" | "assignedToId" | "assignedToEmail" | "lockedUntil" | "skippedUntil" | "callAttemptsCount" | "lastCalledAt" | "deliveryNote" | "isFragile" | "gpsLink" | "courierOperation" | "exchangeProduct" | "funnelId" | "riskScore" | "riskLevel" | "riskFactors" | "deliveredEventSentAt" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
   address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
@@ -5252,6 +5349,7 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     shippingType: $Enums.ShippingType | null
     shippingPriceCents: number
     isAbandoned: boolean
+    fromAbandoned: boolean
     fulfillmentMethod: $Enums.FulfillmentMethod
     shippingCompanyId: string | null
     notes: string | null
@@ -5724,6 +5822,7 @@ export interface OrderFieldRefs {
   readonly shippingType: Prisma.FieldRef<"Order", 'ShippingType'>
   readonly shippingPriceCents: Prisma.FieldRef<"Order", 'Int'>
   readonly isAbandoned: Prisma.FieldRef<"Order", 'Boolean'>
+  readonly fromAbandoned: Prisma.FieldRef<"Order", 'Boolean'>
   readonly fulfillmentMethod: Prisma.FieldRef<"Order", 'FulfillmentMethod'>
   readonly shippingCompanyId: Prisma.FieldRef<"Order", 'String'>
   readonly notes: Prisma.FieldRef<"Order", 'String'>

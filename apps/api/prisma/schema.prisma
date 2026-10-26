@@ -498,6 +498,10 @@ model Order {
   // Cleared in place (never a second row) if the same customer goes on to
   // actually submit the form — see createLeadOrder's convertsAbandonedOrderId.
   isAbandoned          Boolean               @default(false) @map("is_abandoned")
+  // True for every order that started as an abandoned-cart capture, for good: it stays set after the
+  // order is confirmed or completed by the customer, so the "Abandoned cart" label never disappears.
+  // (isAbandoned is the live state: the customer has not submitted yet.)
+  fromAbandoned        Boolean               @default(false) @map("from_abandoned")
   // Which shipping company (if any) this order is assigned to before it can
   // be dispatched — deliberately NOT auto-resolved from whichever company is
   // "default" at dispatch time (that was the earlier behavior; a manual

@@ -5,8 +5,9 @@ import { MetaConversionsApiService } from './meta-conversions-api.service'
 import { TikTokEventsApiService } from './tiktok-events-api.service'
 
 // Server-side Purchase for Meta CAPI / TikTok Events API, sent when the call
-// center (or an admin) confirms an order — an order that was only placed, or an
-// abandoned cart, is not a sale yet. The event id is the order id, the same one
+// center (or an admin) confirms an order that was still an abandoned cart: the
+// customer never submitted the form, so no browser Purchase exists for it.
+// Orders the customer placed themselves send theirs from the browser. The event id is the order id, the same one
 // the storefront's browser pixel uses, so each platform dedupes the two.
 // Fire-and-forget: a slow or failing platform never affects the confirmation.
 @Injectable()
@@ -39,7 +40,7 @@ export class PurchaseEventsService {
         attribution: { select: { ipAddress: true, userAgent: true, fbp: true, fbc: true, ttp: true, landingUrl: true, pageUrl: true } }
       }
     })
-    if (!order || order.isAbandoned) return
+    if (!order) return
 
     const a = order.attribution
     const value = Math.round(order.totalCents) / 100

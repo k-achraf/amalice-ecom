@@ -28,7 +28,7 @@ const OTHER_STATES = [
 const otherOptions = [{ label: 'Other states…', value: 'all' }, ...OTHER_STATES.map((s) => ({ label: ORDER_STATE_LABELS[s], value: s }))]
 
 const search = ref((route.query.search as string) ?? '')
-const stateFilter = ref(route.query.abandoned === 'only' ? 'abandoned' : ((route.query.state as string) ?? 'all'))
+const stateFilter = ref(route.query.abandoned === 'origin' ? 'abandoned' : ((route.query.state as string) ?? 'all'))
 let searchTimer: ReturnType<typeof setTimeout> | undefined
 watch(search, () => {
   clearTimeout(searchTimer)
@@ -45,7 +45,7 @@ const { data, pending } = await useAdminFetch<OrderListResponse>('/admin/orders'
     page: route.query.page ?? '1',
     pageSize: route.query.pageSize ?? '20',
     ...(route.query.state && { state: route.query.state }),
-    ...(route.query.abandoned === 'only' && { abandoned: 'only' }),
+    ...(route.query.abandoned === 'origin' && { abandoned: 'origin' }),
     ...(route.query.search && { search: route.query.search }),
     ...(route.query.archived === 'only' && { archived: 'only' }),
     ...(route.query.riskLevel && { riskLevel: route.query.riskLevel })
@@ -64,7 +64,7 @@ const selected = ref<Set<string>>(new Set())
 async function loadWithFilters() {
   const q: Record<string, string> = { page: String(currentPage.value), pageSize: String(currentPageSize.value) }
   if (route.query.state) q.state = route.query.state as string
-  if (route.query.abandoned === 'only') q.abandoned = 'only'
+  if (route.query.abandoned === 'origin') q.abandoned = 'origin'
   if (route.query.search) q.search = route.query.search as string
   if (route.query.archived === 'only') q.archived = 'only'
   if (route.query.riskLevel) q.riskLevel = route.query.riskLevel as string
@@ -74,7 +74,7 @@ async function loadWithFilters() {
 
 async function applyFilters(state = stateFilter.value) {
   stateFilter.value = state
-  await router.push({ query: { ...route.query, search: search.value || undefined, state: state !== 'all' && state !== 'abandoned' ? state : undefined, abandoned: state === 'abandoned' ? 'only' : undefined, page: 1 } })
+  await router.push({ query: { ...route.query, search: search.value || undefined, state: state !== 'all' && state !== 'abandoned' ? state : undefined, abandoned: state === 'abandoned' ? 'origin' : undefined, page: 1 } })
   await loadWithFilters()
 }
 
@@ -208,7 +208,7 @@ const carrier = (o: OrderListResponse['items'][number]) => o.shipment?.courier.n
             <tr v-else-if="!rows.length"><td colspan="10" class="empty">No orders match this filter.</td></tr>
             <tr v-for="o in rows" v-else :key="o.id" class="clickable" :class="{ selected: selected.has(o.id) }" @click="rowClick($event, o.id)">
               <td><input type="checkbox" :aria-label="`Select order ${o.id.slice(0, 8)}`" :checked="selected.has(o.id)" @change="toggleOne(o.id, ($event.target as HTMLInputElement).checked)"></td>
-              <td><NuxtLink class="link-cell" :to="`/orders/${o.id}`">#{{ o.id.slice(0, 8) }}</NuxtLink><span class="sub">{{ fmtDate(o.createdAt) }}</span><span v-if="o.isAbandoned" class="pill outline" style="margin-top: 4px" title="Customer never finished submitting the form.">Abandoned cart</span></td>
+              <td><NuxtLink class="link-cell" :to="`/orders/${o.id}`">#{{ o.id.slice(0, 8) }}</NuxtLink><span class="sub">{{ fmtDate(o.createdAt) }}</span><span v-if="o.fromAbandoned || o.isAbandoned" class="pill outline" style="margin-top: 4px" title="Customer never finished submitting the form.">Abandoned cart</span></td>
               <td style="white-space: nowrap">{{ o.customer.name ?? '—' }}<AdsIcon v-if="o.notes" name="i-lucide-sticky-note" style="width: 14px; height: 14px; vertical-align: -2px; margin-left: 4px; color: var(--text-2)" :title="o.notes" /><span class="sub">{{ o.customer.phone }}</span></td>
               <td style="white-space: nowrap">{{ o.address.region }}<span class="sub">{{ deliveryLabel(o.shippingType) }}</span></td>
               <td style="white-space: nowrap">{{ carrier(o) }}</td>

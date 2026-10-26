@@ -315,7 +315,9 @@ export class AdminCallCenterService {
         this.logger.warn(`Google Sheets status update failed for order ${id}: ${error.message}`)
       })
     }
-    if (input.outcome === 'Confirmed' && order.state !== 'Confirmed') this.purchaseEvents.sendForConfirmedOrder(id)
+    // Orders the customer submitted already sent their Purchase from the browser; only a cart that
+    // was never submitted needs it now.
+    if (clearsAbandoned) this.purchaseEvents.sendForConfirmedOrder(id)
     if (note) {
       const full = await this.prisma.order.findUnique({ where: { id }, select: { notes: true } })
       this.googleSheets.updateNotes(id, full?.notes ?? null).catch((error: Error) => {

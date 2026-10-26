@@ -152,7 +152,7 @@ function onLogged() {
             </span>
             <span class="side">
               <span class="muted">{{ waited(o.createdAt) }}</span>
-              <span v-if="o.isAbandoned" class="pill outline" title="Customer never finished submitting the form.">Abandoned cart</span>
+              <span v-if="o.fromAbandoned || o.isAbandoned" class="pill outline" title="Customer never finished submitting the form.">Abandoned cart</span>
               <span v-if="['All', 'Abandoned'].includes(tab)" class="pill neutral">{{ STATE_LABEL[o.state] ?? o.state }}</span>
               <span v-if="o.callAttemptsCount" class="pill" :class="o.callAttemptsCount >= CALL_CENTER_MAX_ATTEMPTS ? 'returned' : 'neutral'">{{ o.callAttemptsCount }} call{{ o.callAttemptsCount > 1 ? 's' : '' }}</span>
               <span v-if="o.isDuplicate" class="pill returned">Duplicate?</span>

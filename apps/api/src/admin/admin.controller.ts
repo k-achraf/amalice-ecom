@@ -165,7 +165,7 @@ export class AdminController {
     @Query('to') toIso: string | undefined,
     @Query('page') page: string = '1',
     @Query('pageSize') pageSize: string = '20',
-    @Query('abandoned') abandoned: 'only' | 'exclude' | undefined,
+    @Query('abandoned') abandoned: 'only' | 'exclude' | 'origin' | undefined,
     @Query('archived') archived: 'only' | 'exclude' | undefined,
     @Query('sort') sort: 'oldest' | 'followup' | undefined,
     // 'callcenter' = only the orders that still have to be called (the 4 work states)

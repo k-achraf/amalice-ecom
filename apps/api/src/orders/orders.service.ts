@@ -720,6 +720,7 @@ export class OrdersService {
         shippingType: lead.shippingType ?? null,
         shippingPriceCents,
         isAbandoned: true,
+        fromAbandoned: true,
         items: { create: pricedItems }
       },
       include: { items: true }

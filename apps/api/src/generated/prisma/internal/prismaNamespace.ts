@@ -5458,6 +5458,7 @@ export const OrderScalarFieldEnum = {
   shippingType: 'shippingType',
   shippingPriceCents: 'shippingPriceCents',
   isAbandoned: 'isAbandoned',
+  fromAbandoned: 'fromAbandoned',
   fulfillmentMethod: 'fulfillmentMethod',
   shippingCompanyId: 'shippingCompanyId',
   notes: 'notes',

@@ -164,8 +164,9 @@ export class AdminOrdersService {
     pageSize: number
     // Abandoned-cart orders are ordinary orders carrying a label (see
     // Order.isAbandoned's Prisma comment): omitted = included everywhere,
-    // 'only' = just the abandoned ones, 'exclude' = hide them.
-    abandoned?: 'only' | 'exclude'
+    // 'only' = carts still abandoned, 'exclude' = hide them, 'origin' = every
+    // order that started as an abandoned cart (confirmed ones included).
+    abandoned?: 'only' | 'exclude' | 'origin'
     // Same pattern as `abandoned` above: every existing caller omits this,
     // which excludes archived orders (see Order.archived's Prisma comment)
     // from every order-listing page by default — pass 'only' to browse
@@ -176,6 +177,7 @@ export class AdminOrdersService {
     const where: Prisma.OrderWhereInput = {
       ...(args.abandoned === 'only' && { isAbandoned: true }),
       ...(args.abandoned === 'exclude' && { isAbandoned: false }),
+      ...(args.abandoned === 'origin' && { fromAbandoned: true }),
       archived: args.archived === 'only',
       ...(args.state && !args.states && { state: args.state }),
       ...(args.states && { state: { in: args.state ? args.states.filter((x) => x === args.state) : [...args.states] } }),
@@ -359,7 +361,9 @@ export class AdminOrdersService {
     this.googleSheets.updateOrderStatus(id, from, to).catch((error: Error) => {
       this.logger.warn(`Google Sheets status update failed for order ${id}: ${error.message}`)
     })
-    if (to === 'Confirmed') this.purchaseEvents.sendForConfirmedOrder(id)
+    // Orders the customer submitted already sent their Purchase from the browser; only a cart that
+    // was never submitted needs it now.
+    if (clearsAbandoned) this.purchaseEvents.sendForConfirmedOrder(id)
 
     return this.findOne(id)
   }
