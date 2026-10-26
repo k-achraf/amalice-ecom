@@ -123,6 +123,20 @@ export interface FunnelOrderResult {
 // renders from the same dictionary so it shows exactly what visitors will read. ----
 
 export const unitsLabel = (n: number) => (n === 1 ? 'قطعة واحدة' : n === 2 ? 'قطعتان' : n <= 10 ? `${n} قطع` : `${n} قطعة`)
+// A product sold as a pack ("4 pieces together") makes "buy 2" mean 8 pieces. `pieces` is how many pieces one
+// unit holds (LandingSettings.unitPieces); with 1 (the default) the copy is the plain "buy 2", "one piece".
+export const singleUnitLabelAr = (pieces: number) => (pieces > 1 ? `اشترِ ${unitsLabel(pieces)}` : FUNNEL_COPY_AR.singleUnit)
+export const singleUnitNoteAr = (pieces: number) => (pieces > 1 ? unitsLabel(pieces) : FUNNEL_COPY_AR.singleItemNote)
+export function offerLabelAr(o: { type: string; requiredQuantity: number; freeQuantity: number }, pieces: number): string {
+  const x = o.requiredQuantity
+  if (o.type === 'BuyXGetYFree') return pieces > 1 ? FUNNEL_COPY_AR.buyXGetY(x * pieces, o.freeQuantity * pieces) : FUNNEL_COPY_AR.buyXGetY(x, o.freeQuantity)
+  if (o.type === 'FixedBundlePrice') return pieces > 1 ? `اشترِ ${unitsLabel(x * pieces)}` : FUNNEL_COPY_AR.buyX(x)
+  return pieces > 1 ? `اشترِ ${unitsLabel(x * pieces)} والتوصيل مجاني` : FUNNEL_COPY_AR.buyXFreeShipping(x)
+}
+export function offerNoteAr(o: { type: string }, totalUnits: number, pieces: number): string {
+  const u = unitsLabel(totalUnits * pieces)
+  return o.type === 'FreeShipping' ? FUNNEL_COPY_AR.freeShippingNote(u) : u
+}
 export const formatDa = (cents: number) => `${(cents / 100).toLocaleString('en-US')} دج`
 
 export const FUNNEL_COPY_AR = {

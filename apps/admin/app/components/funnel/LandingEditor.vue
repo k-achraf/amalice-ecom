@@ -249,6 +249,9 @@ function save() {
             <div class="text"><b>Show the price</b><span>In the title area and the order total.</span></div>
             <AdsSwitch v-model="draft.showPrice" aria-label="Show the price" />
           </div>
+          <AdsField label="Pieces in one unit" help="For a product sold as a pack (e.g. 4 pieces together). Offers then read “Buy 4 pieces” / “Buy 8 pieces” instead of “one piece” / “buy 2”. Leave 1 for single pieces.">
+            <AdsNumberInput :model-value="draft.unitPieces" :min="1" :max="100" @update:model-value="draft.unitPieces = Math.min(100, Math.max(1, Math.round(Number($event) || 1)))" />
+          </AdsField>
           <div class="setting">
             <div class="text"><b>Show the product’s offers</b><span>Let the customer pick a quantity offer in the form.</span></div>
             <AdsSwitch v-model="draft.showOffers" aria-label="Show the product's offers" />

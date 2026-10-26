@@ -132,6 +132,8 @@ export const LandingSettingsSchema = z.object({
   showOffers: z.boolean(),
   // Hide the delivery price: the buyer sees no shipping cost and the total shown is the product price.
   hideShipping: z.boolean().default(false),
+  // Pieces in one unit of the product (a pack of 4 = 4): offers read "buy 8 pieces" instead of "buy 2".
+  unitPieces: z.number().int().min(1).max(100).default(1),
   // Record visits as replayable sessions (typed text is masked in the visitor's browser, never sent).
   recordSessions: z.boolean().default(true),
   accent: LandingAccentSchema,
@@ -172,6 +174,7 @@ export function defaultLandingSettings(templateId: LandingTemplateId): LandingSe
     showPrice: true,
     showOffers: true,
     hideShipping: false,
+    unitPieces: 1,
     recordSessions: true,
     accent: t.defaults.accent,
     urgency: t.defaults.urgency,
@@ -203,6 +206,7 @@ export function switchLandingTemplate(current: LandingSettings, templateId: Land
     showPrice: current.showPrice,
     showOffers: current.showOffers,
     hideShipping: current.hideShipping,
+    unitPieces: current.unitPieces,
     recordSessions: current.recordSessions,
     accent: current.accent,
     urgencyText: current.urgencyText ?? null,

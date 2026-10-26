@@ -13,7 +13,10 @@ import {
   getLandingTemplate,
   offerPriceCents,
   offerTotalQuantity,
-  unitsLabel,
+  offerLabelAr,
+  offerNoteAr,
+  singleUnitLabelAr,
+  singleUnitNoteAr,
   type PublicFunnel,
   type PublicFunnelOffer,
   type PublicFunnelStep
@@ -125,8 +128,6 @@ function build(f: PublicFunnel): string {
   const chosenRow = offerRows.find((r) => r.o.id === chosenKey)
   const subtotal = chosenRow ? chosenRow.total : unit
 
-  const offerLabel = (o: PublicFunnelOffer) =>
-    o.type === 'FixedBundlePrice' ? T.buyX(o.requiredQuantity) : o.type === 'BuyXGetYFree' ? T.buyXGetY(o.requiredQuantity, o.freeQuantity) : T.buyXFreeShipping(o.requiredQuantity)
 
   // ---- steps ----
   const bumpStep = f.steps.find((x) => x.type === 'OrderBump' && x.offerProduct)
@@ -156,11 +157,11 @@ function build(f: PublicFunnel): string {
 
   const offersHtml = showOffers
     ? `<fieldset><legend>${T.chooseOffer}</legend><div class="offers">${[
-        ...(p.requireOfferSelection ? [] : [{ key: 'one', label: T.singleUnit, note: T.singleItemNote, total: unit, save: 0, isBest: false }]),
+        ...(p.requireOfferSelection ? [] : [{ key: 'one', label: singleUnitLabelAr(s.unitPieces), note: singleUnitNoteAr(s.unitPieces), total: unit, save: 0, isBest: false }]),
         ...offerRows.map((r) => ({
           key: r.o.id,
-          label: offerLabel(r.o),
-          note: r.o.type === 'FreeShipping' ? T.freeShippingNote(unitsLabel(r.qty)) : unitsLabel(r.qty),
+          label: offerLabelAr(r.o, s.unitPieces),
+          note: offerNoteAr(r.o, r.qty, s.unitPieces),
           total: r.total,
           save: r.save,
           isBest: best?.o.id === r.o.id
