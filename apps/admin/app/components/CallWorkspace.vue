@@ -234,24 +234,19 @@ async function saveNotes() {
 
 // ---- price override ----
 const priceOpen = ref(false)
-const editShippingDzd = ref<number | null>(null)
 const editTotalDzd = ref<number | null>(null)
 const savingPrice = ref(false)
 function openPrice() {
-  editShippingDzd.value = props.order.shippingPriceCents / 100
   editTotalDzd.value = props.order.totalCents / 100
   priceOpen.value = true
 }
 async function savePrice() {
-  if (editShippingDzd.value == null || editTotalDzd.value == null) return
-  const shippingCents = Math.round(editShippingDzd.value * 100)
+  if (editTotalDzd.value == null) return
   const totalCents = Math.round(editTotalDzd.value * 100)
-  const body: { shippingPriceCents?: number; totalCents?: number } = {}
-  if (shippingCents !== props.order.shippingPriceCents) body.shippingPriceCents = shippingCents
-  if (totalCents !== props.order.totalCents) body.totalCents = totalCents
-  if (!Object.keys(body).length) { priceOpen.value = false; return }
+  if (!Number.isFinite(totalCents) || totalCents < 0) { toast.warning('Enter a valid amount'); return }
+  if (totalCents === props.order.totalCents) { priceOpen.value = false; return }
   savingPrice.value = true
-  const result = await run(() => api(`/admin/orders/${props.order.id}/price`, { method: 'PATCH', body }), { success: 'Price updated', errorFallback: 'Could not update the price' })
+  const result = await run(() => api(`/admin/orders/${props.order.id}/price`, { method: 'PATCH', body: { totalCents } }), { success: 'Price updated', errorFallback: 'Could not update the price' })
   savingPrice.value = false
   if (result !== undefined) { priceOpen.value = false; emit('changed') }
 }
@@ -554,9 +549,8 @@ onBeforeUnmount(() => {
     </template>
   </AdsDialog>
 
-  <AdsDialog v-model:open="priceOpen" title="Edit price / shipping fee" description="Available until the order is sent to the courier." width="sm">
-    <AdsField label="Shipping fee (DZD)"><AdsNumberInput v-model="editShippingDzd" :min="0" /></AdsField>
-    <AdsField label="Total due, COD (DZD)" help="Overrides the total directly."><AdsNumberInput v-model="editTotalDzd" :min="0" /></AdsField>
+  <AdsDialog v-model:open="priceOpen" title="Edit final price" description="Available until the order is sent to the courier." width="sm">
+    <AdsField label="Final price to collect (DZD)" :help="`Shipping stays ${order.shippingPriceCents / 100} DZD; the product price absorbs the change.`"><AdsNumberInput v-model="editTotalDzd" :min="0" /></AdsField>
     <template #footer>
       <button class="btn" type="button" @click="priceOpen = false">Cancel</button>
       <AdsButton :loading="savingPrice" icon="i-lucide-check" @click="savePrice">Save</AdsButton>

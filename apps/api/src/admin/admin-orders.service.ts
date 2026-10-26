@@ -380,36 +380,39 @@ export class AdminOrdersService {
     return { restocked, skipped }
   }
 
-  // Call-center price override (ADM-12) — lets an agent adjust the shipping
-  // fee and/or the overall total while negotiating on the confirmation
-  // call. Only legal while the order is still in one of the 4 call-center
-  // states (see PRICE_EDITABLE_STATES's comment for why it's locked once
-  // Confirmed) — re-checked here server-side regardless of what the admin
-  // UI already gates, same rule as transition()'s own state-machine check.
+  // Price override (ADM-12): the agent sets the FINAL amount to collect. The
+  // shipping fee is never touched; the products' lines absorb the difference
+  // (scaled in proportion, so an offer bundle keeps its quantity and only its
+  // price moves). Legal until a courier shipment exists - re-checked here
+  // server-side regardless of what the UI gates.
   async updatePrice(id: string, input: UpdateOrderPrice, actor: AuditActor) {
-    const order = await this.prisma.order.findUnique({ where: { id }, include: { shipment: { select: { id: true } } } })
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: { shipment: { select: { id: true } }, items: { select: { id: true, lineTotalCents: true }, orderBy: { id: 'asc' } } }
+    })
     if (!order) throw new NotFoundException('Order not found')
     if (!PRICE_EDITABLE_STATES.includes(order.state) || order.shipment) {
-      throw new BadRequestException(`Can't edit price for an order in state ${order.state}${order.shipment ? ' with a shipment' : ''} — it's already with the courier.`)
+      throw new BadRequestException(`Can't edit price for an order in state ${order.state}${order.shipment ? ' with a shipment' : ''} - it's already with the courier.`)
     }
+    if (!order.items.length) throw new BadRequestException('The order has no items')
 
-    let shippingPriceCents = order.shippingPriceCents
-    let totalCents = order.totalCents
+    const target = input.totalCents - order.shippingPriceCents
+    if (target < 0) throw new BadRequestException(`The total can't be lower than the shipping fee (${order.shippingPriceCents / 100}).`)
 
-    // A shipping change alone shifts the total by the same delta (the items
-    // portion is untouched); an explicit totalCents in the same request is
-    // an absolute override that wins over that computed shift — lets an
-    // agent apply a shipping fix and a separate discount in one call.
-    if (input.shippingPriceCents !== undefined) {
-      totalCents += input.shippingPriceCents - shippingPriceCents
-      shippingPriceCents = input.shippingPriceCents
-    }
-    if (input.totalCents !== undefined) {
-      totalCents = input.totalCents
-    }
-    if (totalCents < 0) throw new BadRequestException('Total cannot be negative')
+    const current = order.items.reduce((sum, i) => sum + i.lineTotalCents, 0)
+    const lines = order.items.map((i) => ({
+      id: i.id,
+      from: i.lineTotalCents,
+      to: current > 0 ? Math.round((i.lineTotalCents * target) / current) : 0
+    }))
+    // Rounding (or an all-zero order) leaves a remainder: put it on the biggest line.
+    const biggest = lines.reduce((m, l) => (l.to >= m.to ? l : m), lines[0]!)
+    biggest.to += target - lines.reduce((sum, l) => sum + l.to, 0)
 
-    await this.prisma.order.update({ where: { id }, data: { shippingPriceCents, totalCents } })
+    await this.prisma.$transaction([
+      ...lines.filter((l) => l.to !== l.from).map((l) => this.prisma.orderItem.update({ where: { id: l.id }, data: { lineTotalCents: l.to } })),
+      this.prisma.order.update({ where: { id }, data: { totalCents: input.totalCents } })
+    ])
     await this.audit.log({
       actor,
       action: 'Update',
@@ -417,8 +420,8 @@ export class AdminOrdersService {
       entityId: id,
       metadata: {
         field: 'price',
-        from: { shippingPriceCents: order.shippingPriceCents, totalCents: order.totalCents },
-        to: { shippingPriceCents, totalCents }
+        from: { totalCents: order.totalCents, shippingPriceCents: order.shippingPriceCents },
+        to: { totalCents: input.totalCents, shippingPriceCents: order.shippingPriceCents }
       }
     })
 

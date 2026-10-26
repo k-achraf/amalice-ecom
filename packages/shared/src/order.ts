@@ -659,21 +659,12 @@ export const PRICE_EDITABLE_STATES: readonly OrderState[] = ['PendingCallCenter'
 // Same window for the delivery address / customer details.
 export const ADDRESS_EDITABLE_STATES: readonly OrderState[] = PRICE_EDITABLE_STATES
 
-// Call-center price override — an agent negotiating on the confirmation
-// call needs to adjust either the shipping fee (e.g. a wilaya-rate
-// exception) or the overall total (e.g. a manual discount), independently.
-// totalCents, when provided, is an absolute override that wins regardless
-// of any shippingPriceCents change in the same request; when only
-// shippingPriceCents is provided, the server shifts totalCents by the same
-// delta so the items portion stays untouched (see AdminOrdersService.updatePrice).
-export const UpdateOrderPriceSchema = z
-  .object({
-    shippingPriceCents: z.number().int().nonnegative().optional(),
-    totalCents: z.number().int().nonnegative().optional()
-  })
-  .refine((v) => v.shippingPriceCents !== undefined || v.totalCents !== undefined, {
-    message: 'Provide shippingPriceCents and/or totalCents'
-  })
+// Price edit = the final amount to collect (COD) only. The shipping fee never
+// changes here; the difference is applied to the products' prices (see
+// AdminOrdersService.updatePrice).
+export const UpdateOrderPriceSchema = z.object({
+  totalCents: z.number().int().nonnegative()
+})
 export type UpdateOrderPrice = z.infer<typeof UpdateOrderPriceSchema>
 
 // Manual state transition — validated via isValidTransition server-side

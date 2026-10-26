@@ -113,35 +113,28 @@ async function confirmPostpone() {
 // only while the order is still pre-confirmation (see PRICE_EDITABLE_STATES).
 // Server re-enforces the state check regardless of this client-side gate.
 const priceModalOpen = ref(false)
-const editShippingDzd = ref<number | null>(null)
 const editTotalDzd = ref<number | null>(null)
 const savingPrice = ref(false)
 
 function openPriceEditor() {
   if (!order.value) return
-  editShippingDzd.value = order.value.shippingPriceCents / 100
   editTotalDzd.value = order.value.totalCents / 100
   priceModalOpen.value = true
 }
 
 async function savePrice() {
-  if (!order.value || editShippingDzd.value == null || editTotalDzd.value == null) return
-  const shippingCents = Math.round(editShippingDzd.value * 100)
+  if (!order.value || editTotalDzd.value == null) return
   const totalCents = Math.round(editTotalDzd.value * 100)
-  if (!Number.isFinite(shippingCents) || !Number.isFinite(totalCents) || shippingCents < 0 || totalCents < 0) {
-    toast.warning('Enter valid amounts')
+  if (!Number.isFinite(totalCents) || totalCents < 0) {
+    toast.warning('Enter a valid amount')
     return
   }
-  savingPrice.value = true
-  const body: { shippingPriceCents?: number; totalCents?: number } = {}
-  if (shippingCents !== order.value.shippingPriceCents) body.shippingPriceCents = shippingCents
-  if (totalCents !== order.value.totalCents) body.totalCents = totalCents
-  if (Object.keys(body).length === 0) {
-    savingPrice.value = false
+  if (totalCents === order.value.totalCents) {
     priceModalOpen.value = false
     return
   }
-  const result = await run(() => api(`/admin/orders/${id}/price`, { method: 'PATCH', body }), {
+  savingPrice.value = true
+  const result = await run(() => api(`/admin/orders/${id}/price`, { method: 'PATCH', body: { totalCents } }), {
     success: 'Price updated',
     errorFallback: 'Could not update the price'
   })
@@ -582,7 +575,7 @@ function initials(name: string | null) {
                 <div class="grand"><span>To collect on delivery</span><span><AdsPrice :amount-cents="order.totalCents" /></span></div>
               </div>
               <!-- Price override: only while the order hasn't been confirmed (see PRICE_EDITABLE_STATES). -->
-              <button v-if="PRICE_EDITABLE_STATES.includes(order.state) && !order.shipment" class="btn btn-primary btn-sm" type="button" style="margin-top: 12px" @click="openPriceEditor"><AdsIcon name="i-lucide-pencil" />Edit price / shipping fee</button>
+              <button v-if="PRICE_EDITABLE_STATES.includes(order.state) && !order.shipment" class="btn btn-primary btn-sm" type="button" style="margin-top: 12px" @click="openPriceEditor"><AdsIcon name="i-lucide-pencil" />Edit final price</button>
             </div>
           </section>
 
@@ -738,9 +731,8 @@ function initials(name: string | null) {
   <OrderItemsEditor v-if="order" v-model:open="itemsEditOpen" :order-id="order.id" :items="order.items" @changed="refresh" />
 
   <!-- Price override (ADM-12) -->
-  <AdsDialog v-model:open="priceModalOpen" title="Edit price / shipping fee" description="Available until the order is sent to the courier." width="sm">
-    <AdsField label="Shipping fee (DZD)"><AdsNumberInput v-model="editShippingDzd" :min="0" /></AdsField>
-    <AdsField label="Total due, COD (DZD)" help="Overrides the total directly; change item quantity/price with “Edit items”."><AdsNumberInput v-model="editTotalDzd" :min="0" /></AdsField>
+  <AdsDialog v-model:open="priceModalOpen" title="Edit final price" description="Available until the order is sent to the courier." width="sm">
+    <AdsField label="Final price to collect (DZD)" :help="`Shipping stays ${order!.shippingPriceCents / 100} DZD; the product price absorbs the change.`"><AdsNumberInput v-model="editTotalDzd" :min="0" /></AdsField>
     <template #footer>
       <button class="btn" type="button" @click="priceModalOpen = false">Cancel</button>
       <button class="btn btn-primary" type="button" :disabled="savingPrice" @click="savePrice">Save</button>
