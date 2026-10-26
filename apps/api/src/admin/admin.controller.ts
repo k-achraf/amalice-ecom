@@ -168,19 +168,19 @@ export class AdminController {
     @Query('abandoned') abandoned: 'only' | 'exclude' | undefined,
     @Query('archived') archived: 'only' | 'exclude' | undefined,
     @Query('sort') sort: 'oldest' | 'followup' | undefined,
-    // 'callcenter' = every order that is in, or just left, the call center
+    // 'callcenter' = only the orders that still have to be called (the 4 work states)
     @Query('scope') scope: 'callcenter' | undefined,
     @Req() req: AuthedRequest
   ) {
     // A CallCenterAgent only ever sees the call-center queues — this is the
     // real boundary (hiding the Orders nav link is just UX).
     const agentOnly = req.user.role === 'CallCenterAgent'
-    if (agentOnly && state && !CALL_CENTER_VIEW_STATES.includes(state)) {
+    if (agentOnly && state && !CALL_CENTER_WORK_STATES.includes(state)) {
       throw new ForbiddenException('Call-center agents can only list call-center orders')
     }
     return this.orders.list({
       state,
-      states: agentOnly || scope === 'callcenter' ? CALL_CENTER_VIEW_STATES : undefined,
+      states: agentOnly || scope === 'callcenter' ? CALL_CENTER_WORK_STATES : undefined,
       sort,
       search,
       courierId,

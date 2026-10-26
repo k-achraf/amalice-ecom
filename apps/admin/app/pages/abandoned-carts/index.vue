@@ -16,7 +16,7 @@ const api = useAdminApi()
 const { run } = useApiAction()
 
 const { data: queue, pending, refresh } = await useAdminFetch<OrderListResponse>(
-  '/admin/orders?abandoned=only&pageSize=100',
+  '/admin/orders?abandoned=only&scope=callcenter&pageSize=100',
   { key: 'admin-abandoned-carts' }
 )
 
