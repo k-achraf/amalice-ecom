@@ -169,7 +169,9 @@ export class AppsService {
     const parsed = MetaPixelConfigSchema.safeParse(row.config ?? {})
     if (!parsed.success || !parsed.data.capiEnabled || !parsed.data.pixelId || !parsed.data.accessToken) return null
     // A funnel's own pixel id replaces the store's; the access token is still the store's (same business).
-    return { pixelId: pixelOverride || parsed.data.pixelId, accessToken: parsed.data.accessToken, testEventCode: parsed.data.testEventCode }
+    // Never the test event code: with one set, Meta files every event under "Test events" and counts none of them.
+    // The code is only used by the admin's explicit "send test event" action.
+    return { pixelId: pixelOverride || parsed.data.pixelId, accessToken: parsed.data.accessToken }
   }
 
   // Same idea as getMetaPixelCapiCredentials, for TikTok's Events API.
@@ -178,7 +180,9 @@ export class AppsService {
     if (!row || (!row.enabled && !pixelOverride && !includeDisabled)) return null
     const parsed = TikTokPixelConfigSchema.safeParse(row.config ?? {})
     if (!parsed.success || !parsed.data.eapiEnabled || !parsed.data.pixelCode || !parsed.data.accessToken) return null
-    return { pixelCode: pixelOverride || parsed.data.pixelCode, accessToken: parsed.data.accessToken, testEventCode: parsed.data.testEventCode }
+    // Never the test event code: with one set, TikTok files every event under "Test events" and counts none of them.
+    // The code is only used by the admin's explicit "send test event" action.
+    return { pixelCode: pixelOverride || parsed.data.pixelCode, accessToken: parsed.data.accessToken }
   }
 
   // Admin "send a test event" action — always includes whatever
