@@ -117,6 +117,24 @@ body.hasbar .wrap{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
 .t-bold .slide{aspect-ratio:4/5}.t-bold .buy{text-align:center}.t-bold h1{font-size:24px;line-height:1.35}.t-bold .price{font-size:30px;color:var(--at)}.t-bold .stock{justify-content:center}.t-bold .rt{justify-content:center}.t-bold .quick{text-align:start}.t-bold .order{border:2px solid var(--a);background:var(--s);text-align:start}.t-bold .cta{min-height:58px;font-size:18px}.t-bold .det h2{color:var(--at)}.t-bold .urg{min-height:44px;font-size:14px;font-weight:700}
 .t-side-by-side .order{background:var(--soft);border-color:var(--line)}.t-side-by-side .det h2{padding-inline-start:12px;border-inline-start:3px solid var(--a)}
 .t-image-page .slide{aspect-ratio:1/1}.t-image-page .det>*:not(.long){padding-block:16px}
+/* small phones (320-359px): tighter gutters and type so nothing wraps awkwardly */
+@media(max-width:359px){
+:root{--g:12px}
+h1{font-size:20px}.price{font-size:26px}.fh h2,.det h2{font-size:19px}
+.order{padding:12px;gap:14px}
+.offer,.opt{padding:10px 12px;gap:10px;min-height:60px}.am{font-size:15px}.offer b{font-size:15px}
+.in{height:50px}.pill span{padding:0 14px}.two{gap:8px}
+.sum .gr{font-size:17px}.cta{font-size:17px;padding:0 16px}
+.bi{gap:8px}.bi .t b{font-size:15px}.bi .cta{font-size:14px;padding:0 8px;line-height:1.25}
+.trust{font-size:13px}.cd,.urg{font-size:14px}.cd b{font-size:16px}
+}
+/* large phones (400-699px): a little more presence */
+@media(min-width:400px) and (max-width:699px){h1{font-size:25px}.price{font-size:32px}.bi .cta{font-size:18px}}
+/* phones held sideways: short screens, so a slimmer bar and a shorter photo */
+@media(max-height:480px) and (orientation:landscape){
+.bar{padding-block:4px}.bi .cta{min-height:38px}body.hasbar .wrap{padding-bottom:56px}
+.slide{aspect-ratio:auto;height:75vh}
+}
 @media(min-width:700px){:root{--g:24px}h1{font-size:22px}}
 @media(min-width:900px){
 .wrap{max-width:560px}.split .wrap{max-width:1080px}
