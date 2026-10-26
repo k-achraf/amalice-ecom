@@ -532,11 +532,15 @@
       setTimeout(function () { form.name.focus({ preventScroll: true }) }, 450)
     })
     // Always visible, except while the form's own order button is on screen.
-    var subBtn = $('#sub')
+    // It is also hidden while the on-screen keyboard is open (a field has focus), so it never sits on top of what is being typed.
+    var subBtn = $('#sub'), typing = false
     function syncBar() {
       var r = subBtn ? subBtn.getBoundingClientRect() : null
-      bar.classList.toggle('off', !!r && r.top < innerHeight && r.bottom > 0)
+      bar.classList.toggle('off', typing || (!!r && r.top < innerHeight && r.bottom > 0))
     }
+    function isField(e) { return !!e && /^(INPUT|TEXTAREA|SELECT)$/.test(e.tagName) && e.type !== 'radio' && e.type !== 'checkbox' }
+    document.addEventListener('focusin', function (e) { typing = isField(e.target); syncBar() })
+    document.addEventListener('focusout', function () { setTimeout(function () { typing = isField(document.activeElement); syncBar() }, 100) })
     addEventListener('scroll', syncBar, { passive: true })
     addEventListener('resize', syncBar, { passive: true })
     syncBar()
