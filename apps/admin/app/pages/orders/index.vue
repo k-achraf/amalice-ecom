@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CALL_CENTER_STATE_TO_ORDER_STATE, SHIPPING_STATE_TO_ORDER_STATE, ORDER_STATE_LABELS, type OrderState, type OrderListResponse } from '@amalice/shared'
+import { CALL_CENTER_STATE_TO_ORDER_STATE, PRICE_EDITABLE_STATES, SHIPPING_STATE_TO_ORDER_STATE, ORDER_STATE_LABELS, type OrderState, type OrderListResponse } from '@amalice/shared'
 import { VALID_TRANSITIONS } from '~/composables/order-transitions'
 
 useHead({ title: 'Orders' })
@@ -16,7 +16,8 @@ const CHIPS: { label: string; value: string }[] = [
   { label: 'Packed', value: 'Packed' },
   { label: 'Out for delivery', value: 'OutForDelivery' },
   { label: 'Delivered', value: 'Delivered' },
-  { label: 'Cancelled', value: 'Cancelled' }
+  { label: 'Cancelled', value: 'Cancelled' },
+  { label: 'Abandoned carts', value: 'abandoned' }
 ]
 const riskFilter = ref((route.query.riskLevel as string) ?? 'all')
 const riskOptions = [{ label: 'Any risk', value: 'all' }, { label: 'High risk', value: 'High' }, { label: 'Medium risk', value: 'Medium' }, { label: 'Low risk', value: 'Low' }]
@@ -27,7 +28,12 @@ const OTHER_STATES = [
 const otherOptions = [{ label: 'Other states…', value: 'all' }, ...OTHER_STATES.map((s) => ({ label: ORDER_STATE_LABELS[s], value: s }))]
 
 const search = ref((route.query.search as string) ?? '')
-const stateFilter = ref((route.query.state as string) ?? 'all')
+const stateFilter = ref(route.query.abandoned === 'only' ? 'abandoned' : ((route.query.state as string) ?? 'all'))
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+watch(search, () => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => { applyFilters() }, 400)
+})
 const otherState = computed(() => (OTHER_STATES.includes(stateFilter.value as OrderState) ? stateFilter.value : 'all'))
 // Archived orders are excluded by default (see AdminOrdersService.list's `archived`
 // param); this toggles into "browse archived orders only" mode.
@@ -39,6 +45,7 @@ const { data, pending } = await useAdminFetch<OrderListResponse>('/admin/orders'
     page: route.query.page ?? '1',
     pageSize: route.query.pageSize ?? '20',
     ...(route.query.state && { state: route.query.state }),
+    ...(route.query.abandoned === 'only' && { abandoned: 'only' }),
     ...(route.query.search && { search: route.query.search }),
     ...(route.query.archived === 'only' && { archived: 'only' }),
     ...(route.query.riskLevel && { riskLevel: route.query.riskLevel })
@@ -57,6 +64,7 @@ const selected = ref<Set<string>>(new Set())
 async function loadWithFilters() {
   const q: Record<string, string> = { page: String(currentPage.value), pageSize: String(currentPageSize.value) }
   if (route.query.state) q.state = route.query.state as string
+  if (route.query.abandoned === 'only') q.abandoned = 'only'
   if (route.query.search) q.search = route.query.search as string
   if (route.query.archived === 'only') q.archived = 'only'
   if (route.query.riskLevel) q.riskLevel = route.query.riskLevel as string
@@ -66,7 +74,7 @@ async function loadWithFilters() {
 
 async function applyFilters(state = stateFilter.value) {
   stateFilter.value = state
-  await router.push({ query: { ...route.query, search: search.value || undefined, state: state !== 'all' ? state : undefined, page: 1 } })
+  await router.push({ query: { ...route.query, search: search.value || undefined, state: state !== 'all' && state !== 'abandoned' ? state : undefined, abandoned: state === 'abandoned' ? 'only' : undefined, page: 1 } })
   await loadWithFilters()
 }
 
@@ -176,7 +184,7 @@ const carrier = (o: OrderListResponse['items'][number]) => o.shipment?.courier.n
         <AdsSelect :model-value="riskFilter" :options="riskOptions" size="sm" style="width: 130px" @update:model-value="(v) => applyRisk(String(v))" />
         <label class="search soft">
           <AdsIcon name="i-lucide-search" /><span class="sr">Search orders</span>
-          <input v-model="search" type="search" placeholder="Order #, name or phone" @keydown.enter="applyFilters()">
+          <input v-model="search" type="search" placeholder="Order #, name, phone or city" @keydown.enter="applyFilters()">
         </label>
       </div>
 
@@ -200,7 +208,7 @@ const carrier = (o: OrderListResponse['items'][number]) => o.shipment?.courier.n
             <tr v-else-if="!rows.length"><td colspan="10" class="empty">No orders match this filter.</td></tr>
             <tr v-for="o in rows" v-else :key="o.id" class="clickable" :class="{ selected: selected.has(o.id) }" @click="rowClick($event, o.id)">
               <td><input type="checkbox" :aria-label="`Select order ${o.id.slice(0, 8)}`" :checked="selected.has(o.id)" @change="toggleOne(o.id, ($event.target as HTMLInputElement).checked)"></td>
-              <td><NuxtLink class="link-cell" :to="`/orders/${o.id}`">#{{ o.id.slice(0, 8) }}</NuxtLink><span class="sub">{{ fmtDate(o.createdAt) }}</span></td>
+              <td><NuxtLink class="link-cell" :to="`/orders/${o.id}`">#{{ o.id.slice(0, 8) }}</NuxtLink><span class="sub">{{ fmtDate(o.createdAt) }}</span><span v-if="o.isAbandoned" class="pill outline" style="margin-top: 4px" title="Customer never finished submitting the form.">Abandoned cart</span></td>
               <td style="white-space: nowrap">{{ o.customer.name ?? '—' }}<AdsIcon v-if="o.notes" name="i-lucide-sticky-note" style="width: 14px; height: 14px; vertical-align: -2px; margin-left: 4px; color: var(--text-2)" :title="o.notes" /><span class="sub">{{ o.customer.phone }}</span></td>
               <td style="white-space: nowrap">{{ o.address.region }}<span class="sub">{{ deliveryLabel(o.shippingType) }}</span></td>
               <td style="white-space: nowrap">{{ carrier(o) }}</td>
@@ -227,6 +235,7 @@ const carrier = (o: OrderListResponse['items'][number]) => o.shipment?.courier.n
                 >
                   <AdsIcon name="i-lucide-arrow-right" style="width: 14px; height: 14px" /><span style="overflow: hidden; text-overflow: ellipsis">{{ ORDER_STATE_LABELS[VALID_TRANSITIONS[o.state]![0] as OrderState] ?? VALID_TRANSITIONS[o.state]![0] }}</span>
                 </button>
+                <NuxtLink v-if="PRICE_EDITABLE_STATES.includes(o.state) && !o.shipment" class="btn btn-primary btn-sm" :to="`/orders/${o.id}`"><AdsIcon name="i-lucide-pencil" style="width: 14px; height: 14px" />Edit</NuxtLink>
                 <NuxtLink class="row-btn" :to="`/orders/${o.id}`" :aria-label="`Open order ${o.id.slice(0, 8)}`"><AdsIcon name="i-lucide-chevron-right" /></NuxtLink>
               </td>
             </tr>

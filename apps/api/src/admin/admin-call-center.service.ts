@@ -56,11 +56,10 @@ interface Candidate {
 // Tier 0: a postponed follow-up whose time has come — the customer asked for
 // this call, so it outranks everything. 1: brand-new leads (conversion drops
 // fast with response time). 2: no-answer retries. 3: postponed with no date
-// (legacy). 4: abandoned carts (lowest intent). 5: retries that already hit
+// (legacy). Abandoned carts rank like any other order of their state. 5: retries that already hit
 // the max attempts — still workable, but only when nothing else is waiting.
 function tierOf(o: Candidate): number {
   if (o.callAttemptsCount >= CALL_CENTER_MAX_ATTEMPTS) return 5
-  if (o.isAbandoned) return 4
   if (o.state === 'Postponed') return o.postponedUntil ? 0 : 3
   if (o.state === 'PendingCallCenter') return 1
   return 2
@@ -384,7 +383,7 @@ export class AdminCallCenterService {
       team,
       me,
       queue: {
-        new: available.filter((o) => o.state === 'PendingCallCenter' && !o.isAbandoned).length,
+        new: available.filter((o) => o.state === 'PendingCallCenter').length,
         noAnswer: available.filter((o) => o.state === 'CallCenterNoAnswer').length,
         postponed: available.filter((o) => o.state === 'Postponed').length,
         wrongNumber,

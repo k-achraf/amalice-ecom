@@ -1,6 +1,6 @@
 import { StockService } from '../common/stock.service'
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { ADDRESS_EDITABLE_STATES, CALL_CENTER_WORK_STATES, STATES_REQUIRING_SHIPMENT, deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, type OrderState, type RiskLevel, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
+import { ADDRESS_EDITABLE_STATES, CALL_CENTER_WORK_STATES, STATES_REQUIRING_SHIPMENT, deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, STATE_TO_CALL_OUTCOME, type OrderState, type RiskLevel, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
 import type { Prisma } from '../generated/prisma/client'
 import { PurchaseEventsService } from '../apps/purchase-events.service'
 import { PrismaService } from '../prisma/prisma.service'
@@ -66,6 +66,31 @@ function toLineItem(item: ItemWithRelations) {
   }
 }
 
+// Phones are stored as +213XXXXXXXXX but staff type 0XXXXXXXXX, 213… or only
+// part of the number — match on the digits after the country code / leading 0.
+function phoneNeedle(raw: string): string | null {
+  const digits = raw.replace(/[\s().+-]/g, '')
+  if (!/^\d{3,}$/.test(digits)) return null
+  if (digits.startsWith('00213')) return digits.slice(5)
+  if (digits.startsWith('213') && digits.length > 5) return digits.slice(3)
+  if (digits.startsWith('0')) return digits.slice(1)
+  return digits
+}
+
+function searchFilter(raw?: string): Prisma.OrderWhereInput[] | undefined {
+  const q = raw?.trim()
+  if (!q) return undefined
+  const needle = phoneNeedle(q)
+  return [
+    { id: { startsWith: q.replace(/^#/, ''), mode: 'insensitive' } },
+    ...(needle ? [{ customer: { phone: { contains: needle } } }] : []),
+    { customer: { name: { contains: q, mode: 'insensitive' } } },
+    { address: { city: { contains: q, mode: 'insensitive' } } },
+    { address: { region: { contains: q, mode: 'insensitive' } } },
+    { shipment: { trackingReference: { contains: q, mode: 'insensitive' } } }
+  ]
+}
+
 // ADM-04/ADM-05 — the admin-side order read/transition API. Distinct from
 // the public OrdersService (which owns checkout/confirm/track): this is the
 // ops-staff surface for the order queue and manual state transitions. Both
@@ -100,10 +125,9 @@ export class AdminOrdersService {
     to?: Date
     page: number
     pageSize: number
-    // Every existing caller (Orders/Call Center/Fulfillment/Shipping pages)
-    // omits this, which excludes abandoned-cart orders (see
-    // Order.isAbandoned's Prisma comment) so they don't pollute the real
-    // queue — only the dedicated Abandoned Carts page passes 'only'.
+    // Abandoned-cart orders are ordinary orders carrying a label (see
+    // Order.isAbandoned's Prisma comment): omitted = included everywhere,
+    // 'only' = just the abandoned ones, 'exclude' = hide them.
     abandoned?: 'only' | 'exclude'
     // Same pattern as `abandoned` above: every existing caller omits this,
     // which excludes archived orders (see Order.archived's Prisma comment)
@@ -113,7 +137,8 @@ export class AdminOrdersService {
     archived?: 'only' | 'exclude'
   }) {
     const where: Prisma.OrderWhereInput = {
-      isAbandoned: args.abandoned === 'only',
+      ...(args.abandoned === 'only' && { isAbandoned: true }),
+      ...(args.abandoned === 'exclude' && { isAbandoned: false }),
       archived: args.archived === 'only',
       ...(args.state && !args.states && { state: args.state }),
       ...(args.states && { state: { in: args.state ? args.states.filter((x) => x === args.state) : [...args.states] } }),
@@ -123,14 +148,7 @@ export class AdminOrdersService {
       ...((args.from || args.to) && {
         createdAt: { ...(args.from && { gte: args.from }), ...(args.to && { lte: args.to }) }
       }),
-      ...(args.search && {
-        OR: [
-          { id: { equals: args.search, mode: 'insensitive' } },
-          { customer: { phone: { contains: args.search, mode: 'insensitive' } } },
-          { customer: { name: { contains: args.search, mode: 'insensitive' } } },
-          { shipment: { trackingReference: { contains: args.search, mode: 'insensitive' } } }
-        ]
-      })
+      ...(searchFilter(args.search) && { OR: searchFilter(args.search) })
     }
     const [rows, total] = await Promise.all([
       this.prisma.order.findMany({
@@ -247,6 +265,7 @@ export class AdminOrdersService {
     // other query in this service filters on isAbandoned, so leaving it
     // true here would silently strand a confirmed order forever.
     const clearsAbandoned = order.isAbandoned && to === 'Confirmed'
+    const callOutcome = STATE_TO_CALL_OUTCOME[to]
     await this.prisma.order.update({
       where: { id },
       data: {
@@ -260,9 +279,28 @@ export class AdminOrdersService {
         assignedToId: null,
         assignedToEmail: null,
         lockedUntil: null,
-        ...(clearsAbandoned && { isAbandoned: false })
+        ...(clearsAbandoned && { isAbandoned: false }),
+        // A status change made from the order page / lists is a call result
+        // like any other: it counts as an attempt and restarts the no-answer wait.
+        ...(callOutcome && { callAttemptsCount: { increment: 1 }, lastCalledAt: new Date(), skippedUntil: null })
       }
     })
+    if (callOutcome) {
+      // Without this row the change never reaches the call-center stats,
+      // reports, Telegram summary or AI tools, which all count CallAttempts.
+      await this.prisma.callAttempt.create({
+        data: {
+          orderId: id,
+          agentId: actor.id,
+          agentEmail: actor.email,
+          outcome: callOutcome,
+          fromState: from,
+          toState: to,
+          note: 'Status changed from the order page',
+          postponedUntil: to === 'Postponed' ? new Date(postponedUntil!) : null
+        }
+      })
+    }
     if (clearsAbandoned) await this.stock.reserveForOrder(id, actor.id)
     if (to === 'Cancelled' || to === 'CancelledShipping') await this.stock.releaseForOrder(id, actor.id)
     if (to === 'Restocked') await this.stock.restockForOrder(id, actor.id)
@@ -310,10 +348,10 @@ export class AdminOrdersService {
   // Confirmed) — re-checked here server-side regardless of what the admin
   // UI already gates, same rule as transition()'s own state-machine check.
   async updatePrice(id: string, input: UpdateOrderPrice, actor: AuditActor) {
-    const order = await this.prisma.order.findUnique({ where: { id } })
+    const order = await this.prisma.order.findUnique({ where: { id }, include: { shipment: { select: { id: true } } } })
     if (!order) throw new NotFoundException('Order not found')
-    if (!PRICE_EDITABLE_STATES.includes(order.state)) {
-      throw new BadRequestException(`Can't edit price for an order in state ${order.state} — it's already past the call-center confirmation step.`)
+    if (!PRICE_EDITABLE_STATES.includes(order.state) || order.shipment) {
+      throw new BadRequestException(`Can't edit price for an order in state ${order.state}${order.shipment ? ' with a shipment' : ''} — it's already with the courier.`)
     }
 
     let shippingPriceCents = order.shippingPriceCents

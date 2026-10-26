@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import {
-  CALL_CENTER_WORK_STATES,
+  CALL_CENTER_VIEW_STATES,
   CALL_OUTCOME_LABELS,
   CANCEL_REASONS,
   DHD_WEBHOOK_EVENT_TO_STATE,
@@ -182,7 +182,7 @@ export class AdminOrderTimelineService {
       }
     })
     if (!order) throw new NotFoundException('Order not found')
-    if (role === 'CallCenterAgent' && !CALL_CENTER_WORK_STATES.includes(order.state) && order.state !== 'Confirmed') {
+    if (role === 'CallCenterAgent' && !CALL_CENTER_VIEW_STATES.includes(order.state)) {
       throw new ForbiddenException('This order is outside the call center')
     }
 

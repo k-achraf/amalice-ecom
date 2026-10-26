@@ -641,20 +641,15 @@ export const UpdateOrderNotesSchema = z.object({
 })
 export type UpdateOrderNotes = z.infer<typeof UpdateOrderNotesSchema>
 
-// States in which an agent can still edit an order's price — the call-
-// center confirmation step, before Confirmed hands the order to fulfillment
-// (see the OrderState comment for why these 4 make up "call center"). Once
-// Confirmed, packing/shipping/reconciliation all key off totalCents as a
-// fixed number (courier COD amount, ledger reconciliation), so an edit past
-// this point would desync what's already been quoted/dispatched — consulted
-// by both AdminOrdersService.updatePrice (the real guard) and the admin UI
-// (so the edit control doesn't even render once it'd be rejected).
-export const PRICE_EDITABLE_STATES: readonly OrderState[] = ['PendingCallCenter', 'CallCenterNoAnswer', 'WrongNumber', 'Postponed']
+// States in which an order's price, items and recipient details can still be
+// edited: everything before the parcel is handed to a courier. The courier's
+// COD amount and address are only fixed once a Shipment exists, so the real
+// guard (AdminOrdersService) also rejects an order that already has one;
+// the admin UI uses this list to decide whether to render the edit controls.
+export const PRICE_EDITABLE_STATES: readonly OrderState[] = ['PendingCallCenter', 'CallCenterNoAnswer', 'WrongNumber', 'Postponed', 'Confirmed', 'OnHold', 'Packed']
 
-// The delivery address / customer details stay correctable until a shipment
-// exists (e.g. fixing a commune the courier doesn't recognise while the order is
-// being packed) — unlike the price, nothing downstream is quoted from them yet.
-export const ADDRESS_EDITABLE_STATES: readonly OrderState[] = [...PRICE_EDITABLE_STATES, 'Confirmed', 'OnHold', 'Packed']
+// Same window for the delivery address / customer details.
+export const ADDRESS_EDITABLE_STATES: readonly OrderState[] = PRICE_EDITABLE_STATES
 
 // Call-center price override — an agent negotiating on the confirmation
 // call needs to adjust either the shipping fee (e.g. a wilaya-rate
@@ -726,6 +721,16 @@ export const AddOrderItemSchema = z.object({
   isUpsell: z.boolean().optional()
 })
 export type AddOrderItem = z.infer<typeof AddOrderItemSchema>
+
+// Edit one existing line before the order ships: quantity (half units allowed,
+// like offers) and/or the line's total price. At least one must be given.
+export const UpdateOrderItemSchema = z
+  .object({
+    quantity: z.number().positive().multipleOf(0.5).optional(),
+    lineTotalCents: z.number().int().nonnegative().optional()
+  })
+  .refine((v) => v.quantity !== undefined || v.lineTotalCents !== undefined, { message: 'Provide quantity and/or lineTotalCents' })
+export type UpdateOrderItem = z.infer<typeof UpdateOrderItemSchema>
 
 // Public, unauthenticated social-proof feed — real recent orders (never
 // fabricated/static copy), for storefront "recent activity" tickers (e.g.

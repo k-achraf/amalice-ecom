@@ -59,7 +59,7 @@ onBeforeUnmount(() => {
 })
 
 const myCalls = computed(() => (stats.value ? Object.values(stats.value.me).reduce((a, b) => a + b, 0) : 0))
-const remaining = computed(() => (stats.value ? stats.value.queue.new + stats.value.queue.noAnswer + stats.value.queue.postponed + stats.value.queue.abandoned : 0))
+const remaining = computed(() => (stats.value ? stats.value.queue.new + stats.value.queue.noAnswer + stats.value.queue.postponed : 0))
 </script>
 
 <template>
@@ -86,7 +86,7 @@ const remaining = computed(() => (stats.value ? stats.value.queue.new + stats.va
         <span class="pill shipping">{{ stats.queue.new }} new</span>
         <span class="pill new">{{ stats.queue.noAnswer }} retry</span>
         <span class="pill neutral">{{ stats.queue.postponed }} postponed</span>
-        <span class="pill outline" title="Customer never finished submitting — lowest priority.">{{ stats.queue.abandoned }} abandoned</span>
+        <span class="pill outline" title="Abandoned carts are worked like any other order; this counts them.">{{ stats.queue.abandoned }} abandoned carts (included)</span>
         <span class="pill returned" title="Wrong numbers are never auto-dialed; fix the number from the queue page.">{{ stats.queue.wrongNumber }} wrong #</span>
       </div>
 

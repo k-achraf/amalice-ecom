@@ -25,12 +25,14 @@ import {
   UpdateProductOfferSchema,
   UpdateWilayaShippingRatesSchema,
   AddOrderItemSchema,
+  UpdateOrderItemSchema,
   CreateProductUpsellSchema,
   UpdateProductUpsellSchema,
   UpdateOrderNotesSchema,
   LogCallSchema,
   BulkDeleteOrdersSchema,
   CALL_CENTER_WORK_STATES,
+  CALL_CENTER_VIEW_STATES,
   UpdateOrderPriceSchema,
   TransitionOrderSchema,
   UpdateOrderCustomerInfoSchema,
@@ -84,6 +86,7 @@ class CreateProductOfferDto extends createZodDto(CreateProductOfferSchema) {}
 class UpdateProductOfferDto extends createZodDto(UpdateProductOfferSchema) {}
 class UpdateWilayaShippingRatesDto extends createZodDto(UpdateWilayaShippingRatesSchema) {}
 class AddOrderItemDto extends createZodDto(AddOrderItemSchema) {}
+class UpdateOrderItemDto extends createZodDto(UpdateOrderItemSchema) {}
 class CreateProductUpsellDto extends createZodDto(CreateProductUpsellSchema) {}
 class UpdateProductUpsellDto extends createZodDto(UpdateProductUpsellSchema) {}
 class UpdateOrderNotesDto extends createZodDto(UpdateOrderNotesSchema) {}
@@ -165,17 +168,19 @@ export class AdminController {
     @Query('abandoned') abandoned: 'only' | 'exclude' | undefined,
     @Query('archived') archived: 'only' | 'exclude' | undefined,
     @Query('sort') sort: 'oldest' | 'followup' | undefined,
+    // 'callcenter' = every order that is in, or just left, the call center
+    @Query('scope') scope: 'callcenter' | undefined,
     @Req() req: AuthedRequest
   ) {
     // A CallCenterAgent only ever sees the call-center queues — this is the
     // real boundary (hiding the Orders nav link is just UX).
     const agentOnly = req.user.role === 'CallCenterAgent'
-    if (agentOnly && state && !CALL_CENTER_WORK_STATES.includes(state)) {
+    if (agentOnly && state && !CALL_CENTER_VIEW_STATES.includes(state)) {
       throw new ForbiddenException('Call-center agents can only list call-center orders')
     }
     return this.orders.list({
       state,
-      states: agentOnly ? CALL_CENTER_WORK_STATES : undefined,
+      states: agentOnly || scope === 'callcenter' ? CALL_CENTER_VIEW_STATES : undefined,
       sort,
       search,
       courierId,
@@ -304,7 +309,7 @@ export class AdminController {
   async orderDetail(@Param('id') id: string, @Req() req: AuthedRequest) {
     const order = await this.orders.findOne(id)
     // Agents may open orders still in (or just confirmed out of) the call center.
-    if (req.user.role === 'CallCenterAgent' && !CALL_CENTER_WORK_STATES.includes(order.state) && order.state !== 'Confirmed') {
+    if (req.user.role === 'CallCenterAgent' && !CALL_CENTER_VIEW_STATES.includes(order.state)) {
       throw new ForbiddenException('This order is outside the call center')
     }
     return order
@@ -396,6 +401,20 @@ export class AdminController {
     // fully-joined shape (variantLabel, offer, etc.) as GET orders/:id —
     // OrderItemsService's own return value is intentionally minimal since
     // its other caller (the public upsell accept endpoint) doesn't need that.
+    return this.orders.findOne(id)
+  }
+
+  @Patch('orders/:id/items/:itemId')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  async updateOrderItem(@Param('id') id: string, @Param('itemId') itemId: string, @Body() body: UpdateOrderItemDto, @Req() req: AuthedRequest) {
+    await this.orderItems.updateItem(id, itemId, body, actorFrom(req))
+    return this.orders.findOne(id)
+  }
+
+  @Delete('orders/:id/items/:itemId')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  async removeOrderItem(@Param('id') id: string, @Param('itemId') itemId: string, @Req() req: AuthedRequest) {
+    await this.orderItems.removeItem(id, itemId, actorFrom(req))
     return this.orders.findOne(id)
   }
 

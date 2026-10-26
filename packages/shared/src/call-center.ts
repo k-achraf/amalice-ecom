@@ -18,6 +18,15 @@ export const CALL_OUTCOME_TO_STATE: Record<CallOutcome, OrderState> = {
   Cancelled: 'Cancelled'
 }
 
+// Reverse of the above: the call outcome a plain status change stands for.
+export const STATE_TO_CALL_OUTCOME: Partial<Record<OrderState, CallOutcome>> = {
+  Confirmed: 'Confirmed',
+  CallCenterNoAnswer: 'NoAnswer',
+  WrongNumber: 'WrongNumber',
+  Postponed: 'Postponed',
+  Cancelled: 'Cancelled'
+}
+
 export const CALL_OUTCOME_LABELS: Record<CallOutcome, string> = {
   Confirmed: 'Confirmed',
   NoAnswer: 'No answer',
@@ -29,6 +38,10 @@ export const CALL_OUTCOME_LABELS: Record<CallOutcome, string> = {
 // States an agent works in. Orders in any other state are out of the call
 // center's hands, and a CallCenterAgent may not move them.
 export const CALL_CENTER_WORK_STATES: readonly OrderState[] = ['PendingCallCenter', 'CallCenterNoAnswer', 'WrongNumber', 'Postponed']
+
+// What a call-center agent may look at (not necessarily work): the queues plus
+// the outcomes of their calls, so they can see where every order ended up.
+export const CALL_CENTER_VIEW_STATES: readonly OrderState[] = [...CALL_CENTER_WORK_STATES, 'Confirmed', 'Cancelled']
 
 // Structured cancellation reasons (reportable, unlike free text).
 export const CANCEL_REASONS = [
@@ -61,13 +74,12 @@ export const LogCallSchema = z
 export type LogCall = z.infer<typeof LogCallSchema>
 
 // ---- Retry policy ----
-// Confirmation rate falls fast with every unanswered attempt, so the first
-// retries are close together and later ones spread out across the day.
+// A "no answer" order goes back into the dialer queue 3 hours after it was
+// marked, whatever the attempt number.
 export const CALL_CENTER_MAX_ATTEMPTS = 5
-const NO_ANSWER_COOLDOWN_HOURS = [1, 3, 5, 12, 24]
-export function noAnswerCooldownHours(attemptsSoFar: number): number {
-  const i = Math.min(Math.max(attemptsSoFar, 1), NO_ANSWER_COOLDOWN_HOURS.length) - 1
-  return NO_ANSWER_COOLDOWN_HOURS[i]!
+export const NO_ANSWER_COOLDOWN_HOURS = 3
+export function noAnswerCooldownHours(_attemptsSoFar?: number): number {
+  return NO_ANSWER_COOLDOWN_HOURS
 }
 export const CALL_LOCK_MINUTES = 10
 export const SKIP_DEFER_MINUTES = 30

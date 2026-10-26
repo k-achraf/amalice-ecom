@@ -12,12 +12,15 @@ useHead({ title: 'Call Center' })
 const api = useAdminApi()
 const auth = useAuthStore()
 
-// 'Abandoned' = carts the customer never submitted (PendingCallCenter + isAbandoned);
-// they sit after the real queues and are only called once those are worked.
-type QueueState = 'PendingCallCenter' | 'CallCenterNoAnswer' | 'WrongNumber' | 'Postponed' | 'Abandoned'
-const QUEUES: QueueState[] = ['PendingCallCenter', 'CallCenterNoAnswer', 'WrongNumber', 'Postponed', 'Abandoned']
+// Every order that is in, or just left, the call center. 'Abandoned' is not a
+// state: it is a label on orders the customer never submitted, so that filter
+// cuts across all states (an abandoned cart marked "wrong number" still shows).
+type QueueState = 'All' | 'PendingCallCenter' | 'CallCenterNoAnswer' | 'WrongNumber' | 'Postponed' | 'Confirmed' | 'Cancelled' | 'Abandoned'
+const QUEUES: QueueState[] = ['All', 'PendingCallCenter', 'CallCenterNoAnswer', 'WrongNumber', 'Postponed', 'Confirmed', 'Cancelled', 'Abandoned']
 function queueQuery(s: QueueState): Record<string, string> {
-  return s === 'Abandoned' ? { state: 'PendingCallCenter', abandoned: 'only' } : { state: s }
+  if (s === 'All') return { scope: 'callcenter' }
+  if (s === 'Abandoned') return { scope: 'callcenter', abandoned: 'only' }
+  return { state: s }
 }
 
 const tab = ref<QueueState>('PendingCallCenter')
@@ -26,7 +29,7 @@ const pageSize = ref(25)
 const search = ref('')
 const items = ref<AdminOrderListItem[]>([])
 const total = ref(0)
-const counts = reactive<Record<QueueState, number>>({ PendingCallCenter: 0, CallCenterNoAnswer: 0, WrongNumber: 0, Postponed: 0, Abandoned: 0 })
+const counts = reactive<Record<QueueState, number>>({ All: 0, PendingCallCenter: 0, CallCenterNoAnswer: 0, WrongNumber: 0, Postponed: 0, Confirmed: 0, Cancelled: 0, Abandoned: 0 })
 const stats = ref<CallCenterStatsResponse | null>(null)
 const loading = ref(true)
 const selectedId = ref<string | null>(null)
@@ -36,7 +39,7 @@ async function loadList() {
     ...queueQuery(tab.value),
     page: page.value,
     pageSize: pageSize.value,
-    sort: tab.value === 'Postponed' ? 'followup' : 'oldest'
+    ...(tab.value === 'Postponed' ? { sort: 'followup' } : ['PendingCallCenter', 'CallCenterNoAnswer', 'WrongNumber'].includes(tab.value) ? { sort: 'oldest' } : {})
   }
   if (search.value.trim()) query.search = search.value.trim()
   const res = await api<OrderListResponse>('/admin/orders', { query })
@@ -80,12 +83,16 @@ watch(selectedId, (_id, old) => {
 
 const current = computed(() => items.value.find((o) => o.id === selectedId.value) ?? null)
 const tabs = computed(() => [
+  { label: 'All', value: 'All', count: counts.All },
   { label: 'Waiting', value: 'PendingCallCenter', count: counts.PendingCallCenter },
   { label: 'No answer', value: 'CallCenterNoAnswer', count: counts.CallCenterNoAnswer },
   { label: 'Wrong number', value: 'WrongNumber', count: counts.WrongNumber },
   { label: 'Postponed', value: 'Postponed', count: counts.Postponed },
-  { label: 'Abandoned', value: 'Abandoned', count: counts.Abandoned }
+  { label: 'Confirmed', value: 'Confirmed', count: counts.Confirmed },
+  { label: 'Cancelled', value: 'Cancelled', count: counts.Cancelled },
+  { label: 'Abandoned carts', value: 'Abandoned', count: counts.Abandoned }
 ])
+const STATE_LABEL: Record<string, string> = { PendingCallCenter: 'Waiting', CallCenterNoAnswer: 'No answer', WrongNumber: 'Wrong number', Postponed: 'Postponed', Confirmed: 'Confirmed', Cancelled: 'Cancelled' }
 
 function waited(iso: string) {
   const m = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000))
@@ -131,7 +138,7 @@ function onLogged() {
         <div class="card-head"><h2 id="q-h">Queue <small>{{ total }} orders</small></h2></div>
         <div style="padding: 10px 12px; border-bottom: 1px solid var(--line-soft); display: grid; gap: 8px">
           <AdsTabs v-model="tab" :items="tabs" />
-          <AdsSearch v-model="search" soft placeholder="Search name or phone…" />
+          <AdsSearch v-model="search" soft placeholder="Search name, phone or order #…" />
         </div>
         <div v-if="loading" class="empty">Loading…</div>
         <div v-else-if="!items.length" class="empty">Nothing here. Good job.</div>
@@ -146,6 +153,8 @@ function onLogged() {
             </span>
             <span class="side">
               <span class="muted">{{ waited(o.createdAt) }}</span>
+              <span v-if="o.isAbandoned" class="pill outline" title="Customer never finished submitting the form.">Abandoned cart</span>
+              <span v-if="['All', 'Abandoned'].includes(tab) || o.state === 'Confirmed' || o.state === 'Cancelled'" class="pill neutral">{{ STATE_LABEL[o.state] ?? o.state }}</span>
               <span v-if="o.callAttemptsCount" class="pill" :class="o.callAttemptsCount >= CALL_CENTER_MAX_ATTEMPTS ? 'returned' : 'neutral'">{{ o.callAttemptsCount }} call{{ o.callAttemptsCount > 1 ? 's' : '' }}</span>
               <span v-if="o.isDuplicate" class="pill returned">Duplicate?</span>
               <RiskBadge v-if="o.riskLevel && o.riskLevel !== 'Low'" :level="o.riskLevel" :score="o.riskScore" :factors="o.riskFactors" />

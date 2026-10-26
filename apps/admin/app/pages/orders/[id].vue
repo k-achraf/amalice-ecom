@@ -13,6 +13,7 @@ const ADD_ITEM_STATES: OrderState[] = ['PendingCallCenter', 'CallCenterNoAnswer'
 
 const route = useRoute()
 const id = route.params.id as string
+const itemsEditOpen = ref(false)
 useHead({ title: `Order ${id.slice(0, 8)}` })
 
 const api = useAdminApi()
@@ -496,8 +497,10 @@ function initials(name: string | null) {
     <template v-if="order" #title-extra>
       <AdsOrderStatus :state="CALL_CENTER_STATE_TO_ORDER_STATE[order.callCenterState]" />
       <AdsOrderStatus v-if="order.shippingState" :state="SHIPPING_STATE_TO_ORDER_STATE[order.shippingState]" />
+      <span v-if="order.isAbandoned" class="pill outline" title="The customer never finished submitting the form.">Abandoned cart</span>
     </template>
     <template v-if="order" #actions>
+      <button v-if="PRICE_EDITABLE_STATES.includes(order.state) && !order.shipment" class="btn btn-primary" type="button" @click="openCustomerEditor"><AdsIcon name="i-lucide-pencil" />Edit order</button>
       <button class="btn" type="button" :disabled="archiving" @click="toggleArchive"><AdsIcon :name="order.archived ? 'i-lucide-archive-restore' : 'i-lucide-archive'" />{{ order.archived ? 'Unarchive' : 'Archive' }}</button>
       <button v-if="isSuperAdmin" class="btn btn-danger" type="button" :disabled="deleting" @click="deleteOrder"><AdsIcon name="i-lucide-trash-2" />Delete</button>
     </template>
@@ -528,7 +531,10 @@ function initials(name: string | null) {
           <section class="card flush" aria-labelledby="it-h">
             <div class="card-head">
               <h2 id="it-h">Items</h2>
-              <button v-if="ADD_ITEM_STATES.includes(order.state)" class="btn btn-sm" type="button" @click="openAddItem"><AdsIcon name="i-lucide-plus" />Add item</button>
+              <div v-if="ADD_ITEM_STATES.includes(order.state) && !order.shipment" style="display: flex; gap: 8px">
+                <button class="btn btn-primary btn-sm" type="button" @click="itemsEditOpen = true"><AdsIcon name="i-lucide-pencil" />Edit items</button>
+                <button class="btn btn-sm" type="button" @click="openAddItem"><AdsIcon name="i-lucide-plus" />Add item</button>
+              </div>
             </div>
             <div class="table-wrap">
               <table style="min-width: 520px">
@@ -560,7 +566,7 @@ function initials(name: string | null) {
                 <div class="grand"><span>To collect on delivery</span><span><AdsPrice :amount-cents="order.totalCents" /></span></div>
               </div>
               <!-- Price override: only while the order hasn't been confirmed (see PRICE_EDITABLE_STATES). -->
-              <button v-if="PRICE_EDITABLE_STATES.includes(order.state)" class="btn btn-sm" type="button" style="margin-top: 12px" @click="openPriceEditor"><AdsIcon name="i-lucide-pencil" />Edit price / shipping fee</button>
+              <button v-if="PRICE_EDITABLE_STATES.includes(order.state) && !order.shipment" class="btn btn-primary btn-sm" type="button" style="margin-top: 12px" @click="openPriceEditor"><AdsIcon name="i-lucide-pencil" />Edit price / shipping fee</button>
             </div>
           </section>
 
@@ -651,7 +657,7 @@ function initials(name: string | null) {
             <div style="display: flex; gap: 12px; align-items: center">
               <span class="initials dark">{{ initials(order.customer.name) }}</span>
               <div class="grow"><b style="font-weight: 600">{{ order.customer.name ?? '—' }}</b><span class="muted" style="display: block">{{ order.customer.phone }}</span></div>
-              <button v-if="PRICE_EDITABLE_STATES.includes(order.state)" class="btn btn-sm btn-ghost" type="button" @click="openCustomerEditor"><AdsIcon name="i-lucide-pencil" />Edit</button>
+              <button v-if="PRICE_EDITABLE_STATES.includes(order.state) && !order.shipment" class="btn btn-primary btn-sm" type="button" @click="openCustomerEditor"><AdsIcon name="i-lucide-pencil" />Edit</button>
             </div>
             <a class="btn" :href="`tel:${order.customer.phone}`"><AdsIcon name="i-lucide-phone" />{{ order.customer.phone }}</a>
           </section>
@@ -674,8 +680,8 @@ function initials(name: string | null) {
           <section class="card" aria-labelledby="ad-h">
             <div class="card-head">
               <h2 id="ad-h">Shipping address</h2>
-              <button v-if="PRICE_EDITABLE_STATES.includes(order.state)" class="btn btn-sm btn-ghost" type="button" @click="openAddressSuggestion"><AdsIcon name="i-lucide-sparkles" />Suggest</button>
-              <button v-if="PRICE_EDITABLE_STATES.includes(order.state)" class="btn btn-sm btn-ghost" type="button" @click="openCustomerEditor"><AdsIcon name="i-lucide-pencil" />Edit</button>
+              <button v-if="PRICE_EDITABLE_STATES.includes(order.state) && !order.shipment" class="btn btn-sm" type="button" @click="openAddressSuggestion"><AdsIcon name="i-lucide-sparkles" />Suggest</button>
+              <button v-if="PRICE_EDITABLE_STATES.includes(order.state) && !order.shipment" class="btn btn-primary btn-sm" type="button" @click="openCustomerEditor"><AdsIcon name="i-lucide-pencil" />Edit</button>
             </div>
             <dl class="details">
               <dt>Wilaya</dt><dd>{{ order.address.region || '—' }}</dd>
@@ -715,10 +721,12 @@ function initials(name: string | null) {
     </template>
   </AdsDialog>
 
-  <!-- Call-center price override (ADM-12) -->
-  <AdsDialog v-model:open="priceModalOpen" title="Edit price / shipping fee" description="Only available before the order is confirmed: the call-center negotiation window." width="sm">
+  <OrderItemsEditor v-if="order" v-model:open="itemsEditOpen" :order-id="order.id" :items="order.items" @changed="refresh" />
+
+  <!-- Price override (ADM-12) -->
+  <AdsDialog v-model:open="priceModalOpen" title="Edit price / shipping fee" description="Available until the order is sent to the courier." width="sm">
     <AdsField label="Shipping fee (DZD)"><AdsNumberInput v-model="editShippingDzd" :min="0" /></AdsField>
-    <AdsField label="Total due, COD (DZD)" help="Overrides the total directly; the items subtotal itself isn't editable here."><AdsNumberInput v-model="editTotalDzd" :min="0" /></AdsField>
+    <AdsField label="Total due, COD (DZD)" help="Overrides the total directly; change item quantity/price with “Edit items”."><AdsNumberInput v-model="editTotalDzd" :min="0" /></AdsField>
     <template #footer>
       <button class="btn" type="button" @click="priceModalOpen = false">Cancel</button>
       <button class="btn btn-primary" type="button" :disabled="savingPrice" @click="savePrice">Save</button>

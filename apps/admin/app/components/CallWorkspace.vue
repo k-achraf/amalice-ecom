@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import {
   CALL_CENTER_MAX_ATTEMPTS,
+  CALL_CENTER_WORK_STATES,
   CANCEL_REASONS,
   MESSAGE_TEMPLATES,
+  PRICE_EDITABLE_STATES,
   RISK_FACTOR_LABELS,
   buildSmsUrl,
   buildWhatsAppUrl,
@@ -63,10 +65,16 @@ const tierLabel: Record<string, string> = {
   PendingCallCenter: 'New lead',
   CallCenterNoAnswer: 'Retry — no answer',
   Postponed: 'Callback',
-  WrongNumber: 'Wrong number'
+  WrongNumber: 'Wrong number',
+  Confirmed: 'Confirmed',
+  Cancelled: 'Cancelled'
 }
 const attempts = computed(() => props.order.callAttemptsCount ?? 0)
 const maxed = computed(() => attempts.value >= CALL_CENTER_MAX_ATTEMPTS)
+const isWorkState = computed(() => CALL_CENTER_WORK_STATES.includes(props.order.state))
+// Price / items / recipient stay editable until a courier shipment exists.
+const canEdit = computed(() => PRICE_EDITABLE_STATES.includes(props.order.state) && !props.order.shipment)
+const itemsEditOpen = ref(false)
 const followUpDue = computed(() => props.order.state === 'Postponed' && props.order.postponedUntil && new Date(props.order.postponedUntil) <= new Date())
 
 async function copyPhone() {
@@ -422,13 +430,13 @@ onBeforeUnmount(() => {
         <p class="muted" style="margin-top: 4px">
           {{ order.address.line1 }}, {{ order.address.city }}, {{ order.address.region }}
           · {{ order.shippingType === 'Home' ? 'Home delivery' : order.shippingType === 'Desk' ? 'Stop desk' : 'No delivery type' }}
-          <button class="btn btn-ghost btn-sm" type="button" @click="openCustomer"><AdsIcon name="i-lucide-pencil" />Edit</button>
+          <button v-if="canEdit" class="btn btn-primary btn-sm" type="button" style="margin-inline-start: 6px" @click="openCustomer"><AdsIcon name="i-lucide-pencil" />Edit info</button>
         </p>
       </div>
       <div style="text-align: right">
         <AdsPrice :amount-cents="order.totalCents" class="strong" style="font-size: 22px" />
         <div class="muted" style="font-size: 12px">incl. delivery <AdsPrice :amount-cents="order.shippingPriceCents" /></div>
-        <button class="btn btn-ghost btn-sm" type="button" @click="openPrice"><AdsIcon name="i-lucide-pencil" />Edit price</button>
+        <button v-if="canEdit" class="btn btn-primary btn-sm" type="button" @click="openPrice"><AdsIcon name="i-lucide-pencil" />Edit price</button>
       </div>
     </div>
 
@@ -453,7 +461,10 @@ onBeforeUnmount(() => {
     <div>
       <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
         <h3 style="font-size: 14px">Order</h3>
-        <button class="btn btn-sm" type="button" @click="openAddItem"><AdsIcon name="i-lucide-plus" />Add item (upsell)</button>
+        <div v-if="canEdit" style="display: flex; gap: 8px">
+          <button class="btn btn-primary btn-sm" type="button" @click="itemsEditOpen = true"><AdsIcon name="i-lucide-pencil" />Edit items</button>
+          <button class="btn btn-sm" type="button" @click="openAddItem"><AdsIcon name="i-lucide-plus" />Add item (upsell)</button>
+        </div>
       </div>
       <OrderLineItemsInline :items="order.items" />
     </div>
@@ -482,19 +493,20 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <div class="field">
+    <div v-if="!isWorkState" class="notice"><AdsIcon name="i-lucide-info" /><span>This order is <b>{{ tierLabel[order.state] ?? order.state }}</b>: it is no longer in the call queue. <NuxtLink :to="`/orders/${order.id}`">Open the order page</NuxtLink> to follow it.</span></div>
+    <div v-if="isWorkState" class="field">
       <label class="label" for="call-note">Call note <span v-if="shortcuts" class="muted">(N)</span></label>
       <input id="call-note" v-model="callNote" class="input" maxlength="500" placeholder="e.g. Wants delivery after 17:00">
     </div>
 
-    <AdsButton icon="i-lucide-check" block :loading="acting" label="Confirm order" @click="log('Confirmed')" />
-    <div class="outcomes" role="group" aria-label="Call result" style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr))">
+    <AdsButton v-if="isWorkState" icon="i-lucide-check" block :loading="acting" label="Confirm order" @click="log('Confirmed')" />
+    <div v-if="isWorkState" class="outcomes" role="group" aria-label="Call result" style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr))">
       <button class="outcome" type="button" :disabled="acting" @click="log('NoAnswer')"><AdsIcon name="i-lucide-phone-missed" />No answer</button>
       <button class="outcome" type="button" :disabled="acting" @click="log('WrongNumber')"><AdsIcon name="i-lucide-phone-off" />Wrong number</button>
       <button class="outcome" type="button" :disabled="acting" @click="openPostpone"><AdsIcon name="i-lucide-calendar-clock" />Call back later</button>
       <button class="outcome bad" type="button" :disabled="acting" @click="openCancel"><AdsIcon name="i-lucide-x" />Cancel</button>
     </div>
-    <div v-if="canSkip" style="display: flex; flex-wrap: wrap; gap: 8px">
+    <div v-if="canSkip && isWorkState" style="display: flex; flex-wrap: wrap; gap: 8px">
       <button class="btn btn-sm" type="button" @click="emit('skip')"><AdsIcon name="i-lucide-skip-forward" />Skip for now</button>
     </div>
   </section>
@@ -528,7 +540,7 @@ onBeforeUnmount(() => {
     </template>
   </AdsDialog>
 
-  <AdsDialog v-model:open="priceOpen" title="Edit price / shipping fee" description="Negotiation window: only before the order is confirmed." width="sm">
+  <AdsDialog v-model:open="priceOpen" title="Edit price / shipping fee" description="Available until the order is sent to the courier." width="sm">
     <AdsField label="Shipping fee (DZD)"><AdsNumberInput v-model="editShippingDzd" :min="0" /></AdsField>
     <AdsField label="Total due, COD (DZD)" help="Overrides the total directly."><AdsNumberInput v-model="editTotalDzd" :min="0" /></AdsField>
     <template #footer>
@@ -560,6 +572,8 @@ onBeforeUnmount(() => {
       <AdsButton :loading="savingCustomer" icon="i-lucide-check" @click="saveCustomer">Save</AdsButton>
     </template>
   </AdsDialog>
+
+  <OrderItemsEditor v-model:open="itemsEditOpen" :order-id="order.id" :items="order.items" @changed="emit('changed')" />
 
   <AdsDialog v-model:open="addItemOpen" title="Add item to order" description="Upsell during the call. The total updates automatically.">
     <AdsField label="Product"><AdsSelect v-model="addProductId" :options="productOptions.map((p) => ({ label: p.name, value: p.id }))" placeholder="Choose a product…" /></AdsField>

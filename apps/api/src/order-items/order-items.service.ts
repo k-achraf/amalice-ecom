@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common'
-import type { AddOrderItem, OrderState } from '@amalice/shared'
+import { stockUnits, type AddOrderItem, type OrderState, type UpdateOrderItem } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
+import type { Prisma } from '../generated/prisma/client'
 import { AuditService, type AuditActor } from '../common/audit.service'
 
 // Upsells system's shared mutation core — used by BOTH the admin/call-center
@@ -35,9 +36,9 @@ export class OrderItemsService {
   ) {}
 
   async addItem(orderId: string, input: AddOrderItem, actor: AuditActor | null) {
-    const order = await this.prisma.order.findUnique({ where: { id: orderId } })
+    const order = await this.prisma.order.findUnique({ where: { id: orderId }, include: { shipment: { select: { id: true } } } })
     if (!order) throw new NotFoundException('Order not found')
-    if (!canAddOrderItems(order.state)) {
+    if (!canAddOrderItems(order.state) || order.shipment) {
       throw new BadRequestException(`Can't add items to an order in state ${order.state} — it's already past fulfillment.`)
     }
 
@@ -57,13 +58,17 @@ export class OrderItemsService {
     const unitPriceCents = input.priceCentsOverride ?? variant?.priceCents ?? product.priceCents
     const lineTotalCents = unitPriceCents * input.quantity
 
+    // An abandoned cart holds no stock yet (taken when it is confirmed).
+    const takesStock = !order.isAbandoned
     const available = variant?.stockQuantity ?? product.stockQuantity
-    if (available < input.quantity) {
+    if (takesStock && available < input.quantity) {
       throw new ConflictException(`Insufficient stock for "${product.name}"`)
     }
 
     const updated = await this.prisma.$transaction(async (tx) => {
-      if (variant) {
+      if (!takesStock) {
+        // nothing to reserve
+      } else if (variant) {
         const result = await tx.productVariant.updateMany({
           where: { id: variant.id, stockQuantity: { gte: input.quantity } },
           data: { stockQuantity: { decrement: input.quantity } }
@@ -109,5 +114,82 @@ export class OrderItemsService {
     })
 
     return updated
+  }
+
+  // Edit one line of an order that hasn't reached a courier yet: its quantity
+  // and/or its total price. Stock follows the quantity (whole pieces) unless
+  // the order is an abandoned cart, which holds none; Order.totalCents moves
+  // by the same line delta so shipping and any manual discount stay as set.
+  async updateItem(orderId: string, itemId: string, input: UpdateOrderItem, actor: AuditActor) {
+    const { order, item } = await this.loadEditable(orderId, itemId)
+    const quantity = input.quantity ?? item.quantity
+    const lineTotalCents =
+      input.lineTotalCents ?? (input.quantity !== undefined ? Math.round(item.unitPriceCents * quantity) : item.lineTotalCents)
+    const stockDelta = order.isAbandoned ? 0 : stockUnits(quantity) - stockUnits(item.quantity)
+
+    await this.prisma.$transaction(async (tx) => {
+      if (stockDelta !== 0) await this.moveStock(tx, item, -stockDelta, `Order ${orderId.slice(0, 8)} item quantity edited`, actor)
+      await tx.orderItem.update({ where: { id: itemId }, data: { quantity, lineTotalCents } })
+      await tx.order.update({ where: { id: orderId }, data: { totalCents: { increment: lineTotalCents - item.lineTotalCents } } })
+    })
+    await this.audit.log({
+      actor,
+      action: 'Update',
+      entity: 'Order',
+      entityId: orderId,
+      metadata: { field: 'item', itemId, productId: item.productId, from: { quantity: item.quantity, lineTotalCents: item.lineTotalCents }, to: { quantity, lineTotalCents } }
+    })
+  }
+
+  async removeItem(orderId: string, itemId: string, actor: AuditActor) {
+    const { order, item } = await this.loadEditable(orderId, itemId)
+    const count = await this.prisma.orderItem.count({ where: { orderId } })
+    if (count <= 1) throw new BadRequestException('An order needs at least one item - cancel the order instead.')
+    await this.prisma.$transaction(async (tx) => {
+      if (!order.isAbandoned) await this.moveStock(tx, item, stockUnits(item.quantity), `Order ${orderId.slice(0, 8)} item removed`, actor)
+      await tx.orderItem.delete({ where: { id: itemId } })
+      await tx.order.update({ where: { id: orderId }, data: { totalCents: { decrement: item.lineTotalCents } } })
+    })
+    await this.audit.log({
+      actor,
+      action: 'Update',
+      entity: 'Order',
+      entityId: orderId,
+      metadata: { field: 'item', removedItem: { itemId, productId: item.productId, quantity: item.quantity, lineTotalCents: item.lineTotalCents } }
+    })
+  }
+
+  private async loadEditable(orderId: string, itemId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId }, include: { shipment: { select: { id: true } } } })
+    if (!order) throw new NotFoundException('Order not found')
+    if (!canAddOrderItems(order.state) || order.shipment) {
+      throw new BadRequestException(`Can't edit items of an order in state ${order.state} - it's already with the courier.`)
+    }
+    const item = await this.prisma.orderItem.findFirst({ where: { id: itemId, orderId } })
+    if (!item) throw new NotFoundException('Order item not found')
+    return { order, item }
+  }
+
+  // delta > 0 puts units back on the shelf, < 0 takes them.
+  private async moveStock(
+    tx: Prisma.TransactionClient,
+    item: { productId: string; variantId: string | null },
+    delta: number,
+    note: string,
+    actor: AuditActor
+  ) {
+    if (delta < 0) {
+      const need = -delta
+      const result = item.variantId
+        ? await tx.productVariant.updateMany({ where: { id: item.variantId, stockQuantity: { gte: need } }, data: { stockQuantity: { decrement: need } } })
+        : await tx.product.updateMany({ where: { id: item.productId, stockQuantity: { gte: need } }, data: { stockQuantity: { decrement: need } } })
+      if (result.count === 0) throw new ConflictException('Insufficient stock for this quantity')
+    } else {
+      if (item.variantId) await tx.productVariant.updateMany({ where: { id: item.variantId }, data: { stockQuantity: { increment: delta } } })
+      else await tx.product.updateMany({ where: { id: item.productId }, data: { stockQuantity: { increment: delta } } })
+    }
+    await tx.stockAdjustment.create({
+      data: { productId: item.productId, variantId: item.variantId, delta, reason: 'Correction', note, actorId: actor?.id ?? null }
+    })
   }
 }
