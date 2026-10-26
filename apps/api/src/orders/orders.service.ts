@@ -548,6 +548,9 @@ export class OrdersService {
               shippingType: lead.shippingType,
               shippingPriceCents,
               isAbandoned: false,
+              // The customer submitted it themselves: from here on it is an ordinary order. Only a cart an
+              // agent confirms without the customer ever submitting keeps the "abandoned" label.
+              fromAbandoned: false,
               riskScore: risk.score,
               riskLevel: risk.level,
               riskFactors: risk.factors,
