@@ -132,7 +132,14 @@ const reasonLabel = (v: string | null) => CANCEL_REASONS.find((r) => r.value ===
 
 // ---- lock heartbeat: keep this order claimed while it's open ----
 let heartbeat: ReturnType<typeof setInterval> | undefined
+// Only the drop queue claims orders. Merely browsing an order on the queue page
+// must never lock it (a locked order is hidden from every other agent's drop),
+// and a drop tab left open and idle must let go of its order after a while.
+const IDLE_LIMIT_MS = 10 * 60 * 1000
+let lastActivity = Date.now()
+function markActive() { lastActivity = Date.now() }
 async function touch() {
+  if (!props.shortcuts || Date.now() - lastActivity > IDLE_LIMIT_MS) return
   try { await api(`/admin/orders/${props.order.id}/lock`, { method: 'POST' }) } catch { /* another agent holds it: surfaced when logging */ }
 }
 
@@ -386,10 +393,12 @@ function onKeydown(e: KeyboardEvent) {
 }
 onMounted(() => {
   window.addEventListener('keydown', onKeydown)
-  heartbeat = setInterval(touch, 4 * 60 * 1000)
+  for (const ev of ['keydown', 'click', 'pointermove', 'touchstart']) window.addEventListener(ev, markActive, { passive: true })
+  heartbeat = setInterval(touch, 2 * 60 * 1000)
 })
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', onKeydown)
+  for (const ev of ['keydown', 'click', 'pointermove', 'touchstart']) window.removeEventListener(ev, markActive)
   if (heartbeat) clearInterval(heartbeat)
 })
 </script>

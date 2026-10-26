@@ -85,7 +85,23 @@ export class AdminCallCenterService {
   // "waiting" orders without hiding the ones another agent currently holds.
   private async loadWorkable(now: Date): Promise<Candidate[]> {
     const rows = (await this.prisma.order.findMany({
-      where: { archived: false, state: { in: WORK_STATES } },
+      // Filtered in the database too: only the oldest 1000 rows are read, so
+      // rows that can't be called yet (cooling down, callback in the future,
+      // wrong numbers) must not crowd out the ones that can.
+      where: {
+        archived: false,
+        OR: [
+          { state: 'PendingCallCenter' },
+          { state: 'Postponed', OR: [{ postponedUntil: null }, { postponedUntil: { lte: now } }] },
+          {
+            state: 'CallCenterNoAnswer',
+            OR: [
+              { lastCalledAt: { lte: new Date(now.getTime() - noAnswerCooldownHours() * HOUR) } },
+              { lastCalledAt: null, updatedAt: { lte: new Date(now.getTime() - noAnswerCooldownHours() * HOUR) } }
+            ]
+          }
+        ]
+      },
       select: {
         id: true,
         state: true,
