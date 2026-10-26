@@ -78,7 +78,7 @@ html[dir=ltr] .cb .in{background-position:right 12px center}
 .soldout{padding:16px;border-radius:8px;background:var(--soft);font-weight:500;text-align:center}
 .det>*{padding:24px var(--g);border-top:1px solid var(--line)}
 .det h2{margin-bottom:12px;font-size:21px;line-height:1.4;font-weight:700}
-.txt{font-size:16px;line-height:1.85}.txt p+p,.txt ul,.txt ol,.txt p+h3{margin-top:12px}.txt ul,.txt ol{padding-inline-start:20px;list-style:disc}.txt ol{list-style:decimal}.txt h2,.txt h3,.txt h4{margin:16px 0 4px;font-size:16px}.txt a{color:var(--at)}
+.txt{font-size:16px;line-height:1.85}.txt p+p,.txt ul,.txt ol,.txt p+h3{margin-top:12px}.txt ul,.txt ol{padding-inline-start:20px;list-style:disc}.txt ol{list-style:decimal}.txt h2,.txt h3,.txt h4{margin:16px 0 4px;font-size:16px}.txt a{color:var(--at)}.txt img{display:block;width:100%;height:auto;border-radius:8px}.txt p+p,.txt img+img{margin-top:12px}
 .checks{display:grid;gap:12px;font-size:16px}
 .specs{display:block;font-size:15px}.specs>div{display:grid;grid-template-columns:2fr 3fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}.specs>div:first-child{padding-top:0}.specs>div:last-child{border:0;padding-bottom:0}.specs dt{color:var(--ink2)}.specs dd{font-weight:500}
 .how{display:grid;gap:12px;font-size:15px}.how li{display:flex;gap:12px}.how b{flex:none;width:24px;height:24px;border:1px solid var(--at);border-radius:50%;color:var(--at);font-size:13px;line-height:22px;text-align:center}

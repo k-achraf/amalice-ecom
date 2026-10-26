@@ -41,8 +41,8 @@ export function imgSrcset(url: string, widths: readonly number[] = [480, 800, 10
 }
 
 // Product descriptions come from the admin's rich-text editor (HTML). Only a small set of formatting tags
-// survives; every attribute is dropped except safe links. Everything else is escaped text.
-const ALLOWED = new Set(['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'a'])
+// survives; every attribute is dropped except safe links and an image's src/alt/size (an image-only description is valid). Everything else is escaped text.
+const ALLOWED = new Set(['p', 'br', 'img', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'a'])
 const VOID = new Set(['br'])
 const safeHref = (raw: string): string | null => {
   const href = raw.trim()
@@ -64,6 +64,8 @@ export function sanitizeHtml(html: string): string {
       const i = open.lastIndexOf(name)
       if (i === -1) continue
       while (open.length > i) out += `</${open.pop()}>`
+    } else if (name === 'img') {
+      out += imgTag(m[3] ?? '')
     } else if (VOID.has(name)) {
       out += `<${name}>`
     } else if (name === 'a') {
@@ -79,6 +81,25 @@ export function sanitizeHtml(html: string): string {
   out += esc(decode(html.slice(last)))
   while (open.length) out += `</${open.pop()}>`
   return out
+}
+
+// A description image: only our own uploads or an http(s) image, always through the resizing /img proxy
+// (never an arbitrary URL, never a data: URI).
+function imgTag(attrs: string): string {
+  const attr = (n: string) => {
+    const m = new RegExp(String.raw`\b${n}\s*=\s*(?:"([^"]*)"|'([^']*)')`, 'i').exec(attrs)
+    return m ? decode(m[1] ?? m[2] ?? '').trim() : ''
+  }
+  const src = attr('src')
+  if (!src.startsWith('/uploads/') && !/^https?:\/\//i.test(src)) return ''
+  const dim = (n: string) => {
+    const v = Number(attr(n))
+    return Number.isInteger(v) && v > 0 && v <= 10000 ? ` ${n}="${v}"` : ''
+  }
+  const w = dim('width')
+  const h = dim('height')
+  const set = imgSrcset(src, [480, 800, 1080])
+  return `<img src="${esc(imgUrl(src, 800))}"${set ? ` srcset="${esc(set)}" sizes="(min-width:900px) 560px,100vw"` : ''}${w && h ? w + h : ''} alt="${esc(attr('alt'))}" loading="lazy" decoding="async">`
 }
 
 // Text between tags arrives entity-encoded; decode once so esc() re-encodes it exactly once.
