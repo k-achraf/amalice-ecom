@@ -162,7 +162,7 @@ function fmtDate(iso: string) {
   return new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 function itemsText(o: OrderListResponse['items'][number]) {
-  return o.items.map((it) => `${it.product.name}${it.quantity > 1 ? ` ×${it.quantity}` : ''}`).join(', ')
+  return o.items.map((it) => `${it.product.name} ×${it.quantity}${it.offerLabel ? ` (${it.offerLabel})` : ''}`).join(', ')
 }
 const deliveryLabel = (t: string | null) => (t === 'Home' ? 'Home' : t === 'Desk' ? 'Stop desk' : '')
 const carrier = (o: OrderListResponse['items'][number]) => o.shipment?.courier.name ?? o.shippingCompanyName ?? (o.fulfillmentMethod === 'Manual' ? 'Own driver' : '—')

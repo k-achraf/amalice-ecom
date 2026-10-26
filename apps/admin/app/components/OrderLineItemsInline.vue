@@ -62,6 +62,7 @@ const detailOpen = computed({
       <span class="line-text">
         <span class="strong">{{ item.product.name }}<span v-if="item.variantLabel" class="muted"> — {{ item.variantLabel }}</span></span>
         <span class="muted">×{{ item.quantity }}<template v-if="item.isUpsell"> · upsell</template></span>
+        <span v-if="item.offerLabel" dir="auto" style="color: var(--teal); font-weight: 600">{{ item.offerLabel }}</span>
       </span>
     </button>
   </div>
@@ -83,6 +84,7 @@ const detailOpen = computed({
 
       <div class="mini-stats">
         <div><span class="muted">Quantity</span><b>{{ detailItem.quantity }}</b></div>
+        <div v-if="detailItem.offerLabel"><span class="muted">Offer</span><b dir="auto">{{ detailItem.offerLabel }}</b></div>
         <div><span class="muted">Unit price</span><b><AdsPrice :amount-cents="detailItem.unitPriceCents" /></b></div>
         <div><span class="muted">Line total</span><b><AdsPrice :amount-cents="detailItem.lineTotalCents" /></b></div>
         <div v-if="detailItem.isUpsell || detailItem.offerId" style="display: flex; align-items: center; gap: 6px">

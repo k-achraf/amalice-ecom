@@ -1,6 +1,6 @@
 import { StockService } from '../common/stock.service'
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { ADDRESS_EDITABLE_STATES, CALL_CENTER_WORK_STATES, STATES_REQUIRING_SHIPMENT, deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, STATE_TO_CALL_OUTCOME, type OrderState, type RiskLevel, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
+import { FUNNEL_COPY_AR, ADDRESS_EDITABLE_STATES, CALL_CENTER_WORK_STATES, STATES_REQUIRING_SHIPMENT, deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, STATE_TO_CALL_OUTCOME, type OrderState, type RiskLevel, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
 import type { Prisma } from '../generated/prisma/client'
 import { PurchaseEventsService } from '../apps/purchase-events.service'
 import { PrismaService } from '../prisma/prisma.service'
@@ -51,8 +51,37 @@ function withDerivedStates<T extends { state: OrderState }>(order: T): T & { cal
   return { ...order, callCenterState: deriveCallCenterState(order.state), shippingState: deriveShippingState(order.state) }
 }
 
-function toLineItem(item: ItemWithRelations) {
+type OfferTexts = { single: string | null; offers: Record<string, string> }
+
+// The funnel's custom option texts (Landing step -> "Offer texts"), keyed by funnel id.
+async function loadOfferTexts(prisma: PrismaService, funnelIds: (string | null)[]): Promise<Map<string, OfferTexts>> {
+  const ids = [...new Set(funnelIds.filter((x): x is string => !!x))]
+  const out = new Map<string, OfferTexts>()
+  if (!ids.length) return out
+  const steps = await prisma.funnelStep.findMany({ where: { funnelId: { in: ids }, type: 'Landing' }, select: { funnelId: true, config: true } })
+  for (const s of steps) {
+    const landing = (s.config as { landing?: { singleLabel?: string | null; offerLabels?: Record<string, string> } } | null)?.landing
+    if (!landing) continue
+    out.set(s.funnelId, { single: landing.singleLabel?.trim() || null, offers: landing.offerLabels ?? {} })
+  }
+  return out
+}
+
+function autoOfferLabel(o: { type: string; requiredQuantity: number; freeQuantity: number }): string {
+  return o.type === 'BuyXGetYFree'
+    ? FUNNEL_COPY_AR.buyXGetY(o.requiredQuantity, o.freeQuantity)
+    : o.type === 'FreeShipping'
+      ? FUNNEL_COPY_AR.buyXFreeShipping(o.requiredQuantity)
+      : FUNNEL_COPY_AR.buyX(o.requiredQuantity)
+}
+
+function toLineItem(item: ItemWithRelations, texts?: OfferTexts) {
+  const offerLabel = item.offer
+    ? texts?.offers[item.offer.id]?.trim() || autoOfferLabel(item.offer)
+    : !item.isUpsell ? (texts?.single ?? null) : null
   return {
+    offer: item.offer ? { type: item.offer.type, requiredQuantity: item.offer.requiredQuantity, freeQuantity: item.offer.freeQuantity } : null,
+    offerLabel,
     id: item.id,
     productId: item.productId,
     quantity: item.quantity,
@@ -167,10 +196,11 @@ export class AdminOrdersService {
       }),
       this.prisma.order.count({ where })
     ])
+    const texts = await loadOfferTexts(this.prisma, rows.map((r) => r.funnelId))
     const items = rows.map((order) =>
       withDerivedStates({
         ...order,
-        items: order.items.map(toLineItem),
+        items: order.items.map((it) => toLineItem(it, order.funnelId ? texts.get(order.funnelId) : undefined)),
         shippingCompanyName: order.shippingCompany?.name ?? null,
         attribution: order.attribution && { platform: order.attribution.platform, campaign: order.attribution.campaignName ?? order.attribution.utmCampaign }
       })
@@ -193,7 +223,8 @@ export class AdminOrdersService {
       }
     })
     if (!order) throw new NotFoundException('Order not found')
-    return withDerivedStates({ ...order, items: order.items.map(toLineItem), shippingCompanyName: order.shippingCompany?.name ?? null })
+    const texts = await loadOfferTexts(this.prisma, [order.funnelId])
+    return withDerivedStates({ ...order, items: order.items.map((it) => toLineItem(it, order.funnelId ? texts.get(order.funnelId) : undefined)), shippingCompanyName: order.shippingCompany?.name ?? null })
   }
 
   // Soft-hide an order out of every default order-listing view (Orders,

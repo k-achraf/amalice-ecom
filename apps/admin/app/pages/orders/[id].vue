@@ -564,6 +564,7 @@ function initials(name: string | null) {
                           <AdsLozenge v-if="item.isUpsell" tone="vip" style="margin-left: 6px">Upsell</AdsLozenge>
                           <AdsLozenge v-if="item.offerId" tone="confirmed" style="margin-left: 6px">Offer</AdsLozenge>
                           <span class="sub">{{ item.variantLabel ?? 'Default' }}</span>
+                          <span v-if="item.offerLabel" class="sub" dir="auto" style="color: var(--teal); font-weight: 600">{{ item.offerLabel }}</span>
                         </span>
                       </div>
                     </td>

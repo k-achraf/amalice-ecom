@@ -34,7 +34,7 @@ function applySearch() { page.value = 1; load() }
 
 const rows = computed(() => data.value?.items ?? [])
 const fmtDate = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-const itemsText = (o: OrderListResponse['items'][number]) => o.items.map((it) => `${it.product.name}${it.quantity > 1 ? ` ×${it.quantity}` : ''}${it.isUpsell ? ' (upsell)' : ''}`).join(', ')
+const itemsText = (o: OrderListResponse['items'][number]) => o.items.map((it) => `${it.product.name} ×${it.quantity}${it.offerLabel ? ` (${it.offerLabel})` : ''}${it.isUpsell ? ' (upsell)' : ''}`).join(', ')
 const deliveryLabel = (t: string | null) => (t === 'Home' ? 'Home' : t === 'Desk' ? 'Stop desk' : '')
 function rowClick(e: MouseEvent, id: string) {
   if (!(e.target as HTMLElement).closest('a, input, button')) navigateTo(`/orders/${id}`)

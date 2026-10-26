@@ -486,6 +486,11 @@ export interface AdminOrderLineItem {
   unitPriceCents: number
   lineTotalCents: number
   offerId: string | null
+  // The quantity offer the customer picked (null = the plain/default option) and the
+  // title shown for it: the funnel's custom text when set, else the automatic one
+  // ("اشترِ 2 واحصل على 1 مجاناً"). `quantity` already includes any free units.
+  offer: { type: 'FixedBundlePrice' | 'BuyXGetYFree' | 'FreeShipping'; requiredQuantity: number; freeQuantity: number } | null
+  offerLabel: string | null
   isUpsell: boolean
   // `images` is the product's full gallery (ProductImage rows, sortOrder
   // ascending) — used by the Call Center/Orders/Shipping admin queues to
