@@ -219,6 +219,7 @@ async function loadCommunes(wilayaId: string) {
 watch(editWilayaId, (id, oldId) => {
   if (id && id !== oldId) {
     editCommuneName.value = ''
+    communeOptions.value = []
     loadCommunes(id)
   }
 })
@@ -226,6 +227,10 @@ watch(editWilayaId, (id, oldId) => {
 async function saveCustomer() {
   if (!order.value) return
   const wilayaName = wilayaOptions.value.find((w) => w.id === editWilayaId.value)?.name
+  if (wilayaName && wilayaName !== order.value.address.region && !editCommuneName.value) {
+    toast.warning('Choose a commune from the list for the new wilaya')
+    return
+  }
   savingCustomer.value = true
   const body: Record<string, string> = {}
   if (editCustomerName.value.trim() !== (order.value.customer.name ?? '')) body.customerName = editCustomerName.value.trim()
@@ -781,8 +786,8 @@ function initials(name: string | null) {
       <AdsField label="Phone"><AdsInput v-model="editCustomerPhone" /></AdsField>
     </div>
     <div class="grid-2">
-      <AdsField label="Wilaya"><AdsSelect :model-value="editWilayaId" :options="wilayaOptions.map((w) => ({ label: w.name, value: w.id }))" placeholder="Choose a wilaya…" @update:model-value="(v) => (editWilayaId = v ? String(v) : undefined)" /></AdsField>
-      <AdsField label="Commune"><AdsSelect :model-value="editCommuneName || undefined" :options="communeOptions.map((c) => ({ label: c.name, value: c.name }))" placeholder="Choose a commune…" :disabled="!editWilayaId" @update:model-value="(v) => (editCommuneName = String(v))" /></AdsField>
+      <AdsField label="Wilaya"><AdsSearchSelect :model-value="editWilayaId" :options="wilayaOptions.map((w) => ({ label: w.name, value: w.id }))" placeholder="Search a wilaya…" @update:model-value="(v) => (editWilayaId = v ? String(v) : undefined)" /></AdsField>
+      <AdsField label="Commune"><AdsSearchSelect :model-value="editCommuneName || undefined" :options="communeOptions.map((c) => ({ label: c.name, value: c.name }))" :placeholder="editWilayaId ? 'Search a commune…' : 'Choose a wilaya first'" :disabled="!editWilayaId" @update:model-value="(v) => (editCommuneName = String(v))" /></AdsField>
     </div>
     <AdsField label="Address line"><AdsInput v-model="editAddressLine1" /></AdsField>
     <AdsField label="Shipping method"><AdsRadioGroup :model-value="editShippingType" :options="[{ label: 'Home delivery', value: 'Home' }, { label: 'Stop desk', value: 'Desk' }]" @update:model-value="(v) => (editShippingType = v as 'Home' | 'Desk')" /></AdsField>

@@ -286,12 +286,17 @@ async function openCustomer() {
 watch(editWilayaId, (id, old) => {
   if (id && id !== old) {
     if (old) editCommune.value = ''
+    communeOptions.value = []
     loadCommunes(id)
   }
 })
 async function saveCustomer() {
   const o = props.order
   const wilayaName = wilayaOptions.value.find((w) => w.id === editWilayaId.value)?.name
+  if (wilayaName && wilayaName !== o.address.region && !editCommune.value) {
+    toast.warning('Choose a commune from the list for the new wilaya')
+    return
+  }
   const body: Record<string, string> = {}
   if (editName.value.trim() !== (o.customer.name ?? '')) body.customerName = editName.value.trim()
   if (editPhone.value.trim() && editPhone.value.trim() !== formatPhoneLocal(o.customer.phone)) body.customerPhone = editPhone.value.trim()
@@ -555,8 +560,8 @@ onBeforeUnmount(() => {
       <AdsField label="Phone"><AdsInput v-model="editPhone" /></AdsField>
     </div>
     <div class="grid-2">
-      <AdsField label="Wilaya"><AdsSelect v-model="editWilayaId" :items="wilayaOptions.map((w) => ({ label: w.name, value: w.id }))" value-key="value" /></AdsField>
-      <AdsField label="Commune"><AdsSelect v-model="editCommune" :items="communeOptions.map((c) => ({ label: c.name, value: c.name }))" value-key="value" :disabled="!editWilayaId" /></AdsField>
+      <AdsField label="Wilaya"><AdsSearchSelect v-model="editWilayaId" :options="wilayaOptions.map((w) => ({ label: w.name, value: w.id }))" placeholder="Search a wilaya…" /></AdsField>
+      <AdsField label="Commune"><AdsSearchSelect v-model="editCommune" :options="communeOptions.map((c) => ({ label: c.name, value: c.name }))" :placeholder="editWilayaId ? 'Search a commune…' : 'Choose a wilaya first'" :disabled="!editWilayaId" /></AdsField>
     </div>
     <AdsField label="Address line"><AdsInput v-model="editLine1" /></AdsField>
     <AdsField label="Shipping method">
