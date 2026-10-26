@@ -161,9 +161,11 @@ export class AppsService {
   // Returns null if the app isn't enabled or isn't fully configured for CAPI
   // (pixel id + access token + the capiEnabled toggle all required), so
   // callers can just check truthiness instead of re-deriving this logic.
-  async getMetaPixelCapiCredentials(pixelOverride?: string | null): Promise<MetaCapiCredentials | null> {
+  async getMetaPixelCapiCredentials(pixelOverride?: string | null, includeDisabled = false): Promise<MetaCapiCredentials | null> {
     const row = await this.prisma.appInstallation.findUnique({ where: { appId: 'meta-pixel' } })
-    if (!row?.enabled) return null
+    // A funnel with its own pixel tracks in the browser even while the store-wide app is off, so its
+    // server-side events must not depend on that switch either (otherwise only the browser half is sent).
+    if (!row || (!row.enabled && !pixelOverride && !includeDisabled)) return null
     const parsed = MetaPixelConfigSchema.safeParse(row.config ?? {})
     if (!parsed.success || !parsed.data.capiEnabled || !parsed.data.pixelId || !parsed.data.accessToken) return null
     // A funnel's own pixel id replaces the store's; the access token is still the store's (same business).
@@ -171,9 +173,9 @@ export class AppsService {
   }
 
   // Same idea as getMetaPixelCapiCredentials, for TikTok's Events API.
-  async getTikTokPixelEapiCredentials(pixelOverride?: string | null): Promise<TikTokEapiCredentials | null> {
+  async getTikTokPixelEapiCredentials(pixelOverride?: string | null, includeDisabled = false): Promise<TikTokEapiCredentials | null> {
     const row = await this.prisma.appInstallation.findUnique({ where: { appId: 'tiktok-pixel' } })
-    if (!row?.enabled) return null
+    if (!row || (!row.enabled && !pixelOverride && !includeDisabled)) return null
     const parsed = TikTokPixelConfigSchema.safeParse(row.config ?? {})
     if (!parsed.success || !parsed.data.eapiEnabled || !parsed.data.pixelCode || !parsed.data.accessToken) return null
     return { pixelCode: pixelOverride || parsed.data.pixelCode, accessToken: parsed.data.accessToken, testEventCode: parsed.data.testEventCode }

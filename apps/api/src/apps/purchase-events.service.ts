@@ -36,7 +36,7 @@ export class PurchaseEventsService {
         customer: { select: { phone: true } },
         funnel: { select: { metaPixelId: true, tiktokPixelCode: true } },
         items: { select: { productId: true, quantity: true, unitPriceCents: true } },
-        attribution: { select: { ipAddress: true, userAgent: true, fbp: true, fbc: true, ttp: true } }
+        attribution: { select: { ipAddress: true, userAgent: true, fbp: true, fbc: true, ttp: true, landingUrl: true, pageUrl: true } }
       }
     })
     if (!order || order.isAbandoned) return
@@ -53,6 +53,7 @@ export class PurchaseEventsService {
       this.meta.fireAndForget(metaCreds, {
         eventName: 'Purchase',
         eventId: order.id,
+        eventSourceUrl: a?.pageUrl ?? a?.landingUrl ?? undefined,
         userData: { phone: order.customer.phone, ip: a?.ipAddress ?? undefined, userAgent: a?.userAgent ?? undefined, fbp: a?.fbp ?? undefined, fbc: a?.fbc ?? undefined },
         customData: { value, currency: 'DZD', order_id: order.id, content_ids: order.items.map((i) => i.productId), content_type: 'product' }
       })

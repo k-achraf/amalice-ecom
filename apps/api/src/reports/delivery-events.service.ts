@@ -26,8 +26,15 @@ export class DeliveryEventsService {
   ) {}
 
   async sweep(): Promise<number> {
-    const [metaCreds, tiktokCreds] = await Promise.all([this.apps.getMetaPixelCapiCredentials(), this.apps.getTikTokPixelEapiCredentials()])
-    if (!metaCreds && !tiktokCreds) return 0
+    // Store-wide credentials need the app switched on; an order from a funnel with its own pixel is
+    // sent even while it is off (its browser pixel runs regardless), using the saved token.
+    const [storeMeta, storeTiktok, anyMeta, anyTiktok] = await Promise.all([
+      this.apps.getMetaPixelCapiCredentials(),
+      this.apps.getTikTokPixelEapiCredentials(),
+      this.apps.getMetaPixelCapiCredentials(undefined, true),
+      this.apps.getTikTokPixelEapiCredentials(undefined, true)
+    ])
+    if (!anyMeta && !anyTiktok) return 0
 
     const orders = await this.prisma.order.findMany({
       where: { state: { in: [...DELIVERED_STATES] }, deliveredEventSentAt: null, isAbandoned: false, updatedAt: { gte: new Date(Date.now() - MAX_AGE_MS) } },
@@ -50,6 +57,9 @@ export class DeliveryEventsService {
       const eventId = `delivered-${o.id}`
       const eventTime = Math.floor(o.updatedAt.getTime() / 1000)
       const value = Math.round(o.totalCents) / 100
+      const metaCreds = o.funnel?.metaPixelId ? anyMeta : storeMeta
+      const tiktokCreds = o.funnel?.tiktokPixelCode ? anyTiktok : storeTiktok
+      if (!metaCreds && !tiktokCreds) continue
       let ok = true
       try {
         if (metaCreds && (!a || a.platform === 'Meta' || a.fbp || a.fbc)) {
