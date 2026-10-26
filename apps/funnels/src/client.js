@@ -95,7 +95,7 @@
   loadPx()
 
   function metaEv(n, p, id) { if (fd.px.m) px(function () { window.fbq && fbq('track', n, p, id ? { eventID: id } : undefined) }) }
-  function ttEv(n, p, id) { if (fd.px.t) px(function () { if (window.ttq) { if (id) p.event_id = id; ttq.track(n, p) } }) }
+  function ttEv(n, p, id) { if (fd.px.t) px(function () { if (window.ttq) ttq.track(n, p, id ? { event_id: id } : undefined) }) }
 
   metaEv('ViewContent', { content_ids: [fd.pid], content_type: 'product', value: fd.unit / 100, currency: 'DZD' })
   ttEv('ViewContent', { contents: [{ content_id: fd.pid, content_type: 'product', price: fd.unit / 100 }], value: fd.unit / 100, currency: 'DZD' })
