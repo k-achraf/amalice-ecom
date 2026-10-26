@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common'
-import { stockUnits, type AddOrderItem, type OrderState, type UpdateOrderItem } from '@amalice/shared'
+import { offerPriceCents, offerTotalQuantity, stockUnits, type AddOrderItem, type OrderState, type UpdateOrderItem } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import type { Prisma } from '../generated/prisma/client'
 import { AuditService, type AuditActor } from '../common/audit.service'
@@ -122,14 +122,28 @@ export class OrderItemsService {
   // by the same line delta so shipping and any manual discount stay as set.
   async updateItem(orderId: string, itemId: string, input: UpdateOrderItem, actor: AuditActor) {
     const { order, item } = await this.loadEditable(orderId, itemId)
-    const quantity = input.quantity ?? item.quantity
-    const lineTotalCents =
+    let offerId = item.offerId
+    let quantity = input.quantity ?? item.quantity
+    let lineTotalCents =
       input.lineTotalCents ?? (input.quantity !== undefined ? Math.round(item.unitPriceCents * quantity) : item.lineTotalCents)
+    if (input.offerId !== undefined) {
+      offerId = input.offerId
+      if (input.offerId) {
+        const offer = await this.prisma.productOffer.findFirst({ where: { id: input.offerId, productId: item.productId, enabled: true } })
+        if (!offer) throw new BadRequestException('That offer is not available for this product')
+        quantity = offerTotalQuantity(offer)
+        lineTotalCents = input.lineTotalCents ?? offerPriceCents(offer, item.unitPriceCents)
+      } else {
+        // Back to the plain option: one unit unless a quantity is given.
+        quantity = input.quantity ?? 1
+        lineTotalCents = input.lineTotalCents ?? Math.round(item.unitPriceCents * quantity)
+      }
+    }
     const stockDelta = order.isAbandoned ? 0 : stockUnits(quantity) - stockUnits(item.quantity)
 
     await this.prisma.$transaction(async (tx) => {
       if (stockDelta !== 0) await this.moveStock(tx, item, -stockDelta, `Order ${orderId.slice(0, 8)} item quantity edited`, actor)
-      await tx.orderItem.update({ where: { id: itemId }, data: { quantity, lineTotalCents } })
+      await tx.orderItem.update({ where: { id: itemId }, data: { quantity, lineTotalCents, offerId } })
       await tx.order.update({ where: { id: orderId }, data: { totalCents: { increment: lineTotalCents - item.lineTotalCents } } })
     })
     await this.audit.log({
@@ -137,7 +151,7 @@ export class OrderItemsService {
       action: 'Update',
       entity: 'Order',
       entityId: orderId,
-      metadata: { field: 'item', itemId, productId: item.productId, from: { quantity: item.quantity, lineTotalCents: item.lineTotalCents }, to: { quantity, lineTotalCents } }
+      metadata: { field: 'item', itemId, productId: item.productId, from: { quantity: item.quantity, lineTotalCents: item.lineTotalCents }, to: { quantity, lineTotalCents, offerId } }
     })
   }
 

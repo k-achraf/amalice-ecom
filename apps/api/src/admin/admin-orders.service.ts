@@ -1,6 +1,6 @@
 import { StockService } from '../common/stock.service'
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { FUNNEL_COPY_AR, ADDRESS_EDITABLE_STATES, CALL_CENTER_WORK_STATES, STATES_REQUIRING_SHIPMENT, deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, STATE_TO_CALL_OUTCOME, type OrderState, type RiskLevel, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
+import { FUNNEL_COPY_AR, offerPriceCents, offerTotalQuantity, ADDRESS_EDITABLE_STATES, CALL_CENTER_WORK_STATES, STATES_REQUIRING_SHIPMENT, deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, STATE_TO_CALL_OUTCOME, type OrderState, type RiskLevel, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
 import type { Prisma } from '../generated/prisma/client'
 import { PurchaseEventsService } from '../apps/purchase-events.service'
 import { PrismaService } from '../prisma/prisma.service'
@@ -22,7 +22,8 @@ const itemInclude = {
       // Full gallery, not just the denormalized hero — Call Center/Orders/
       // Shipping queues show every shot of the product inline (see
       // AdminOrderLineItem.product's comment in packages/shared).
-      images: { orderBy: { sortOrder: 'asc' }, select: { url: true } }
+      images: { orderBy: { sortOrder: 'asc' }, select: { url: true } },
+      offers: { where: { enabled: true }, orderBy: { requiredQuantity: 'asc' } }
     }
   },
   variant: { include: { options: { include: { option: true } } } },
@@ -82,6 +83,13 @@ function toLineItem(item: ItemWithRelations, texts?: OfferTexts) {
   return {
     offer: item.offer ? { type: item.offer.type, requiredQuantity: item.offer.requiredQuantity, freeQuantity: item.offer.freeQuantity } : null,
     offerLabel,
+    availableOffers: item.product.offers.map((o) => ({
+      id: o.id,
+      type: o.type,
+      label: texts?.offers[o.id]?.trim() || autoOfferLabel(o),
+      quantity: offerTotalQuantity(o),
+      priceCents: offerPriceCents(o, item.unitPriceCents)
+    })),
     id: item.id,
     productId: item.productId,
     quantity: item.quantity,

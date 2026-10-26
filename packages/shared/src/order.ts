@@ -491,6 +491,9 @@ export interface AdminOrderLineItem {
   // ("اشترِ 2 واحصل على 1 مجاناً"). `quantity` already includes any free units.
   offer: { type: 'FixedBundlePrice' | 'BuyXGetYFree' | 'FreeShipping'; requiredQuantity: number; freeQuantity: number } | null
   offerLabel: string | null
+  // The product's enabled offers, so an agent can switch the customer's choice:
+  // `quantity` and `priceCents` are what the line becomes if that offer is picked.
+  availableOffers: { id: string; type: 'FixedBundlePrice' | 'BuyXGetYFree' | 'FreeShipping'; label: string; quantity: number; priceCents: number }[]
   isUpsell: boolean
   // `images` is the product's full gallery (ProductImage rows, sortOrder
   // ascending) — used by the Call Center/Orders/Shipping admin queues to
@@ -732,9 +735,12 @@ export type AddOrderItem = z.infer<typeof AddOrderItemSchema>
 export const UpdateOrderItemSchema = z
   .object({
     quantity: z.number().positive().multipleOf(0.5).optional(),
-    lineTotalCents: z.number().int().nonnegative().optional()
+    lineTotalCents: z.number().int().nonnegative().optional(),
+    // Switch the line to another of the product's offers (quantity and price follow the
+    // offer unless lineTotalCents overrides the price), or null for the plain option.
+    offerId: z.uuid().nullable().optional()
   })
-  .refine((v) => v.quantity !== undefined || v.lineTotalCents !== undefined, { message: 'Provide quantity and/or lineTotalCents' })
+  .refine((v) => v.quantity !== undefined || v.lineTotalCents !== undefined || v.offerId !== undefined, { message: 'Provide quantity, lineTotalCents and/or offerId' })
 export type UpdateOrderItem = z.infer<typeof UpdateOrderItemSchema>
 
 // Public, unauthenticated social-proof feed — real recent orders (never
