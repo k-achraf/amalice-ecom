@@ -68,7 +68,7 @@ export class DhdCourierProvider implements CourierProvider {
       remarque: input.notes?.slice(0, 255),
       produit: input.items?.map((i) => i.name).join(',') || undefined,
       stock: '0', // never DHD-warehoused stock — we ship our own picked parcel.
-      quantite: input.items?.map((i) => String(i.quantity)).join(',') || undefined,
+      quantite: input.items?.map((i) => String(Math.ceil(i.quantity))).join(',') || undefined,
       type: input.operation === 'Exchange' ? '2' : '1', // 1 = Livraison, 2 = Échange
       produit_a_recuperer: input.operation === 'Exchange' ? (input.exchangeProduct ?? undefined) : undefined,
       boutique: input.shopName || undefined,

@@ -310,7 +310,7 @@ export const OrderItemSchema = z.object({
   // but not disallowed). Kept even if the variant is later deleted, purely
   // for order-history traceability (same reasoning as offerId below).
   variantId: z.uuid().nullable().optional(),
-  quantity: z.number().int().positive(),
+  quantity: z.number().positive(),
   // Cents, not floats — avoids float rounding bugs in money math (same
   // convention as PriceDisplay in packages/ui). Reference/undiscounted
   // per-unit price — NOT what was charged when an offer applied; see
@@ -357,7 +357,8 @@ export const CheckoutItemSchema = z.object({
   // priceCents/stockQuantity instead of the base product's when present
   // (never trusts a client-submitted price, same rule as offerId below).
   variantId: z.uuid().optional(),
-  quantity: z.number().int().positive(),
+  // Whole units, or a half unit from an offer (1.5).
+  quantity: z.number().positive().multipleOf(0.5),
   // Which ProductOffer (if any) the customer picked for this line — the
   // server re-validates it still belongs to this product, is enabled, and
   // that `quantity` matches what the offer requires before pricing off it

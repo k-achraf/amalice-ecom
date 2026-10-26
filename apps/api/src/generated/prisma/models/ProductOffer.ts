@@ -251,8 +251,8 @@ export type ProductOfferWhereInput = {
   productId?: Prisma.StringFilter<"ProductOffer"> | string
   type?: Prisma.EnumProductOfferTypeFilter<"ProductOffer"> | $Enums.ProductOfferType
   enabled?: Prisma.BoolFilter<"ProductOffer"> | boolean
-  requiredQuantity?: Prisma.IntFilter<"ProductOffer"> | number
-  freeQuantity?: Prisma.IntFilter<"ProductOffer"> | number
+  requiredQuantity?: Prisma.FloatFilter<"ProductOffer"> | number
+  freeQuantity?: Prisma.FloatFilter<"ProductOffer"> | number
   bundlePriceCents?: Prisma.IntNullableFilter<"ProductOffer"> | number | null
   createdAt?: Prisma.DateTimeFilter<"ProductOffer"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductOffer"> | Date | string
@@ -282,8 +282,8 @@ export type ProductOfferWhereUniqueInput = Prisma.AtLeast<{
   productId?: Prisma.StringFilter<"ProductOffer"> | string
   type?: Prisma.EnumProductOfferTypeFilter<"ProductOffer"> | $Enums.ProductOfferType
   enabled?: Prisma.BoolFilter<"ProductOffer"> | boolean
-  requiredQuantity?: Prisma.IntFilter<"ProductOffer"> | number
-  freeQuantity?: Prisma.IntFilter<"ProductOffer"> | number
+  requiredQuantity?: Prisma.FloatFilter<"ProductOffer"> | number
+  freeQuantity?: Prisma.FloatFilter<"ProductOffer"> | number
   bundlePriceCents?: Prisma.IntNullableFilter<"ProductOffer"> | number | null
   createdAt?: Prisma.DateTimeFilter<"ProductOffer"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductOffer"> | Date | string
@@ -316,8 +316,8 @@ export type ProductOfferScalarWhereWithAggregatesInput = {
   productId?: Prisma.StringWithAggregatesFilter<"ProductOffer"> | string
   type?: Prisma.EnumProductOfferTypeWithAggregatesFilter<"ProductOffer"> | $Enums.ProductOfferType
   enabled?: Prisma.BoolWithAggregatesFilter<"ProductOffer"> | boolean
-  requiredQuantity?: Prisma.IntWithAggregatesFilter<"ProductOffer"> | number
-  freeQuantity?: Prisma.IntWithAggregatesFilter<"ProductOffer"> | number
+  requiredQuantity?: Prisma.FloatWithAggregatesFilter<"ProductOffer"> | number
+  freeQuantity?: Prisma.FloatWithAggregatesFilter<"ProductOffer"> | number
   bundlePriceCents?: Prisma.IntNullableWithAggregatesFilter<"ProductOffer"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ProductOffer"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ProductOffer"> | Date | string
@@ -353,8 +353,8 @@ export type ProductOfferUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumProductOfferTypeFieldUpdateOperationsInput | $Enums.ProductOfferType
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  requiredQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  freeQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  requiredQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  freeQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
   bundlePriceCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -367,8 +367,8 @@ export type ProductOfferUncheckedUpdateInput = {
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumProductOfferTypeFieldUpdateOperationsInput | $Enums.ProductOfferType
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  requiredQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  freeQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  requiredQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  freeQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
   bundlePriceCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -391,8 +391,8 @@ export type ProductOfferUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumProductOfferTypeFieldUpdateOperationsInput | $Enums.ProductOfferType
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  requiredQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  freeQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  requiredQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  freeQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
   bundlePriceCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -403,8 +403,8 @@ export type ProductOfferUncheckedUpdateManyInput = {
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumProductOfferTypeFieldUpdateOperationsInput | $Enums.ProductOfferType
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  requiredQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  freeQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  requiredQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  freeQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
   bundlePriceCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -593,8 +593,8 @@ export type ProductOfferScalarWhereInput = {
   productId?: Prisma.StringFilter<"ProductOffer"> | string
   type?: Prisma.EnumProductOfferTypeFilter<"ProductOffer"> | $Enums.ProductOfferType
   enabled?: Prisma.BoolFilter<"ProductOffer"> | boolean
-  requiredQuantity?: Prisma.IntFilter<"ProductOffer"> | number
-  freeQuantity?: Prisma.IntFilter<"ProductOffer"> | number
+  requiredQuantity?: Prisma.FloatFilter<"ProductOffer"> | number
+  freeQuantity?: Prisma.FloatFilter<"ProductOffer"> | number
   bundlePriceCents?: Prisma.IntNullableFilter<"ProductOffer"> | number | null
   createdAt?: Prisma.DateTimeFilter<"ProductOffer"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductOffer"> | Date | string
@@ -644,8 +644,8 @@ export type ProductOfferUpdateWithoutOrderItemsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumProductOfferTypeFieldUpdateOperationsInput | $Enums.ProductOfferType
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  requiredQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  freeQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  requiredQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  freeQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
   bundlePriceCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -657,8 +657,8 @@ export type ProductOfferUncheckedUpdateWithoutOrderItemsInput = {
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumProductOfferTypeFieldUpdateOperationsInput | $Enums.ProductOfferType
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  requiredQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  freeQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  requiredQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  freeQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
   bundlePriceCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -679,8 +679,8 @@ export type ProductOfferUpdateWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumProductOfferTypeFieldUpdateOperationsInput | $Enums.ProductOfferType
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  requiredQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  freeQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  requiredQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  freeQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
   bundlePriceCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -691,8 +691,8 @@ export type ProductOfferUncheckedUpdateWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumProductOfferTypeFieldUpdateOperationsInput | $Enums.ProductOfferType
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  requiredQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  freeQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  requiredQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  freeQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
   bundlePriceCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -703,8 +703,8 @@ export type ProductOfferUncheckedUpdateManyWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumProductOfferTypeFieldUpdateOperationsInput | $Enums.ProductOfferType
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  requiredQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  freeQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  requiredQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  freeQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
   bundlePriceCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1252,8 +1252,8 @@ export interface ProductOfferFieldRefs {
   readonly productId: Prisma.FieldRef<"ProductOffer", 'String'>
   readonly type: Prisma.FieldRef<"ProductOffer", 'ProductOfferType'>
   readonly enabled: Prisma.FieldRef<"ProductOffer", 'Boolean'>
-  readonly requiredQuantity: Prisma.FieldRef<"ProductOffer", 'Int'>
-  readonly freeQuantity: Prisma.FieldRef<"ProductOffer", 'Int'>
+  readonly requiredQuantity: Prisma.FieldRef<"ProductOffer", 'Float'>
+  readonly freeQuantity: Prisma.FieldRef<"ProductOffer", 'Float'>
   readonly bundlePriceCents: Prisma.FieldRef<"ProductOffer", 'Int'>
   readonly createdAt: Prisma.FieldRef<"ProductOffer", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ProductOffer", 'DateTime'>

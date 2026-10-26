@@ -122,7 +122,14 @@ export interface FunnelOrderResult {
 // ---- Customer-facing copy. The funnels site is Arabic / RTL like the storefront; the admin preview
 // renders from the same dictionary so it shows exactly what visitors will read. ----
 
-export const unitsLabel = (n: number) => (n === 1 ? 'قطعة واحدة' : n === 2 ? 'قطعتان' : n <= 10 ? `${n} قطع` : `${n} قطعة`)
+const unitsWhole = (n: number) => (n === 1 ? 'قطعة واحدة' : n === 2 ? 'قطعتان' : n <= 10 ? `${n} قطع` : `${n} قطعة`)
+// Half units read "قطعة ونصف", "قطعتان ونصف", "3 قطع ونصف".
+export const unitsLabel = (n: number) => {
+  if (Number.isInteger(n)) return unitsWhole(n)
+  const whole = Math.floor(n)
+  if (whole === 0) return 'نصف قطعة'
+  return `${unitsWhole(whole).replace('واحدة', '')} ونصف`.replace('  ', ' ').trim()
+}
 export const formatDa = (cents: number) => `${(cents / 100).toLocaleString('en-US')} دج`
 
 export const FUNNEL_COPY_AR = {

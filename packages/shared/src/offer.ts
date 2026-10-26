@@ -13,9 +13,9 @@ export const ProductOfferSchema = z.object({
   productId: z.uuid(),
   type: ProductOfferTypeSchema,
   enabled: z.boolean(),
-  requiredQuantity: z.number().int().min(1),
+  requiredQuantity: z.number().min(0.5),
   // BuyXGetYFree only — extra free units on top of requiredQuantity.
-  freeQuantity: z.number().int().nonnegative(),
+  freeQuantity: z.number().nonnegative(),
   // FixedBundlePrice only — total price (cents) for requiredQuantity units.
   bundlePriceCents: z.number().int().nonnegative().nullable(),
   createdAt: z.string().datetime().nullable().optional(),
@@ -33,9 +33,8 @@ export function offerTotalQuantity(offer: Pick<ProductOffer, 'type' | 'requiredQ
 // current per-unit price. FreeShipping has no price effect (see the Prisma
 // model comment) — it's priced like a plain purchase.
 export function offerPriceCents(offer: Pick<ProductOffer, 'type' | 'requiredQuantity' | 'bundlePriceCents'>, unitPriceCents: number): number {
-  if (offer.type === 'FixedBundlePrice') return offer.bundlePriceCents ?? unitPriceCents * offer.requiredQuantity
-  if (offer.type === 'BuyXGetYFree') return unitPriceCents * offer.requiredQuantity
-  return unitPriceCents * offer.requiredQuantity
+  if (offer.type === 'FixedBundlePrice') return offer.bundlePriceCents ?? Math.round(unitPriceCents * offer.requiredQuantity)
+  return Math.round(unitPriceCents * offer.requiredQuantity)
 }
 
 const ProductOfferInputBaseSchema = z.object({
@@ -43,8 +42,9 @@ const ProductOfferInputBaseSchema = z.object({
   // No upper bound — products sold only in fixed lots (see
   // Product.requireOfferSelection) can genuinely need offers well past 50
   // units (e.g. wholesale packs of 100+).
-  requiredQuantity: z.number().int().min(1),
-  freeQuantity: z.number().int().nonnegative().default(0),
+  // Half units are allowed (1.5, 2.5…).
+  requiredQuantity: z.number().min(0.5).multipleOf(0.5),
+  freeQuantity: z.number().nonnegative().multipleOf(0.5).default(0),
   bundlePriceCents: z.number().int().nonnegative().nullable().optional()
 })
 
@@ -55,3 +55,8 @@ export const UpdateProductOfferSchema = ProductOfferInputBaseSchema.partial().ex
   enabled: z.boolean().optional()
 })
 export type UpdateProductOffer = z.infer<typeof UpdateProductOfferSchema>
+
+// Stock is counted in whole pieces: a line of 1.5 takes 2 from it (and gives 2 back).
+export function stockUnits(quantity: number): number {
+  return Math.ceil(quantity)
+}

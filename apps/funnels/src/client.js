@@ -240,7 +240,7 @@
     return fd.unit
   }
   function oq(o) { return o.t === 'x' ? o.r + o.f : o.r }
-  function ot(o, u) { return o.t === 'b' ? (o.b == null ? u * o.r : o.b) : u * o.r }
+  function ot(o, u) { return o.t === 'b' && o.b != null ? o.b : Math.round(u * o.r) }
   function offer() { for (var i = 0; i < fd.offers.length; i++) if (fd.offers[i].id === st.off) return fd.offers[i]; return null }
   function qty() { var o = offer(); return o ? oq(o) : 1 }
   function shipCents() { return fd.hs ? null : st.wil && st.ship ? (st.ship === 'Home' ? st.wil[2] : st.wil[3]) : null }

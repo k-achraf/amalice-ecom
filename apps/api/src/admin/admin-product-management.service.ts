@@ -347,8 +347,8 @@ export class AdminProductManagementService {
     if (type === 'FixedBundlePrice' && (bundlePriceCents === null || bundlePriceCents === undefined)) {
       throw new BadRequestException('Bundle price is required for a fixed-bundle-price offer')
     }
-    if (type === 'BuyXGetYFree' && (freeQuantity === undefined || freeQuantity < 1)) {
-      throw new BadRequestException('Free quantity must be at least 1 for a buy-X-get-Y-free offer')
+    if (type === 'BuyXGetYFree' && (freeQuantity === undefined || freeQuantity <= 0)) {
+      throw new BadRequestException('Free quantity must be more than 0 for a buy-X-get-Y-free offer')
     }
   }
 

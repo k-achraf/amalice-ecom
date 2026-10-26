@@ -6479,6 +6479,20 @@ export type ListEnumCallOutcomeFieldRefInput<$PrismaModel> = FieldRefInputType<$
 
 
 /**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+/**
  * Reference to a field of type 'ProductOfferType'
  */
 export type EnumProductOfferTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductOfferType'>
@@ -6755,20 +6769,6 @@ export type EnumMetaConnectionStatusFieldRefInput<$PrismaModel> = FieldRefInputT
  * Reference to a field of type 'MetaConnectionStatus[]'
  */
 export type ListEnumMetaConnectionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MetaConnectionStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'Float'
- */
-export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
-
-
-/**
- * Reference to a field of type 'Float[]'
- */
-export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 

@@ -639,7 +639,7 @@ async function createOffer() {
     toast.add({ title: 'Enter a bundle price', color: 'warning' })
     return
   }
-  if (newOffer.type === 'BuyXGetYFree' && newOffer.freeQuantity < 1) {
+  if (newOffer.type === 'BuyXGetYFree' && newOffer.freeQuantity <= 0) {
     toast.add({ title: 'Free quantity must be at least 1', color: 'warning' })
     return
   }
@@ -1245,11 +1245,11 @@ async function deleteUpsell(upsellId: string) {
         </AdsField>
 
         <AdsField :label="newOffer.type === 'BuyXGetYFree' ? 'Paid quantity' : 'Required quantity'">
-          <AdsNumberInput v-model="newOffer.requiredQuantity" :min="1" class="w-32" />
+          <AdsNumberInput v-model="newOffer.requiredQuantity" :min="0.5" :step="0.5" class="w-32" />
         </AdsField>
 
         <AdsField v-if="newOffer.type === 'BuyXGetYFree'" label="Free quantity">
-          <AdsNumberInput v-model="newOffer.freeQuantity" :min="1" class="w-32" />
+          <AdsNumberInput v-model="newOffer.freeQuantity" :min="0.5" :step="0.5" class="w-32" />
         </AdsField>
 
         <AdsField v-if="newOffer.type === 'FixedBundlePrice'" label="Bundle price (DZD)" help="Total price for the required quantity.">

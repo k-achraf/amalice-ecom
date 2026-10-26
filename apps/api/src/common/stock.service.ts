@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { stockUnits } from '@amalice/shared'
 import { Prisma } from '../generated/prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 
@@ -23,10 +24,10 @@ export class StockService {
       if (await t.stockAdjustment.findFirst({ where: { orderId, reason: 'Release' }, select: { id: true } })) return false
       const lines = await this.lines(t, orderId)
       for (const l of lines) {
-        if (l.variantId) await t.productVariant.updateMany({ where: { id: l.variantId }, data: { stockQuantity: { increment: l.quantity } } })
-        else await t.product.updateMany({ where: { id: l.productId }, data: { stockQuantity: { increment: l.quantity } } })
+        if (l.variantId) await t.productVariant.updateMany({ where: { id: l.variantId }, data: { stockQuantity: { increment: stockUnits(l.quantity) } } })
+        else await t.product.updateMany({ where: { id: l.productId }, data: { stockQuantity: { increment: stockUnits(l.quantity) } } })
         await t.stockAdjustment.create({
-          data: { productId: l.productId, variantId: l.variantId, orderId, delta: l.quantity, reason: 'Release', note: 'Order cancelled', actorId: actorId ?? null }
+          data: { productId: l.productId, variantId: l.variantId, orderId, delta: stockUnits(l.quantity), reason: 'Release', note: 'Order cancelled', actorId: actorId ?? null }
         })
       }
       return lines.length > 0
@@ -44,10 +45,10 @@ export class StockService {
       if (await t.stockAdjustment.findFirst({ where: { orderId, reason: 'Release' }, select: { id: true } })) return false
       const lines = await this.lines(t, orderId)
       for (const l of lines) {
-        if (l.variantId) await t.productVariant.updateMany({ where: { id: l.variantId }, data: { stockQuantity: { increment: l.quantity } } })
-        else await t.product.updateMany({ where: { id: l.productId }, data: { stockQuantity: { increment: l.quantity } } })
+        if (l.variantId) await t.productVariant.updateMany({ where: { id: l.variantId }, data: { stockQuantity: { increment: stockUnits(l.quantity) } } })
+        else await t.product.updateMany({ where: { id: l.productId }, data: { stockQuantity: { increment: stockUnits(l.quantity) } } })
         await t.stockAdjustment.create({
-          data: { productId: l.productId, variantId: l.variantId, orderId, delta: l.quantity, reason: 'Return', note: 'Returned parcel restocked', actorId: actorId ?? null }
+          data: { productId: l.productId, variantId: l.variantId, orderId, delta: stockUnits(l.quantity), reason: 'Return', note: 'Returned parcel restocked', actorId: actorId ?? null }
         })
       }
       return lines.length > 0
@@ -60,10 +61,10 @@ export class StockService {
       if (await t.stockAdjustment.findFirst({ where: { orderId, reason: 'Sale' }, select: { id: true } })) return false
       const lines = await this.lines(t, orderId)
       for (const l of lines) {
-        if (l.variantId) await t.productVariant.updateMany({ where: { id: l.variantId }, data: { stockQuantity: { decrement: l.quantity } } })
-        else await t.product.updateMany({ where: { id: l.productId }, data: { stockQuantity: { decrement: l.quantity } } })
+        if (l.variantId) await t.productVariant.updateMany({ where: { id: l.variantId }, data: { stockQuantity: { decrement: stockUnits(l.quantity) } } })
+        else await t.product.updateMany({ where: { id: l.productId }, data: { stockQuantity: { decrement: stockUnits(l.quantity) } } })
         await t.stockAdjustment.create({
-          data: { productId: l.productId, variantId: l.variantId, orderId, delta: -l.quantity, reason: 'Sale', note: 'Abandoned cart confirmed', actorId: actorId ?? null }
+          data: { productId: l.productId, variantId: l.variantId, orderId, delta: -stockUnits(l.quantity), reason: 'Sale', note: 'Abandoned cart confirmed', actorId: actorId ?? null }
         })
       }
       return lines.length > 0

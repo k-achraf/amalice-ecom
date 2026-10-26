@@ -251,7 +251,7 @@ export type OrderItemWhereInput = {
   orderId?: Prisma.StringFilter<"OrderItem"> | string
   productId?: Prisma.StringFilter<"OrderItem"> | string
   variantId?: Prisma.StringNullableFilter<"OrderItem"> | string | null
-  quantity?: Prisma.IntFilter<"OrderItem"> | number
+  quantity?: Prisma.FloatFilter<"OrderItem"> | number
   unitPriceCents?: Prisma.IntFilter<"OrderItem"> | number
   lineTotalCents?: Prisma.IntFilter<"OrderItem"> | number
   offerId?: Prisma.StringNullableFilter<"OrderItem"> | string | null
@@ -286,7 +286,7 @@ export type OrderItemWhereUniqueInput = Prisma.AtLeast<{
   orderId?: Prisma.StringFilter<"OrderItem"> | string
   productId?: Prisma.StringFilter<"OrderItem"> | string
   variantId?: Prisma.StringNullableFilter<"OrderItem"> | string | null
-  quantity?: Prisma.IntFilter<"OrderItem"> | number
+  quantity?: Prisma.FloatFilter<"OrderItem"> | number
   unitPriceCents?: Prisma.IntFilter<"OrderItem"> | number
   lineTotalCents?: Prisma.IntFilter<"OrderItem"> | number
   offerId?: Prisma.StringNullableFilter<"OrderItem"> | string | null
@@ -322,7 +322,7 @@ export type OrderItemScalarWhereWithAggregatesInput = {
   orderId?: Prisma.StringWithAggregatesFilter<"OrderItem"> | string
   productId?: Prisma.StringWithAggregatesFilter<"OrderItem"> | string
   variantId?: Prisma.StringNullableWithAggregatesFilter<"OrderItem"> | string | null
-  quantity?: Prisma.IntWithAggregatesFilter<"OrderItem"> | number
+  quantity?: Prisma.FloatWithAggregatesFilter<"OrderItem"> | number
   unitPriceCents?: Prisma.IntWithAggregatesFilter<"OrderItem"> | number
   lineTotalCents?: Prisma.IntWithAggregatesFilter<"OrderItem"> | number
   offerId?: Prisma.StringNullableWithAggregatesFilter<"OrderItem"> | string | null
@@ -355,7 +355,7 @@ export type OrderItemUncheckedCreateInput = {
 
 export type OrderItemUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   isUpsell?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -370,7 +370,7 @@ export type OrderItemUncheckedUpdateInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   offerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -391,7 +391,7 @@ export type OrderItemCreateManyInput = {
 
 export type OrderItemUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   isUpsell?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -402,7 +402,7 @@ export type OrderItemUncheckedUpdateManyInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   offerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -593,6 +593,14 @@ export type OrderItemUncheckedUpdateManyWithoutOrderNestedInput = {
   deleteMany?: Prisma.OrderItemScalarWhereInput | Prisma.OrderItemScalarWhereInput[]
 }
 
+export type FloatFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type OrderItemCreateNestedManyWithoutOfferInput = {
   create?: Prisma.XOR<Prisma.OrderItemCreateWithoutOfferInput, Prisma.OrderItemUncheckedCreateWithoutOfferInput> | Prisma.OrderItemCreateWithoutOfferInput[] | Prisma.OrderItemUncheckedCreateWithoutOfferInput[]
   connectOrCreate?: Prisma.OrderItemCreateOrConnectWithoutOfferInput | Prisma.OrderItemCreateOrConnectWithoutOfferInput[]
@@ -691,7 +699,7 @@ export type OrderItemScalarWhereInput = {
   orderId?: Prisma.StringFilter<"OrderItem"> | string
   productId?: Prisma.StringFilter<"OrderItem"> | string
   variantId?: Prisma.StringNullableFilter<"OrderItem"> | string | null
-  quantity?: Prisma.IntFilter<"OrderItem"> | number
+  quantity?: Prisma.FloatFilter<"OrderItem"> | number
   unitPriceCents?: Prisma.IntFilter<"OrderItem"> | number
   lineTotalCents?: Prisma.IntFilter<"OrderItem"> | number
   offerId?: Prisma.StringNullableFilter<"OrderItem"> | string | null
@@ -855,7 +863,7 @@ export type OrderItemCreateManyProductInput = {
 
 export type OrderItemUpdateWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   isUpsell?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -868,7 +876,7 @@ export type OrderItemUncheckedUpdateWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   offerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -879,7 +887,7 @@ export type OrderItemUncheckedUpdateManyWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   offerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -899,7 +907,7 @@ export type OrderItemCreateManyVariantInput = {
 
 export type OrderItemUpdateWithoutVariantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   isUpsell?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -912,7 +920,7 @@ export type OrderItemUncheckedUpdateWithoutVariantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   offerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -923,7 +931,7 @@ export type OrderItemUncheckedUpdateManyWithoutVariantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   offerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -943,7 +951,7 @@ export type OrderItemCreateManyOrderInput = {
 
 export type OrderItemUpdateWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   isUpsell?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -956,7 +964,7 @@ export type OrderItemUncheckedUpdateWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   offerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -967,7 +975,7 @@ export type OrderItemUncheckedUpdateManyWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   offerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -987,7 +995,7 @@ export type OrderItemCreateManyOfferInput = {
 
 export type OrderItemUpdateWithoutOfferInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   isUpsell?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1001,7 +1009,7 @@ export type OrderItemUncheckedUpdateWithoutOfferInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   isUpsell?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1012,7 +1020,7 @@ export type OrderItemUncheckedUpdateManyWithoutOfferInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   isUpsell?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1549,7 +1557,7 @@ export interface OrderItemFieldRefs {
   readonly orderId: Prisma.FieldRef<"OrderItem", 'String'>
   readonly productId: Prisma.FieldRef<"OrderItem", 'String'>
   readonly variantId: Prisma.FieldRef<"OrderItem", 'String'>
-  readonly quantity: Prisma.FieldRef<"OrderItem", 'Int'>
+  readonly quantity: Prisma.FieldRef<"OrderItem", 'Float'>
   readonly unitPriceCents: Prisma.FieldRef<"OrderItem", 'Int'>
   readonly lineTotalCents: Prisma.FieldRef<"OrderItem", 'Int'>
   readonly offerId: Prisma.FieldRef<"OrderItem", 'String'>

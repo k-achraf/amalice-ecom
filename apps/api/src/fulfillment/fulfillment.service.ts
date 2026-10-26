@@ -590,7 +590,7 @@ export class FulfillmentService {
           remarque: order.deliveryNote?.slice(0, 255) || undefined,
           produit: order.items.map((i) => i.product.name).join(',') || undefined,
           stock: '0',
-          quantite: order.items.map((i) => String(i.quantity)).join(',') || undefined,
+          quantite: order.items.map((i) => String(Math.ceil(i.quantity))).join(',') || undefined,
           produit_a_recuperer: order.courierOperation === 'Exchange' ? (order.exchangeProduct ?? undefined) : undefined,
           boutique: shopName,
           type: order.courierOperation === 'Exchange' ? '2' : '1',

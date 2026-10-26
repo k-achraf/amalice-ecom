@@ -723,7 +723,8 @@ model OrderItem {
   // as offerId below (SetNull, not cascade-delete of order history).
   variantId      String?         @map("variant_id")
   variant        ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
-  quantity       Int
+  // Half units are allowed (an offer of 1.5); stock itself is counted in whole pieces (see stockUnits).
+  quantity       Float
   // Reference (undiscounted) per-unit price at order time — for "was $X"
   // messaging, NOT the amount actually charged for this line. Use
   // lineTotalCents for that; it's what's actually summed into Order.totalCents.
@@ -772,9 +773,9 @@ model ProductOffer {
   product          Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
   type             ProductOfferType
   enabled          Boolean          @default(true)
-  requiredQuantity Int              @map("required_quantity")
+  requiredQuantity Float            @map("required_quantity")
   // BuyXGetYFree only — extra free units on top of requiredQuantity.
-  freeQuantity     Int              @default(0) @map("free_quantity")
+  freeQuantity     Float            @default(0) @map("free_quantity")
   // FixedBundlePrice only — total price (cents) for requiredQuantity units.
   bundlePriceCents Int?             @map("bundle_price_cents")
   orderItems       OrderItem[]
