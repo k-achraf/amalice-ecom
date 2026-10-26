@@ -20,6 +20,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
 import { GoogleSheetsService } from '../apps/google-sheets.service'
+import { PurchaseEventsService } from '../apps/purchase-events.service'
 import { AdminOrdersService } from './admin-orders.service'
 
 const WORK_STATES = CALL_CENTER_WORK_STATES as OrderState[]
@@ -74,7 +75,8 @@ export class AdminCallCenterService {
     private readonly audit: AuditService,
     private readonly googleSheets: GoogleSheetsService,
     private readonly orders: AdminOrdersService,
-    private readonly stock: StockService
+    private readonly stock: StockService,
+    private readonly purchaseEvents: PurchaseEventsService
   ) {}
 
   // ---- queue ---------------------------------------------------------------
@@ -298,6 +300,7 @@ export class AdminCallCenterService {
         this.logger.warn(`Google Sheets status update failed for order ${id}: ${error.message}`)
       })
     }
+    if (input.outcome === 'Confirmed' && order.state !== 'Confirmed') this.purchaseEvents.sendForConfirmedOrder(id)
     if (note) {
       const full = await this.prisma.order.findUnique({ where: { id }, select: { notes: true } })
       this.googleSheets.updateNotes(id, full?.notes ?? null).catch((error: Error) => {

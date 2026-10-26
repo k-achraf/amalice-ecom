@@ -2,6 +2,7 @@ import { StockService } from '../common/stock.service'
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { ADDRESS_EDITABLE_STATES, CALL_CENTER_WORK_STATES, STATES_REQUIRING_SHIPMENT, deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, type OrderState, type RiskLevel, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
 import type { Prisma } from '../generated/prisma/client'
+import { PurchaseEventsService } from '../apps/purchase-events.service'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
 import { GoogleSheetsService } from '../apps/google-sheets.service'
@@ -78,7 +79,8 @@ export class AdminOrdersService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly googleSheets: GoogleSheetsService,
-    private readonly stock: StockService
+    private readonly stock: StockService,
+    private readonly purchaseEvents: PurchaseEventsService
   ) {}
 
   async list(args: {
@@ -280,6 +282,7 @@ export class AdminOrdersService {
     this.googleSheets.updateOrderStatus(id, from, to).catch((error: Error) => {
       this.logger.warn(`Google Sheets status update failed for order ${id}: ${error.message}`)
     })
+    if (to === 'Confirmed') this.purchaseEvents.sendForConfirmedOrder(id)
 
     return this.findOne(id)
   }

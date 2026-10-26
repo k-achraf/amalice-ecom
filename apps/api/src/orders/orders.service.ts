@@ -1,11 +1,8 @@
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { addRiskFactor, isFuzzyDuplicate, normalizeAlgerianPhone, type AbandonedLeadOrder, type AcceptOrderUpsell, type Checkout, type CheckoutItem, type LeadOrder, type RecentOrderActivityItem, type ShippingType } from '@amalice/shared'
+import { addRiskFactor, isFuzzyDuplicate, normalizeAlgerianPhone, stockUnits, type AbandonedLeadOrder, type AcceptOrderUpsell, type Checkout, type CheckoutItem, type LeadOrder, type RecentOrderActivityItem, type ShippingType } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import type { Product, ProductVariant, Prisma } from '../generated/prisma/client'
 import { NotificationsService } from '../notifications/notifications.service'
-import { AppsService } from '../apps/apps.service'
-import { MetaConversionsApiService } from '../apps/meta-conversions-api.service'
-import { TikTokEventsApiService } from '../apps/tiktok-events-api.service'
 import { GoogleSheetsService } from '../apps/google-sheets.service'
 import { OrderItemsService, canAddOrderItems } from '../order-items/order-items.service'
 import { RedisService } from '../redis/redis.service'
@@ -44,9 +41,6 @@ export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
-    private readonly apps: AppsService,
-    private readonly metaConversions: MetaConversionsApiService,
-    private readonly tiktokEvents: TikTokEventsApiService,
     private readonly orderItems: OrderItemsService,
     private readonly googleSheets: GoogleSheetsService,
     private readonly redis: RedisService,
@@ -202,80 +196,9 @@ export class OrdersService {
     }
   }
 
-  // Server-side purchase events for both pixel apps' server-side APIs
-  // (Meta's Conversions API, TikTok's Events API) — fire-and-forget by
-  // design (see *ApiService.fireAndForget): either platform being slow or
-  // down must never affect checkout. Each uses the SAME eventId the
-  // storefront's browser pixel uses for its own purchase call (order.id,
-  // when the caller didn't supply one) so each platform dedupes its browser
-  // and server events into one instead of double-counting. The two calls
-  // are independent — one app being disabled/misconfigured doesn't affect
-  // the other.
-  private sendPurchaseEvents(
-    orderId: string,
-    totalCents: number,
-    phone: string,
-    context: OrderRequestContext,
-    items: { productId: string; quantity: number; unitPriceCents: number }[],
-    tracking?: Checkout['tracking']
-  ): void {
-    const eventId = tracking?.eventId || orderId
-    // Always a clean rounded number — TikTok/Meta both reject a `value`
-    // that carries float noise (e.g. 112.49999999999999) or, if this were
-    // ever accidentally templated into a string, a currency symbol/comma.
-    const valueDzd = Math.round(totalCents) / 100
-    const contentIds = items.map((i) => i.productId)
+  // Server-side Purchase events are sent on confirmation (PurchaseEventsService).
 
-    // A funnel can carry its own pixels; look them up once for both platforms.
-    const funnelPixels = context.funnelId
-      ? this.prisma.funnel.findUnique({ where: { id: context.funnelId }, select: { metaPixelId: true, tiktokPixelCode: true } }).catch(() => null)
-      : Promise.resolve(null)
-
-    funnelPixels
-      .then((fp) => this.apps.getMetaPixelCapiCredentials(fp?.metaPixelId))
-      .then((credentials) => {
-        if (!credentials) return
-        this.metaConversions.fireAndForget(credentials, {
-          eventName: 'Purchase',
-          eventId,
-          userData: { phone, ip: context.ip, userAgent: context.userAgent, fbp: tracking?.fbp, fbc: tracking?.fbc ?? fbcFromFbclid(tracking?.attribution?.fbclid, tracking?.attribution?.capturedAt) },
-          customData: { value: valueDzd, currency: 'DZD', order_id: orderId, content_ids: contentIds, content_type: 'product' }
-        })
-      })
-      .catch(() => {
-        // getMetaPixelCapiCredentials() only reads local config — a
-        // rejection here means something is wrong with the DB read, not
-        // with Meta. Swallow rather than propagate: this is still a
-        // best-effort side channel, not part of the order's correctness.
-      })
-
-    funnelPixels
-      .then((fp) => this.apps.getTikTokPixelEapiCredentials(fp?.tiktokPixelCode))
-      .then((credentials) => {
-        if (!credentials) return
-        // TikTok's Events API validates content_id inside properties.
-        // contents[] — it does NOT read a flat properties.content_id, so
-        // the previous `{ content_id: orderId }` shape silently failed
-        // validation ("Content ID is missing") even though a value was
-        // technically present, just in the wrong place and using the
-        // order id instead of a product id.
-        this.tiktokEvents.fireAndForget(credentials, {
-          eventName: 'CompletePayment',
-          eventId,
-          userData: { phone, ip: context.ip, userAgent: context.userAgent, ttp: tracking?.ttp },
-          properties: {
-            value: valueDzd,
-            currency: 'DZD',
-            contents: items.map((i) => ({ content_id: i.productId, content_type: 'product', quantity: i.quantity, price: Math.round(i.unitPriceCents) / 100 }))
-          }
-        })
-      })
-      .catch(() => {
-        // Same rationale as the Meta branch above.
-      })
-  }
-
-  // Google Sheets push — same fire-and-forget rule as sendPurchaseEvents
+  // Google Sheets push — same fire-and-forget rule as the pixel events
   // above: GoogleSheetsService itself already no-ops cheaply when the
   // feature is disabled/unconfigured, but a genuine Sheets API failure must
   // still never surface here as a broken checkout.
@@ -313,7 +236,7 @@ export class OrdersService {
         throw new BadRequestException(`Selected variant is no longer available for "${product.name}"`)
       }
       const unitPriceCents = variant?.priceCents ?? product.priceCents
-      let lineTotalCents = unitPriceCents * item.quantity
+      let lineTotalCents = Math.round(unitPriceCents * item.quantity)
       let offerId: string | null = null
 
       if (item.offerId) {
@@ -328,7 +251,7 @@ export class OrdersService {
         if (offer.type === 'FixedBundlePrice') {
           lineTotalCents = offer.bundlePriceCents ?? lineTotalCents
         } else if (offer.type === 'BuyXGetYFree') {
-          lineTotalCents = product.priceCents * offer.requiredQuantity
+          lineTotalCents = Math.round(product.priceCents * offer.requiredQuantity)
         }
         offerId = offer.id
       }
@@ -372,14 +295,14 @@ export class OrdersService {
     if (item.variantId && variantById.has(item.variantId)) {
       const result = await tx.productVariant.updateMany({
         where: { id: item.variantId },
-        data: { stockQuantity: { decrement: item.quantity } }
+        data: { stockQuantity: { decrement: stockUnits(item.quantity) } }
       })
       if (result.count === 0) throw new NotFoundException(`Variant ${item.variantId} not found`)
       return
     }
     const result = await tx.product.updateMany({
       where: { id: item.productId },
-      data: { stockQuantity: { decrement: item.quantity } }
+      data: { stockQuantity: { decrement: stockUnits(item.quantity) } }
     })
     if (result.count === 0) throw new NotFoundException(`Product ${item.productId} not found`)
   }
@@ -491,7 +414,6 @@ export class OrdersService {
       })
 
       await this.recordAttribution(order.id, checkout.tracking, context)
-      this.sendPurchaseEvents(order.id, totalCents, checkout.phone, context, order.items, checkout.tracking)
       this.pushToGoogleSheets(order.id)
 
       return order
@@ -672,7 +594,6 @@ export class OrdersService {
     })
 
     await this.recordAttribution(order.id, lead.tracking, context)
-    this.sendPurchaseEvents(order.id, totalCents, phone, context, order.items, lead.tracking)
     this.pushToGoogleSheets(order.id)
 
     return order

@@ -12,8 +12,13 @@ useHead({ title: 'Call Center' })
 const api = useAdminApi()
 const auth = useAuthStore()
 
-type QueueState = 'PendingCallCenter' | 'CallCenterNoAnswer' | 'WrongNumber' | 'Postponed'
-const QUEUES: QueueState[] = ['PendingCallCenter', 'CallCenterNoAnswer', 'WrongNumber', 'Postponed']
+// 'Abandoned' = carts the customer never submitted (PendingCallCenter + isAbandoned);
+// they sit after the real queues and are only called once those are worked.
+type QueueState = 'PendingCallCenter' | 'CallCenterNoAnswer' | 'WrongNumber' | 'Postponed' | 'Abandoned'
+const QUEUES: QueueState[] = ['PendingCallCenter', 'CallCenterNoAnswer', 'WrongNumber', 'Postponed', 'Abandoned']
+function queueQuery(s: QueueState): Record<string, string> {
+  return s === 'Abandoned' ? { state: 'PendingCallCenter', abandoned: 'only' } : { state: s }
+}
 
 const tab = ref<QueueState>('PendingCallCenter')
 const page = ref(1)
@@ -21,14 +26,14 @@ const pageSize = ref(25)
 const search = ref('')
 const items = ref<AdminOrderListItem[]>([])
 const total = ref(0)
-const counts = reactive<Record<QueueState, number>>({ PendingCallCenter: 0, CallCenterNoAnswer: 0, WrongNumber: 0, Postponed: 0 })
+const counts = reactive<Record<QueueState, number>>({ PendingCallCenter: 0, CallCenterNoAnswer: 0, WrongNumber: 0, Postponed: 0, Abandoned: 0 })
 const stats = ref<CallCenterStatsResponse | null>(null)
 const loading = ref(true)
 const selectedId = ref<string | null>(null)
 
 async function loadList() {
   const query: Record<string, string | number> = {
-    state: tab.value,
+    ...queueQuery(tab.value),
     page: page.value,
     pageSize: pageSize.value,
     sort: tab.value === 'Postponed' ? 'followup' : 'oldest'
@@ -40,7 +45,7 @@ async function loadList() {
   if (!items.value.some((o) => o.id === selectedId.value)) selectedId.value = items.value[0]?.id ?? null
 }
 async function loadCounts() {
-  const results = await Promise.all(QUEUES.map((s) => api<OrderListResponse>('/admin/orders', { query: { state: s, pageSize: 1 } })))
+  const results = await Promise.all(QUEUES.map((s) => api<OrderListResponse>('/admin/orders', { query: { ...queueQuery(s), pageSize: 1 } })))
   QUEUES.forEach((s, i) => { counts[s] = results[i]!.total })
 }
 async function loadStats() {
@@ -78,7 +83,8 @@ const tabs = computed(() => [
   { label: 'Waiting', value: 'PendingCallCenter', count: counts.PendingCallCenter },
   { label: 'No answer', value: 'CallCenterNoAnswer', count: counts.CallCenterNoAnswer },
   { label: 'Wrong number', value: 'WrongNumber', count: counts.WrongNumber },
-  { label: 'Postponed', value: 'Postponed', count: counts.Postponed }
+  { label: 'Postponed', value: 'Postponed', count: counts.Postponed },
+  { label: 'Abandoned', value: 'Abandoned', count: counts.Abandoned }
 ])
 
 function waited(iso: string) {
