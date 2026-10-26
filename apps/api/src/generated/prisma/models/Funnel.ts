@@ -225,6 +225,7 @@ export type FunnelWhereInput = {
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
   steps?: Prisma.FunnelStepListRelationFilter
   orders?: Prisma.OrderListRelationFilter
+  recordings?: Prisma.FunnelRecordingListRelationFilter
 }
 
 export type FunnelOrderByWithRelationInput = {
@@ -241,6 +242,7 @@ export type FunnelOrderByWithRelationInput = {
   product?: Prisma.ProductOrderByWithRelationInput
   steps?: Prisma.FunnelStepOrderByRelationAggregateInput
   orders?: Prisma.OrderOrderByRelationAggregateInput
+  recordings?: Prisma.FunnelRecordingOrderByRelationAggregateInput
 }
 
 export type FunnelWhereUniqueInput = Prisma.AtLeast<{
@@ -260,6 +262,7 @@ export type FunnelWhereUniqueInput = Prisma.AtLeast<{
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
   steps?: Prisma.FunnelStepListRelationFilter
   orders?: Prisma.OrderListRelationFilter
+  recordings?: Prisma.FunnelRecordingListRelationFilter
 }, "id" | "slug">
 
 export type FunnelOrderByWithAggregationInput = {
@@ -307,6 +310,7 @@ export type FunnelCreateInput = {
   product: Prisma.ProductCreateNestedOneWithoutFunnelsInput
   steps?: Prisma.FunnelStepCreateNestedManyWithoutFunnelInput
   orders?: Prisma.OrderCreateNestedManyWithoutFunnelInput
+  recordings?: Prisma.FunnelRecordingCreateNestedManyWithoutFunnelInput
 }
 
 export type FunnelUncheckedCreateInput = {
@@ -322,6 +326,7 @@ export type FunnelUncheckedCreateInput = {
   updatedAt?: Date | string
   steps?: Prisma.FunnelStepUncheckedCreateNestedManyWithoutFunnelInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutFunnelInput
+  recordings?: Prisma.FunnelRecordingUncheckedCreateNestedManyWithoutFunnelInput
 }
 
 export type FunnelUpdateInput = {
@@ -337,6 +342,7 @@ export type FunnelUpdateInput = {
   product?: Prisma.ProductUpdateOneRequiredWithoutFunnelsNestedInput
   steps?: Prisma.FunnelStepUpdateManyWithoutFunnelNestedInput
   orders?: Prisma.OrderUpdateManyWithoutFunnelNestedInput
+  recordings?: Prisma.FunnelRecordingUpdateManyWithoutFunnelNestedInput
 }
 
 export type FunnelUncheckedUpdateInput = {
@@ -352,6 +358,7 @@ export type FunnelUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   steps?: Prisma.FunnelStepUncheckedUpdateManyWithoutFunnelNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutFunnelNestedInput
+  recordings?: Prisma.FunnelRecordingUncheckedUpdateManyWithoutFunnelNestedInput
 }
 
 export type FunnelCreateManyInput = {
@@ -513,6 +520,20 @@ export type EnumFunnelStatusFieldUpdateOperationsInput = {
   set?: $Enums.FunnelStatus
 }
 
+export type FunnelCreateNestedOneWithoutRecordingsInput = {
+  create?: Prisma.XOR<Prisma.FunnelCreateWithoutRecordingsInput, Prisma.FunnelUncheckedCreateWithoutRecordingsInput>
+  connectOrCreate?: Prisma.FunnelCreateOrConnectWithoutRecordingsInput
+  connect?: Prisma.FunnelWhereUniqueInput
+}
+
+export type FunnelUpdateOneRequiredWithoutRecordingsNestedInput = {
+  create?: Prisma.XOR<Prisma.FunnelCreateWithoutRecordingsInput, Prisma.FunnelUncheckedCreateWithoutRecordingsInput>
+  connectOrCreate?: Prisma.FunnelCreateOrConnectWithoutRecordingsInput
+  upsert?: Prisma.FunnelUpsertWithoutRecordingsInput
+  connect?: Prisma.FunnelWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.FunnelUpdateToOneWithWhereWithoutRecordingsInput, Prisma.FunnelUpdateWithoutRecordingsInput>, Prisma.FunnelUncheckedUpdateWithoutRecordingsInput>
+}
+
 export type FunnelCreateNestedOneWithoutStepsInput = {
   create?: Prisma.XOR<Prisma.FunnelCreateWithoutStepsInput, Prisma.FunnelUncheckedCreateWithoutStepsInput>
   connectOrCreate?: Prisma.FunnelCreateOrConnectWithoutStepsInput
@@ -539,6 +560,7 @@ export type FunnelCreateWithoutProductInput = {
   updatedAt?: Date | string
   steps?: Prisma.FunnelStepCreateNestedManyWithoutFunnelInput
   orders?: Prisma.OrderCreateNestedManyWithoutFunnelInput
+  recordings?: Prisma.FunnelRecordingCreateNestedManyWithoutFunnelInput
 }
 
 export type FunnelUncheckedCreateWithoutProductInput = {
@@ -553,6 +575,7 @@ export type FunnelUncheckedCreateWithoutProductInput = {
   updatedAt?: Date | string
   steps?: Prisma.FunnelStepUncheckedCreateNestedManyWithoutFunnelInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutFunnelInput
+  recordings?: Prisma.FunnelRecordingUncheckedCreateNestedManyWithoutFunnelInput
 }
 
 export type FunnelCreateOrConnectWithoutProductInput = {
@@ -609,6 +632,7 @@ export type FunnelCreateWithoutOrdersInput = {
   updatedAt?: Date | string
   product: Prisma.ProductCreateNestedOneWithoutFunnelsInput
   steps?: Prisma.FunnelStepCreateNestedManyWithoutFunnelInput
+  recordings?: Prisma.FunnelRecordingCreateNestedManyWithoutFunnelInput
 }
 
 export type FunnelUncheckedCreateWithoutOrdersInput = {
@@ -623,6 +647,7 @@ export type FunnelUncheckedCreateWithoutOrdersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   steps?: Prisma.FunnelStepUncheckedCreateNestedManyWithoutFunnelInput
+  recordings?: Prisma.FunnelRecordingUncheckedCreateNestedManyWithoutFunnelInput
 }
 
 export type FunnelCreateOrConnectWithoutOrdersInput = {
@@ -653,6 +678,7 @@ export type FunnelUpdateWithoutOrdersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.ProductUpdateOneRequiredWithoutFunnelsNestedInput
   steps?: Prisma.FunnelStepUpdateManyWithoutFunnelNestedInput
+  recordings?: Prisma.FunnelRecordingUpdateManyWithoutFunnelNestedInput
 }
 
 export type FunnelUncheckedUpdateWithoutOrdersInput = {
@@ -667,6 +693,83 @@ export type FunnelUncheckedUpdateWithoutOrdersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   steps?: Prisma.FunnelStepUncheckedUpdateManyWithoutFunnelNestedInput
+  recordings?: Prisma.FunnelRecordingUncheckedUpdateManyWithoutFunnelNestedInput
+}
+
+export type FunnelCreateWithoutRecordingsInput = {
+  id?: string
+  name: string
+  slug: string
+  templateId: string
+  status?: $Enums.FunnelStatus
+  metaPixelId?: string | null
+  tiktokPixelCode?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  product: Prisma.ProductCreateNestedOneWithoutFunnelsInput
+  steps?: Prisma.FunnelStepCreateNestedManyWithoutFunnelInput
+  orders?: Prisma.OrderCreateNestedManyWithoutFunnelInput
+}
+
+export type FunnelUncheckedCreateWithoutRecordingsInput = {
+  id?: string
+  name: string
+  slug: string
+  templateId: string
+  status?: $Enums.FunnelStatus
+  productId: string
+  metaPixelId?: string | null
+  tiktokPixelCode?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  steps?: Prisma.FunnelStepUncheckedCreateNestedManyWithoutFunnelInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutFunnelInput
+}
+
+export type FunnelCreateOrConnectWithoutRecordingsInput = {
+  where: Prisma.FunnelWhereUniqueInput
+  create: Prisma.XOR<Prisma.FunnelCreateWithoutRecordingsInput, Prisma.FunnelUncheckedCreateWithoutRecordingsInput>
+}
+
+export type FunnelUpsertWithoutRecordingsInput = {
+  update: Prisma.XOR<Prisma.FunnelUpdateWithoutRecordingsInput, Prisma.FunnelUncheckedUpdateWithoutRecordingsInput>
+  create: Prisma.XOR<Prisma.FunnelCreateWithoutRecordingsInput, Prisma.FunnelUncheckedCreateWithoutRecordingsInput>
+  where?: Prisma.FunnelWhereInput
+}
+
+export type FunnelUpdateToOneWithWhereWithoutRecordingsInput = {
+  where?: Prisma.FunnelWhereInput
+  data: Prisma.XOR<Prisma.FunnelUpdateWithoutRecordingsInput, Prisma.FunnelUncheckedUpdateWithoutRecordingsInput>
+}
+
+export type FunnelUpdateWithoutRecordingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  templateId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumFunnelStatusFieldUpdateOperationsInput | $Enums.FunnelStatus
+  metaPixelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktokPixelCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  product?: Prisma.ProductUpdateOneRequiredWithoutFunnelsNestedInput
+  steps?: Prisma.FunnelStepUpdateManyWithoutFunnelNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutFunnelNestedInput
+}
+
+export type FunnelUncheckedUpdateWithoutRecordingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  templateId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumFunnelStatusFieldUpdateOperationsInput | $Enums.FunnelStatus
+  productId?: Prisma.StringFieldUpdateOperationsInput | string
+  metaPixelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tiktokPixelCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  steps?: Prisma.FunnelStepUncheckedUpdateManyWithoutFunnelNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutFunnelNestedInput
 }
 
 export type FunnelCreateWithoutStepsInput = {
@@ -681,6 +784,7 @@ export type FunnelCreateWithoutStepsInput = {
   updatedAt?: Date | string
   product: Prisma.ProductCreateNestedOneWithoutFunnelsInput
   orders?: Prisma.OrderCreateNestedManyWithoutFunnelInput
+  recordings?: Prisma.FunnelRecordingCreateNestedManyWithoutFunnelInput
 }
 
 export type FunnelUncheckedCreateWithoutStepsInput = {
@@ -695,6 +799,7 @@ export type FunnelUncheckedCreateWithoutStepsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutFunnelInput
+  recordings?: Prisma.FunnelRecordingUncheckedCreateNestedManyWithoutFunnelInput
 }
 
 export type FunnelCreateOrConnectWithoutStepsInput = {
@@ -725,6 +830,7 @@ export type FunnelUpdateWithoutStepsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   product?: Prisma.ProductUpdateOneRequiredWithoutFunnelsNestedInput
   orders?: Prisma.OrderUpdateManyWithoutFunnelNestedInput
+  recordings?: Prisma.FunnelRecordingUpdateManyWithoutFunnelNestedInput
 }
 
 export type FunnelUncheckedUpdateWithoutStepsInput = {
@@ -739,6 +845,7 @@ export type FunnelUncheckedUpdateWithoutStepsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.OrderUncheckedUpdateManyWithoutFunnelNestedInput
+  recordings?: Prisma.FunnelRecordingUncheckedUpdateManyWithoutFunnelNestedInput
 }
 
 export type FunnelCreateManyProductInput = {
@@ -765,6 +872,7 @@ export type FunnelUpdateWithoutProductInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   steps?: Prisma.FunnelStepUpdateManyWithoutFunnelNestedInput
   orders?: Prisma.OrderUpdateManyWithoutFunnelNestedInput
+  recordings?: Prisma.FunnelRecordingUpdateManyWithoutFunnelNestedInput
 }
 
 export type FunnelUncheckedUpdateWithoutProductInput = {
@@ -779,6 +887,7 @@ export type FunnelUncheckedUpdateWithoutProductInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   steps?: Prisma.FunnelStepUncheckedUpdateManyWithoutFunnelNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutFunnelNestedInput
+  recordings?: Prisma.FunnelRecordingUncheckedUpdateManyWithoutFunnelNestedInput
 }
 
 export type FunnelUncheckedUpdateManyWithoutProductInput = {
@@ -801,11 +910,13 @@ export type FunnelUncheckedUpdateManyWithoutProductInput = {
 export type FunnelCountOutputType = {
   steps: number
   orders: number
+  recordings: number
 }
 
 export type FunnelCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   steps?: boolean | FunnelCountOutputTypeCountStepsArgs
   orders?: boolean | FunnelCountOutputTypeCountOrdersArgs
+  recordings?: boolean | FunnelCountOutputTypeCountRecordingsArgs
 }
 
 /**
@@ -832,6 +943,13 @@ export type FunnelCountOutputTypeCountOrdersArgs<ExtArgs extends runtime.Types.E
   where?: Prisma.OrderWhereInput
 }
 
+/**
+ * FunnelCountOutputType without action
+ */
+export type FunnelCountOutputTypeCountRecordingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FunnelRecordingWhereInput
+}
+
 
 export type FunnelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -847,6 +965,7 @@ export type FunnelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
   steps?: boolean | Prisma.Funnel$stepsArgs<ExtArgs>
   orders?: boolean | Prisma.Funnel$ordersArgs<ExtArgs>
+  recordings?: boolean | Prisma.Funnel$recordingsArgs<ExtArgs>
   _count?: boolean | Prisma.FunnelCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["funnel"]>
 
@@ -896,6 +1015,7 @@ export type FunnelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
   steps?: boolean | Prisma.Funnel$stepsArgs<ExtArgs>
   orders?: boolean | Prisma.Funnel$ordersArgs<ExtArgs>
+  recordings?: boolean | Prisma.Funnel$recordingsArgs<ExtArgs>
   _count?: boolean | Prisma.FunnelCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type FunnelIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -911,6 +1031,7 @@ export type $FunnelPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     product: Prisma.$ProductPayload<ExtArgs>
     steps: Prisma.$FunnelStepPayload<ExtArgs>[]
     orders: Prisma.$OrderPayload<ExtArgs>[]
+    recordings: Prisma.$FunnelRecordingPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1320,6 +1441,7 @@ export interface Prisma__FunnelClient<T, Null = never, ExtArgs extends runtime.T
   product<T extends Prisma.ProductDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductDefaultArgs<ExtArgs>>): Prisma.Prisma__ProductClient<runtime.Types.Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   steps<T extends Prisma.Funnel$stepsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Funnel$stepsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FunnelStepPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   orders<T extends Prisma.Funnel$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Funnel$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  recordings<T extends Prisma.Funnel$recordingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Funnel$recordingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FunnelRecordingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1805,6 +1927,30 @@ export type Funnel$ordersArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   distinct?: Prisma.OrderScalarFieldEnum | Prisma.OrderScalarFieldEnum[]
+}
+
+/**
+ * Funnel.recordings
+ */
+export type Funnel$recordingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FunnelRecording
+   */
+  select?: Prisma.FunnelRecordingSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FunnelRecording
+   */
+  omit?: Prisma.FunnelRecordingOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FunnelRecordingInclude<ExtArgs> | null
+  where?: Prisma.FunnelRecordingWhereInput
+  orderBy?: Prisma.FunnelRecordingOrderByWithRelationInput | Prisma.FunnelRecordingOrderByWithRelationInput[]
+  cursor?: Prisma.FunnelRecordingWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FunnelRecordingScalarFieldEnum | Prisma.FunnelRecordingScalarFieldEnum[]
 }
 
 /**

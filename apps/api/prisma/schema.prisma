@@ -1747,25 +1747,56 @@ enum FunnelStepType {
 }
 
 model Funnel {
-  id              String       @id @default(uuid())
+  id              String            @id @default(uuid())
   name            String
-  slug            String       @unique
-  templateId      String       @map("template_id")
-  status          FunnelStatus @default(Draft)
-  productId       String       @map("product_id")
-  product         Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  slug            String            @unique
+  templateId      String            @map("template_id")
+  status          FunnelStatus      @default(Draft)
+  productId       String            @map("product_id")
+  product         Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
   // Optional per-funnel pixels that replace the store-wide Meta / TikTok pixel
   // on this funnel's page and in its server-side events. Null = use the store's.
-  metaPixelId     String?      @map("meta_pixel_id")
-  tiktokPixelCode String?      @map("tiktok_pixel_code")
+  metaPixelId     String?           @map("meta_pixel_id")
+  tiktokPixelCode String?           @map("tiktok_pixel_code")
   steps           FunnelStep[]
   orders          Order[]
-  createdAt       DateTime     @default(now()) @map("created_at")
-  updatedAt       DateTime     @updatedAt @map("updated_at")
+  recordings      FunnelRecording[]
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
 
   @@index([productId])
   @@index([status])
   @@map("funnels")
+}
+
+// Session replay of a funnel page visit (rrweb events, inputs masked in the browser). `id` is the
+// page view's id (PageViewEvent.id = the visit's viewId). Events live in ordered chunks; rows older than
+// RECORDING_RETENTION_DAYS are purged.
+model FunnelRecording {
+  id         String                 @id
+  funnelId   String                 @map("funnel_id")
+  funnel     Funnel                 @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+  visitorId  String                 @map("visitor_id")
+  eventCount Int                    @default(0) @map("event_count")
+  bytes      Int                    @default(0)
+  startedAt  DateTime               @map("started_at")
+  endedAt    DateTime               @map("ended_at")
+  createdAt  DateTime               @default(now()) @map("created_at")
+  chunks     FunnelRecordingChunk[]
+
+  @@index([funnelId, createdAt])
+  @@index([createdAt])
+  @@map("funnel_recordings")
+}
+
+model FunnelRecordingChunk {
+  recordingId String          @map("recording_id")
+  recording   FunnelRecording @relation(fields: [recordingId], references: [id], onDelete: Cascade)
+  seq         Int
+  events      Json
+
+  @@id([recordingId, seq])
+  @@map("funnel_recording_chunks")
 }
 
 model FunnelStep {

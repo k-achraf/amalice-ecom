@@ -130,6 +130,10 @@ export const LandingSettingsSchema = z.object({
   ctaLabel: z.string().trim().min(1).max(40),
   showPrice: z.boolean(),
   showOffers: z.boolean(),
+  // Hide the delivery price: the buyer sees no shipping cost and the total shown is the product price.
+  hideShipping: z.boolean().default(false),
+  // Record visits as replayable sessions (typed text is masked in the visitor's browser, never sent).
+  recordSessions: z.boolean().default(true),
   accent: LandingAccentSchema,
   // Optional banner above everything. (The order bar pinned to the bottom of the screen is not a setting: every
   // funnel always has one.)
@@ -167,6 +171,8 @@ export function defaultLandingSettings(templateId: LandingTemplateId): LandingSe
     ctaLabel: t.defaults.ctaLabel,
     showPrice: true,
     showOffers: true,
+    hideShipping: false,
+    recordSessions: true,
     accent: t.defaults.accent,
     urgency: t.defaults.urgency,
     urgencyText: null,
@@ -196,6 +202,8 @@ export function switchLandingTemplate(current: LandingSettings, templateId: Land
     ctaLabel: current.ctaLabel,
     showPrice: current.showPrice,
     showOffers: current.showOffers,
+    hideShipping: current.hideShipping,
+    recordSessions: current.recordSessions,
     accent: current.accent,
     urgencyText: current.urgencyText ?? null,
     countdownEndsAt: current.countdownEndsAt ?? null,

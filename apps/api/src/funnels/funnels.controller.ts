@@ -14,6 +14,7 @@ import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
 import { FunnelsService } from './funnels.service'
 import { FunnelsStatsService } from './funnels-stats.service'
+import { FunnelsRecordingsService } from './funnels-recordings.service'
 import { FunnelsAiService } from './funnels-ai.service'
 import { JwtAuthGuard } from '../identity/admin-auth/jwt-auth.guard'
 import { RolesGuard } from '../identity/admin-auth/roles.guard'
@@ -43,7 +44,8 @@ export class FunnelsController {
   constructor(
     private readonly funnels: FunnelsService,
     private readonly stats: FunnelsStatsService,
-    private readonly ai: FunnelsAiService
+    private readonly ai: FunnelsAiService,
+    private readonly recordings: FunnelsRecordingsService
   ) {}
 
   // Static catalog from packages/shared — declared before ':id' so it is not captured as an id.
@@ -62,6 +64,23 @@ export class FunnelsController {
   @Get()
   list() {
     return this.funnels.list()
+  }
+
+  // Session replays of this funnel's visits (newest first) and one recording's events for the player.
+  @Get(':id/recordings')
+  recordingsOf(@Param('id') id: string, @Query('page') page = '1') {
+    return this.recordings.list(id, Math.max(1, Math.floor(Number(page)) || 1))
+  }
+
+  @Get(':id/recordings/:viewId')
+  recording(@Param('id') id: string, @Param('viewId') viewId: string) {
+    return this.recordings.get(id, viewId)
+  }
+
+  @Delete(':id/recordings/:viewId')
+  async deleteRecording(@Param('id') id: string, @Param('viewId') viewId: string) {
+    await this.recordings.remove(id, viewId)
+    return { ok: true }
   }
 
   @Get(':id/stats')

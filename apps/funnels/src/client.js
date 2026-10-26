@@ -121,6 +121,51 @@
   document.addEventListener('visibilitychange', function () { if (document.hidden) report(); else if (!shownAt) shownAt = Date.now() })
   addEventListener('pagehide', report)
 
+  // ---------- session replay ----------
+  // The recorder (rrweb) is a separate script, loaded only after the visitor first interacts (or after a few
+  // seconds), so it never competes with first paint. Typed text is masked in the browser (maskAllInputs): what
+  // the visitor types is never recorded or sent. Events go out in small chunks; the first carries the page snapshot.
+  if (fd.rr) {
+    var rrBuf = [], rrSeq = 0, rrTimer = 0, rrStop = null, rrOn = false
+    var rrFlush = function () {
+      clearTimeout(rrTimer); rrTimer = 0
+      if (!rrBuf.length) return
+      var body = JSON.stringify({ viewId: viewId, visitorId: visitor(), seq: rrSeq++, events: rrBuf })
+      rrBuf = []
+      try { fetch(fd.api + '/public/funnels/recordings', { method: 'POST', headers: { 'content-type': 'application/json' }, body: body, keepalive: body.length < 60000 }).catch(function () {}) } catch (e) {}
+    }
+    var rrStart = function () {
+      if (rrOn || document.hidden) return
+      rrOn = true
+      var sc = document.createElement('script')
+      sc.src = fd.rr
+      sc.async = true
+      sc.onload = function () {
+        if (!window.rrwebRecord || !window.rrwebRecord.record) return
+        try {
+          rrStop = window.rrwebRecord.record({
+            emit: function (e) {
+              rrBuf.push(e)
+              if (rrBuf.length >= 1500) rrFlush()
+              else if (!rrTimer) rrTimer = setTimeout(rrFlush, rrSeq ? 5000 : 300)
+            },
+            maskAllInputs: true,
+            sampling: { mousemove: 150, scroll: 150, input: 'last' },
+            recordCanvas: false,
+            collectFonts: false
+          })
+          // A visit is recorded for at most 10 minutes.
+          setTimeout(function () { if (rrStop) rrStop(); rrStop = null; rrFlush() }, 600000)
+        } catch (e) {}
+      }
+      document.head.appendChild(sc)
+    }
+    ;['pointerdown', 'touchstart', 'scroll', 'keydown'].forEach(function (n) { addEventListener(n, rrStart, { once: true, passive: true, capture: true }) })
+    setTimeout(rrStart, 4000)
+    document.addEventListener('visibilitychange', function () { if (document.hidden) rrFlush() })
+    addEventListener('pagehide', rrFlush)
+  }
+
   // ---------- photo carousel dots ----------
   var sl = $('#sl'), dots = $$('#dots i'), cnt = $('#cnt')
   if (sl && dots.length) {
@@ -198,7 +243,7 @@
   function ot(o, u) { return o.t === 'b' ? (o.b == null ? u * o.r : o.b) : u * o.r }
   function offer() { for (var i = 0; i < fd.offers.length; i++) if (fd.offers[i].id === st.off) return fd.offers[i]; return null }
   function qty() { var o = offer(); return o ? oq(o) : 1 }
-  function shipCents() { return st.wil && st.ship ? (st.ship === 'Home' ? st.wil[2] : st.wil[3]) : null }
+  function shipCents() { return fd.hs ? null : st.wil && st.ship ? (st.ship === 'Home' ? st.wil[2] : st.wil[3]) : null }
   function total() { var u = unit(), o = offer(); return (o ? ot(o, u) : u) + (shipCents() || 0) + (st.bump && fd.bump ? fd.bump.p : 0) }
   function set(sel, txt) { $$(sel).forEach(function (e) { e.textContent = txt }) }
   function recalc() {
@@ -243,7 +288,7 @@
       var r = form.querySelector('[name=ship][value=' + k[0] + ']')
       r.disabled = price == null
       var lab = k[0] === 'Home' ? L.home : L.desk
-      set('[data-sl="' + k[0] + '"]', price == null ? lab : lab + ' · ' + (price === 0 ? L.free : fmt(price)))
+      set('[data-sl="' + k[0] + '"]', price == null || fd.hs ? lab : lab + ' · ' + (price === 0 ? L.free : fmt(price)))
     })
     var cur = form.querySelector('[name=ship]:checked')
     if (!cur || cur.disabled) {

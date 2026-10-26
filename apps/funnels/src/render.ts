@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
+import { RECORDER_URL } from './recorder'
 import { join } from 'node:path'
 import { brotliCompressSync, gzipSync, constants as zc } from 'node:zlib'
 import {
@@ -195,7 +196,7 @@ ${s.addressField === 'hidden' ? '' : field('address', addrLabel, '<input class="
 ${s.showNotes ? `<div class="fl"><span>${T.notes}</span><textarea class="in" name="notes" maxlength="300"></textarea></div>` : ''}
 ${
   s.showPrice
-    ? `<div class="sum"><div><span>${T.product}</span><span data-sub>${formatDa(subtotal)}</span></div><div><span>${T.delivery}</span><span data-ship>${T.deliveryByWilaya}</span></div><div class="gr"><span>${T.toPay}</span><b data-total>${formatDa(subtotal)}</b></div></div>`
+    ? `<div class="sum"><div><span>${T.product}</span><span data-sub>${formatDa(subtotal)}</span></div>${s.hideShipping ? '' : `<div><span>${T.delivery}</span><span data-ship>${T.deliveryByWilaya}</span></div>`}<div class="gr"><span>${T.toPay}</span><b data-total>${formatDa(subtotal)}</b></div></div>`
     : ''
 }
 <div class="fe" id="fe" role="alert"></div>
@@ -282,6 +283,8 @@ ${s.trustBadges ? `<ul class="trust"><li>${ico('truck')}${T.trust[0]}</li><li>${
     w: f.wilayas.map((w) => [w.id, w.name, w.homePriceCents, w.deskPriceCents]),
     flow: after.map((x) => ({ id: x.id, t: x.type === 'Upsell' ? 'u' : 'd' })),
     addr: s.addressField,
+    hs: s.hideShipping ? 1 : 0,
+    rr: s.recordSessions ? RECORDER_URL : null,
     ab: f.abandonedDelaySeconds,
     px: { m: metaId, t: ttId },
     sold: soldOut

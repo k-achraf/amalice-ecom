@@ -253,6 +253,14 @@ function save() {
             <div class="text"><b>Show the product’s offers</b><span>Let the customer pick a quantity offer in the form.</span></div>
             <AdsSwitch v-model="draft.showOffers" aria-label="Show the product's offers" />
           </div>
+          <div class="setting">
+            <div class="text"><b>Hide delivery prices</b><span>The customer sees no delivery cost; the total shown is the product price.</span></div>
+            <AdsSwitch v-model="draft.hideShipping" aria-label="Hide delivery prices" />
+          </div>
+          <div class="setting">
+            <div class="text"><b>Record visitor sessions</b><span>Replay how visitors use the page in the Sessions tab. Typed text is never recorded.</span></div>
+            <AdsSwitch v-model="draft.recordSessions" aria-label="Record visitor sessions" />
+          </div>
           <AdsField label="Address field" help="Fewer fields convert better. The call centre confirms the address by phone.">
             <AdsSelect v-model="draft.addressField" :items="addressOptions" />
           </AdsField>

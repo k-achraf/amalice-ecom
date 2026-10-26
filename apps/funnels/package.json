@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@amalice/shared": "workspace:*",
+    "@rrweb/record": "^2.2.0",
     "sharp": "^0.35.3"
   },
   "devDependencies": {

@@ -1,20 +1,25 @@
 import { Body, Controller, Get, Header, Param, Post, Req } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { SkipThrottle, Throttle } from '@nestjs/throttler'
-import { AcceptFunnelOfferSchema, FunnelOrderSchema } from '@amalice/shared'
+import { AcceptFunnelOfferSchema, FunnelOrderSchema, RecordingChunkSchema } from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
 import { clientIp } from '../orders/order-attribution.util'
 import { FunnelsPublicService } from './funnels-public.service'
+import { FunnelsRecordingsService } from './funnels-recordings.service'
 
 class FunnelOrderDto extends createZodDto(FunnelOrderSchema) {}
 class AcceptFunnelOfferDto extends createZodDto(AcceptFunnelOfferSchema) {}
+class RecordingChunkDto extends createZodDto(RecordingChunkSchema) {}
 
 // Public, unauthenticated: the funnels site and its visitors' browsers call these.
 @ApiTags('funnels-public')
 @Controller('public/funnels')
 export class FunnelsPublicController {
-  constructor(private readonly funnels: FunnelsPublicService) {}
+  constructor(
+    private readonly funnels: FunnelsPublicService,
+    private readonly recordings: FunnelsRecordingsService
+  ) {}
 
   // Read by the funnels site's server (not by visitors), once per cache window per funnel.
   // Exempt from the global throttle for the same reason as GET /settings.
@@ -36,5 +41,14 @@ export class FunnelsPublicController {
   @Throttle({ default: { limit: 20, ttl: 5 * 60 * 1000 } })
   acceptOffer(@Param('slug') slug: string, @Param('orderId') orderId: string, @Param('stepId') stepId: string, @Body() body: AcceptFunnelOfferDto) {
     return this.funnels.acceptOffer(slug, orderId, stepId, body)
+  }
+
+  // Session replay chunks from a funnel page (rrweb events, inputs already masked in the browser).
+  // Declared with a fixed path segment so ':slug' never captures it. A visit sends a chunk every few seconds.
+  @Post('recordings')
+  @Throttle({ default: { limit: 60, ttl: 60 * 1000 } })
+  async recordChunk(@Body() body: RecordingChunkDto) {
+    await this.recordings.ingest(body)
+    return { ok: true }
   }
 }

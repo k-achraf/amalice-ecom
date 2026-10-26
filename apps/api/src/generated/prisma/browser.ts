@@ -283,6 +283,16 @@ export type PageViewEvent = Prisma.PageViewEventModel
  */
 export type Funnel = Prisma.FunnelModel
 /**
+ * Model FunnelRecording
+ * 
+ */
+export type FunnelRecording = Prisma.FunnelRecordingModel
+/**
+ * Model FunnelRecordingChunk
+ * 
+ */
+export type FunnelRecordingChunk = Prisma.FunnelRecordingChunkModel
+/**
  * Model FunnelStep
  * 
  */

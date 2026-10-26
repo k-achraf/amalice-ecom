@@ -41,6 +41,8 @@ async function bootstrap() {
   // happens to the shared 60/min default on other public endpoints). Production has exactly one proxy
   // hop (nginx, see DEPLOYMENT.md); TRUST_PROXY overrides the hop count ("0"/"false" = off).
   const trust = process.env.TRUST_PROXY ?? (process.env.NODE_ENV === 'production' ? '1' : 'false')
+  // Session-replay chunks (funnel pages) carry a full DOM snapshot in their first request: well over Express's 100 kB default.
+  app.useBodyParser('json', { limit: '1mb' })
   app.set('trust proxy', /^\d+$/.test(trust) ? Number(trust) : trust === 'false' ? false : trust)
   // Every `new Logger(context).warn/error()` call anywhere in the codebase
   // routes through this same instance once set here — see

@@ -177,7 +177,7 @@ const plainDescription = computed(() => {
 
               <div v-if="settings.showPrice" class="sum">
                 <div><span>{{ T.product }}</span><span>{{ fmt(total) }}</span></div>
-                <div><span>{{ T.delivery }}</span><span>{{ T.deliveryByWilaya }}</span></div>
+                <div v-if="!settings.hideShipping"><span>{{ T.delivery }}</span><span>{{ T.deliveryByWilaya }}</span></div>
                 <div class="gr"><span>{{ T.toPay }}</span><b>{{ fmt(total) }}</b></div>
               </div>
               <span class="cta">{{ settings.ctaLabel }}</span>

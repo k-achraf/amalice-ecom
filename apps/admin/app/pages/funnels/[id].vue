@@ -137,13 +137,13 @@ async function addStep() {
 }
 
 // ---- landing page tab ----
-type Tab = 'flow' | 'landing' | 'stats' | 'orders'
-const TABS: Tab[] = ['flow', 'landing', 'stats', 'orders']
+type Tab = 'flow' | 'landing' | 'stats' | 'sessions' | 'orders'
+const TABS: Tab[] = ['flow', 'landing', 'stats', 'sessions', 'orders']
 const tab = ref<Tab>(TABS.includes(route.query.tab as Tab) ? (route.query.tab as Tab) : 'flow')
 watch(tab, (t) => router.replace({ query: { ...route.query, tab: t === 'flow' ? undefined : t } }))
 // The data tabs fetch on first open (v-if), then stay mounted so switching back is instant.
-const opened = reactive({ stats: tab.value === 'stats', orders: tab.value === 'orders' })
-watch(tab, (t) => { if (t === 'stats' || t === 'orders') opened[t] = true })
+const opened = reactive({ stats: tab.value === 'stats', sessions: tab.value === 'sessions', orders: tab.value === 'orders' })
+watch(tab, (t) => { if (t === 'stats' || t === 'sessions' || t === 'orders') opened[t] = true })
 
 const landingSteps = computed(() => steps.value.filter((s) => s.type === 'Landing'))
 const landingStepId = ref<string>('')
@@ -301,10 +301,11 @@ const warnings = computed(() => {
       <AdsTabs
         v-model="tab"
         underline
-        :items="[{ label: 'Flow', value: 'flow' }, { label: 'Landing page', value: 'landing' }, { label: 'Stats', value: 'stats' }, { label: 'Orders', value: 'orders' }]"
+        :items="[{ label: 'Flow', value: 'flow' }, { label: 'Landing page', value: 'landing' }, { label: 'Stats', value: 'stats' }, { label: 'Sessions', value: 'sessions' }, { label: 'Orders', value: 'orders' }]"
       />
 
       <FunnelStats v-if="opened.stats" v-show="tab === 'stats'" :funnel-id="id" />
+      <FunnelSessions v-if="opened.sessions" v-show="tab === 'sessions'" :funnel-id="id" />
       <FunnelOrders v-if="opened.orders" v-show="tab === 'orders'" :funnel-id="id" />
 
       <section v-show="tab === 'landing'" class="stack" aria-label="Landing page settings">

@@ -437,6 +437,8 @@ export const ModelName = {
   ProductSourcingRequest: 'ProductSourcingRequest',
   PageViewEvent: 'PageViewEvent',
   Funnel: 'Funnel',
+  FunnelRecording: 'FunnelRecording',
+  FunnelRecordingChunk: 'FunnelRecordingChunk',
   FunnelStep: 'FunnelStep',
   MetaConnection: 'MetaConnection',
   MetaAdAccount: 'MetaAdAccount',
@@ -461,7 +463,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "supplier" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderAttribution" | "callAttempt" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "shippingCompanyCommune" | "shipmentEvent" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "sourcedProductVideoCreative" | "sourcedProductCompetitor" | "productAdTest" | "productSourcingRequest" | "pageViewEvent" | "funnel" | "funnelStep" | "metaConnection" | "metaAdAccount" | "metaAppCredentials" | "blacklistEntry" | "reportSettings" | "aiProviderCredential" | "aiSettings" | "alertLog"
+    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "supplier" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderAttribution" | "callAttempt" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "shippingCompanyCommune" | "shipmentEvent" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "sourcedProductVideoCreative" | "sourcedProductCompetitor" | "productAdTest" | "productSourcingRequest" | "pageViewEvent" | "funnel" | "funnelRecording" | "funnelRecordingChunk" | "funnelStep" | "metaConnection" | "metaAdAccount" | "metaAppCredentials" | "blacklistEntry" | "reportSettings" | "aiProviderCredential" | "aiSettings" | "alertLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4387,6 +4389,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    FunnelRecording: {
+      payload: Prisma.$FunnelRecordingPayload<ExtArgs>
+      fields: Prisma.FunnelRecordingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FunnelRecordingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FunnelRecordingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingPayload>
+        }
+        findFirst: {
+          args: Prisma.FunnelRecordingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FunnelRecordingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingPayload>
+        }
+        findMany: {
+          args: Prisma.FunnelRecordingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingPayload>[]
+        }
+        create: {
+          args: Prisma.FunnelRecordingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingPayload>
+        }
+        createMany: {
+          args: Prisma.FunnelRecordingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FunnelRecordingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingPayload>[]
+        }
+        delete: {
+          args: Prisma.FunnelRecordingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingPayload>
+        }
+        update: {
+          args: Prisma.FunnelRecordingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingPayload>
+        }
+        deleteMany: {
+          args: Prisma.FunnelRecordingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FunnelRecordingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FunnelRecordingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingPayload>[]
+        }
+        upsert: {
+          args: Prisma.FunnelRecordingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingPayload>
+        }
+        aggregate: {
+          args: Prisma.FunnelRecordingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFunnelRecording>
+        }
+        groupBy: {
+          args: Prisma.FunnelRecordingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FunnelRecordingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FunnelRecordingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FunnelRecordingCountAggregateOutputType> | number
+        }
+      }
+    }
+    FunnelRecordingChunk: {
+      payload: Prisma.$FunnelRecordingChunkPayload<ExtArgs>
+      fields: Prisma.FunnelRecordingChunkFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FunnelRecordingChunkFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingChunkPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FunnelRecordingChunkFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingChunkPayload>
+        }
+        findFirst: {
+          args: Prisma.FunnelRecordingChunkFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingChunkPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FunnelRecordingChunkFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingChunkPayload>
+        }
+        findMany: {
+          args: Prisma.FunnelRecordingChunkFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingChunkPayload>[]
+        }
+        create: {
+          args: Prisma.FunnelRecordingChunkCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingChunkPayload>
+        }
+        createMany: {
+          args: Prisma.FunnelRecordingChunkCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FunnelRecordingChunkCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingChunkPayload>[]
+        }
+        delete: {
+          args: Prisma.FunnelRecordingChunkDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingChunkPayload>
+        }
+        update: {
+          args: Prisma.FunnelRecordingChunkUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingChunkPayload>
+        }
+        deleteMany: {
+          args: Prisma.FunnelRecordingChunkDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FunnelRecordingChunkUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FunnelRecordingChunkUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingChunkPayload>[]
+        }
+        upsert: {
+          args: Prisma.FunnelRecordingChunkUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelRecordingChunkPayload>
+        }
+        aggregate: {
+          args: Prisma.FunnelRecordingChunkAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFunnelRecordingChunk>
+        }
+        groupBy: {
+          args: Prisma.FunnelRecordingChunkGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FunnelRecordingChunkGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FunnelRecordingChunkCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FunnelRecordingChunkCountAggregateOutputType> | number
+        }
+      }
+    }
     FunnelStep: {
       payload: Prisma.$FunnelStepPayload<ExtArgs>
       fields: Prisma.FunnelStepFieldRefs
@@ -5904,6 +6054,29 @@ export const FunnelScalarFieldEnum = {
 export type FunnelScalarFieldEnum = (typeof FunnelScalarFieldEnum)[keyof typeof FunnelScalarFieldEnum]
 
 
+export const FunnelRecordingScalarFieldEnum = {
+  id: 'id',
+  funnelId: 'funnelId',
+  visitorId: 'visitorId',
+  eventCount: 'eventCount',
+  bytes: 'bytes',
+  startedAt: 'startedAt',
+  endedAt: 'endedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type FunnelRecordingScalarFieldEnum = (typeof FunnelRecordingScalarFieldEnum)[keyof typeof FunnelRecordingScalarFieldEnum]
+
+
+export const FunnelRecordingChunkScalarFieldEnum = {
+  recordingId: 'recordingId',
+  seq: 'seq',
+  events: 'events'
+} as const
+
+export type FunnelRecordingChunkScalarFieldEnum = (typeof FunnelRecordingChunkScalarFieldEnum)[keyof typeof FunnelRecordingChunkScalarFieldEnum]
+
+
 export const FunnelStepScalarFieldEnum = {
   id: 'id',
   funnelId: 'funnelId',
@@ -6803,6 +6976,8 @@ export type GlobalOmitConfig = {
   productSourcingRequest?: Prisma.ProductSourcingRequestOmit
   pageViewEvent?: Prisma.PageViewEventOmit
   funnel?: Prisma.FunnelOmit
+  funnelRecording?: Prisma.FunnelRecordingOmit
+  funnelRecordingChunk?: Prisma.FunnelRecordingChunkOmit
   funnelStep?: Prisma.FunnelStepOmit
   metaConnection?: Prisma.MetaConnectionOmit
   metaAdAccount?: Prisma.MetaAdAccountOmit

@@ -2,6 +2,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import { getPage } from './api'
 import { config } from './config'
 import { getImage, parseImgQuery, pickFormat } from './img'
+import { RECORDER_PATH, recorder } from './recorder'
 import type { Rendered } from './render'
 import { esc } from './util'
 
@@ -35,6 +36,25 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
   if (method !== 'GET' && method !== 'HEAD') return send(res, 405, { allow: 'GET, HEAD' })
 
   if (url.pathname === '/healthz') return send(res, 200, { 'content-type': 'text/plain', 'cache-control': 'no-store' }, 'ok')
+
+  if (url.pathname === RECORDER_PATH) {
+    const accept = String(req.headers['accept-encoding'] ?? '')
+    const enc = /br/.test(accept) ? 'br' : /gzip/.test(accept) ? 'gzip' : null
+    const body = enc === 'br' ? recorder.br : enc === 'gzip' ? recorder.gzip : recorder.identity
+    return send(
+      res,
+      200,
+      {
+        'content-type': 'text/javascript; charset=utf-8',
+        vary: 'Accept-Encoding',
+        // The URL carries a content hash, so it can be cached for good.
+        'cache-control': 'public, max-age=31536000, immutable',
+        'content-length': body.length,
+        ...(enc ? { 'content-encoding': enc } : {})
+      },
+      method === 'HEAD' ? undefined : body
+    )
+  }
 
   if (url.pathname === '/img') {
     const q = parseImgQuery(url)

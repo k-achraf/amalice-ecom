@@ -104,6 +104,8 @@ export const ModelName = {
   ProductSourcingRequest: 'ProductSourcingRequest',
   PageViewEvent: 'PageViewEvent',
   Funnel: 'Funnel',
+  FunnelRecording: 'FunnelRecording',
+  FunnelRecordingChunk: 'FunnelRecordingChunk',
   FunnelStep: 'FunnelStep',
   MetaConnection: 'MetaConnection',
   MetaAdAccount: 'MetaAdAccount',
@@ -941,6 +943,29 @@ export const FunnelScalarFieldEnum = {
 } as const
 
 export type FunnelScalarFieldEnum = (typeof FunnelScalarFieldEnum)[keyof typeof FunnelScalarFieldEnum]
+
+
+export const FunnelRecordingScalarFieldEnum = {
+  id: 'id',
+  funnelId: 'funnelId',
+  visitorId: 'visitorId',
+  eventCount: 'eventCount',
+  bytes: 'bytes',
+  startedAt: 'startedAt',
+  endedAt: 'endedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type FunnelRecordingScalarFieldEnum = (typeof FunnelRecordingScalarFieldEnum)[keyof typeof FunnelRecordingScalarFieldEnum]
+
+
+export const FunnelRecordingChunkScalarFieldEnum = {
+  recordingId: 'recordingId',
+  seq: 'seq',
+  events: 'events'
+} as const
+
+export type FunnelRecordingChunkScalarFieldEnum = (typeof FunnelRecordingChunkScalarFieldEnum)[keyof typeof FunnelRecordingChunkScalarFieldEnum]
 
 
 export const FunnelStepScalarFieldEnum = {
