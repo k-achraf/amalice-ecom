@@ -35,7 +35,6 @@ function applySearch() { page.value = 1; load() }
 const rows = computed(() => data.value?.items ?? [])
 const fmtDate = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 const itemsText = (o: OrderListResponse['items'][number]) => o.items.map((it) => `${it.product.name} ×${it.quantity}${it.offerLabel ? ` (${it.offerLabel})` : ''}${it.isUpsell ? ' (upsell)' : ''}`).join(', ')
-const deliveryLabel = (t: string | null) => (t === 'Home' ? 'Home' : t === 'Desk' ? 'Stop desk' : '')
 function rowClick(e: MouseEvent, id: string) {
   if (!(e.target as HTMLElement).closest('a, input, button')) navigateTo(`/orders/${id}`)
 }
@@ -56,7 +55,7 @@ function rowClick(e: MouseEvent, id: string) {
     <div class="table-wrap">
       <table style="min-width: 760px">
         <thead>
-          <tr><th>Order</th><th>Customer</th><th>Wilaya</th><th>Source</th><th>Items</th><th class="num">Total</th><th>Status</th></tr>
+          <tr><th>Order</th><th>Customer</th><th>Destination</th><th>Source</th><th>Items</th><th class="num">Total</th><th>Status</th></tr>
         </thead>
         <tbody>
           <tr v-if="loading && !rows.length"><td colspan="7" class="empty">Loading…</td></tr>
@@ -64,7 +63,7 @@ function rowClick(e: MouseEvent, id: string) {
           <tr v-for="o in rows" v-else :key="o.id" class="clickable" @click="rowClick($event, o.id)">
             <td><NuxtLink class="link-cell" :to="`/orders/${o.id}`">#{{ o.id.slice(0, 8) }}</NuxtLink><span class="sub">{{ fmtDate(o.createdAt) }}</span></td>
             <td style="white-space: nowrap">{{ o.customer.name ?? '—' }}<span class="sub">{{ o.customer.phone }}</span></td>
-            <td style="white-space: nowrap">{{ o.address.region }}<span class="sub">{{ deliveryLabel(o.shippingType) }}</span></td>
+            <td><OrderDestination :address="o.address" :shipping-type="o.shippingType" /></td>
             <td style="max-width: 180px"><template v-if="o.attribution">{{ o.attribution.platform }}<span v-if="o.attribution.campaign" class="sub" style="overflow: hidden; text-overflow: ellipsis" :title="o.attribution.campaign">{{ o.attribution.campaign }}</span></template><span v-else class="muted">—</span></td>
             <td class="muted" style="max-width: 240px">{{ itemsText(o) }}</td>
             <td class="num"><span class="strong"><AdsPrice :amount-cents="o.totalCents" /></span></td>

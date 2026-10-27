@@ -693,6 +693,7 @@ function initials(name: string | null) {
               <div class="grow"><b style="font-weight: 600">{{ order.customer.name ?? '—' }}</b><span class="muted" style="display: block">{{ order.customer.phone }}</span></div>
               <button v-if="PRICE_EDITABLE_STATES.includes(order.state) && !order.shipment" class="btn btn-primary btn-sm" type="button" @click="openCustomerEditor"><AdsIcon name="i-lucide-pencil" />Edit</button>
             </div>
+            <div style="display: flex; gap: 8px; align-items: flex-start; margin-bottom: 10px; color: var(--text-2)"><AdsIcon name="i-lucide-map-pin" style="width: 15px; height: 15px; flex-shrink: 0" /><OrderDestination :address="order.address" :shipping-type="order.shippingType" /></div>
             <a class="btn" :href="`tel:${order.customer.phone}`"><AdsIcon name="i-lucide-phone" />{{ order.customer.phone }}</a>
           </section>
 

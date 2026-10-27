@@ -198,7 +198,7 @@ async function syncCouriers() {
       <p class="muted" style="padding: 0 20px">These parcels exist at the courier but it will not collect them until they are confirmed.</p>
       <div class="table-wrap">
         <table style="min-width: 860px">
-          <thead><tr><th style="width: 32px"><input type="checkbox" aria-label="Select all" :checked="unconfirmed.length > 0 && unconfirmed.every((o) => labelSelected.has(o.id))" @change="toggleAllLabels(unconfirmed.map((o) => o.id))"></th><th>Order</th><th>Products</th><th>Customer</th><th>Courier</th><th>Tracking</th><th class="num">Action</th></tr></thead>
+          <thead><tr><th style="width: 32px"><input type="checkbox" aria-label="Select all" :checked="unconfirmed.length > 0 && unconfirmed.every((o) => labelSelected.has(o.id))" @change="toggleAllLabels(unconfirmed.map((o) => o.id))"></th><th>Order</th><th>Products</th><th>Customer</th><th>Destination</th><th>Courier</th><th>Tracking</th><th class="num">Action</th></tr></thead>
           <tbody>
             <tr v-for="o in unconfirmed" :key="o.id">
               <td><input type="checkbox" :checked="labelSelected.has(o.id)" :aria-label="`Select #${o.id.slice(0, 8)}`" @change="toggleLabel(o.id)"></td>
@@ -208,6 +208,7 @@ async function syncCouriers() {
                 <div>{{ o.customer.name ?? '—' }}</div>
                 <div v-if="o.notes" class="note-line" dir="auto">{{ o.notes }}</div>
               </td>
+              <td><OrderDestination :address="o.address" :shipping-type="o.shippingType" /></td>
               <td>{{ o.shippingCompanyName }}</td>
               <td class="mono">{{ o.shipment?.trackingReference }}</td>
               <td class="num"><AdsButton size="sm" icon="i-lucide-package-check" :loading="acting === o.id" label="Confirm" @click="confirmParcel(o.id)" /></td>
@@ -222,10 +223,10 @@ async function syncCouriers() {
       <div class="card-head"><h2>Awaiting packing</h2><span class="pill neutral">Confirmed</span></div>
       <div class="table-wrap">
         <table style="min-width: 760px">
-          <thead><tr><th>Order</th><th>Products</th><th>Customer</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
+          <thead><tr><th>Order</th><th>Products</th><th>Customer</th><th>Destination</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
           <tbody>
-            <tr v-if="pendingConfirmed"><td colspan="5" class="empty">Loading…</td></tr>
-            <tr v-else-if="!confirmed?.items.length"><td colspan="5" class="empty">Nothing waiting to be packed.</td></tr>
+            <tr v-if="pendingConfirmed"><td colspan="6" class="empty">Loading…</td></tr>
+            <tr v-else-if="!confirmed?.items.length"><td colspan="6" class="empty">Nothing waiting to be packed.</td></tr>
             <tr v-for="o in confirmed?.items" v-else :key="o.id">
               <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
               <td><OrderLineItemsInline :items="o.items" compact /></td>
@@ -233,6 +234,7 @@ async function syncCouriers() {
                 <div>{{ o.customer.name ?? '—' }}</div>
                 <div v-if="o.notes" class="note-line" dir="auto">{{ o.notes }}</div>
               </td>
+              <td><OrderDestination :address="o.address" :shipping-type="o.shippingType" /></td>
               <td class="num"><AdsPrice :amount-cents="o.totalCents" /></td>
               <td class="num" style="white-space: nowrap">
                 <AdsButton appearance="default" size="sm" icon="i-lucide-pause-circle" :loading="acting === o.id" label="Hold" @click="putOnHold(o.id)" />
@@ -249,9 +251,9 @@ async function syncCouriers() {
       <div class="card-head"><h2>On hold</h2></div>
       <div class="table-wrap">
         <table style="min-width: 760px">
-          <thead><tr><th>Order</th><th>Products</th><th>Customer</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
+          <thead><tr><th>Order</th><th>Products</th><th>Customer</th><th>Destination</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
           <tbody>
-            <tr v-if="pendingOnHold"><td colspan="5" class="empty">Loading…</td></tr>
+            <tr v-if="pendingOnHold"><td colspan="6" class="empty">Loading…</td></tr>
             <tr v-for="o in onHold?.items" v-else :key="o.id">
               <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
               <td><OrderLineItemsInline :items="o.items" compact /></td>
@@ -259,6 +261,7 @@ async function syncCouriers() {
                 <div>{{ o.customer.name ?? '—' }}</div>
                 <div v-if="o.notes" class="note-line" dir="auto">{{ o.notes }}</div>
               </td>
+              <td><OrderDestination :address="o.address" :shipping-type="o.shippingType" /></td>
               <td class="num"><AdsPrice :amount-cents="o.totalCents" /></td>
               <td class="num" style="white-space: nowrap">
                 <AdsButton size="sm" icon="i-lucide-play-circle" :loading="acting === o.id" label="Resume" @click="resumeFromHold(o.id)" />
@@ -278,10 +281,10 @@ async function syncCouriers() {
       </div>
       <div class="table-wrap">
         <table style="min-width: 720px">
-          <thead><tr><th style="width: 32px" /><th>Order</th><th>Products</th><th>Customer</th><th>Shipping</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
+          <thead><tr><th style="width: 32px" /><th>Order</th><th>Products</th><th>Customer</th><th>Destination</th><th>Shipping</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
           <tbody>
-            <tr v-if="pendingPacked"><td colspan="7" class="empty">Loading…</td></tr>
-            <tr v-else-if="!packed?.items.length"><td colspan="7" class="empty">No orders ready to dispatch.</td></tr>
+            <tr v-if="pendingPacked"><td colspan="8" class="empty">Loading…</td></tr>
+            <tr v-else-if="!packed?.items.length"><td colspan="8" class="empty">No orders ready to dispatch.</td></tr>
             <tr v-for="o in packed?.items" v-else :key="o.id">
               <td><input v-if="selectable(o)" type="checkbox" :checked="selected.has(o.id)" :aria-label="`Select #${o.id.slice(0, 8)}`" @change="toggle(o.id)"></td>
               <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
@@ -290,6 +293,7 @@ async function syncCouriers() {
                 <div>{{ o.customer.name ?? '—' }}</div>
                 <div v-if="o.notes" class="note-line" dir="auto">{{ o.notes }}</div>
               </td>
+              <td><OrderDestination :address="o.address" :shipping-type="o.shippingType" /></td>
               <td>
                 <AdsSelect v-if="o.fulfillmentMethod === 'Unassigned' && companyOptions.length" :model-value="undefined" :options="companyOptions" placeholder="Assign courier…" :disabled="acting === o.id" style="min-width: 150px" @update:model-value="assignCompany(o.id, $event)" />
                 <span v-else-if="o.fulfillmentMethod === 'Unassigned'" class="pill new">Unassigned</span>

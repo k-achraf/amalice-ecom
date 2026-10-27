@@ -164,7 +164,6 @@ function fmtDate(iso: string) {
 function itemsText(o: OrderListResponse['items'][number]) {
   return o.items.map((it) => `${it.product.name} ×${it.quantity}${it.offerLabel ? ` (${it.offerLabel})` : ''}`).join(', ')
 }
-const deliveryLabel = (t: string | null) => (t === 'Home' ? 'Home' : t === 'Desk' ? 'Stop desk' : '')
 const carrier = (o: OrderListResponse['items'][number]) => o.shipment?.courier.name ?? o.shippingCompanyName ?? (o.fulfillmentMethod === 'Manual' ? 'Own driver' : '—')
 </script>
 
@@ -200,7 +199,7 @@ const carrier = (o: OrderListResponse['items'][number]) => o.shipment?.courier.n
           <thead>
             <tr>
               <th style="width: 28px"><input type="checkbox" aria-label="Select all orders on this page" :checked="allChecked" @change="toggleAll(($event.target as HTMLInputElement).checked)"></th>
-              <th>Order</th><th>Customer</th><th>Wilaya</th><th>Carrier</th><th>Source</th><th>Items</th><th class="num">Total</th><th>Status</th><th><span class="sr">Actions</span></th>
+              <th>Order</th><th>Customer</th><th>Destination</th><th>Carrier</th><th>Source</th><th>Items</th><th class="num">Total</th><th>Status</th><th><span class="sr">Actions</span></th>
             </tr>
           </thead>
           <tbody>
@@ -210,7 +209,7 @@ const carrier = (o: OrderListResponse['items'][number]) => o.shipment?.courier.n
               <td><input type="checkbox" :aria-label="`Select order ${o.id.slice(0, 8)}`" :checked="selected.has(o.id)" @change="toggleOne(o.id, ($event.target as HTMLInputElement).checked)"></td>
               <td><NuxtLink class="link-cell" :to="`/orders/${o.id}`">#{{ o.id.slice(0, 8) }}</NuxtLink><span class="sub">{{ fmtDate(o.createdAt) }}</span><span v-if="o.fromAbandoned || o.isAbandoned" class="pill outline" style="margin-top: 4px" title="Customer never finished submitting the form.">Abandoned cart</span></td>
               <td style="white-space: nowrap">{{ o.customer.name ?? '—' }}<AdsIcon v-if="o.notes" name="i-lucide-sticky-note" style="width: 14px; height: 14px; vertical-align: -2px; margin-left: 4px; color: var(--text-2)" :title="o.notes" /><span class="sub">{{ o.customer.phone }}</span></td>
-              <td style="white-space: nowrap">{{ o.address.region }}<span class="sub">{{ deliveryLabel(o.shippingType) }}</span></td>
+              <td><OrderDestination :address="o.address" :shipping-type="o.shippingType" /></td>
               <td style="white-space: nowrap">{{ carrier(o) }}</td>
               <td style="max-width: 180px"><template v-if="o.attribution">{{ o.attribution.platform }}<span v-if="o.attribution.campaign" class="sub" style="overflow: hidden; text-overflow: ellipsis" :title="o.attribution.campaign">{{ o.attribution.campaign }}</span></template><span v-else class="muted">—</span></td>
               <td class="muted" style="max-width: 240px">{{ itemsText(o) }}</td>

@@ -72,9 +72,9 @@ async function sendMockStatus() {
       <div class="card-head"><h2>With courier</h2></div>
       <div class="table-wrap">
         <table style="min-width: 760px">
-          <thead><tr><th>Order</th><th>Products</th><th>Customer</th><th>Status</th><th class="num">Advance</th></tr></thead>
+          <thead><tr><th>Order</th><th>Products</th><th>Customer</th><th>Destination</th><th>Status</th><th class="num">Advance</th></tr></thead>
           <tbody>
-            <tr v-if="!withCourier?.items.length"><td colspan="5" class="empty">Nothing with a courier yet.</td></tr>
+            <tr v-if="!withCourier?.items.length"><td colspan="6" class="empty">Nothing with a courier yet.</td></tr>
             <tr v-for="o in withCourier?.items" :key="o.id">
               <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
               <td><OrderLineItemsInline :items="o.items" compact /></td>
@@ -82,6 +82,7 @@ async function sendMockStatus() {
                 <div>{{ o.customer.name ?? '—' }}</div>
                 <div v-if="o.notes" class="note-line" dir="auto">{{ o.notes }}</div>
               </td>
+              <td><OrderDestination :address="o.address" :shipping-type="o.shippingType" /></td>
               <td><AdsOrderStatus :state="o.state" /></td>
               <td class="num" style="white-space: nowrap">
                 <AdsButton v-for="next in VALID_TRANSITIONS[o.state]" :key="next" size="sm" :appearance="next === 'DeliveryFailed' ? 'danger' : 'default'" style="margin-left: 6px" :loading="acting === `${o.id}:${next}`" :label="`→ ${next}`" @click="transition(o.id, next)" />
@@ -96,9 +97,9 @@ async function sendMockStatus() {
       <div class="card-head"><h2>Out for delivery</h2></div>
       <div class="table-wrap">
         <table style="min-width: 760px">
-          <thead><tr><th>Order</th><th>Products</th><th>Customer</th><th>Status</th><th class="num">Advance</th></tr></thead>
+          <thead><tr><th>Order</th><th>Products</th><th>Customer</th><th>Destination</th><th>Status</th><th class="num">Advance</th></tr></thead>
           <tbody>
-            <tr v-if="!outForDelivery?.items.length"><td colspan="5" class="empty">Nothing out for delivery.</td></tr>
+            <tr v-if="!outForDelivery?.items.length"><td colspan="6" class="empty">Nothing out for delivery.</td></tr>
             <tr v-for="o in outForDelivery?.items" :key="o.id">
               <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
               <td><OrderLineItemsInline :items="o.items" compact /></td>
@@ -106,6 +107,7 @@ async function sendMockStatus() {
                 <div>{{ o.customer.name ?? '—' }}</div>
                 <div v-if="o.notes" class="note-line" dir="auto">{{ o.notes }}</div>
               </td>
+              <td><OrderDestination :address="o.address" :shipping-type="o.shippingType" /></td>
               <td><AdsOrderStatus :state="o.state" /></td>
               <td class="num" style="white-space: nowrap">
                 <AdsButton v-for="next in VALID_TRANSITIONS[o.state]" :key="next" size="sm" :appearance="next === 'DeliveryFailed' ? 'danger' : 'default'" style="margin-left: 6px" :loading="acting === `${o.id}:${next}`" :label="`→ ${next}`" @click="transition(o.id, next)" />
@@ -120,7 +122,7 @@ async function sendMockStatus() {
       <div class="card-head"><h2>Delivery issues</h2></div>
       <div class="table-wrap">
         <table style="min-width: 760px">
-          <thead><tr><th>Order</th><th>Products</th><th>Customer</th><th>Status</th><th class="num">Advance</th></tr></thead>
+          <thead><tr><th>Order</th><th>Products</th><th>Customer</th><th>Destination</th><th>Status</th><th class="num">Advance</th></tr></thead>
           <tbody>
             
             <tr v-for="o in [...(failed?.items ?? []), ...(returned?.items ?? [])]" :key="o.id">
@@ -130,6 +132,7 @@ async function sendMockStatus() {
                 <div>{{ o.customer.name ?? '—' }}</div>
                 <div v-if="o.notes" class="note-line" dir="auto">{{ o.notes }}</div>
               </td>
+              <td><OrderDestination :address="o.address" :shipping-type="o.shippingType" /></td>
               <td><AdsOrderStatus :state="o.state" /></td>
               <td class="num" style="white-space: nowrap">
                 <AdsButton v-for="next in VALID_TRANSITIONS[o.state]" :key="next" size="sm" :appearance="next === 'DeliveryFailed' ? 'danger' : 'default'" style="margin-left: 6px" :loading="acting === `${o.id}:${next}`" :label="`→ ${next}`" @click="transition(o.id, next)" />

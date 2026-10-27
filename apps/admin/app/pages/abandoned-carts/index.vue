@@ -114,12 +114,13 @@ async function deleteSelected() {
       <BulkBar v-if="isSuperAdmin" :count="selCount" :busy="bulkBusy" can-delete @delete="deleteSelected" @clear="selClear" />
       <div class="table-wrap">
         <table style="min-width: 900px">
-          <thead><tr><th v-if="isSuperAdmin" style="width: 28px"><input type="checkbox" aria-label="Select all" :checked="selAll" :indeterminate="selSome" @change="selToggleAll(($event.target as HTMLInputElement).checked)"></th><th>Customer</th><th>Products</th><th class="num">Value</th><th>Left at</th><th>Status</th><th><span class="sr">Actions</span></th></tr></thead>
+          <thead><tr><th v-if="isSuperAdmin" style="width: 28px"><input type="checkbox" aria-label="Select all" :checked="selAll" :indeterminate="selSome" @change="selToggleAll(($event.target as HTMLInputElement).checked)"></th><th>Customer</th><th>Destination</th><th>Products</th><th class="num">Value</th><th>Left at</th><th>Status</th><th><span class="sr">Actions</span></th></tr></thead>
           <tbody>
-            <tr v-if="pending"><td :colspan="6 + (isSuperAdmin ? 1 : 0)" class="empty">Loading…</td></tr>
+            <tr v-if="pending"><td :colspan="7 + (isSuperAdmin ? 1 : 0)" class="empty">Loading…</td></tr>
             <tr v-else-if="!visible.length"><td :colspan="6 + (isSuperAdmin ? 1 : 0)" class="empty">No abandoned carts. Every lead-form visitor who typed a phone number has either finished checking out or already been contacted.</td></tr>
             <tr v-for="o in visible" v-else :key="o.id"><td v-if="isSuperAdmin" @click.stop><input type="checkbox" :aria-label="`Select cart ${o.id.slice(0, 8)}`" :checked="selIds.has(o.id)" @change="selToggle(o.id, ($event.target as HTMLInputElement).checked)"></td>
-              <td><span class="strong">{{ o.customer.name || 'No name given' }}</span><span class="sub">{{ o.customer.phone || 'No phone' }}<template v-if="o.address.region"> · {{ o.address.region }}</template></span></td>
+              <td><span class="strong">{{ o.customer.name || 'No name given' }}</span><span class="sub">{{ o.customer.phone || 'No phone' }}</span></td>
+              <td><OrderDestination :address="o.address" :shipping-type="o.shippingType" /></td>
               <td class="muted" style="max-width: 220px">{{ o.items.map((i) => `${i.product.name} ×${i.quantity}${i.offerLabel ? ` (${i.offerLabel})` : ''}`).join(', ') }}</td>
               <td class="num strong"><AdsPrice :amount-cents="o.items.reduce((n, i) => n + i.lineTotalCents, 0)" /></td>
               <td>{{ fmtDate(o.createdAt) }}<span class="sub"><NuxtLink :to="`/orders/${o.id}`">#{{ o.id.slice(0, 8) }}</NuxtLink></span></td>
