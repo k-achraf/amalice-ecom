@@ -43,7 +43,14 @@ function onKey(e: KeyboardEvent) {
   else if (e.key === 'Escape') { open.value = false }
 }
 function onFocusOut(e: FocusEvent) {
-  if (!root.value?.contains(e.relatedTarget as Node | null)) open.value = false
+  if (root.value?.contains(e.relatedTarget as Node | null)) return
+  // Typed a full name but never clicked it: take the exact match instead of dropping the text.
+  if (open.value && query.value.trim()) {
+    const q = norm(query.value.trim())
+    const exact = props.options.filter((o) => norm(o.label) === q)
+    if (exact.length === 1 && exact[0] !== selected.value) emit('update:modelValue', exact[0]!.value)
+  }
+  open.value = false
 }
 </script>
 

@@ -299,13 +299,14 @@ async function saveCustomer() {
     toast.warning('Choose a commune from the list for the new wilaya')
     return
   }
+  // Everything the form holds is sent; the server keeps only what actually differs.
   const body: Record<string, string> = {}
-  if (editName.value.trim() !== (o.customer.name ?? '')) body.customerName = editName.value.trim()
+  if (editName.value.trim()) body.customerName = editName.value.trim()
   if (editPhone.value.trim() && editPhone.value.trim() !== formatPhoneLocal(o.customer.phone)) body.customerPhone = editPhone.value.trim()
-  if (wilayaName && wilayaName !== o.address.region) body.wilaya = wilayaName
-  if (editCommune.value && editCommune.value !== o.address.city) body.commune = editCommune.value
-  if (editLine1.value.trim() && editLine1.value.trim() !== o.address.line1) body.addressLine1 = editLine1.value.trim()
-  if (editShippingType.value && editShippingType.value !== o.shippingType) body.shippingType = editShippingType.value
+  if (wilayaName) body.wilaya = wilayaName
+  if (editCommune.value) body.commune = editCommune.value
+  if (editLine1.value.trim()) body.addressLine1 = editLine1.value.trim()
+  if (editShippingType.value) body.shippingType = editShippingType.value
   const deliveryChanged = editDeliveryNote.value.trim() !== (o.deliveryNote ?? '') || editFragile.value !== o.isFragile || editGps.value.trim() !== (o.gpsLink ?? '')
   if (!Object.keys(body).length && !deliveryChanged) { toast.info('Nothing was changed'); customerOpen.value = false; return }
   savingCustomer.value = true

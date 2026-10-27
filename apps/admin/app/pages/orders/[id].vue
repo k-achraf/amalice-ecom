@@ -250,17 +250,18 @@ async function saveCustomer() {
     return
   }
   savingCustomer.value = true
+  // Everything the form holds is sent; the server keeps only what actually differs,
+  // so a save always reaches it instead of being dropped by a client-side comparison.
   const body: Record<string, string> = {}
-  if (editCustomerName.value.trim() !== (order.value.customer.name ?? '')) body.customerName = editCustomerName.value.trim()
+  if (editCustomerName.value.trim()) body.customerName = editCustomerName.value.trim()
   if (editCustomerPhone.value.trim() && editCustomerPhone.value.trim() !== formatPhoneLocal(order.value.customer.phone)) body.customerPhone = editCustomerPhone.value.trim()
-  if (wilayaName && wilayaName !== order.value.address.region) body.wilaya = wilayaName
-  if (editCommuneName.value && editCommuneName.value !== order.value.address.city) body.commune = editCommuneName.value
-  if (editAddressLine1.value.trim() && editAddressLine1.value.trim() !== order.value.address.line1) body.addressLine1 = editAddressLine1.value.trim()
-  if (editShippingType.value && editShippingType.value !== order.value.shippingType) body.shippingType = editShippingType.value
+  if (wilayaName) body.wilaya = wilayaName
+  if (editCommuneName.value) body.commune = editCommuneName.value
+  if (editAddressLine1.value.trim()) body.addressLine1 = editAddressLine1.value.trim()
+  if (editShippingType.value) body.shippingType = editShippingType.value
   if (Object.keys(body).length === 0) {
     savingCustomer.value = false
-    toast.info('Nothing was changed')
-    customerModalOpen.value = false
+    toast.info('Nothing to save')
     return
   }
   const result = await run(() => api(`/admin/orders/${id}/customer-info`, { method: 'PATCH', body }), {
