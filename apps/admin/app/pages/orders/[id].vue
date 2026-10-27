@@ -135,6 +135,7 @@ async function savePrice() {
   }
   const shippingChanged = shippingPriceCents !== order.value.shippingPriceCents
   if (totalCents === order.value.totalCents && !shippingChanged) {
+    toast.info('Nothing was changed')
     priceModalOpen.value = false
     return
   }
@@ -234,7 +235,8 @@ async function loadCommunes(wilayaId: string) {
 }
 watch(editWilayaId, (id, oldId) => {
   if (id && id !== oldId) {
-    editCommuneName.value = ''
+    // Opening the editor sets the wilaya from undefined: keep the order's commune then.
+    if (oldId) editCommuneName.value = ''
     communeOptions.value = []
     loadCommunes(id)
   }
@@ -257,6 +259,7 @@ async function saveCustomer() {
   if (editShippingType.value && editShippingType.value !== order.value.shippingType) body.shippingType = editShippingType.value
   if (Object.keys(body).length === 0) {
     savingCustomer.value = false
+    toast.info('Nothing was changed')
     customerModalOpen.value = false
     return
   }

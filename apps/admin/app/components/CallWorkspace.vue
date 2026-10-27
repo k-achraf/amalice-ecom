@@ -307,7 +307,7 @@ async function saveCustomer() {
   if (editLine1.value.trim() && editLine1.value.trim() !== o.address.line1) body.addressLine1 = editLine1.value.trim()
   if (editShippingType.value && editShippingType.value !== o.shippingType) body.shippingType = editShippingType.value
   const deliveryChanged = editDeliveryNote.value.trim() !== (o.deliveryNote ?? '') || editFragile.value !== o.isFragile || editGps.value.trim() !== (o.gpsLink ?? '')
-  if (!Object.keys(body).length && !deliveryChanged) { customerOpen.value = false; return }
+  if (!Object.keys(body).length && !deliveryChanged) { toast.info('Nothing was changed'); customerOpen.value = false; return }
   savingCustomer.value = true
   let result: unknown = true
   if (Object.keys(body).length) {
