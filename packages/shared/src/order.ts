@@ -668,9 +668,15 @@ export const ADDRESS_EDITABLE_STATES: readonly OrderState[] = PRICE_EDITABLE_STA
 // Price edit = the final amount to collect (COD) only. The shipping fee never
 // changes here; the difference is applied to the products' prices (see
 // AdminOrdersService.updatePrice).
-export const UpdateOrderPriceSchema = z.object({
-  totalCents: z.number().int().nonnegative()
-})
+// totalCents = the final amount to collect (product lines absorb the change);
+// shippingPriceCents = the delivery fee (admin-only, enforced in the service).
+// Giving only shippingPriceCents moves the total by the same difference.
+export const UpdateOrderPriceSchema = z
+  .object({
+    totalCents: z.number().int().nonnegative().optional(),
+    shippingPriceCents: z.number().int().nonnegative().optional()
+  })
+  .refine((v) => v.totalCents !== undefined || v.shippingPriceCents !== undefined, { message: 'Provide a total or a shipping price' })
 export type UpdateOrderPrice = z.infer<typeof UpdateOrderPriceSchema>
 
 // Manual state transition — validated via isValidTransition server-side

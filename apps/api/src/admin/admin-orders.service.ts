@@ -389,7 +389,7 @@ export class AdminOrdersService {
   // (scaled in proportion, so an offer bundle keeps its quantity and only its
   // price moves). Legal until a courier shipment exists - re-checked here
   // server-side regardless of what the UI gates.
-  async updatePrice(id: string, input: UpdateOrderPrice, actor: AuditActor) {
+  async updatePrice(id: string, input: UpdateOrderPrice, actor: AuditActor, role?: string) {
     const order = await this.prisma.order.findUnique({
       where: { id },
       include: { shipment: { select: { id: true } }, items: { select: { id: true, lineTotalCents: true }, orderBy: { id: 'asc' } } }
@@ -400,8 +400,14 @@ export class AdminOrdersService {
     }
     if (!order.items.length) throw new BadRequestException('The order has no items')
 
-    const target = input.totalCents - order.shippingPriceCents
-    if (target < 0) throw new BadRequestException(`The total can't be lower than the shipping fee (${order.shippingPriceCents / 100}).`)
+    if (input.shippingPriceCents !== undefined && input.shippingPriceCents !== order.shippingPriceCents && role !== 'SuperAdmin' && role !== 'OpsManager') {
+      throw new ForbiddenException('Only an admin can change the delivery fee.')
+    }
+    const shippingPriceCents = input.shippingPriceCents ?? order.shippingPriceCents
+    // Only the fee given: the total follows it. Total given: it is the final amount.
+    const totalCents = input.totalCents ?? order.totalCents - order.shippingPriceCents + shippingPriceCents
+    const target = totalCents - shippingPriceCents
+    if (target < 0) throw new BadRequestException(`The total can't be lower than the shipping fee (${shippingPriceCents / 100}).`)
 
     const current = order.items.reduce((sum, i) => sum + i.lineTotalCents, 0)
     const lines = order.items.map((i) => ({
@@ -415,7 +421,7 @@ export class AdminOrdersService {
 
     await this.prisma.$transaction([
       ...lines.filter((l) => l.to !== l.from).map((l) => this.prisma.orderItem.update({ where: { id: l.id }, data: { lineTotalCents: l.to } })),
-      this.prisma.order.update({ where: { id }, data: { totalCents: input.totalCents } })
+      this.prisma.order.update({ where: { id }, data: { totalCents, shippingPriceCents } })
     ])
     await this.audit.log({
       actor,
@@ -425,7 +431,7 @@ export class AdminOrdersService {
       metadata: {
         field: 'price',
         from: { totalCents: order.totalCents, shippingPriceCents: order.shippingPriceCents },
-        to: { totalCents: input.totalCents, shippingPriceCents: order.shippingPriceCents }
+        to: { totalCents, shippingPriceCents }
       }
     })
 
@@ -542,8 +548,34 @@ export class AdminOrdersService {
         })
       )
     }
-    if (changes.shippingType) {
-      ops.push(this.prisma.order.update({ where: { id }, data: { shippingType: input.shippingType } }))
+    // Wilaya or home/desk changed: the delivery fee follows the new rate, and the
+    // total moves by the same difference (so a hand-edited product price survives).
+    let repriced: { from: number; to: number } | null = null
+    if (changes.wilaya || changes.shippingType) {
+      const newType = input.shippingType ?? order.shippingType
+      const wilayaName = input.wilaya ?? order.address.region
+      const wilaya = await this.prisma.wilaya.findFirst({
+        where: { name: { equals: wilayaName.trim(), mode: 'insensitive' } },
+        include: { shippingRate: true }
+      })
+      if (wilaya && newType) {
+        const rate = wilaya.shippingRate
+        const enabled = newType === 'Home' ? rate?.homeDeliveryEnabled : rate?.deskDeliveryEnabled
+        const price = newType === 'Home' ? rate?.homeDeliveryPriceCents : rate?.deskDeliveryPriceCents
+        if (!enabled || price == null) {
+          throw new BadRequestException(`${newType === 'Home' ? 'Home' : 'Desk'} delivery isn't available for ${wilaya.name}`)
+        }
+        if (price !== order.shippingPriceCents) repriced = { from: order.shippingPriceCents, to: price }
+      }
+    }
+    if (changes.shippingType || repriced) {
+      ops.push(this.prisma.order.update({
+        where: { id },
+        data: {
+          ...(changes.shippingType && { shippingType: input.shippingType }),
+          ...(repriced && { shippingPriceCents: repriced.to, totalCents: order.totalCents - repriced.from + repriced.to })
+        }
+      }))
     }
     await this.prisma.$transaction(ops)
 
@@ -552,7 +584,7 @@ export class AdminOrdersService {
       action: 'Update',
       entity: 'Order',
       entityId: id,
-      metadata: { field: 'customerInfo', changes }
+      metadata: { field: 'customerInfo', changes, ...(repriced && { shippingPriceCents: repriced }) }
     })
 
     return this.findOne(id)

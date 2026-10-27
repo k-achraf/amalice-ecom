@@ -114,27 +114,32 @@ async function confirmPostpone() {
 // Server re-enforces the state check regardless of this client-side gate.
 const priceModalOpen = ref(false)
 const editTotalDzd = ref<number | null>(null)
+const editShippingDzd = ref<number | null>(null)
+const canEditShipping = computed(() => ['SuperAdmin', 'OpsManager'].includes(auth.role ?? ''))
 const savingPrice = ref(false)
 
 function openPriceEditor() {
   if (!order.value) return
   editTotalDzd.value = order.value.totalCents / 100
+  editShippingDzd.value = order.value.shippingPriceCents / 100
   priceModalOpen.value = true
 }
 
 async function savePrice() {
   if (!order.value || editTotalDzd.value == null) return
   const totalCents = Math.round(editTotalDzd.value * 100)
-  if (!Number.isFinite(totalCents) || totalCents < 0) {
+  const shippingPriceCents = canEditShipping.value && editShippingDzd.value != null ? Math.round(editShippingDzd.value * 100) : order.value.shippingPriceCents
+  if (!Number.isFinite(totalCents) || totalCents < 0 || !Number.isFinite(shippingPriceCents) || shippingPriceCents < 0) {
     toast.warning('Enter a valid amount')
     return
   }
-  if (totalCents === order.value.totalCents) {
+  const shippingChanged = shippingPriceCents !== order.value.shippingPriceCents
+  if (totalCents === order.value.totalCents && !shippingChanged) {
     priceModalOpen.value = false
     return
   }
   savingPrice.value = true
-  const result = await run(() => api(`/admin/orders/${id}/price`, { method: 'PATCH', body: { totalCents } }), {
+  const result = await run(() => api(`/admin/orders/${id}/price`, { method: 'PATCH', body: { ...(totalCents !== order.value!.totalCents || !shippingChanged ? { totalCents } : {}), ...(shippingChanged && { shippingPriceCents }) } }), {
     success: 'Price updated',
     errorFallback: 'Could not update the price'
   })
@@ -753,7 +758,8 @@ function initials(name: string | null) {
 
   <!-- Price override (ADM-12) -->
   <AdsDialog v-model:open="priceModalOpen" title="Edit final price" description="Available until the order is sent to the courier." width="sm">
-    <AdsField label="Final price to collect (DZD)" :help="`Shipping stays ${order!.shippingPriceCents / 100} DZD; the product price absorbs the change.`"><AdsNumberInput v-model="editTotalDzd" :min="0" /></AdsField>
+    <AdsField v-if="canEditShipping" label="Delivery fee (DZD)" help="Changing it moves the final price by the same amount unless you also edit that below."><AdsNumberInput v-model="editShippingDzd" :min="0" /></AdsField>
+    <AdsField label="Final price to collect (DZD)" :help="canEditShipping ? 'The product price absorbs the change.' : `Shipping stays ${order!.shippingPriceCents / 100} DZD; the product price absorbs the change.`"><AdsNumberInput v-model="editTotalDzd" :min="0" /></AdsField>
     <template #footer>
       <button class="btn" type="button" @click="priceModalOpen = false">Cancel</button>
       <button class="btn btn-primary" type="button" :disabled="savingPrice" @click="savePrice">Save</button>

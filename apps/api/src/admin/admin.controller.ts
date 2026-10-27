@@ -393,7 +393,7 @@ export class AdminController {
   @Patch('orders/:id/price')
   @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
   updatePrice(@Param('id') id: string, @Body() body: UpdateOrderPriceDto, @Req() req: AuthedRequest) {
-    return this.orders.updatePrice(id, body, actorFrom(req))
+    return this.orders.updatePrice(id, body, actorFrom(req), req.user.role)
   }
 
   // Upsells system — call-center/admin manual add. Support/CallCenterAgent
