@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AdminOrderListItem, OrderListResponse, ShippingCompanyView } from '@amalice/shared'
+import { PICKUP_MODES, type AdminOrderListItem, type OrderListResponse, type PickupMode, type ShippingCompanyView } from '@amalice/shared'
 import { toast } from 'vue-sonner'
 
 // Stage 2 of the order pipeline: warehouse picks/packs a call-center-confirmed
@@ -144,9 +144,16 @@ async function dispatchSelected() {
   acting.value = null
 }
 
+// Ramassage (the courier collects) or vers station (we drop it off): no default,
+// the person confirming has to choose.
+const pickupMode = ref<PickupMode | ''>('')
+const pickupOptions = PICKUP_MODES.map((m) => ({ label: m.label, value: m.value }))
+const askCollection = computed(() => PICKUP_MODES.find((m) => m.value === pickupMode.value)?.askCollection)
+
 async function confirmParcel(orderId: string) {
+  if (askCollection.value === undefined) return toast.error('Choose ramassage or vers station first')
   acting.value = orderId
-  await run(() => api(`/admin/fulfillment/orders/${orderId}/request-pickup`, { method: 'POST', body: { askCollection: true } }), {
+  await run(() => api(`/admin/fulfillment/orders/${orderId}/request-pickup`, { method: 'POST', body: { askCollection: askCollection.value } }), {
     success: 'Confirmed with the courier',
     errorFallback: 'Could not confirm the parcel'
   })
@@ -154,9 +161,10 @@ async function confirmParcel(orderId: string) {
   acting.value = null
 }
 async function confirmAll() {
+  if (askCollection.value === undefined) return toast.error('Choose ramassage or vers station first')
   acting.value = 'confirm-all'
   for (const o of unconfirmed.value) {
-    await run(() => api(`/admin/fulfillment/orders/${o.id}/request-pickup`, { method: 'POST', body: { askCollection: true } }), { errorFallback: `Could not confirm #${o.id.slice(0, 8)}` })
+    await run(() => api(`/admin/fulfillment/orders/${o.id}/request-pickup`, { method: 'POST', body: { askCollection: askCollection.value } }), { errorFallback: `Could not confirm #${o.id.slice(0, 8)}` })
   }
   await refreshHandedOver()
   acting.value = null
@@ -193,7 +201,8 @@ async function syncCouriers() {
         <h2>Awaiting courier confirmation</h2>
         <span class="pill new">{{ unconfirmed.length }}</span>
         <button v-if="labelSelected.size" class="btn btn-sm" type="button" :disabled="printing" style="margin-left: auto" @click="printLabels()"><AdsIcon name="i-lucide-printer" />Print {{ labelSelected.size }} label{{ labelSelected.size > 1 ? 's' : '' }}</button>
-        <button class="btn btn-sm btn-primary" type="button" :disabled="acting === 'confirm-all'" :style="labelSelected.size ? '' : 'margin-left: auto'" @click="confirmAll"><AdsIcon name="i-lucide-package-check" />Confirm all</button>
+        <AdsSelect v-model="pickupMode" :options="pickupOptions" placeholder="Ramassage or vers station…" aria-label="How the parcels reach the courier" style="min-width: 230px" :style="labelSelected.size ? '' : 'margin-left: auto'" />
+        <button class="btn btn-sm btn-primary" type="button" :disabled="acting === 'confirm-all' || !pickupMode" @click="confirmAll"><AdsIcon name="i-lucide-package-check" />Confirm all</button>
       </div>
       <p class="muted" style="padding: 0 20px">These parcels exist at the courier but it will not collect them until they are confirmed.</p>
       <div class="table-wrap">
@@ -211,7 +220,7 @@ async function syncCouriers() {
               <td><OrderDestination :address="o.address" :shipping-type="o.shippingType" /></td>
               <td>{{ o.shippingCompanyName }}</td>
               <td class="mono">{{ o.shipment?.trackingReference }}</td>
-              <td class="num"><AdsButton size="sm" icon="i-lucide-package-check" :loading="acting === o.id" label="Confirm" @click="confirmParcel(o.id)" /></td>
+              <td class="num"><AdsButton size="sm" icon="i-lucide-package-check" :loading="acting === o.id" :disabled="!pickupMode" label="Confirm" :title="pickupMode ? undefined : 'Choose ramassage or vers station above'" @click="confirmParcel(o.id)" /></td>
             </tr>
           </tbody>
         </table>

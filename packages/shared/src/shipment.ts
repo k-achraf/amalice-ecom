@@ -77,6 +77,15 @@ export const BulkDispatchSchema = z.object({
 })
 export type BulkDispatch = z.infer<typeof BulkDispatchSchema>
 
+// How a parcel reaches the courier once it is confirmed (Ecotrack `valid/order`,
+// `ask_collection`): the courier collects it from the shop (ramassage = 1) or
+// the shop drops it at the courier's station (vers station = 0).
+export const PICKUP_MODES = [
+  { value: 'pickup', label: 'Ramassage (courier collects)', askCollection: true },
+  { value: 'station', label: 'Vers station (we drop it off)', askCollection: false }
+] as const
+export type PickupMode = (typeof PICKUP_MODES)[number]['value']
+
 export const BulkLabelsSchema = z.object({
   orderIds: z.array(z.uuid()).min(1).max(200)
 })

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DELIVERY_ACTION_LABELS, DELIVERY_CATEGORY_LABELS, type AdminOrderDetail, type DeliveryTriage, type ShipmentTrackingView } from '@amalice/shared'
+import { DELIVERY_ACTION_LABELS, PICKUP_MODES, DELIVERY_CATEGORY_LABELS, type AdminOrderDetail, type DeliveryTriage, type PickupMode, type ShipmentTrackingView } from '@amalice/shared'
 import { toast } from 'vue-sonner'
 
 // The courier's view of an order's parcel (all Ecotrack-based shipping
@@ -62,10 +62,15 @@ async function refreshNow() {
   if (view && view.courierStatus !== before) emit('changed')
 }
 
+// Ramassage (courier collects) or vers station (we drop it off): the person confirming chooses.
+const pickupMode = ref<PickupMode | ''>('')
+const pickupOptions = PICKUP_MODES.map((m) => ({ label: m.label, value: m.value }))
 async function confirmShipment() {
+  const mode = PICKUP_MODES.find((m) => m.value === pickupMode.value)
+  if (!mode) return
   acting.value = 'confirm'
-  const res = await run(() => api(`/admin/fulfillment/orders/${props.order.id}/request-pickup`, { method: 'POST', body: { askCollection: true } }), {
-    success: 'Confirmed with the courier — they will collect it',
+  const res = await run(() => api(`/admin/fulfillment/orders/${props.order.id}/request-pickup`, { method: 'POST', body: { askCollection: mode.askCollection } }), {
+    success: mode.askCollection ? 'Confirmed with the courier — they will collect it' : 'Confirmed with the courier — drop the parcel at their station',
     errorFallback: 'Could not confirm the shipment'
   })
   acting.value = null
@@ -181,7 +186,8 @@ const courierCancelled = computed(() => /annul/i.test(tracking.value?.courierSta
     </dl>
 
     <div style="display: flex; flex-wrap: wrap; gap: 8px">
-      <button v-if="viaCompany && !confirmed" class="btn btn-primary" type="button" :disabled="acting === 'confirm'" @click="confirmShipment"><AdsIcon name="i-lucide-package-check" />Confirm with courier</button>
+      <AdsSelect v-if="viaCompany && !confirmed" v-model="pickupMode" :options="pickupOptions" placeholder="Ramassage or vers station…" aria-label="How the parcel reaches the courier" style="min-width: 230px" />
+      <button v-if="viaCompany && !confirmed" class="btn btn-primary" type="button" :disabled="acting === 'confirm' || !pickupMode" @click="confirmShipment"><AdsIcon name="i-lucide-package-check" />Confirm with courier</button>
       <button v-if="viaCompany" class="btn" type="button" :disabled="acting === 'refresh' || initialLoading" @click="refreshNow"><AdsIcon name="i-lucide-refresh-cw" />{{ initialLoading || acting === 'refresh' ? 'Reading the courier…' : 'Refresh from courier' }}</button>
       <button v-if="viaCompany" class="btn" type="button" :disabled="acting === 'label'" @click="downloadLabel"><AdsIcon name="i-lucide-file-down" />Download label</button>
       <button v-if="canRequestReturn" class="btn" type="button" :disabled="acting === 'return'" @click="requestReturn"><AdsIcon name="i-lucide-rotate-ccw" />Request return</button>
