@@ -77,6 +77,11 @@ export const BulkDispatchSchema = z.object({
 })
 export type BulkDispatch = z.infer<typeof BulkDispatchSchema>
 
+export const BulkLabelsSchema = z.object({
+  orderIds: z.array(z.uuid()).min(1).max(200)
+})
+export type BulkLabels = z.infer<typeof BulkLabelsSchema>
+
 export const ValidateOrderReturnsSchema = z.object({
   orderIds: z.array(z.uuid()).min(1)
 })

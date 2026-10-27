@@ -1,3 +1,4 @@
+import { PDFDocument } from 'pdf-lib'
 import { StockService } from '../common/stock.service'
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import type { NormalizedCourierStatus } from './courier-provider.interface'
@@ -519,6 +520,26 @@ export class FulfillmentService {
 
     const { baseUrl, apiToken } = await this.dhdCompanyForOrder(order.shippingCompanyId)
     return this.dhd.getLabel(baseUrl, apiToken, order.shipment.trackingReference)
+  }
+
+  // One PDF holding every requested order's courier label. Orders without a
+  // parcel (or whose label the courier can't return) are skipped and counted,
+  // so one bad order doesn't block the batch.
+  async getMergedLabels(orderIds: string[]) {
+    const merged = await PDFDocument.create()
+    const skipped: string[] = []
+    for (const id of orderIds) {
+      try {
+        const { data } = await this.getShipmentLabel(id)
+        const src = await PDFDocument.load(data)
+        const pages = await merged.copyPages(src, src.getPageIndices())
+        pages.forEach((p) => merged.addPage(p))
+      } catch {
+        skipped.push(id)
+      }
+    }
+    if (!merged.getPageCount()) throw new BadRequestException('None of the selected orders has a label yet — send them to the courier first.')
+    return { data: await merged.save(), skipped }
   }
 
   // "Ajouter plusieurs commandes" — dispatch several Packed orders to their

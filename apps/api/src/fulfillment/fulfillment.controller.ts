@@ -3,7 +3,7 @@ import { Body, Controller, Get, Header, Param, Patch, Post, Query, Req, Res, Use
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import type { Request, Response } from 'express'
 import { createZodDto } from 'nestjs-zod'
-import { RequestPickupSchema, UpdateShipmentSchema, BulkDispatchSchema, ValidateOrderReturnsSchema, AssignShippingCompanySchema, DispatchManualSchema, DispatchOrderSchema, UpdateDeliveryInfoSchema, CourierNoteSchema } from '@amalice/shared'
+import { RequestPickupSchema, UpdateShipmentSchema, BulkDispatchSchema, ValidateOrderReturnsSchema, AssignShippingCompanySchema, DispatchManualSchema, DispatchOrderSchema, UpdateDeliveryInfoSchema, CourierNoteSchema, BulkLabelsSchema } from '@amalice/shared'
 import { FulfillmentService } from './fulfillment.service'
 import { MockCourierProvider } from './mock-courier.provider'
 import { JwtAuthGuard } from '../identity/admin-auth/jwt-auth.guard'
@@ -20,6 +20,7 @@ class AssignShippingCompanyDto extends createZodDto(AssignShippingCompanySchema)
 class DispatchManualDto extends createZodDto(DispatchManualSchema) {}
 class DispatchOrderDto extends createZodDto(DispatchOrderSchema) {}
 class UpdateDeliveryInfoDto extends createZodDto(UpdateDeliveryInfoSchema) {}
+class BulkLabelsDto extends createZodDto(BulkLabelsSchema) {}
 class CourierNoteDto extends createZodDto(CourierNoteSchema) {}
 
 interface AuthedRequest extends Request {
@@ -207,6 +208,20 @@ export class FulfillmentController {
     const { data, contentType } = await this.fulfillment.getShipmentLabel(id)
     res.setHeader('Content-Type', contentType)
     res.send(data)
+  }
+
+  // Several shipping labels merged into one PDF, in the order requested.
+  @Post('admin/fulfillment/orders/labels')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager', 'Warehouse')
+  async bulkLabels(@Body() body: BulkLabelsDto, @Res() res: Response) {
+    const { data, skipped } = await this.fulfillment.getMergedLabels(body.orderIds)
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader('Content-Disposition', 'inline; filename="labels.pdf"')
+    res.setHeader('X-Labels-Skipped', String(skipped.length))
+    res.setHeader('Access-Control-Expose-Headers', 'X-Labels-Skipped')
+    res.send(Buffer.from(data))
   }
 
   // "Valider la réception des retours" — confirm physical receipt of

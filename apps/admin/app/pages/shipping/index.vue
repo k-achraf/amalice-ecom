@@ -79,8 +79,8 @@ async function sendMockStatus() {
               <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
               <td><OrderLineItemsInline :items="o.items" compact /></td>
               <td>
-                {{ o.customer.name ?? '—' }}
-                <AdsIcon v-if="o.notes" name="i-lucide-sticky-note" style="width: 14px; height: 14px; vertical-align: -2px; margin-left: 4px; color: var(--text-2)" :title="o.notes" />
+                <div>{{ o.customer.name ?? '—' }}</div>
+                <div v-if="o.notes" class="note-line" dir="auto">{{ o.notes }}</div>
               </td>
               <td><AdsOrderStatus :state="o.state" /></td>
               <td class="num" style="white-space: nowrap">
@@ -103,8 +103,8 @@ async function sendMockStatus() {
               <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
               <td><OrderLineItemsInline :items="o.items" compact /></td>
               <td>
-                {{ o.customer.name ?? '—' }}
-                <AdsIcon v-if="o.notes" name="i-lucide-sticky-note" style="width: 14px; height: 14px; vertical-align: -2px; margin-left: 4px; color: var(--text-2)" :title="o.notes" />
+                <div>{{ o.customer.name ?? '—' }}</div>
+                <div v-if="o.notes" class="note-line" dir="auto">{{ o.notes }}</div>
               </td>
               <td><AdsOrderStatus :state="o.state" /></td>
               <td class="num" style="white-space: nowrap">
@@ -127,8 +127,8 @@ async function sendMockStatus() {
               <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
               <td><OrderLineItemsInline :items="o.items" compact /></td>
               <td>
-                {{ o.customer.name ?? '—' }}
-                <AdsIcon v-if="o.notes" name="i-lucide-sticky-note" style="width: 14px; height: 14px; vertical-align: -2px; margin-left: 4px; color: var(--text-2)" :title="o.notes" />
+                <div>{{ o.customer.name ?? '—' }}</div>
+                <div v-if="o.notes" class="note-line" dir="auto">{{ o.notes }}</div>
               </td>
               <td><AdsOrderStatus :state="o.state" /></td>
               <td class="num" style="white-space: nowrap">
@@ -155,3 +155,7 @@ async function sendMockStatus() {
     </section>
   </AdsPage>
 </template>
+
+<style scoped>
+.note-line { margin-top: 2px; max-width: 240px; font-size: 11px; line-height: 1.3; color: var(--text-2); white-space: pre-wrap; }
+</style>
