@@ -29,6 +29,14 @@ const HOUR = 3600 * 1000
 const ALGIERS_OFFSET = HOUR
 const NOTES_MAX = 2000
 
+// A call that confirmed an order doesn't count as a confirmation once the order
+// was cancelled afterwards (customer called back, admin cancelled it...): it is
+// reported with the cancelled ones, matching what the order lists show.
+const CANCELLED_STATES: OrderState[] = ['Cancelled', 'CancelledShipping']
+function effectiveOutcome(outcome: CallOutcome, orderState: OrderState): CallOutcome {
+  return outcome === 'Confirmed' && CANCELLED_STATES.includes(orderState) ? 'Cancelled' : outcome
+}
+
 function emptyCounts(): CallCenterCounts {
   return { Confirmed: 0, NoAnswer: 0, WrongNumber: 0, Postponed: 0, Cancelled: 0 }
 }
@@ -424,14 +432,15 @@ export class AdminCallCenterService {
     const attempts = await this.prisma.callAttempt.findMany({
       // Calls on archived orders don't count.
       where: { createdAt: { gte: since }, order: { archived: false } },
-      select: { orderId: true, agentId: true, outcome: true },
+      select: { orderId: true, agentId: true, outcome: true, order: { select: { state: true } } },
       orderBy: { createdAt: 'asc' }
     })
     const lastTeam = new Map<string, CallOutcome>()
     const lastMe = new Map<string, CallOutcome>()
     for (const a of attempts) {
-      lastTeam.set(a.orderId, a.outcome)
-      if (a.agentId === actor.id) lastMe.set(a.orderId, a.outcome)
+      const outcome = effectiveOutcome(a.outcome, a.order.state)
+      lastTeam.set(a.orderId, outcome)
+      if (a.agentId === actor.id) lastMe.set(a.orderId, outcome)
     }
     const team = emptyCounts()
     const me = emptyCounts()
@@ -468,7 +477,7 @@ export class AdminCallCenterService {
   async report(from: Date, to: Date): Promise<CallCenterReport> {
     const attempts = await this.prisma.callAttempt.findMany({
       where: { createdAt: { gte: from, lte: to }, order: { archived: false } },
-      include: { order: { select: { id: true, totalCents: true, createdAt: true } } },
+      include: { order: { select: { id: true, totalCents: true, createdAt: true, state: true } } },
       orderBy: { createdAt: 'asc' },
       take: 50_000
     })
@@ -481,7 +490,8 @@ export class AdminCallCenterService {
     const dailyMap = new Map<string, { date: string; calls: number; confirmed: number; cancelled: number }>()
     const reasons = new Map<string, number>()
 
-    for (const a of attempts) {
+    for (const row of attempts) {
+      const a = { ...row, outcome: effectiveOutcome(row.outcome, row.order.state) }
       totals[a.outcome]++
       allOrders.add(a.orderId)
       const key = a.agentId ?? a.agentEmail ?? 'unknown'

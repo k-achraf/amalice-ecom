@@ -168,14 +168,15 @@ export class AiToolsService {
   }
 
   private async callCenter(days: number) {
-    const calls = await this.prisma.callAttempt.findMany({ where: { createdAt: { gte: since(days) } }, select: { agentEmail: true, toState: true } })
+    const calls = await this.prisma.callAttempt.findMany({ where: { createdAt: { gte: since(days) } }, select: { agentEmail: true, toState: true, order: { select: { state: true } } } })
     const byAgent = new Map<string, { calls: number; confirmed: number }>()
     for (const c of calls) {
       // Local part only — enough to tell agents apart, no full email.
       const agent = (c.agentEmail ?? 'unknown').split('@')[0]!
       const row = byAgent.get(agent) ?? { calls: 0, confirmed: 0 }
       row.calls++
-      if (c.toState === 'Confirmed') row.confirmed++
+      // An order cancelled after the call no longer counts as confirmed.
+      if (c.toState === 'Confirmed' && !['Cancelled', 'CancelledShipping'].includes(c.order.state)) row.confirmed++
       byAgent.set(agent, row)
     }
     return {
