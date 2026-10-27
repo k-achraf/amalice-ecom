@@ -57,7 +57,7 @@ function time(iso: string) {
 </script>
 
 <template>
-  <AdsPage title="Order activity" description="Every operation on every order">
+  <AdsPage title="Order activity" :description="`${events.length} operations loaded · Every operation on every order`">
     <template #actions>
       <NuxtLink to="/orders" class="btn"><AdsIcon name="i-lucide-list" />Orders</NuxtLink>
       <button class="btn" type="button" :disabled="loading" @click="load(true)"><AdsIcon name="i-lucide-refresh-cw" />Refresh</button>

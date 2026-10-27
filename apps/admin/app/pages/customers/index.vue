@@ -86,7 +86,7 @@ async function deleteSelected() {
 </script>
 
 <template>
-  <AdsPage title="Customers" description="People who ordered from the store">
+  <AdsPage title="Customers" :description="`${(data?.total ?? 0).toLocaleString('en-US')} customers · People who ordered from the store`">
     <template #actions>
       <label class="search"><AdsIcon name="i-lucide-search" /><span class="sr">Search customers</span><input v-model="search" type="search" placeholder="Name or phone" @keydown.enter="applySearch"></label>
     </template>

@@ -77,7 +77,7 @@ function fmtDate(iso: string) {
 </script>
 
 <template>
-  <AdsPage title="Blacklist" description="Phones and addresses with returned or fake orders. Shared by the whole team.">
+  <AdsPage title="Blacklist" :description="`${data?.total ?? 0} entries · Phones and addresses with returned or fake orders`">
     <section class="card" aria-label="Add to blacklist" style="gap: 12px">
       <div class="card-head"><h2>Add manually</h2></div>
       <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end">

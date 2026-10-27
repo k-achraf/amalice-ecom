@@ -85,7 +85,7 @@ async function deleteSelected() {
 </script>
 
 <template>
-  <AdsPage title="Users & roles" description="People who can sign in to this admin">
+  <AdsPage title="Users & roles" :description="`${users?.length ?? 0} users · People who can sign in to this admin`">
     <template #actions>
       <button class="btn btn-primary" type="button" @click="showCreate = true"><AdsIcon name="i-lucide-user-plus" />New admin</button>
     </template>

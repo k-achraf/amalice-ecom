@@ -220,6 +220,43 @@ export class AdminCallCenterService {
     return { ok: true }
   }
 
+  // Puts orders back in the drop queue now, even if the cooldown / callback
+  // time / skip delay hasn't passed. Call attempts and notes are kept; only the
+  // timers and any agent lock are cleared. Wrong numbers go back to waiting.
+  async releaseToDrop(orderIds: string[], actor: AuditActor) {
+    const now = new Date()
+    const rows = await this.prisma.order.findMany({
+      where: { id: { in: orderIds }, archived: false, state: { in: WORK_STATES } },
+      select: { id: true, state: true }
+    })
+    const cooldownAgo = new Date(now.getTime() - noAnswerCooldownHours() * HOUR - 1000)
+    let released = 0
+    for (const o of rows) {
+      const res = await this.prisma.order.updateMany({
+        where: { id: o.id, state: o.state },
+        data: {
+          assignedToId: null,
+          assignedToEmail: null,
+          lockedUntil: null,
+          skippedUntil: null,
+          ...(o.state === 'CallCenterNoAnswer' && { lastCalledAt: cooldownAgo }),
+          ...(o.state === 'Postponed' && { postponedUntil: now }),
+          ...(o.state === 'WrongNumber' && { state: 'PendingCallCenter' as const, postponedUntil: null })
+        }
+      })
+      if (res.count !== 1) continue
+      released++
+      await this.audit.log({
+        actor,
+        action: o.state === 'WrongNumber' ? 'StateTransition' : 'Update',
+        entity: 'Order',
+        entityId: o.id,
+        metadata: { callCenter: 'released-to-drop', from: o.state, ...(o.state === 'WrongNumber' && { to: 'PendingCallCenter' }) }
+      })
+    }
+    return { released, skipped: orderIds.length - released }
+  }
+
   // ---- logging a call -------------------------------------------------------
 
   private static appendNote(existing: string | null, agentEmail: string, note: string): string {

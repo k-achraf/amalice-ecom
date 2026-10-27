@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { toast } from 'vue-sonner'
 import { formatPhoneLocal, CALL_CENTER_MAX_ATTEMPTS, type AdminOrderListItem, type CallCenterStatsResponse, type OrderListResponse } from '@amalice/shared'
 
 // Queue view of the call center: the four work queues (waiting / no answer /
@@ -11,6 +12,7 @@ useHead({ title: 'Call Center' })
 
 const api = useAdminApi()
 const auth = useAuthStore()
+const { run } = useApiAction()
 
 // Only orders that still have to be called (confirmed / cancelled ones leave this
 // page). 'Abandoned' is not a state: it is a label on orders the customer never
@@ -109,6 +111,24 @@ function followUp(o: AdminOrderListItem) {
   return { text: d.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }), due: d <= new Date() }
 }
 
+// Managers can put every order on this page back in the dialer at once, skipping
+// the retry cooldown / callback time.
+const canRelease = computed(() => !!auth.user && ['SuperAdmin', 'OpsManager', 'Support'].includes(auth.user.role))
+const releasing = ref(false)
+async function releasePage() {
+  const orderIds = items.value.map((o) => o.id)
+  if (!orderIds.length) return
+  releasing.value = true
+  const res = await run(() => api<{ released: number }>('/admin/call-center/release-to-drop', { method: 'POST', body: { orderIds } }), {
+    errorFallback: 'Could not release these orders'
+  })
+  releasing.value = false
+  if (res) {
+    toast.success(`${res.released} order${res.released === 1 ? '' : 's'} back in the drop queue`)
+    await refreshAll()
+  }
+}
+
 function onLogged() {
   // The order just left this queue: pick the next one in the list.
   const idx = items.value.findIndex((o) => o.id === selectedId.value)
@@ -134,7 +154,10 @@ function onLogged() {
 
     <div class="split queue-left">
       <section class="card flush" aria-labelledby="q-h">
-        <div class="card-head"><h2 id="q-h">Queue <small>{{ total }} orders</small></h2></div>
+        <div class="card-head">
+          <h2 id="q-h">Queue <small>{{ total }} orders</small></h2>
+          <button v-if="canRelease && items.length && tab !== 'PendingCallCenter'" class="btn btn-sm" type="button" :disabled="releasing" title="Put the orders on this page back in the drop queue now, ignoring the retry delay" @click="releasePage"><AdsIcon name="i-lucide-undo-2" />Release page to drop</button>
+        </div>
         <div style="padding: 10px 12px; border-bottom: 1px solid var(--line-soft); display: grid; gap: 8px">
           <AdsTabs v-model="tab" :items="tabs" />
           <AdsSearch v-model="search" soft placeholder="Search name, phone or order #…" />

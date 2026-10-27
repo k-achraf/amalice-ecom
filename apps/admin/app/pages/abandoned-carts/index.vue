@@ -99,7 +99,7 @@ async function deleteSelected() {
 </script>
 
 <template>
-  <AdsPage title="Abandoned carts" description="Visitors who started an order but didn't finish">
+  <AdsPage title="Abandoned carts" :description="`${activeItems.length} carts · Visitors who started an order but didn't finish`">
     <section class="kpis" aria-label="Recovery figures">
       <AdsKpiCard label="Abandoned carts" :value="activeItems.length" meta="Still worth a call" />
       <AdsKpiCard label="Value left in carts" :value="money(totalCents)" unit="DA" meta="Without delivery" />

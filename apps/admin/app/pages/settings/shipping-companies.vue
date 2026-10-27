@@ -240,7 +240,7 @@ const lastSync = computed(() => {
 </script>
 
 <template>
-  <AdsPage title="Shipping companies" description="Connect delivery companies and choose who ships what">
+  <AdsPage title="Shipping companies" :description="`${companies?.length ?? 0} companies · Connect delivery companies and choose who ships what`">
     <template #actions>
       <NuxtLink to="/settings/shipping" class="btn hide-sm"><AdsDesignIcon name="rates" />Shipping rates</NuxtLink>
     </template>

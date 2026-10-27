@@ -55,7 +55,7 @@ function metaPreview(m: unknown): string {
 </script>
 
 <template>
-  <AdsPage title="Audit log" description="Business events across the platform">
+  <AdsPage title="Audit log" :description="`${data?.total ?? 0} entries · Business events across the platform`">
     <section class="card" aria-label="Audit log">
       <div class="card-head">
         <label class="field" style="flex-direction: row; align-items: center; gap: 10px">

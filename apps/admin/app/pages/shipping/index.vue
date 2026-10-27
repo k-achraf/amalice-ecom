@@ -67,7 +67,7 @@ async function sendMockStatus() {
 </script>
 
 <template>
-  <AdsPage title="Shipping" description="Orders with a courier, out for delivery, or needing attention">
+  <AdsPage title="Shipping" :description="`${(withCourier?.total ?? 0) + (outForDelivery?.total ?? 0) + (failed?.total ?? 0) + (returned?.total ?? 0)} orders · With a courier, out for delivery, or needing attention`">
     <section class="card" aria-label="With courier">
       <div class="card-head"><h2>With courier</h2></div>
       <div class="table-wrap">

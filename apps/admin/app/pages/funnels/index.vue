@@ -132,7 +132,7 @@ async function deleteSelected() {
 </script>
 
 <template>
-  <AdsPage title="Funnels" description="Guided paths from first click to confirmed order">
+  <AdsPage title="Funnels" :description="`${all.length} funnels · Guided paths from first click to confirmed order`">
     <template #actions>
       <button class="btn" type="button" @click="openAi"><AdsIcon name="i-lucide-sparkles" />Generate with AI</button>
       <button class="btn btn-primary" type="button" @click="openCreate"><AdsIcon name="i-lucide-plus" />New funnel</button>

@@ -87,7 +87,7 @@ function toggleExpanded(id: string) {
 </script>
 
 <template>
-  <AdsPage title="Server logs" description="Every warning and error the API logged">
+  <AdsPage title="Server logs" :description="`${data?.total ?? 0} log entries · Every warning and error the API logged`">
     <template #actions>
       <button class="btn" type="button" :disabled="loading" @click="manualRefresh"><AdsIcon name="i-lucide-refresh-cw" />Refresh</button>
     </template>

@@ -74,7 +74,7 @@ async function deleteSelected() {
 </script>
 
 <template>
-  <AdsPage title="Product sourcing" description="Candidate products, ad tests and supplier requests">
+  <AdsPage title="Product sourcing" :description="`${sourcedProducts?.length ?? 0} products · Candidate products, ad tests and supplier requests`">
     <template #actions>
       <button class="btn btn-primary" type="button" @click="openCreateProduct"><AdsIcon name="i-lucide-plus" />New sourced product</button>
     </template>

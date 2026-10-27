@@ -51,7 +51,7 @@ async function openHistory(s: Supplier) {
 </script>
 
 <template>
-  <AdsPage title="Suppliers" description="Who restocks your inventory">
+  <AdsPage title="Suppliers" :description="`${rows.length} suppliers · Who restocks your inventory`">
     <template #actions>
       <NuxtLink class="btn" to="/inventory">Products</NuxtLink>
       <button class="btn btn-primary" type="button" @click="openNew"><AdsIcon name="i-lucide-plus" />Add supplier</button>

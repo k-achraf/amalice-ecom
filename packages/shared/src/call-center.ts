@@ -73,6 +73,13 @@ export const LogCallSchema = z
   })
 export type LogCall = z.infer<typeof LogCallSchema>
 
+// Manager action: put orders back in the dialer right now, ignoring the retry
+// cooldown / callback time / skip delay.
+export const ReleaseToDropSchema = z.object({
+  orderIds: z.array(z.uuid()).min(1).max(200)
+})
+export type ReleaseToDrop = z.infer<typeof ReleaseToDropSchema>
+
 // ---- Retry policy ----
 // A "no answer" order goes back into the dialer queue 3 hours after it was
 // marked, whatever the attempt number.

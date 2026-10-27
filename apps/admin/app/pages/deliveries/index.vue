@@ -78,7 +78,7 @@ function stageTone(d: DeliveryListItem): string {
 </script>
 
 <template>
-  <AdsPage title="Delivery details" description="Every order sent to a shipping company">
+  <AdsPage title="Delivery details" :description="`${data?.total ?? 0} deliveries · Every order sent to a shipping company`">
     <template #actions>
       <span v-if="data" class="pill confirmed">Live from the couriers · {{ new Date(data.fetchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }}</span>
       <button class="btn" type="button" :disabled="loading" @click="load(true)"><AdsIcon name="i-lucide-refresh-cw" />{{ loading ? 'Reading…' : 'Refresh from couriers' }}</button>

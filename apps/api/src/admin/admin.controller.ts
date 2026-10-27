@@ -30,6 +30,7 @@ import {
   UpdateProductUpsellSchema,
   UpdateOrderNotesSchema,
   LogCallSchema,
+  ReleaseToDropSchema,
   BulkDeleteOrdersSchema,
   CALL_CENTER_WORK_STATES,
   CALL_CENTER_VIEW_STATES,
@@ -95,6 +96,7 @@ class TransitionOrderDto extends createZodDto(TransitionOrderSchema) {}
 class CreateBlacklistEntryDto extends createZodDto(CreateBlacklistEntrySchema) {}
 class UpdateBlacklistEntryDto extends createZodDto(UpdateBlacklistEntrySchema) {}
 class LogCallDto extends createZodDto(LogCallSchema) {}
+class ReleaseToDropDto extends createZodDto(ReleaseToDropSchema) {}
 class BulkDeleteOrdersDto extends createZodDto(BulkDeleteOrdersSchema) {}
 class UpdateOrderCustomerInfoDto extends createZodDto(UpdateOrderCustomerInfoSchema) {}
 class ProductListQueryDto extends createZodDto(ProductListQuerySchema) {}
@@ -294,6 +296,13 @@ export class AdminController {
   @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
   releaseOrder(@Param('id') id: string, @Req() req: AuthedRequest) {
     return this.callCenter.release(id, actorFrom(req))
+  }
+
+  // Registered before orders/:id routes; manager-level so cooldowns can't be bypassed by agents.
+  @Post('call-center/release-to-drop')
+  @Roles('SuperAdmin', 'OpsManager', 'Support')
+  releaseToDrop(@Body() body: ReleaseToDropDto, @Req() req: AuthedRequest) {
+    return this.callCenter.releaseToDrop(body.orderIds, actorFrom(req))
   }
 
   @Post('orders/:id/skip')

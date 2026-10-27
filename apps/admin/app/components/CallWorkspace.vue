@@ -128,6 +128,26 @@ watch(() => [props.order.id, props.order.address.city, props.order.address.regio
 
 const outcomeLabel: Record<CallOutcome, string> = { Confirmed: 'Confirmed', NoAnswer: 'No answer', WrongNumber: 'Wrong number', Postponed: 'Call back later', Cancelled: 'Cancelled' }
 const outcomeColor: Record<CallOutcome, string> = { Confirmed: 'success', NoAnswer: 'warning', WrongNumber: 'error', Postponed: 'info', Cancelled: 'error' }
+function ago(iso: string) {
+  const m = ageMinutes(iso)
+  return m < 60 ? `${m} min` : m < 1440 ? `${Math.floor(m / 60)} h` : `${Math.floor(m / 1440)} d`
+}
+
+// ---- release to drop: skip the retry cooldown / callback time / skip delay ----
+const auth = useAuthStore()
+const releasing = ref(false)
+const canRelease = computed(
+  () => !props.shortcuts && isWorkState.value && !!auth.user && ['SuperAdmin', 'OpsManager', 'Support'].includes(auth.user.role)
+)
+async function releaseToDrop() {
+  releasing.value = true
+  const res = await run(() => api<{ released: number }>('/admin/call-center/release-to-drop', { method: 'POST', body: { orderIds: [props.order.id] } }), {
+    success: 'Back in the drop queue',
+    errorFallback: 'Could not release this order'
+  })
+  releasing.value = false
+  if (res !== undefined) emit('changed')
+}
 const reasonLabel = (v: string | null) => CANCEL_REASONS.find((r) => r.value === v)?.label ?? v
 
 // ---- lock heartbeat: keep this order claimed while it's open ----
@@ -479,28 +499,39 @@ onBeforeUnmount(() => {
       <OrderLineItemsInline :items="order.items" />
     </div>
 
-    <!-- Notes + call timeline -->
-    <div class="grid-2" style="align-items: start">
-      <div class="stack" style="gap: 6px">
-        <div style="display: flex; align-items: center; justify-content: space-between">
-          <h3 style="font-size: 14px">Notes</h3>
-          <button class="btn btn-primary btn-sm" type="button" @click="openNotes"><AdsIcon name="i-lucide-sticky-note" />{{ order.notes ? 'Edit note' : 'Add note' }}</button>
-        </div>
-        <p v-if="order.notes" style="white-space: pre-wrap; font-size: 13px">{{ order.notes }}</p>
-        <p v-else class="muted" style="font-size: 13px">No notes yet.</p>
+    <!-- Previous attempts: what happened on each earlier call, newest first -->
+    <div v-if="calls.length" class="attempts" aria-label="Previous attempts">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+        <h3 style="font-size: 14px">Previous attempts <span class="muted">({{ calls.length }})</span></h3>
+        <button v-if="canRelease" class="btn btn-sm" type="button" :disabled="releasing" @click="releaseToDrop"><AdsIcon name="i-lucide-undo-2" />Release to drop now</button>
       </div>
-      <div class="stack" style="gap: 6px">
-        <h3 style="font-size: 14px">Call history</h3>
-        <p v-if="!calls.length" class="muted" style="font-size: 13px">No calls logged yet.</p>
-        <ul v-else class="stack" style="gap: 6px; list-style: none; padding: 0; margin: 0; max-height: 180px; overflow-y: auto">
-          <li v-for="c in calls" :key="c.id" style="font-size: 13px">
-            <AdsBadge :color="outcomeColor[c.outcome] as any" variant="subtle">{{ outcomeLabel[c.outcome] }}</AdsBadge>
-            <span class="muted"> {{ fmtDate(c.createdAt) }} · {{ c.agentEmail?.split('@')[0] ?? '—' }}</span>
-            <span v-if="c.reason" class="muted"> · {{ reasonLabel(c.reason) }}</span>
-            <span v-if="c.note" style="display: block">{{ c.note }}</span>
-          </li>
-        </ul>
+      <ol class="stack" style="gap: 8px; list-style: none; padding: 0; margin: 8px 0 0">
+        <li v-for="(c, i) in calls" :key="c.id" class="attempt-row">
+          <span class="attempt-n">#{{ calls.length - i }}</span>
+          <div style="min-width: 0; flex: 1">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px">
+              <AdsBadge :color="outcomeColor[c.outcome] as any" variant="subtle">{{ outcomeLabel[c.outcome] }}</AdsBadge>
+              <span class="muted" style="font-size: 12px">{{ fmtDate(c.createdAt) }} · {{ ago(c.createdAt) }} ago · {{ c.agentEmail?.split('@')[0] ?? '—' }}</span>
+            </div>
+            <p v-if="c.postponedUntil" class="muted" style="font-size: 12px; margin-top: 2px">Callback asked for {{ fmtDate(c.postponedUntil) }}</p>
+            <p v-if="c.reason" class="muted" style="font-size: 12px; margin-top: 2px">Reason: {{ reasonLabel(c.reason) }}</p>
+            <p v-if="c.note" style="font-size: 13px; margin-top: 2px; white-space: pre-wrap">{{ c.note }}</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+    <div v-else-if="canRelease" style="display: flex; justify-content: flex-end">
+      <button class="btn btn-sm" type="button" :disabled="releasing" @click="releaseToDrop"><AdsIcon name="i-lucide-undo-2" />Release to drop now</button>
+    </div>
+
+    <!-- Notes -->
+    <div class="stack" style="gap: 6px">
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <h3 style="font-size: 14px">Notes</h3>
+        <button class="btn btn-primary btn-sm" type="button" @click="openNotes"><AdsIcon name="i-lucide-sticky-note" />{{ order.notes ? 'Edit note' : 'Add note' }}</button>
       </div>
+      <p v-if="order.notes" style="white-space: pre-wrap; font-size: 13px">{{ order.notes }}</p>
+      <p v-else class="muted" style="font-size: 13px">No notes yet.</p>
     </div>
 
     <div v-if="!isWorkState" class="notice"><AdsIcon name="i-lucide-info" /><span>This order is <b>{{ tierLabel[order.state] ?? order.state }}</b>: it is no longer in the call queue. <NuxtLink :to="`/orders/${order.id}`">Open the order page</NuxtLink> to follow it.</span></div>
@@ -597,3 +628,9 @@ onBeforeUnmount(() => {
     </template>
   </AdsDialog>
 </template>
+
+<style scoped>
+.attempts { border: 1px solid var(--line-soft); border-radius: 8px; padding: 10px 12px; background: var(--ivory, #faf8f3); }
+.attempt-row { display: flex; gap: 10px; align-items: flex-start; }
+.attempt-n { font-size: 12px; font-weight: 600; color: var(--text-2); min-width: 24px; padding-top: 2px; }
+</style>

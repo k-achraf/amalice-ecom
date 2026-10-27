@@ -205,7 +205,7 @@ async function deleteSelected() {
 </script>
 
 <template>
-  <AdsPage title="Products" description="Catalogue and inventory">
+  <AdsPage title="Products" :description="`${products?.total ?? rows.length} products · Catalogue and inventory`">
     <template #actions>
       <NuxtLink class="btn" to="/inventory/stocktake"><AdsIcon name="i-lucide-boxes" />Stocktake</NuxtLink>
       <NuxtLink class="btn" to="/inventory/suppliers">Suppliers</NuxtLink>
