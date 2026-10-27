@@ -169,6 +169,7 @@ export class AdminController {
     @Query('pageSize') pageSize: string = '20',
     @Query('abandoned') abandoned: 'only' | 'exclude' | 'origin' | undefined,
     @Query('archived') archived: 'only' | 'exclude' | undefined,
+    @Query('skipped') skipped: 'only' | 'exclude' | undefined,
     @Query('sort') sort: 'oldest' | 'followup' | undefined,
     // 'callcenter' = only the orders that still have to be called (the 4 work states)
     @Query('scope') scope: 'callcenter' | undefined,
@@ -193,7 +194,8 @@ export class AdminController {
       page: Number(page),
       pageSize: Number(pageSize),
       abandoned,
-      archived
+      archived,
+      skipped: skipped === 'only' || skipped === 'exclude' ? skipped : undefined
     })
   }
 

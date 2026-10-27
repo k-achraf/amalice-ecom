@@ -173,8 +173,13 @@ export class AdminOrdersService {
     // archived orders instead (there is no "all regardless of archived
     // status" mode, matching `abandoned`'s own binary).
     archived?: 'only' | 'exclude'
+    // Call center "skip for now": 'only' = orders deferred right now, 'exclude' = hide them.
+    skipped?: 'only' | 'exclude'
   }) {
+    const skipNow = new Date()
     const where: Prisma.OrderWhereInput = {
+      ...(args.skipped === 'only' && { skippedUntil: { gt: skipNow } }),
+      ...(args.skipped === 'exclude' && { AND: [{ OR: [{ skippedUntil: null }, { skippedUntil: { lte: skipNow } }] }] }),
       ...(args.abandoned === 'only' && { isAbandoned: true }),
       ...(args.abandoned === 'exclude' && { isAbandoned: false }),
       ...(args.abandoned === 'origin' && { fromAbandoned: true }),

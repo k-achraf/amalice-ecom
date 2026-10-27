@@ -18,12 +18,14 @@ const { run } = useApiAction()
 // page). 'Abandoned' is not a state: it is a label on orders the customer never
 // submitted, so that filter cuts across the queues (an abandoned cart marked
 // "wrong number" still shows) but never lists a confirmed or cancelled order.
-type QueueState = 'All' | 'PendingCallCenter' | 'CallCenterNoAnswer' | 'WrongNumber' | 'Postponed' | 'Abandoned'
-const QUEUES: QueueState[] = ['All', 'PendingCallCenter', 'CallCenterNoAnswer', 'WrongNumber', 'Postponed', 'Abandoned']
+type QueueState = 'All' | 'PendingCallCenter' | 'CallCenterNoAnswer' | 'WrongNumber' | 'Postponed' | 'Abandoned' | 'Skipped'
+const QUEUES: QueueState[] = ['All', 'PendingCallCenter', 'CallCenterNoAnswer', 'WrongNumber', 'Postponed', 'Abandoned', 'Skipped']
 function queueQuery(s: QueueState): Record<string, string> {
   if (s === 'All') return { scope: 'callcenter' }
   if (s === 'Abandoned') return { scope: 'callcenter', abandoned: 'only' }
-  return { state: s }
+  // Orders an agent skipped for now sit in their own tab, not in the state queues.
+  if (s === 'Skipped') return { scope: 'callcenter', skipped: 'only' }
+  return { state: s, skipped: 'exclude' }
 }
 
 const tab = ref<QueueState>('PendingCallCenter')
@@ -32,7 +34,7 @@ const pageSize = ref(25)
 const search = ref('')
 const items = ref<AdminOrderListItem[]>([])
 const total = ref(0)
-const counts = reactive<Record<QueueState, number>>({ All: 0, PendingCallCenter: 0, CallCenterNoAnswer: 0, WrongNumber: 0, Postponed: 0, Abandoned: 0 })
+const counts = reactive<Record<QueueState, number>>({ All: 0, PendingCallCenter: 0, CallCenterNoAnswer: 0, WrongNumber: 0, Postponed: 0, Abandoned: 0, Skipped: 0 })
 const stats = ref<CallCenterStatsResponse | null>(null)
 const loading = ref(true)
 const selectedId = ref<string | null>(null)
@@ -91,7 +93,8 @@ const tabs = computed(() => [
   { label: 'No answer', value: 'CallCenterNoAnswer', count: counts.CallCenterNoAnswer },
   { label: 'Wrong number', value: 'WrongNumber', count: counts.WrongNumber },
   { label: 'Postponed', value: 'Postponed', count: counts.Postponed },
-  { label: 'Abandoned carts', value: 'Abandoned', count: counts.Abandoned }
+  { label: 'Abandoned carts', value: 'Abandoned', count: counts.Abandoned },
+  { label: 'Skipped', value: 'Skipped', count: counts.Skipped }
 ])
 const STATE_LABEL: Record<string, string> = { PendingCallCenter: 'Waiting', CallCenterNoAnswer: 'No answer', WrongNumber: 'Wrong number', Postponed: 'Postponed' }
 
@@ -176,7 +179,7 @@ function onLogged() {
             <span class="side">
               <span class="muted">{{ waited(o.createdAt) }}</span>
               <span v-if="o.fromAbandoned || o.isAbandoned" class="pill outline" title="Customer never finished submitting the form.">Abandoned cart</span>
-              <span v-if="['All', 'Abandoned'].includes(tab)" class="pill neutral">{{ STATE_LABEL[o.state] ?? o.state }}</span>
+              <span v-if="['All', 'Abandoned', 'Skipped'].includes(tab)" class="pill neutral">{{ STATE_LABEL[o.state] ?? o.state }}</span>
               <span v-if="o.callAttemptsCount" class="pill" :class="o.callAttemptsCount >= CALL_CENTER_MAX_ATTEMPTS ? 'returned' : 'neutral'">{{ o.callAttemptsCount }} call{{ o.callAttemptsCount > 1 ? 's' : '' }}</span>
               <span v-if="o.isDuplicate" class="pill returned">Duplicate?</span>
               <RiskBadge v-if="o.riskLevel && o.riskLevel !== 'Low'" :level="o.riskLevel" :score="o.riskScore" :factors="o.riskFactors" />
