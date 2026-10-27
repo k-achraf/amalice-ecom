@@ -534,6 +534,9 @@ onBeforeUnmount(() => {
       <p v-else class="muted" style="font-size: 13px">No notes yet.</p>
     </div>
 
+    <!-- Everything that happened to this order: calls, confirmations, cancellations, edits... -->
+    <OrderTimeline :order-id="order.id" :refresh-key="`${order.state}:${order.callAttemptsCount}:${order.totalCents}:${calls.length}`" />
+
     <div v-if="!isWorkState" class="notice"><AdsIcon name="i-lucide-info" /><span>This order is <b>{{ tierLabel[order.state] ?? order.state }}</b>: it is no longer in the call queue. <NuxtLink :to="`/orders/${order.id}`">Open the order page</NuxtLink> to follow it.</span></div>
     <div v-if="isWorkState" class="field">
       <label class="label" for="call-note">Call note <span v-if="shortcuts" class="muted">(N)</span></label>
