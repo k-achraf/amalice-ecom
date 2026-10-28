@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { ShippingTypeSchema } from './shipping'
+import type { ProductOfferType } from './offer'
 
 // POS: staff type in the orders that arrive through social media / chat / phone (a customer who
 // messaged the page, a WhatsApp conversation...). They become ordinary orders of the platform
@@ -25,7 +26,11 @@ export const PosOrderItemSchema = z.object({
   variantId: z.string().uuid().optional(),
   quantity: z.number().positive().multipleOf(0.5),
   // A negotiated price for ONE unit (cents). Absent = the catalogue price of the product / variant.
-  unitPriceCents: z.number().int().nonnegative().optional()
+  // Cannot be combined with an offer (the offer sets the price).
+  unitPriceCents: z.number().int().nonnegative().optional(),
+  // One of the product's enabled offers (the same ones the funnels show). The quantity must be exactly
+  // what the offer needs (offerTotalQuantity) and the offer decides the price.
+  offerId: z.string().uuid().optional()
 })
 export type PosOrderItem = z.infer<typeof PosOrderItemSchema>
 
@@ -73,12 +78,28 @@ export interface PosProductVariant {
   priceCents: number
   stockQuantity: number
 }
+// One enabled offer of a product, as the funnels present it.
+export interface PosProductOffer {
+  id: string
+  type: ProductOfferType
+  requiredQuantity: number
+  freeQuantity: number
+  bundlePriceCents: number | null
+  // Units the customer receives (requiredQuantity + freeQuantity for Buy X get Y free).
+  totalQuantity: number
+  // Price of the whole offer at the product's catalogue price, in cents.
+  priceCents: number
+  label: string
+}
 export interface PosProduct {
   id: string
   name: string
   imageUrl: string | null
   priceCents: number
   stockQuantity: number
+  // The product can only be sold through one of its offers.
+  requireOfferSelection: boolean
+  offers: PosProductOffer[]
   variants: PosProductVariant[]
 }
 

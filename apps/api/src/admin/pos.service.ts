@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { POS_SOURCES, type PosProduct, type PosRecentOrder } from '@amalice/shared'
+import { POS_SOURCES, offerPriceCents, offerTotalQuantity, type PosProduct, type PosProductOffer, type PosRecentOrder } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 
 // Read side of the POS page: the product picker (for staff roles that cannot open the catalogue
@@ -20,6 +20,8 @@ export class PosService {
         imageUrl: true,
         priceCents: true,
         stockQuantity: true,
+        requireOfferSelection: true,
+        offers: { where: { enabled: true }, orderBy: { requiredQuantity: 'asc' } },
         variants: {
           orderBy: { sku: 'asc' },
           select: { id: true, sku: true, priceCents: true, stockQuantity: true, options: { select: { option: { select: { value: true, displayValue: true } } } } }
@@ -32,11 +34,26 @@ export class PosService {
       imageUrl: p.imageUrl,
       priceCents: p.priceCents,
       stockQuantity: p.stockQuantity,
+      requireOfferSelection: p.requireOfferSelection,
+      offers: p.offers.map((o) => this.offerView(o, p.priceCents)),
       variants: p.variants.map((v) => {
         const parts = v.options.map((o) => o.option.displayValue ?? o.option.value)
         return { id: v.id, label: parts.length ? parts.join(' / ') : v.sku, sku: v.sku, priceCents: v.priceCents, stockQuantity: v.stockQuantity }
       })
     }))
+  }
+
+  // The offer exactly as the funnels present it: pick it and the quantity and price are set for you.
+  private offerView(o: { id: string; type: PosProductOffer['type']; requiredQuantity: number; freeQuantity: number; bundlePriceCents: number | null }, unitPriceCents: number): PosProductOffer {
+    const priceCents = o.type === 'BuyXGetYFree' ? Math.round(unitPriceCents * o.requiredQuantity) : offerPriceCents(o, unitPriceCents)
+    const da = (c: number) => `${Math.round(c / 100).toLocaleString('en')} DA`
+    const label =
+      o.type === 'FixedBundlePrice'
+        ? `Buy ${o.requiredQuantity} for ${da(priceCents)}`
+        : o.type === 'BuyXGetYFree'
+          ? `Buy ${o.requiredQuantity}, get ${o.freeQuantity} free`
+          : `Buy ${o.requiredQuantity} — free shipping`
+    return { id: o.id, type: o.type, requiredQuantity: o.requiredQuantity, freeQuantity: o.freeQuantity, bundlePriceCents: o.bundlePriceCents, totalQuantity: offerTotalQuantity(o), priceCents, label }
   }
 
   async recent(limit = 15): Promise<PosRecentOrder[]> {

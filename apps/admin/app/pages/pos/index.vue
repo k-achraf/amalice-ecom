@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { POS_SOURCES, type Commune, type OrderState, type PosOrder, type PosOrderResult, type PosProduct, type PosRecentOrder, type ShippingType, type Wilaya } from '@amalice/shared'
+import { POS_SOURCES, type Commune, type OrderState, type PosOrder, type PosOrderResult, type PosProductOffer, type PosProduct, type PosRecentOrder, type ShippingType, type Wilaya } from '@amalice/shared'
 import { toast } from 'vue-sonner'
 
 definePageMeta({ requiredRole: ['SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent'] })
@@ -89,6 +89,7 @@ interface Line {
   variantId: string | null
   quantity: number
   unitCents: number
+  offerId: string | null
 }
 let lineKey = 0
 const lines = ref<Line[]>([])
@@ -120,7 +121,8 @@ function catalogCents(l: Line): number {
 }
 function addProduct(p: PosProduct) {
   const only = p.variants.length === 1 ? p.variants[0]! : null
-  lines.value.push({ key: ++lineKey, product: p, variantId: only?.id ?? null, quantity: 1, unitCents: only ? only.priceCents : p.priceCents })
+  const first = p.requireOfferSelection ? (p.offers[0] ?? null) : null
+  lines.value.push({ key: ++lineKey, product: p, variantId: only?.id ?? null, quantity: first ? first.totalQuantity : 1, unitCents: only ? only.priceCents : p.priceCents, offerId: first?.id ?? null })
   search.value = ''
   results.value = []
   searched.value = false
@@ -129,7 +131,7 @@ function setVariant(l: Line, id: string | null) {
   const before = catalogCents(l)
   const wasCustom = l.unitCents !== before
   l.variantId = id
-  if (!wasCustom) l.unitCents = catalogCents(l)
+  if (!wasCustom || l.offerId) l.unitCents = catalogCents(l)
 }
 function variantOptions(p: PosProduct) {
   return p.variants.map((v) => ({ label: v.label || v.sku, value: v.id }))
@@ -148,7 +150,28 @@ function setQty(l: Line, v: number | null) {
 function setUnitDa(l: Line, v: number | null) {
   l.unitCents = v == null || !Number.isFinite(v) ? 0 : Math.max(0, Math.round(v * 100))
 }
-const lineTotal = (l: Line) => Math.round(l.quantity * l.unitCents)
+function offerOf(l: Line): PosProductOffer | null {
+  return l.offerId ? (l.product.offers.find((o) => o.id === l.offerId) ?? null) : null
+}
+function setOffer(l: Line, offer: PosProductOffer | null) {
+  if (!offer) {
+    if (l.product.requireOfferSelection) return
+    l.offerId = null
+    return
+  }
+  l.offerId = offer.id
+  l.quantity = offer.totalQuantity
+  l.unitCents = catalogCents(l) // an offer decides the price: drop any custom price
+}
+// Same maths as the API: the offer decides the line price.
+function lineTotal(l: Line): number {
+  const o = offerOf(l)
+  if (!o) return Math.round(l.quantity * l.unitCents)
+  if (o.type === 'FixedBundlePrice') return Math.round(o.bundlePriceCents ?? o.priceCents)
+  if (o.type === 'BuyXGetYFree') return Math.round(l.product.priceCents * o.requiredQuantity)
+  return Math.round(o.totalQuantity * catalogCents(l))
+}
+const hasFreeShippingOffer = computed(() => lines.value.some((l) => offerOf(l)?.type === 'FreeShipping'))
 function removeLine(key: number) { lines.value = lines.value.filter((l) => l.key !== key) }
 const stockNum = (n: number) => String(Math.round(n * 100) / 100)
 
@@ -208,7 +231,8 @@ async function submit() {
       productId: l.product.id,
       variantId: l.variantId ?? undefined,
       quantity: l.quantity,
-      unitPriceCents: l.unitCents !== catalogCents(l) ? l.unitCents : undefined
+      offerId: l.offerId ?? undefined,
+      unitPriceCents: !l.offerId && l.unitCents !== catalogCents(l) ? l.unitCents : undefined
     })),
     shippingPriceCents: feeIsCustom.value ? feeCents.value : undefined,
     note: note.value.trim() || undefined,
@@ -310,7 +334,18 @@ function newOrder() {
               <div style="display: flex; gap: 12px; align-items: center">
                 <span class="thumb"><img v-if="l.product.imageUrl" :src="resolveImageUrl(l.product.imageUrl)" alt="" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--r)"><AdsIcon v-else name="i-lucide-package" /></span>
                 <span class="strong" style="flex: 1; min-width: 0">{{ l.product.name }}</span>
+                <AdsLozenge v-if="offerOf(l)" tone="confirmed">{{ offerOf(l)!.label }}</AdsLozenge>
                 <button type="button" class="row-btn" aria-label="Remove line" @click="removeLine(l.key)"><AdsIcon name="i-lucide-trash-2" /></button>
+              </div>
+              <div v-if="l.product.offers.length" class="stack" style="gap: 6px">
+                <span class="muted">Offer</span>
+                <div class="chips" role="tablist" aria-label="Offer">
+                  <button v-if="!l.product.requireOfferSelection" type="button" class="chip-btn" role="tab" :aria-selected="!l.offerId" @click="setOffer(l, null)">No offer</button>
+                  <button v-for="o in l.product.offers" :key="o.id" type="button" class="chip-btn" role="tab" :aria-selected="l.offerId === o.id" @click="setOffer(l, o)">
+                    {{ o.label }}<span class="count">{{ stockNum(o.totalQuantity) }} pcs · <AdsPrice :amount-cents="o.type === 'FixedBundlePrice' ? (o.bundlePriceCents ?? o.priceCents) : o.priceCents" /></span>
+                  </button>
+                </div>
+                <p v-if="l.product.requireOfferSelection" class="muted">This product is sold through offers only.</p>
               </div>
               <div class="grid-2">
                 <AdsField v-if="l.product.variants.length" label="Variant" required>
@@ -318,14 +353,14 @@ function newOrder() {
                 </AdsField>
                 <AdsField label="Quantity">
                   <div style="display: flex; gap: 6px; align-items: center">
-                    <button type="button" class="icon-btn" aria-label="Decrease" :disabled="l.quantity <= 0.5" @click="step(l, -0.5)"><AdsIcon name="i-lucide-minus" /></button>
-                    <AdsNumberInput :model-value="l.quantity" :min="0.5" :step="0.5" style="text-align: center" @update:model-value="setQty(l, $event ?? null)" />
-                    <button type="button" class="icon-btn" aria-label="Increase" @click="step(l, 0.5)"><AdsIcon name="i-lucide-plus" /></button>
+                    <button type="button" class="icon-btn" aria-label="Decrease" :disabled="!!l.offerId || l.quantity <= 0.5" @click="step(l, -0.5)"><AdsIcon name="i-lucide-minus" /></button>
+                    <AdsNumberInput :model-value="l.quantity" :min="0.5" :step="0.5" :disabled="!!l.offerId" style="text-align: center" @update:model-value="setQty(l, $event ?? null)" />
+                    <button type="button" class="icon-btn" aria-label="Increase" :disabled="!!l.offerId" @click="step(l, 0.5)"><AdsIcon name="i-lucide-plus" /></button>
                   </div>
                 </AdsField>
                 <AdsField label="Unit price (DA)">
-                  <AdsNumberInput :model-value="l.unitCents / 100" :min="0" :step="1" @update:model-value="setUnitDa(l, $event ?? null)" />
-                  <span v-if="l.unitCents !== catalogCents(l)" class="hint"><AdsLozenge tone="vip">custom price</AdsLozenge> catalogue: <AdsPrice :amount-cents="catalogCents(l)" /></span>
+                  <AdsNumberInput :model-value="l.unitCents / 100" :min="0" :step="1" :disabled="!!l.offerId" @update:model-value="setUnitDa(l, $event ?? null)" />
+                  <span v-if="!l.offerId && l.unitCents !== catalogCents(l)" class="hint"><AdsLozenge tone="vip">custom price</AdsLozenge> catalogue: <AdsPrice :amount-cents="catalogCents(l)" /></span>
                 </AdsField>
                 <AdsField label="Line total">
                   <div class="strong" style="min-height: 40px; display: flex; align-items: center"><AdsPrice :amount-cents="lineTotal(l)" /></div>
@@ -344,6 +379,10 @@ function newOrder() {
               <AdsLozenge tone="vip">custom fee</AdsLozenge>
               Configured rate: <AdsPrice :amount-cents="defaultFeeCents" /> ·
               <a href="#" @click.prevent="feeOverrideCents = null">Reset</a>
+            </span>
+            <span v-if="hasFreeShippingOffer" class="hint">
+              Free shipping offer: set the delivery fee to 0 if you want to honour it ·
+              <a href="#" @click.prevent="setFeeDa(0)">Set fee to 0</a>
             </span>
           </AdsField>
           <AdsField label="Internal note"><AdsTextarea v-model="note" :rows="2" maxlength="1000" placeholder="Visible to staff only" /></AdsField>

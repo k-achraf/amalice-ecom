@@ -421,6 +421,9 @@ export class OrdersService {
       const products = await this.prisma.product.findMany({ where: { id: { in: productIds } } })
       const productById = new Map(products.map((p) => [p.id, p]))
       const variantById = await this.loadVariants(input.items)
+      const offerIds = input.items.map((i) => i.offerId).filter((id): id is string => !!id)
+      const offers = offerIds.length ? await this.prisma.productOffer.findMany({ where: { id: { in: offerIds } } }) : []
+      const offerById = new Map(offers.map((o) => [o.id, o]))
       let itemsTotalCents = 0
       const pricedItems = input.items.map((item) => {
         const product = productById.get(item.productId)
@@ -429,10 +432,24 @@ export class OrdersService {
         if (item.variantId && (!variant || variant.productId !== item.productId)) {
           throw new BadRequestException(`Selected variant is not available for "${product.name}"`)
         }
-        const unitPriceCents = item.unitPriceCents ?? variant?.priceCents ?? product.priceCents
-        const lineTotalCents = Math.round(unitPriceCents * item.quantity)
+        let unitPriceCents = item.unitPriceCents ?? variant?.priceCents ?? product.priceCents
+        let lineTotalCents = Math.round(unitPriceCents * item.quantity)
+        let offerId: string | null = null
+        if (item.offerId) {
+          // Same offers and the same pricing as the funnels / storefront.
+          if (item.unitPriceCents !== undefined) throw new BadRequestException(`A custom price cannot be combined with an offer for "${product.name}"`)
+          const offer = offerById.get(item.offerId)
+          if (!offer || offer.productId !== item.productId || !offer.enabled) throw new BadRequestException(`That offer is no longer available for "${product.name}"`)
+          const expectedQuantity = offer.type === 'BuyXGetYFree' ? offer.requiredQuantity + offer.freeQuantity : offer.requiredQuantity
+          if (item.quantity !== expectedQuantity) throw new BadRequestException(`Quantity doesn't match the selected offer for "${product.name}"`)
+          unitPriceCents = variant?.priceCents ?? product.priceCents
+          if (offer.type === 'FixedBundlePrice') lineTotalCents = offer.bundlePriceCents ?? Math.round(unitPriceCents * item.quantity)
+          else if (offer.type === 'BuyXGetYFree') lineTotalCents = Math.round(product.priceCents * offer.requiredQuantity)
+          else lineTotalCents = Math.round(unitPriceCents * item.quantity)
+          offerId = offer.id
+        }
         itemsTotalCents += lineTotalCents
-        return { productId: item.productId, variantId: variant?.id ?? null, quantity: item.quantity, unitPriceCents, lineTotalCents, offerId: null }
+        return { productId: item.productId, variantId: variant?.id ?? null, quantity: item.quantity, unitPriceCents, lineTotalCents, offerId }
       })
 
       const wilaya = await this.prisma.wilaya.findUnique({ where: { id: input.wilayaId } })
