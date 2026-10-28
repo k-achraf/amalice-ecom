@@ -8,6 +8,13 @@ import { z } from 'zod'
 // Our wilayas 59-69 (created in 2025) sit inside these parent wilayas at couriers that still
 // run the old 58-wilaya list. Used only as a SUGGESTION when a company has no mapping yet.
 export const DEFAULT_COURIER_PARENT_WILAYA: Record<string, string> = {
+  // Wilayas created in 2019 that a courier may not list either (Ecotrack's active list has 51, 54,
+  // 55, 57, 58 but not 49, 50, 52, 53, 56): their communes are under the old parent wilaya.
+  '49': '1', // Timimoun -> Adrar
+  '50': '1', // Bordj Badji Mokhtar -> Adrar
+  '52': '8', // Beni Abbes -> Bechar
+  '53': '11', // In Salah -> Tamanrasset
+  '56': '33', // Djanet -> Illizi
   '59': '3', // Aflou -> Laghouat
   '60': '5', // Barika -> Batna
   '61': '7', // El Kantara -> Biskra

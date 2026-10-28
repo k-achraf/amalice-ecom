@@ -335,7 +335,7 @@ export class ShippingCompaniesService {
     const active = new Set(wilayas.map((w) => String(w.wilaya_id)))
 
     const rows = communes
-      .filter((c) => c.nom && c.wilaya_id != null && (active.size === 0 || active.has(String(c.wilaya_id))))
+      .filter((c) => c.nom && c.wilaya_id != null && c.is_active !== 0 && (active.size === 0 || active.has(String(c.wilaya_id))))
       .map((c) => ({
         shippingCompanyId: company.id,
         wilayaId: String(c.wilaya_id),

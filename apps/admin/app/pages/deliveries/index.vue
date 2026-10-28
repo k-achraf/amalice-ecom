@@ -90,6 +90,11 @@ function stageTone(d: DeliveryListItem): string {
       <OrderFilters v-model="filters" :fields="FILTER_FIELDS" />
     </section>
 
+    <p v-if="data?.sync" class="notice"><AdsIcon name="i-lucide-refresh-cw" /><span>Synced with the couriers: {{ data.sync.checked }} parcels checked, {{ data.sync.applied }} orders updated<template v-if="data.sync.forced"> ({{ data.sync.forced }} set to the courier's state)</template>.</span></p>
+    <p v-if="data?.sync?.notFound.length" class="notice danger"><AdsIcon name="i-lucide-alert-triangle" /><span>{{ data.sync.notFound.length }} parcel(s) are unknown to the courier (deleted there or sent through another company): <span class="mono">{{ data.sync.notFound.slice(0, 8).join(', ') }}<template v-if="data.sync.notFound.length > 8">…</template></span></span></p>
+    <p v-if="data?.sync?.blocked.length" class="notice danger"><AdsIcon name="i-lucide-alert-triangle" /><span>{{ data.sync.blocked.length }} order(s) could not follow the courier's status:
+      <template v-for="b in data.sync.blocked.slice(0, 5)" :key="b.orderId"><br><NuxtLink :to="`/orders/${b.orderId}`" class="link-cell">#{{ b.orderId.slice(0, 8) }}</NuxtLink> <span class="mono">{{ b.tracking }}</span>: {{ b.reason }}</template>
+      <template v-if="data.sync.blocked.length > 5"><br>…and {{ data.sync.blocked.length - 5 }} more</template></span></p>
     <p v-for="e in data?.liveErrors ?? []" :key="e.company + e.message" class="notice danger"><AdsIcon name="i-lucide-alert-triangle" /><span><b>{{ e.company }}</b> could not be reached: {{ e.message }}. Its parcels below show what was last stored.</span></p>
 
     <div v-if="loading && !data" class="empty">Reading the shipping companies…</div>

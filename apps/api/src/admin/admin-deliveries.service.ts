@@ -16,7 +16,7 @@ import type { Prisma } from '../generated/prisma/client'
 import { buildOrderFilterWhere, buildShipmentFilterWhere } from './order-filter-where'
 import { PrismaService } from '../prisma/prisma.service'
 import { FulfillmentService } from '../fulfillment/fulfillment.service'
-import { DhdApiService, type DhdTrackingActivity, type DhdTrackingInfo } from '../shipping-companies/dhd-api.service'
+import { DhdApiService, activityLabel, type DhdTrackingActivity, type DhdTrackingInfo } from '../shipping-companies/dhd-api.service'
 
 type Company = { id: string; name: string; baseUrl: string; apiToken: string | null }
 
@@ -47,7 +47,7 @@ export class AdminDeliveriesService {
   private entryOf(a: DhdTrackingActivity): DeliveryHistoryEntry {
     return {
       at: a.date ? `${a.date}${a.time ? `T${a.time}` : ''}` : null,
-      reason: a.reason ?? a.activity ?? null,
+      reason: a.reason ?? activityLabel(a.activity) ?? null,
       details: a.details || null,
       station: a.station || null,
       driver: a.driver || null,
@@ -59,8 +59,18 @@ export class AdminDeliveriesService {
     // "Refresh from couriers": first bring OUR stored statuses (and order states) in line
     // with every linked company, so the tab counts below match what the couriers report.
     const syncErrors: { company: string; message: string }[] = []
+    let sync: DeliveryListResponse['sync']
     if (args.refresh) {
-      for (const r of await this.fulfillment.syncAllCompanies()) if (r.error) syncErrors.push({ company: r.company, message: r.error })
+      sync = { checked: 0, applied: 0, forced: 0, notFound: [], blocked: [] }
+      // Fees are not needed here (and reading them is slow, the courier allows ~45 calls a minute).
+      for (const r of await this.fulfillment.syncAllCompanies({ withFees: false })) {
+        if (r.error) syncErrors.push({ company: r.company, message: r.error })
+        sync.checked += r.checked
+        sync.applied += r.applied
+        sync.forced += r.forced
+        sync.notFound.push(...r.notFound)
+        sync.blocked.push(...r.blocked)
+      }
     }
     const search = args.search?.trim()
     // Filters narrow the one `where` below, so the stage tab counts, the total and
@@ -175,13 +185,15 @@ export class AdminDeliveriesService {
       const live = api && !!info
       const code = info?.status ?? (api && s.courierStatus && s.courierStatus !== 'created' ? s.courierStatus : null)
       const history = (info?.activity ?? []).map((a) => this.entryOf(a)).reverse()
-      const lastReason = history.find((h) => h.reason)?.reason ?? null
-      const lastPostponed = history.find((h) => h.postponedTo)?.postponedTo ?? null
+      // Reasons and postponements belong to delivery attempts, not to journey steps.
+      const attemptHistory = (info?.activity ?? []).filter((a) => a.kind !== 'operation').map((a) => this.entryOf(a)).reverse()
+      const lastReason = attemptHistory.find((h) => h.reason)?.reason ?? null
+      const lastPostponed = attemptHistory.find((h) => h.postponedTo)?.postponedTo ?? null
       const toIso = (v: string | null) => {
         const d = v ? new Date(`${v.replace(' ', 'T')}+01:00`) : null
         return d && !Number.isNaN(d.getTime()) ? d.toISOString() : null
       }
-      const remarks: DeliveryRemark[] = history.slice(0, 5).flatMap((h) => {
+      const remarks: DeliveryRemark[] = attemptHistory.slice(0, 5).flatMap((h) => {
         const at = toIso(h.at)
         return at ? [{ at, kind: 'attempt' as const, text: [h.reason, h.details, h.postponedTo ? `Postponed to ${h.postponedTo}` : null].filter(Boolean).join(' — '), by: h.driver, station: h.station }] : []
       })
@@ -226,6 +238,6 @@ export class AdminDeliveriesService {
       }
     })
 
-    return { items, total: filtered.length, page: args.page, pageSize: args.pageSize, counts, fetchedAt: new Date().toISOString(), liveErrors }
+    return { items, total: filtered.length, page: args.page, pageSize: args.pageSize, counts, fetchedAt: new Date().toISOString(), liveErrors, ...(sync && { sync }) }
   }
 }

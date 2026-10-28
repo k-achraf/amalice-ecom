@@ -69,6 +69,17 @@ export interface DeliveryListResponse {
   // When the courier data was read, and which couriers could not be reached.
   fetchedAt: string
   liveErrors: { company: string; message: string }[]
+  // Only on a "Refresh from couriers": what the sync did, and the parcels it could not align.
+  sync?: {
+    checked: number
+    applied: number
+    // Applied although the normal workflow had no path (the courier's state wins).
+    forced: number
+    // Tracking numbers the courier does not know.
+    notFound: string[]
+    // Parcels whose courier status could not be reflected on the order, with the reason.
+    blocked: { orderId: string; tracking: string; reason: string }[]
+  }
 }
 
 // The stage tab a courier status belongs to (null = unknown status).

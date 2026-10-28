@@ -80,6 +80,8 @@ export interface DhdLocationCommune {
   wilaya_id: number
   code_postal: string | null
   has_stop_desk: number
+  // 0 = the courier switched this commune off (it is listed but not delivered to).
+  is_active?: number
 }
 
 // One entry of a parcel's delivery history (driver remarks, failed-attempt
@@ -94,6 +96,54 @@ export interface DhdTrackingActivity {
   time?: string | null
   postponed_to?: string | null
   activity?: string | null
+  // get/tracking/info (single parcel) names the operation `status` instead of `activity`.
+  status?: string | null
+  // 'operation' = a step of the parcel's journey (picked, dispatched_to_driver, ...);
+  // 'attempt' = a delivery attempt with its reason / postponement (deliveryAttempts).
+  kind?: 'operation' | 'attempt'
+}
+
+const ACTIVITY_LABELS: Record<string, string> = {
+  order_information_received_by_carrier: 'Order registered by the sender',
+  notification_on_order: 'Notification on the order',
+  picked: 'Picked up by the courier',
+  accepted_by_carrier: 'Received at the sorting center',
+  dispatched_to_driver: 'Dispatched to the driver',
+  attempt_delivery: 'Delivery attempt',
+  return_asked: 'Return initiated',
+  return_in_transit: 'Return in transit',
+  return_received: 'Return received by the sender',
+  livred: 'Delivered',
+  encaissed: 'Cash collected',
+  payed: 'Payment made'
+}
+export function activityLabel(code: string | null | undefined): string | null {
+  if (!code) return null
+  const key = code.toLowerCase().trim()
+  return ACTIVITY_LABELS[key] ?? key.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase())
+}
+
+// The documented vocabulary of a parcel's operations (get/tracking/info): which of OUR shipping
+// stages each means. Used only when the batch status read doesn't know a parcel (e.g. archived).
+// attempt_delivery says nothing about the outcome, so it is skipped.
+const ACTIVITY_TO_STAGE: Record<string, 'HandedToCourier' | 'OutForDelivery' | 'ReturnedToOrigin' | 'Delivered'> = {
+  picked: 'HandedToCourier',
+  accepted_by_carrier: 'HandedToCourier',
+  dispatched_to_driver: 'OutForDelivery',
+  return_asked: 'ReturnedToOrigin',
+  return_in_transit: 'ReturnedToOrigin',
+  return_received: 'ReturnedToOrigin',
+  livred: 'Delivered',
+  encaissed: 'Delivered',
+  payed: 'Delivered'
+}
+export function stageFromActivity(activity: DhdTrackingActivity[]): 'HandedToCourier' | 'OutForDelivery' | 'ReturnedToOrigin' | 'Delivered' | null {
+  for (let i = activity.length - 1; i >= 0; i--) {
+    const code = (activity[i]!.status ?? activity[i]!.activity ?? '').toLowerCase().trim()
+    const stage = ACTIVITY_TO_STAGE[code]
+    if (stage) return stage
+  }
+  return null
 }
 
 export interface DhdTrackingInfo {
@@ -233,6 +283,11 @@ export class DhdApiService {
     if (!response.ok) {
       throw new BadGatewayException(`The courier returned HTTP ${response.status} while validating the token.`)
     }
+    // An invalid token is answered with HTTP 200 and {success:false, message:'INVALID_TOKEN' | 'TOKEN_NOT_ALLOWED'}.
+    const body = (await response.json().catch(() => null)) as { success?: boolean; message?: string } | null
+    if (body?.success === false) {
+      throw new BadRequestException(body.message === 'TOKEN_NOT_ALLOWED' ? 'API access is disabled for this courier account.' : 'The courier rejected this API token.')
+    }
   }
 
   // GET /api/v1/get/fees — "Tarifs des prestations".
@@ -366,8 +421,60 @@ export class DhdApiService {
 
   // ---- Tracking -----------------------------------------------------------
 
+  // trackings/info answers an object keyed by tracking number WITHOUT a `data` wrapper
+  // ({"ECV…": {OrderInfo, status, activity, deliveryAttempts}}); get/orders/status wraps the same
+  // entries in {data: {...}}. Both are read; entries that are not objects (messages) are ignored.
+  private entriesOf(body: unknown): Record<string, Record<string, unknown>> {
+    if (!body || typeof body !== 'object') return {}
+    const obj = body as Record<string, unknown>
+    const source = obj.data && typeof obj.data === 'object' && !Array.isArray(obj.data) ? (obj.data as Record<string, unknown>) : obj
+    const out: Record<string, Record<string, unknown>> = {}
+    for (const [tracking, value] of Object.entries(source)) {
+      if (value && typeof value === 'object' && !Array.isArray(value)) out[tracking] = value as Record<string, unknown>
+    }
+    return out
+  }
+
+  // Reads one parcel's entry. Two shapes exist:
+  //  - trackings/info: {OrderInfo{driver_name, driver_phone,…}, status:"En livraison",
+  //    activity:[{date,time,status:<operation code>,station,scanLocation}],
+  //    deliveryAttempts:[{created_at,driver,station,text_tentative,postponed_to,done_by}]}
+  //  - orders/status: {status, order_id, desk_*, activity:[{reason,details,station,driver,date,time,postponed_to}]}
   private toTrackingInfo(raw: Record<string, unknown>): DhdTrackingInfo {
     const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v : null)
+    const info = raw.OrderInfo && typeof raw.OrderInfo === 'object' ? (raw.OrderInfo as Record<string, unknown>) : {}
+    const activity: DhdTrackingActivity[] = []
+    for (const item of Array.isArray(raw.activity) ? (raw.activity as Record<string, unknown>[]) : []) {
+      if (!item || typeof item !== 'object') continue
+      if (str(item.reason)) {
+        activity.push({ ...(item as DhdTrackingActivity), kind: 'attempt' })
+      } else {
+        activity.push({
+          kind: 'operation',
+          activity: str(item.status) ?? str(item.activity),
+          date: str(item.date),
+          time: str(item.time),
+          station: str(item.station),
+          details: str(item.scanLocation) ? `Scan location: ${item.scanLocation as string}` : null
+        })
+      }
+    }
+    for (const attempt of Array.isArray(raw.deliveryAttempts) ? (raw.deliveryAttempts as Record<string, unknown>[]) : []) {
+      if (!attempt || typeof attempt !== 'object') continue
+      const created = str(attempt.created_at) ?? ''
+      const [date, time] = created.includes(' ') ? created.split(' ') : created.includes('T') ? created.split('T') : [created || null, null]
+      activity.push({
+        kind: 'attempt',
+        reason: str(attempt.text_tentative) ?? 'Delivery attempt',
+        details: str(attempt.done_by) ? `By ${attempt.done_by as string}` : null,
+        station: str(attempt.station),
+        driver: str(attempt.driver),
+        date: date ?? null,
+        time: time ?? null,
+        postponed_to: str(attempt.postponed_to)
+      })
+    }
+    activity.sort((a, b) => `${a.date ?? ''} ${a.time ?? ''}`.localeCompare(`${b.date ?? ''} ${b.time ?? ''}`))
     return {
       status: str(raw.status),
       order_id: str(raw.order_id),
@@ -375,9 +482,9 @@ export class DhdApiService {
       desk_commune: str(raw.desk_commune),
       desk_map_link: str(raw.desk_map_link),
       desk_address: str(raw.desk_address),
-      driver_name: str(raw.driver_name) ?? str(raw.driver),
-      driver_phone: str(raw.driver_phone),
-      activity: Array.isArray(raw.activity) ? (raw.activity as DhdTrackingActivity[]) : []
+      driver_name: str(info.driver_name) ?? str(raw.driver_name) ?? str(raw.driver),
+      driver_phone: str(info.driver_phone) ?? str(raw.driver_phone),
+      activity
     }
   }
 
@@ -387,15 +494,28 @@ export class DhdApiService {
   async getTrackingsInfo(baseUrl: string, apiToken: string, trackings: string[]): Promise<Record<string, DhdTrackingInfo>> {
     const result: Record<string, DhdTrackingInfo> = {}
     for (let i = 0; i < trackings.length; i += 100) {
-      const chunk = trackings.slice(i, i + 100)
-      const query = Object.fromEntries(chunk.map((t, idx) => [`trackings[${idx}]`, t]))
-      const response = await this.request(baseUrl, '/api/v1/get/trackings/info', apiToken, {}, query)
-      if (response.status === 422) continue // none of this chunk is known to the courier
-      if (!response.ok) throw new BadGatewayException(`The courier returned HTTP ${response.status} while fetching tracking info.`)
-      const body = (await response.json().catch(() => null)) as { data?: Record<string, Record<string, unknown>> } | null
-      for (const [tracking, raw] of Object.entries(body?.data ?? {})) result[tracking] = this.toTrackingInfo(raw ?? {})
+      await this.fetchTrackingsChunk(baseUrl, apiToken, trackings.slice(i, i + 100), result)
     }
     return result
+  }
+
+  // A 422 means the courier rejected the request, typically because ONE tracking in it is unknown
+  // to it (deleted there). Treating that as "none are known" would hide every other parcel of the
+  // chunk from every refresh, so a rejected chunk is halved until the unknown ones are isolated.
+  private async fetchTrackingsChunk(baseUrl: string, apiToken: string, chunk: string[], result: Record<string, DhdTrackingInfo>): Promise<void> {
+    if (!chunk.length) return
+    const query = Object.fromEntries(chunk.map((t, idx) => [`trackings[${idx}]`, t]))
+    const response = await this.request(baseUrl, '/api/v1/get/trackings/info', apiToken, {}, query)
+    if (response.status === 422) {
+      if (chunk.length === 1) return
+      const mid = Math.ceil(chunk.length / 2)
+      await this.fetchTrackingsChunk(baseUrl, apiToken, chunk.slice(0, mid), result)
+      await this.fetchTrackingsChunk(baseUrl, apiToken, chunk.slice(mid), result)
+      return
+    }
+    if (!response.ok) throw new BadGatewayException(`The courier returned HTTP ${response.status} while fetching tracking info.`)
+    const body = (await response.json().catch(() => null)) as unknown
+    for (const [tracking, raw] of Object.entries(this.entriesOf(body))) result[tracking] = this.toTrackingInfo(raw)
   }
 
   // GET /api/v1/get/tracking/info — "Suivi et historique des operations sur une
@@ -423,8 +543,8 @@ export class DhdApiService {
       const response = await this.request(baseUrl, '/api/v1/get/orders/status', apiToken, {}, { trackings: chunk.join(','), status: statuses.join(',') })
       if (response.status === 422) continue
       if (!response.ok) throw new BadGatewayException(`The courier returned HTTP ${response.status} while filtering orders by status.`)
-      const body = (await response.json().catch(() => null)) as { data?: Record<string, Record<string, unknown>> } | null
-      for (const [tracking, raw] of Object.entries(body?.data ?? {})) result[tracking] = this.toTrackingInfo(raw ?? {})
+      const body = (await response.json().catch(() => null)) as unknown
+      for (const [tracking, raw] of Object.entries(this.entriesOf(body))) result[tracking] = this.toTrackingInfo(raw)
     }
     return result
   }

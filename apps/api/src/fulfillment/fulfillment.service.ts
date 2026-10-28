@@ -15,13 +15,14 @@ import {
   type DispatchOrder,
   type OrderCourierLocation,
   type OrderState,
+  DEFAULT_COURIER_PARENT_WILAYA,
   type SetOrderCourierLocation,
   type ShipmentTrackingView,
   type UpdateDeliveryInfo
 } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
-import { DhdApiService, type DhdOrderPayload, type DhdParcelUpdate, type DhdTrackingInfo } from '../shipping-companies/dhd-api.service'
+import { DhdApiService, activityLabel, stageFromActivity, type DhdOrderPayload, type DhdParcelUpdate, type DhdTrackingInfo } from '../shipping-companies/dhd-api.service'
 import { matchCommune } from '../shipping-companies/address-matching'
 import { buildProposal, resolveCourierWilaya, type MapRowLike } from '../shipping-companies/location-map.util'
 import { GoogleSheetsService } from '../apps/google-sheets.service'
@@ -219,7 +220,7 @@ export class FulfillmentService {
     const communes = await this.prisma.shippingCompanyCommune.findMany({ where: { shippingCompanyId: company.id, wilayaId: wilaya.id } })
     if (!communes.length) {
       // Our wilayas 59-69 do not exist at couriers still on the old 58-wilaya list: never guess, the agent converts.
-      const issue = Number(wilaya.id) >= 59
+      const issue = wilaya.id in DEFAULT_COURIER_PARENT_WILAYA
         ? `${company.name} has no wilaya ${wilaya.id} (${wilaya.name}) in its list: use "Convert location" on this order to pick the courier's wilaya and commune.`
         : `${company.name} does not deliver to ${wilaya.name}.`
       return wrap({ ...base, checked: true, ok: false, issues: [issue] }, wilaya.id)
@@ -917,8 +918,11 @@ export class FulfillmentService {
     if (mapped === null) return { applied: false, reason: 'status does not advance the order' }
 
     const from = shipment.order.state
-    const path = this.pathTo(from, mapped as OrderState)
-    if (!path || path.length === 0) return { applied: false, reason: path ? `order already ${from}` : `no legal path ${from} → ${mapped}` }
+    const target = this.resolveTarget(from, mapped as OrderState)
+    if ('blocked' in target) return { applied: false, reason: target.blocked }
+    const { path } = target
+    const forced = 'forced' in target
+    if (path.length === 0) return { applied: false, reason: `order already ${from}` }
 
     await this.prisma.$transaction(async (tx) => {
       for (const step of path) await tx.order.update({ where: { id: shipment.orderId }, data: { state: step } })
@@ -930,19 +934,41 @@ export class FulfillmentService {
         action: 'StateTransition',
         entity: 'Order',
         entityId: shipment.orderId,
-        metadata: { from: prev, to: step, source, courierStatus: rawStatus, trackingReference: shipment.trackingReference }
+        metadata: { from: prev, to: step, source, courierStatus: rawStatus, trackingReference: shipment.trackingReference, ...(forced && { forcedByCourier: true }) }
       })
       this.googleSheets.updateOrderStatus(shipment.orderId, prev, step).catch((error: Error) => {
         this.logger.warn(`Google Sheets status update failed for order ${shipment.orderId}: ${error.message}`)
       })
       prev = step
     }
-    return { applied: true, from, to: path[path.length - 1]! }
+    return { applied: true, from, to: path[path.length - 1]!, ...(forced && { forced: true }) }
+  }
+
+  // The courier is the source of truth for where a parcel is. Normally an order is walked along
+  // legal transitions; when the courier's status has no legal path from where the order is (it went
+  // back out for delivery after a return, was cancelled while in transit, ...) the order is set to
+  // the courier's state directly, but only between shipping states: finance-closed, cancelled or
+  // restocked orders are never overwritten (reported as blocked instead).
+  private static readonly FORCE_FROM: OrderState[] = ['Packed', 'HandedToCourier', 'OutForDelivery', 'DeliveryFailed', 'Delivered', 'ReturnedToOrigin']
+  private static readonly FORCE_TO: OrderState[] = ['HandedToCourier', 'OutForDelivery', 'DeliveryFailed', 'Delivered', 'ReturnedToOrigin', 'Restocked', 'CancelledShipping']
+  private resolveTarget(from: OrderState, to: OrderState): { path: OrderState[]; forced?: true } | { blocked: string } {
+    // "Paiement archivé" (paid and archived at the courier) maps to our Settled/Reconciled, but those
+    // are OUR finance steps and cannot be walked to from a shipping state: such a parcel is delivered,
+    // so bring the order to Delivered (finance closes it later) and leave an order that is already
+    // past that alone. Without this a paid parcel stayed "out for delivery" forever.
+    if (to === 'Settled' || to === 'Reconciled') {
+      if (['Delivered', 'CashCollected', 'Reconciled', 'Settled'].includes(from)) return { path: [] }
+      return this.resolveTarget(from, 'Delivered')
+    }
+    const path = this.pathTo(from, to)
+    if (path) return { path }
+    if (FulfillmentService.FORCE_FROM.includes(from) && FulfillmentService.FORCE_TO.includes(to)) return { path: [to], forced: true }
+    return { blocked: `blocked: courier says ${to} but the order is ${from} (locked by our own workflow)` }
   }
 
   private toActivityViews(activity: DhdTrackingInfo['activity']): CourierActivityView[] {
     return activity.map((a) => ({
-      reason: a.reason ?? a.activity ?? null,
+      reason: a.reason ?? activityLabel(a.activity) ?? null,
       details: a.details || null,
       station: a.station || null,
       driver: a.driver || null,
@@ -955,13 +981,16 @@ export class FulfillmentService {
   // last delivery-attempt reason, postponement) and applies its status.
   private async applyTrackingInfo(shipmentId: string, info: DhdTrackingInfo, source: string) {
     const activity = this.toActivityViews(info.activity)
-    const lastReason = [...activity].reverse().find((a) => a.reason)?.reason ?? null
-    const lastPostponed = [...activity].reverse().find((a) => a.postponedTo)?.postponedTo ?? null
+    // The failure reason / postponement come from delivery attempts only (operations such as
+    // "dispatched to driver" are journey steps, not reasons).
+    const attempts = this.toActivityViews(info.activity.filter((a) => a.kind !== 'operation'))
+    const lastReason = [...attempts].reverse().find((a) => a.reason)?.reason ?? null
+    const lastPostponed = [...attempts].reverse().find((a) => a.postponedTo)?.postponedTo ?? null
     const hasDesk = info.desk_phone || info.desk_commune || info.desk_address || info.desk_map_link
     const owner = await this.prisma.shipment.findUnique({ where: { id: shipmentId }, select: { id: true, orderId: true } })
     if (owner) {
       await this.recordCourierEvents(owner, info.activity.map((a) => {
-        const title = a.reason ?? a.activity ?? 'Update'
+        const title = a.reason ?? activityLabel(a.activity) ?? 'Update'
         const parts = [a.details, a.postponed_to ? `Postponed to ${a.postponed_to}` : null].filter(Boolean)
         return {
           source,
@@ -1065,27 +1094,78 @@ export class FulfillmentService {
   // One pass for a company: refresh every active parcel's status/details from
   // the courier (the webhook is not reliable on its own), then fill in the
   // courier's fees for parcels that don't have them yet.
-  async syncCompany(company: { id: string; baseUrl: string; apiToken: string | null }) {
-    const result = { checked: 0, applied: 0, feesFilled: 0 }
+  async syncCompany(company: { id: string; baseUrl: string; apiToken: string | null }, opts: { withFees?: boolean } = {}) {
+    const result = {
+      checked: 0,
+      applied: 0,
+      forced: 0,
+      feesFilled: 0,
+      // Parcels the courier does not know (deleted there / wrong company), and parcels whose
+      // status could not be reflected on the order (e.g. our finance already closed it).
+      notFound: [] as string[],
+      blocked: [] as { orderId: string; tracking: string; reason: string }[]
+    }
     if (!company.apiToken) return result
     const shipments = await this.prisma.shipment.findMany({
       where: {
         trackingReference: { not: null },
         order: { shippingCompanyId: company.id, fulfillmentMethod: 'ShippingCompany', state: { in: FulfillmentService.SYNC_ACTIVE_STATES } }
       },
-      select: { id: true, trackingReference: true, carrierFeeCents: true }
+      select: { id: true, orderId: true, trackingReference: true, carrierFeeCents: true, courierStatus: true, activity: true, order: { select: { state: true } } }
     })
     if (!shipments.length) return result
 
     const infos = await this.dhd.getTrackingsInfo(company.baseUrl, company.apiToken, shipments.map((s) => s.trackingReference!))
     for (const shipment of shipments) {
-      const info = infos[shipment.trackingReference!]
+      const tracking = shipment.trackingReference!
+      const info = infos[tracking]
       result.checked++
-      if (!info) continue
+      if (!info) {
+        result.notFound.push(tracking)
+        continue
+      }
+      // Nothing to write when the courier says what we already store and the order is where
+      // that status puts it (keeps a big refresh fast).
+      const same = !!info.status && info.status === shipment.courierStatus
+      const mapped = info.status ? courierStatusToOrderState(info.status) : undefined
+      const target = mapped ? this.resolveTarget(shipment.order.state, mapped as OrderState) : null
+      const orderInSync = !mapped || (target !== null && 'path' in target && target.path.length === 0) || (target !== null && 'blocked' in target)
+      const sameActivity = Array.isArray(shipment.activity) ? shipment.activity.length === info.activity.length : info.activity.length === 0
+      if (same && orderInSync && sameActivity) {
+        if (target && 'blocked' in target) result.blocked.push({ orderId: shipment.orderId, tracking, reason: target.blocked })
+        continue
+      }
       const outcome = await this.applyTrackingInfo(shipment.id, info, 'courier-sync')
-      if (outcome.applied) result.applied++
+      if (outcome.applied) {
+        result.applied++
+        if ('forced' in outcome && outcome.forced) result.forced++
+      } else if ('reason' in outcome && outcome.reason && /^(blocked|no legal)/.test(outcome.reason)) {
+        result.blocked.push({ orderId: shipment.orderId, tracking, reason: outcome.reason })
+      }
     }
 
+    // Parcels the batch read did not return (archived at the courier, ...): ask for each one's own
+    // history (get/tracking/info) and read the stage from its last meaningful operation.
+    // A few per pass only: the courier allows ~45 calls a minute.
+    const OPEN_STATES: OrderState[] = ['Packed', 'HandedToCourier', 'OutForDelivery', 'DeliveryFailed']
+    const STAGE_CODE = { HandedToCourier: 'en_preparation', OutForDelivery: 'en_livraison', ReturnedToOrigin: 'retour_chez_livreur', Delivered: 'livre_non_encaisse' } as const
+    let probed = 0
+    for (const shipment of shipments) {
+      const tracking = shipment.trackingReference!
+      if (probed >= 25 || !result.notFound.includes(tracking) || !OPEN_STATES.includes(shipment.order.state)) continue
+      probed++
+      const single = await this.dhd.getTrackingInfo(company.baseUrl, company.apiToken, tracking).catch(() => null)
+      const stage = single ? stageFromActivity(single.activity) : null
+      if (!stage) continue
+      result.notFound = result.notFound.filter((t) => t !== tracking)
+      const outcome = await this.applyRawStatus(shipment.id, STAGE_CODE[stage], 'courier-sync-history')
+      if (outcome.applied) {
+        result.applied++
+        if ('forced' in outcome && outcome.forced) result.forced++
+      }
+    }
+
+    if (opts.withFees === false) return result
     const missing = new Map(shipments.filter((s) => s.carrierFeeCents == null).map((s) => [s.trackingReference!, s.id]))
     for (let page = 1; missing.size > 0 && page <= 15; page++) {
       const res = await this.dhd.getOrders(company.baseUrl, company.apiToken, { page })
@@ -1101,15 +1181,16 @@ export class FulfillmentService {
     return result
   }
 
-  async syncAllCompanies() {
+  async syncAllCompanies(opts: { withFees?: boolean } = {}) {
     const companies = await this.prisma.shippingCompany.findMany({ where: { isLinked: true, apiToken: { not: null } } })
-    const summary: { company: string; checked: number; applied: number; feesFilled: number; error?: string }[] = []
+    type CompanySync = Awaited<ReturnType<FulfillmentService['syncCompany']>>
+    const summary: ({ company: string; error?: string } & CompanySync)[] = []
     for (const company of companies) {
       try {
-        summary.push({ company: company.name, ...(await this.syncCompany(company)) })
+        summary.push({ company: company.name, ...(await this.syncCompany(company, opts)) })
       } catch (error) {
         this.logger.warn(`Courier sync failed for ${company.name}: ${(error as Error).message}`)
-        summary.push({ company: company.name, checked: 0, applied: 0, feesFilled: 0, error: (error as Error).message })
+        summary.push({ company: company.name, checked: 0, applied: 0, forced: 0, feesFilled: 0, notFound: [], blocked: [], error: (error as Error).message })
       }
     }
     return summary
