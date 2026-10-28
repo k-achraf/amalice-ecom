@@ -146,7 +146,8 @@ export class FulfillmentController {
     return this.fulfillment.requestReturn(id, actor)
   }
 
-  // Runs the courier status sync now (it also runs every 5 minutes).
+  // Runs the courier status sync now (there is no scheduler: webhooks, this route and
+  // the Delivery details "Refresh from couriers" button are what bring statuses up to date).
   @Post('admin/fulfillment/sync')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)

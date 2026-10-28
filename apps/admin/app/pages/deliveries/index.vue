@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DELIVERY_STAGES, DELIVERY_STAGE_LABELS, formatPhoneLocal, type DeliveryListItem, type DeliveryListResponse, type DeliveryStage, type ShippingCompanyView } from '@amalice/shared'
+import { DELIVERY_STAGES, DELIVERY_STAGE_LABELS, formatPhoneLocal, type DeliveryListItem, type DeliveryListResponse, type DeliveryStage, type OrderFilterKey } from '@amalice/shared'
 import { toast } from 'vue-sonner'
 
 // Delivery details: every order that was sent to a shipping company (or an own
@@ -19,7 +19,6 @@ const { resolveImageUrl } = useResolveImageUrl()
 const auth = useAuthStore()
 
 const stage = ref<DeliveryStage>('all')
-const company = ref('')
 const search = ref('')
 const page = ref(1)
 const pageSize = ref(25)
@@ -27,14 +26,13 @@ const data = ref<DeliveryListResponse | null>(null)
 const loading = ref(true)
 const openHistory = ref<Set<string>>(new Set())
 
-const { data: companies } = await useAdminFetch<ShippingCompanyView[]>('/admin/shipping-companies', { key: 'admin-deliveries-companies' }).catch(() => ({ data: ref<ShippingCompanyView[] | null>(null) }))
-const companyOptions = computed(() => [{ label: 'All shipping companies', value: '' }, ...(companies.value ?? []).filter((c) => c.id && c.isLinked).map((c) => ({ label: c.name, value: c.id! }))])
+const { filters, query: filterQuery } = useOrderFilters({ syncRoute: true })
+const FILTER_FIELDS: OrderFilterKey[] = ['productId', 'funnelId', 'companyId', 'region', 'city', 'shippingType', 'platform', 'minTotal', 'maxTotal', 'from', 'to', 'hasTracking', 'confirmedByCourier', 'courierStatus']
 
 async function load(refresh = false) {
   loading.value = true
-  const query: Record<string, string | number> = { stage: stage.value, page: page.value, pageSize: pageSize.value }
+  const query: Record<string, string | number> = { ...filterQuery.value, stage: stage.value, page: page.value, pageSize: pageSize.value }
   if (refresh) query.refresh = '1'
-  if (company.value) query.company = company.value
   if (search.value.trim()) query.search = search.value.trim()
   const res = await run(() => api<DeliveryListResponse>('/admin/deliveries', { query }), { errorFallback: 'Could not load the deliveries' })
   if (res) data.value = res
@@ -42,7 +40,7 @@ async function load(refresh = false) {
 }
 await load()
 
-watch([stage, company, pageSize], () => { page.value = 1; load() })
+watch([stage, filterQuery, pageSize], () => { page.value = 1; load() })
 watch(page, () => load())
 let timer: ReturnType<typeof setTimeout> | undefined
 watch(search, () => {
@@ -88,8 +86,8 @@ function stageTone(d: DeliveryListItem): string {
       <AdsTabs v-model="stage" :items="tabs" />
       <div class="filters">
         <AdsSearch v-model="search" soft placeholder="Tracking number, order, customer, phone, driver…" label="Search deliveries" />
-        <AdsSelect v-model="company" :options="companyOptions" size="sm" aria-label="Shipping company" style="max-width: 240px" />
       </div>
+      <OrderFilters v-model="filters" :fields="FILTER_FIELDS" />
     </section>
 
     <p v-for="e in data?.liveErrors ?? []" :key="e.company + e.message" class="notice danger"><AdsIcon name="i-lucide-alert-triangle" /><span><b>{{ e.company }}</b> could not be reached: {{ e.message }}. Its parcels below show what was last stored.</span></p>

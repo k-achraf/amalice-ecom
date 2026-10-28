@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { OrderListResponse, OrderState } from '@amalice/shared'
+import type { OrderFilterKey, OrderListResponse, OrderState } from '@amalice/shared'
 import { VALID_TRANSITIONS } from '~/composables/order-transitions'
 
 // Stage 3 of the order pipeline: a parcel handed off by fulfillment, tracked
@@ -15,21 +15,27 @@ useHead({ title: 'Shipping' })
 const api = useAdminApi()
 const { run } = useApiAction()
 
+// One filter bar for every section; its query is spread into each section's fetch.
+const { filters, query: filterQuery } = useOrderFilters({ syncRoute: true })
+const FILTER_FIELDS: OrderFilterKey[] = ['productId', 'funnelId', 'companyId', 'region', 'city', 'shippingType', 'from', 'to', 'hasTracking', 'confirmedByCourier', 'courierStatus']
+const sectionQuery = (state: string) =>
+  computed(() => ({ state, pageSize: 50, ...filterQuery.value })) as unknown as Record<string, unknown>
+
 const { data: withCourier, refresh: refreshWithCourier } = await useAdminFetch<OrderListResponse>(
-  '/admin/orders?state=HandedToCourier&pageSize=50',
-  { key: 'admin-shipping-handed' }
+  '/admin/orders',
+  { query: sectionQuery('HandedToCourier'), key: 'admin-shipping-handed' }
 )
 const { data: outForDelivery, refresh: refreshOutForDelivery } = await useAdminFetch<OrderListResponse>(
-  '/admin/orders?state=OutForDelivery&pageSize=50',
-  { key: 'admin-shipping-out' }
+  '/admin/orders',
+  { query: sectionQuery('OutForDelivery'), key: 'admin-shipping-out' }
 )
 const { data: failed, refresh: refreshFailed } = await useAdminFetch<OrderListResponse>(
-  '/admin/orders?state=DeliveryFailed&pageSize=50',
-  { key: 'admin-shipping-failed' }
+  '/admin/orders',
+  { query: sectionQuery('DeliveryFailed'), key: 'admin-shipping-failed' }
 )
 const { data: returned, refresh: refreshReturned } = await useAdminFetch<OrderListResponse>(
-  '/admin/orders?state=ReturnedToOrigin&pageSize=50',
-  { key: 'admin-shipping-returned' }
+  '/admin/orders',
+  { query: sectionQuery('ReturnedToOrigin'), key: 'admin-shipping-returned' }
 )
 
 async function refreshAll() {
@@ -68,6 +74,8 @@ async function sendMockStatus() {
 
 <template>
   <AdsPage title="Shipping" :description="`${(withCourier?.total ?? 0) + (outForDelivery?.total ?? 0) + (failed?.total ?? 0) + (returned?.total ?? 0)} orders · With a courier, out for delivery, or needing attention`">
+    <OrderFilters v-model="filters" :fields="FILTER_FIELDS" />
+
     <section class="card" aria-label="With courier">
       <div class="card-head"><h2>With courier</h2></div>
       <div class="table-wrap">

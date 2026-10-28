@@ -7,6 +7,7 @@ import {
   VALID_TRANSITIONS,
   courierStatusLabel,
   courierStatusToOrderState,
+  normalizeCourierStatus,
   isValidTransition,
   type AddressCheckResult,
   type CourierActivityView,
@@ -719,7 +720,7 @@ export class FulfillmentService {
   // travels. Used to walk an order through any intermediate steps when the
   // courier jumps ahead (e.g. straight from "en préparation" to "livré").
   private static readonly SHIPPING_PATH_STATES: OrderState[] = ['HandedToCourier', 'OutForDelivery', 'DeliveryFailed', 'Delivered', 'ReturnedToOrigin']
-  private static readonly SYNC_ACTIVE_STATES: OrderState[] = ['HandedToCourier', 'OutForDelivery', 'DeliveryFailed', 'Delivered', 'ReturnedToOrigin', 'CashCollected']
+  private static readonly SYNC_ACTIVE_STATES: OrderState[] = ['Packed', 'HandedToCourier', 'OutForDelivery', 'DeliveryFailed', 'Delivered', 'ReturnedToOrigin', 'CashCollected']
 
   // Shortest legal route from `from` to `to`, passing only through shipping
   // stages (never through our own finance steps like Reconciled). null = the
@@ -794,7 +795,8 @@ export class FulfillmentService {
       data: {
         courierStatus: rawStatus,
         // Any status past "ready to ship" means the courier has taken the parcel.
-        ...(mapped && !shipment.carrierConfirmedAt && { carrierConfirmedAt: new Date() })
+        // (also for codes we don't know yet: only "ready to ship" means still unconfirmed)
+        ...(!['prete_a_expedier', 'pret_a_expedier'].includes(normalizeCourierStatus(rawStatus)) && !shipment.carrierConfirmedAt && { carrierConfirmedAt: new Date() })
       }
     })
     if (mapped === undefined) {

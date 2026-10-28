@@ -6,6 +6,7 @@ import { AdminCallCenterService } from './admin-call-center.service'
 import { AdminDeleteService } from './admin-delete.service'
 import { AdminOrderTimelineService } from './admin-order-timeline.service'
 import { AdminDeliveriesService } from './admin-deliveries.service'
+import { FulfillmentModule } from '../fulfillment/fulfillment.module'
 import { AdminInventoryService } from './admin-inventory.service'
 import { AdminCatalogService } from './admin-catalog.service'
 import { AdminUsersService } from './admin-users.service'
@@ -25,7 +26,7 @@ import { ShippingCompaniesModule } from '../shipping-companies/shipping-companie
   // product editor's "generate with AI" content drafter (see
   // AdminProductManagementService.generateContent) reuses the same free
   // Gemini client the landing-page builder uses, rather than a second one.
-  imports: [CommonModule, OrderItemsModule, AppsModule, LandingPagesModule, ShippingCompaniesModule, RiskModule],
+  imports: [CommonModule, OrderItemsModule, AppsModule, LandingPagesModule, ShippingCompaniesModule, RiskModule, FulfillmentModule],
   controllers: [AdminController, UploadController],
   providers: [AdminOrdersService, AdminCallCenterService, AdminDeleteService, AdminOrderTimelineService, AdminDeliveriesService, AdminCatalogService, AdminUsersService, AdminStatsService, AdminProductManagementService, AdminShippingService, AdminInventoryService],
   exports: [AdminInventoryService, AdminOrdersService, AdminCallCenterService, AdminCatalogService, AdminUsersService, AdminStatsService, AdminProductManagementService, AdminShippingService]

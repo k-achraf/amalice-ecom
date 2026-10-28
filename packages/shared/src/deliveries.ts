@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { courierStatusToOrderState } from './shipment'
+import { COURIER_STATUS_TO_ORDER_STATE, courierStatusToOrderState, normalizeCourierStatus } from './shipment'
 
 // ---- Delivery details: every order sent to a shipping company ----
 
@@ -74,7 +74,15 @@ export interface DeliveryListResponse {
 // The stage tab a courier status belongs to (null = unknown status).
 export function deliveryStageOfCourierStatus(raw: string): Exclude<DeliveryStage, 'all'> | null {
   const mapped = courierStatusToOrderState(raw)
-  if (mapped === undefined) return null
+  if (mapped === undefined) {
+    // A code we have no entry for: group it by what its name says rather than guessing "awaiting".
+    const key = normalizeCourierStatus(raw)
+    if (/retour|annul/.test(key)) return 'returned'
+    if (/tentative|echec|absent|suspendu/.test(key)) return 'failed'
+    if (/livraison/.test(key)) return 'out'
+    if (/livre|paye|encaisse/.test(key)) return 'delivered'
+    return 'withCourier'
+  }
   return deliveryStageOfOrderState(mapped)
 }
 
@@ -92,12 +100,17 @@ export function deliveryStageOfOrderState(state: string | null): Exclude<Deliver
 
 // The courier's status codes that make up each stage (for its status filter).
 export const COURIER_CODES_BY_STAGE: Record<Exclude<DeliveryStage, 'all'>, string[]> = {
-  awaiting: ['prete_a_expedier'],
-  withCourier: ['en_ramassage', 'en_preparation_stock', 'vers_hub', 'en_hub', 'vers_wilaya', 'en_preparation'],
-  out: ['en_livraison'],
-  failed: ['suspendu'],
-  delivered: ['livre_non_encaisse', 'encaisse_non_paye', 'paiements_prets', 'paye_et_archive'],
-  returned: ['retour_chez_livreur', 'retour_transit_entrepot', 'retour_en_traitement', 'retour_recu', 'retour_archive', 'annule']
+  awaiting: [],
+  withCourier: [],
+  out: [],
+  failed: [],
+  delivered: [],
+  returned: []
+}
+// Derived from the status map so the two can never drift apart.
+for (const key of Object.keys(COURIER_STATUS_TO_ORDER_STATE)) {
+  const stage = deliveryStageOfCourierStatus(key)
+  if (stage) COURIER_CODES_BY_STAGE[stage].push(key)
 }
 
 export interface DeliveryHistoryEntry {

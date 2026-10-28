@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CALL_CENTER_STATE_TO_ORDER_STATE, PRICE_EDITABLE_STATES, SHIPPING_STATE_TO_ORDER_STATE, ORDER_STATE_LABELS, type OrderState, type OrderListResponse } from '@amalice/shared'
+import { CALL_CENTER_STATE_TO_ORDER_STATE, PRICE_EDITABLE_STATES, SHIPPING_STATE_TO_ORDER_STATE, ORDER_STATE_LABELS, type OrderState, type OrderListResponse, type OrderFilterKey } from '@amalice/shared'
 import { VALID_TRANSITIONS } from '~/composables/order-transitions'
 
 useHead({ title: 'Orders' })
@@ -19,8 +19,10 @@ const CHIPS: { label: string; value: string }[] = [
   { label: 'Cancelled', value: 'Cancelled' },
   { label: 'Abandoned carts', value: 'abandoned' }
 ]
-const riskFilter = ref((route.query.riskLevel as string) ?? 'all')
-const riskOptions = [{ label: 'Any risk', value: 'all' }, { label: 'High risk', value: 'High' }, { label: 'Medium risk', value: 'Medium' }, { label: 'Low risk', value: 'Low' }]
+// Shared filter bar (product, funnel, wilaya, risk, totals, dates, courier...). Hydrated
+// from the URL synchronously so the first fetch below already honours it.
+const { filters, query: filterQuery, toRouteQuery } = useOrderFilters({ syncRoute: true })
+const FILTER_FIELDS: OrderFilterKey[] = ['productId', 'funnelId', 'companyId', 'region', 'city', 'shippingType', 'platform', 'riskLevel', 'minTotal', 'maxTotal', 'from', 'to', 'hasTracking', 'confirmedByCourier']
 const OTHER_STATES = [
   'CallCenterNoAnswer', 'WrongNumber', 'Postponed', 'OnHold', 'HandedToCourier', 'CashCollected', 'Reconciled',
   'DeliveryFailed', 'ReturnedToOrigin', 'Settled', 'CancelledShipping'
@@ -48,7 +50,7 @@ const { data, pending } = await useAdminFetch<OrderListResponse>('/admin/orders'
     ...(route.query.abandoned === 'origin' && { abandoned: 'origin' }),
     ...(route.query.search && { search: route.query.search }),
     ...(route.query.archived === 'only' && { archived: 'only' }),
-    ...(route.query.riskLevel && { riskLevel: route.query.riskLevel })
+    ...filterQuery.value
   }
 })
 
@@ -67,7 +69,7 @@ async function loadWithFilters() {
   if (route.query.abandoned === 'origin') q.abandoned = 'origin'
   if (route.query.search) q.search = route.query.search as string
   if (route.query.archived === 'only') q.archived = 'only'
-  if (route.query.riskLevel) q.riskLevel = route.query.riskLevel as string
+  Object.assign(q, filterQuery.value)
   data.value = await api<OrderListResponse>('/admin/orders', { query: q })
   selected.value = new Set()
 }
@@ -78,10 +80,11 @@ async function applyFilters(state = stateFilter.value) {
   await loadWithFilters()
 }
 
-async function applyRisk(v: string) {
-  riskFilter.value = v
-  await router.push({ query: { ...route.query, riskLevel: v !== 'all' ? v : undefined, page: 1 } })
-  await loadWithFilters()
+async function onFiltersChange() {
+  // Let the composable's URL sync run first, then write filters + page 1 in one navigation.
+  await nextTick()
+  await router.push({ query: { ...toRouteQuery(), page: 1 } })
+  await loadWithFilters() // also clears the row selection
 }
 
 async function toggleArchivedView() {
@@ -180,11 +183,13 @@ const carrier = (o: OrderListResponse['items'][number]) => o.shipment?.courier.n
           <button v-for="c in CHIPS" :key="c.value" class="chip-btn" type="button" role="tab" :aria-selected="stateFilter === c.value" @click="applyFilters(c.value)">{{ c.label }}</button>
         </div>
         <AdsSelect :model-value="otherState" :options="otherOptions" size="sm" style="width: 170px" @update:model-value="(v) => applyFilters(String(v))" />
-        <AdsSelect :model-value="riskFilter" :options="riskOptions" size="sm" style="width: 130px" @update:model-value="(v) => applyRisk(String(v))" />
         <label class="search soft">
           <AdsIcon name="i-lucide-search" /><span class="sr">Search orders</span>
           <input v-model="search" type="search" placeholder="Order #, name, phone or city" @keydown.enter="applyFilters()">
         </label>
+      </div>
+      <div style="padding: 0 16px 12px">
+        <OrderFilters v-model="filters" :fields="FILTER_FIELDS" @change="onFiltersChange" />
       </div>
 
       <div class="bulkbar" :class="{ on: selected.size > 0 }">

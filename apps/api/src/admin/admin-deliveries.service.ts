@@ -9,10 +9,13 @@ import {
   type DeliveryListItem,
   type DeliveryListResponse,
   type DeliveryRemark,
-  type DeliveryStage
+  type DeliveryStage,
+  type OrderFilters
 } from '@amalice/shared'
 import type { Prisma } from '../generated/prisma/client'
+import { buildOrderFilterWhere, buildShipmentFilterWhere } from './order-filter-where'
 import { PrismaService } from '../prisma/prisma.service'
+import { FulfillmentService } from '../fulfillment/fulfillment.service'
 import { DhdApiService, type DhdTrackingActivity, type DhdTrackingInfo } from '../shipping-companies/dhd-api.service'
 
 type Company = { id: string; name: string; baseUrl: string; apiToken: string | null }
@@ -37,7 +40,8 @@ export class AdminDeliveriesService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly dhd: DhdApiService
+    private readonly dhd: DhdApiService,
+    private readonly fulfillment: FulfillmentService
   ) {}
 
   private entryOf(a: DhdTrackingActivity): DeliveryHistoryEntry {
@@ -51,10 +55,22 @@ export class AdminDeliveriesService {
     }
   }
 
-  async list(args: { stage: DeliveryStage; companyId?: string; search?: string; page: number; pageSize: number }): Promise<DeliveryListResponse> {
+  async list(args: { stage: DeliveryStage; companyId?: string; search?: string; filters?: OrderFilters; page: number; pageSize: number; refresh?: boolean }): Promise<DeliveryListResponse> {
+    // "Refresh from couriers": first bring OUR stored statuses (and order states) in line
+    // with every linked company, so the tab counts below match what the couriers report.
+    const syncErrors: { company: string; message: string }[] = []
+    if (args.refresh) {
+      for (const r of await this.fulfillment.syncAllCompanies()) if (r.error) syncErrors.push({ company: r.company, message: r.error })
+    }
     const search = args.search?.trim()
+    // Filters narrow the one `where` below, so the stage tab counts, the total and
+    // the page all respect them. companyId (alias `company`) is part of the filters.
+    const filters: OrderFilters = { ...args.filters, ...(args.companyId && { companyId: args.companyId }) }
     const where: Prisma.ShipmentWhereInput = {
-      order: { archived: false, ...(args.companyId && { shippingCompanyId: args.companyId }) },
+      AND: [
+        { order: { AND: [{ archived: false }, buildOrderFilterWhere(filters, { forShipment: true })] } },
+        buildShipmentFilterWhere(filters)
+      ],
       ...(search && {
         OR: [
           { trackingReference: { contains: search, mode: 'insensitive' } },
@@ -77,7 +93,7 @@ export class AdminDeliveriesService {
       const code = s.courierStatus && s.courierStatus !== 'manual_dispatch' ? s.courierStatus : null
       const fromCode = code ? deliveryStageOfCourierStatus(code) : null
       if (fromCode) return fromCode
-      if (s.order.fulfillmentMethod === 'ShippingCompany' && s.trackingReference && !s.carrierConfirmedAt && s.order.state === 'HandedToCourier') return 'awaiting'
+      if (!code && s.order.fulfillmentMethod === 'ShippingCompany' && s.trackingReference && !s.carrierConfirmedAt && s.order.state === 'HandedToCourier') return 'awaiting'
       return deliveryStageOfOrderState(s.order.state)
     }
     const counts = Object.fromEntries(DELIVERY_STAGES.map((st) => [st, 0])) as Record<DeliveryStage, number>
@@ -119,7 +135,7 @@ export class AdminDeliveriesService {
 
     const details = new Map<string, DhdTrackingInfo>()
     const cardErrors = new Map<string, string>()
-    const liveErrors: { company: string; message: string }[] = []
+    const liveErrors: { company: string; message: string }[] = [...syncErrors]
     const deadline = Date.now() + LIVE_DEADLINE_MS
     const timeLeft = () => Math.max(deadline - Date.now(), 0)
     // Resolves with the call's result, or rejects when the deadline passes first.

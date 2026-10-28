@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PICKUP_MODES, type AdminOrderListItem, type OrderListResponse, type PickupMode, type ShippingCompanyView } from '@amalice/shared'
+import { PICKUP_MODES, type AdminOrderListItem, type OrderFilterKey, type OrderListResponse, type PickupMode, type ShippingCompanyView } from '@amalice/shared'
 import { toast } from 'vue-sonner'
 
 // Stage 2 of the order pipeline: warehouse picks/packs a call-center-confirmed
@@ -11,27 +11,34 @@ useHead({ title: 'Fulfillment' })
 const api = useAdminApi()
 const { run } = useApiAction()
 
+// One filter bar for every section; its query is spread into each section's fetch
+// (reactive, so the sections refetch whenever a filter changes).
+const { filters, query: filterQuery } = useOrderFilters({ syncRoute: true })
+const FILTER_FIELDS: OrderFilterKey[] = ['productId', 'funnelId', 'companyId', 'region', 'city', 'shippingType', 'platform', 'riskLevel', 'minTotal', 'maxTotal', 'from', 'to', 'hasTracking', 'confirmedByCourier']
+const sectionQuery = (state: string, pageSize: number) =>
+  computed(() => ({ state, pageSize, ...filterQuery.value })) as unknown as Record<string, unknown>
+
 const { data: confirmed, pending: pendingConfirmed, refresh: refreshConfirmed } = await useAdminFetch<OrderListResponse>(
-  '/admin/orders?state=Confirmed&pageSize=50',
-  { key: 'admin-fulfillment-confirmed' }
+  '/admin/orders',
+  { query: sectionQuery('Confirmed', 50), key: 'admin-fulfillment-confirmed' }
 )
 const { data: packed, pending: pendingPacked, refresh: refreshPacked } = await useAdminFetch<OrderListResponse>(
-  '/admin/orders?state=Packed&pageSize=50',
-  { key: 'admin-fulfillment-packed' }
+  '/admin/orders',
+  { query: sectionQuery('Packed', 50), key: 'admin-fulfillment-packed' }
 )
 // On hold — a confirmed order that can't be packed as-is (e.g. stock ran
 // out between confirm and pack) without cancelling it outright. See
 // OrderState's Prisma comment.
 const { data: onHold, pending: pendingOnHold, refresh: refreshOnHold } = await useAdminFetch<OrderListResponse>(
-  '/admin/orders?state=OnHold&pageSize=50',
-  { key: 'admin-fulfillment-onhold' }
+  '/admin/orders',
+  { query: sectionQuery('OnHold', 50), key: 'admin-fulfillment-onhold' }
 )
 
 // Parcels created at a courier but not yet confirmed ("Expedier"): the courier
 // won't collect them until they are.
 const { data: handedOver, refresh: refreshHandedOver } = await useAdminFetch<OrderListResponse>(
-  '/admin/orders?state=HandedToCourier&pageSize=100',
-  { key: 'admin-fulfillment-handed' }
+  '/admin/orders',
+  { query: sectionQuery('HandedToCourier', 100), key: 'admin-fulfillment-handed' }
 )
 const unconfirmed = computed(() =>
   (handedOver.value?.items ?? []).filter((o) => o.fulfillmentMethod === 'ShippingCompany' && o.shipment?.trackingReference && !o.shipment.carrierConfirmedAt)
@@ -57,6 +64,11 @@ async function assignCompany(orderId: string, shippingCompanyId: unknown) {
   acting.value = null
 }
 const selected = ref<Set<string>>(new Set())
+// Selections refer to rows that may no longer be listed once the filters change.
+watch(filterQuery, () => {
+  selected.value = new Set()
+  labelSelected.value.clear()
+})
 function toggle(id: string) {
   const next = new Set(selected.value)
   if (next.has(id)) next.delete(id)
@@ -194,6 +206,8 @@ async function syncCouriers() {
     <template #actions>
       <button class="btn" type="button" :disabled="acting === 'sync'" @click="syncCouriers"><AdsIcon name="i-lucide-refresh-cw" />Sync with couriers</button>
     </template>
+
+    <OrderFilters v-model="filters" :fields="FILTER_FIELDS" />
 
     <!-- Created at the courier, not confirmed yet -->
     <section v-if="unconfirmed.length" class="card" aria-label="Awaiting courier confirmation">

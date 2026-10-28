@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { toast } from 'vue-sonner'
-import { formatPhoneLocal, CALL_CENTER_MAX_ATTEMPTS, type AdminOrderListItem, type CallCenterStatsResponse, type OrderListResponse } from '@amalice/shared'
+import { formatPhoneLocal, CALL_CENTER_MAX_ATTEMPTS, type AdminOrderListItem, type CallCenterStatsResponse, type OrderListResponse, type OrderFilterKey } from '@amalice/shared'
 
 // Queue view of the call center: the four work queues (waiting / no answer /
 // wrong number / postponed) with the selected order opened in the shared
@@ -28,6 +28,10 @@ function queueQuery(s: QueueState): Record<string, string> {
   return { state: s, skipped: 'exclude' }
 }
 
+// Optional narrowing; applied to the list and to every tab count.
+const { filters, query: filterQuery } = useOrderFilters()
+const FILTER_FIELDS: OrderFilterKey[] = ['productId', 'funnelId', 'region', 'city', 'shippingType', 'platform', 'riskLevel', 'minTotal', 'maxTotal', 'from', 'to']
+
 const tab = ref<QueueState>('PendingCallCenter')
 const page = ref(1)
 const pageSize = ref(25)
@@ -42,6 +46,7 @@ const selectedId = ref<string | null>(null)
 async function loadList() {
   const query: Record<string, string | number> = {
     ...queueQuery(tab.value),
+    ...filterQuery.value,
     page: page.value,
     pageSize: pageSize.value,
     ...(tab.value === 'Postponed' ? { sort: 'followup' } : ['PendingCallCenter', 'CallCenterNoAnswer', 'WrongNumber'].includes(tab.value) ? { sort: 'oldest' } : {})
@@ -53,7 +58,7 @@ async function loadList() {
   if (!items.value.some((o) => o.id === selectedId.value)) selectedId.value = items.value[0]?.id ?? null
 }
 async function loadCounts() {
-  const results = await Promise.all(QUEUES.map((s) => api<OrderListResponse>('/admin/orders', { query: { ...queueQuery(s), pageSize: 1 } })))
+  const results = await Promise.all(QUEUES.map((s) => api<OrderListResponse>('/admin/orders', { query: { ...queueQuery(s), ...filterQuery.value, pageSize: 1 } })))
   QUEUES.forEach((s, i) => { counts[s] = results[i]!.total })
 }
 async function loadStats() {
@@ -75,6 +80,11 @@ onBeforeUnmount(() => {
 
 watch([tab, pageSize], () => { page.value = 1; loadList() })
 watch(page, () => loadList())
+function onFiltersChange() {
+  if (page.value !== 1) page.value = 1 // the page watcher reloads the list
+  else loadList().catch(() => undefined)
+  loadCounts().catch(() => undefined)
+}
 let searchTimer: ReturnType<typeof setTimeout> | undefined
 watch(search, () => {
   clearTimeout(searchTimer)
@@ -164,6 +174,7 @@ function onLogged() {
         <div style="padding: 10px 12px; border-bottom: 1px solid var(--line-soft); display: grid; gap: 8px">
           <AdsTabs v-model="tab" :items="tabs" />
           <AdsSearch v-model="search" soft placeholder="Search name, phone or order #…" />
+          <OrderFilters v-model="filters" :fields="FILTER_FIELDS" @change="onFiltersChange" />
         </div>
         <div v-if="loading" class="empty">Loading…</div>
         <div v-else-if="!items.length" class="empty">Nothing here. Good job.</div>

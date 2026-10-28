@@ -1,11 +1,12 @@
 import { StockService } from '../common/stock.service'
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { FUNNEL_COPY_AR, offerPriceCents, offerTotalQuantity, ADDRESS_EDITABLE_STATES, CALL_CENTER_WORK_STATES, STATES_REQUIRING_SHIPMENT, deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, STATE_TO_CALL_OUTCOME, type OrderState, type PixelResendResult, type RiskLevel, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
+import { FUNNEL_COPY_AR, offerPriceCents, offerTotalQuantity, ADDRESS_EDITABLE_STATES, CALL_CENTER_WORK_STATES, STATES_REQUIRING_SHIPMENT, deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, STATE_TO_CALL_OUTCOME, type OrderState, type OrderFilterOptions, type OrderFilters, type PixelResendResult, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
 import type { Prisma } from '../generated/prisma/client'
 import { PurchaseEventsService } from '../apps/purchase-events.service'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
 import { GoogleSheetsService } from '../apps/google-sheets.service'
+import { buildOrderFilterWhere } from './order-filter-where'
 
 // Shared item include for both list() and findOne() — variant (with its
 // normalized options, the source of truth for display — see
@@ -155,11 +156,8 @@ export class AdminOrdersService {
     sort?: 'oldest' | 'followup'
     search?: string
     courierId?: string
-    // Only the orders placed on this funnel.
-    funnelId?: string
-    riskLevel?: RiskLevel
-    from?: Date
-    to?: Date
+    // Shared order filter bar (product, funnel, wilaya, total range, dates, ...).
+    filters?: OrderFilters
     page: number
     pageSize: number
     // Abandoned-cart orders are ordinary orders carrying a label (see
@@ -177,7 +175,7 @@ export class AdminOrdersService {
     skipped?: 'only' | 'exclude'
   }) {
     const skipNow = new Date()
-    const where: Prisma.OrderWhereInput = {
+    const base: Prisma.OrderWhereInput = {
       ...(args.skipped === 'only' && { skippedUntil: { gt: skipNow } }),
       ...(args.skipped === 'exclude' && { AND: [{ OR: [{ skippedUntil: null }, { skippedUntil: { lte: skipNow } }] }] }),
       ...(args.abandoned === 'only' && { isAbandoned: true }),
@@ -187,13 +185,9 @@ export class AdminOrdersService {
       ...(args.state && !args.states && { state: args.state }),
       ...(args.states && { state: { in: args.state ? args.states.filter((x) => x === args.state) : [...args.states] } }),
       ...(args.courierId && { shipment: { courierId: args.courierId } }),
-      ...(args.funnelId && { funnelId: args.funnelId }),
-      ...(args.riskLevel && { riskLevel: args.riskLevel }),
-      ...((args.from || args.to) && {
-        createdAt: { ...(args.from && { gte: args.from }), ...(args.to && { lte: args.to }) }
-      }),
       ...(searchFilter(args.search) && { OR: searchFilter(args.search) })
     }
+    const where: Prisma.OrderWhereInput = args.filters ? { AND: [base, buildOrderFilterWhere(args.filters)] } : base
     const [rows, total] = await Promise.all([
       this.prisma.order.findMany({
         where,
@@ -221,6 +215,17 @@ export class AdminOrdersService {
       })
     )
     return { items, total, page: args.page, pageSize: args.pageSize }
+  }
+
+  // Fills the filter bar's selects (products, funnels, companies, wilayas).
+  async filterOptions(): Promise<OrderFilterOptions> {
+    const [products, funnels, companies, regions] = await Promise.all([
+      this.prisma.product.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' }, take: 1000 }),
+      this.prisma.funnel.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
+      this.prisma.shippingCompany.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
+      this.prisma.address.findMany({ where: { orders: { some: {} }, region: { not: '' } }, select: { region: true }, distinct: ['region'], orderBy: { region: 'asc' } })
+    ])
+    return { products, funnels, companies, regions: regions.map((r) => r.region).filter(Boolean) }
   }
 
   async findOne(id: string) {

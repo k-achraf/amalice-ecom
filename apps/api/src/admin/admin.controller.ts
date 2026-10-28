@@ -55,6 +55,7 @@ import {
 import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
 import { AdminCatalogService } from './admin-catalog.service'
+import { parseOrderFilters } from './order-filter-where'
 import { AdminOrdersService } from './admin-orders.service'
 import { AdminCallCenterService } from './admin-call-center.service'
 import { AdminDeleteService } from './admin-delete.service'
@@ -161,10 +162,6 @@ export class AdminController {
     @Query('state') state: OrderState | undefined,
     @Query('search') search: string | undefined,
     @Query('courierId') courierId: string | undefined,
-    @Query('funnelId') funnelId: string | undefined,
-    @Query('riskLevel') riskLevel: string | undefined,
-    @Query('from') fromIso: string | undefined,
-    @Query('to') toIso: string | undefined,
     @Query('page') page: string = '1',
     @Query('pageSize') pageSize: string = '20',
     @Query('abandoned') abandoned: 'only' | 'exclude' | 'origin' | undefined,
@@ -173,6 +170,8 @@ export class AdminController {
     @Query('sort') sort: 'oldest' | 'followup' | undefined,
     // 'callcenter' = only the orders that still have to be called (the 4 work states)
     @Query('scope') scope: 'callcenter' | undefined,
+    // Every ORDER_FILTER_KEYS entry (productId, funnelId, region, minTotal, from, to, ...)
+    @Query() query: Record<string, unknown>,
     @Req() req: AuthedRequest
   ) {
     // A CallCenterAgent only ever sees the call-center queues — this is the
@@ -187,16 +186,20 @@ export class AdminController {
       sort,
       search,
       courierId,
-      funnelId,
-      riskLevel: riskLevel ? RiskLevelSchema.parse(riskLevel) : undefined,
-      from: fromIso ? new Date(fromIso) : undefined,
-      to: toIso ? new Date(toIso) : undefined,
+      filters: parseOrderFilters(query),
       page: Number(page),
       pageSize: Number(pageSize),
       abandoned,
       archived,
       skipped: skipped === 'only' || skipped === 'exclude' ? skipped : undefined
     })
+  }
+
+  // Options for the order filter bar. Registered before orders/:id so it isn't taken as an id.
+  @Get('orders/filter-options')
+  @Roles('SuperAdmin', 'OpsManager', 'Finance', 'Support', 'CallCenterAgent', 'Warehouse')
+  orderFilterOptions() {
+    return this.orders.filterOptions()
   }
 
   // ---- Delivery details: every order sent to a shipping company ------------
@@ -207,9 +210,13 @@ export class AdminController {
     @Query('company') company: string | undefined,
     @Query('search') search: string | undefined,
     @Query('page') page: string = '1',
-    @Query('pageSize') pageSize: string = '25'
+    @Query('pageSize') pageSize: string = '25',
+    @Query('refresh') refresh: string | undefined,
+    @Query() query: Record<string, unknown>
   ) {
     return this.deliveries.list({
+      filters: parseOrderFilters(query),
+      refresh: refresh === '1',
       stage: DELIVERY_STAGES.includes(stage as DeliveryStage) ? (stage as DeliveryStage) : 'all',
       companyId: company || undefined,
       search: search || undefined,

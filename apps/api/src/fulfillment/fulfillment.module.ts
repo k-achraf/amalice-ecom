@@ -27,6 +27,7 @@ import { AppsModule } from '../apps/apps.module'
     MockCourierProvider, // dev-only mock-status route — see comment above
     DhdCourierProvider,
     { provide: COURIER_PROVIDER, useClass: DhdCourierProvider }
-  ]
+  ],
+  exports: [FulfillmentService]
 })
 export class FulfillmentModule {}
