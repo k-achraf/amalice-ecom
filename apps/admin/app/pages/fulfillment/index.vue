@@ -87,24 +87,84 @@ async function onConverted() {
   await refreshPacked()
 }
 
-const selected = ref<Set<string>>(new Set())
+// One selection per table. Packed accepts every row (assign / move back need no courier);
+// "Send" only acts on the ones that already have a courier account.
+const confSel = useBulkSelection()
+const holdSel = useBulkSelection()
+const packedSel = useBulkSelection()
+const { bulkTransition, busy: moving } = useBulkTransition()
 // Selections refer to rows that may no longer be listed once the filters change.
 watch(filterQuery, () => {
-  selected.value = new Set()
-  labelSelected.value.clear()
+  confSel.clear()
+  holdSel.clear()
+  packedSel.clear()
+  labelSelected.value = new Set()
 })
-function toggle(id: string) {
-  const next = new Set(selected.value)
-  if (next.has(id)) next.delete(id)
-  else next.add(id)
-  selected.value = next
-}
+// ...and after every refresh, ids that left the list are dropped so they are never sent.
+watch(() => confirmed.value?.items, (items) => confSel.keepOnly((items ?? []).map((o) => o.id)))
+watch(() => onHold.value?.items, (items) => holdSel.keepOnly((items ?? []).map((o) => o.id)))
+watch(() => packed.value?.items, (items) => packedSel.keepOnly((items ?? []).map((o) => o.id)))
+watch(unconfirmed, (items) => {
+  const keep = new Set(items.map((o) => o.id))
+  const next = new Set([...labelSelected.value].filter((id) => keep.has(id)))
+  if (next.size !== labelSelected.value.size) labelSelected.value = next
+})
+
 const selectable = (o: AdminOrderListItem) => o.fulfillmentMethod === 'ShippingCompany' && !!o.shippingCompanyId
-// Select all / none of the packed orders that can be sent to a courier.
-const selectableIds = computed(() => (packed.value?.items ?? []).filter(selectable).map((o) => o.id))
-const allSelected = computed(() => selectableIds.value.length > 0 && selectableIds.value.every((id) => selected.value.has(id)))
-function toggleAll() {
-  selected.value = allSelected.value ? new Set() : new Set(selectableIds.value)
+const confirmedIds = computed(() => (confirmed.value?.items ?? []).map((o) => o.id))
+const onHoldIds = computed(() => (onHold.value?.items ?? []).map((o) => o.id))
+const packedIds = computed(() => (packed.value?.items ?? []).map((o) => o.id))
+const unconfirmedIds = computed(() => unconfirmed.value.map((o) => o.id))
+const dispatchableSelected = computed(() => (packed.value?.items ?? []).filter((o) => packedSel.has(o.id) && selectable(o)))
+
+// Confirm dialog shared by every bulk transition.
+type SectionKey = 'confirmed' | 'onHold' | 'packed'
+const pendingMove = ref<{ section: SectionKey; to: 'Confirmed' | 'Packed' | 'OnHold' | 'CancelledShipping'; label: string; verb: string } | null>(null)
+const selections = { confirmed: confSel, onHold: holdSel, packed: packedSel }
+function askMove(section: SectionKey, to: 'Confirmed' | 'Packed' | 'OnHold' | 'CancelledShipping', verb: string, label: string) {
+  pendingMove.value = { section, to, verb, label }
+}
+const moveOpen = computed({
+  get: () => !!pendingMove.value,
+  set: (v) => { if (!v) pendingMove.value = null }
+})
+async function runMove() {
+  const m = pendingMove.value
+  if (!m) return
+  const sel = selections[m.section]
+  const res = await bulkTransition(sel.ids(), m.to, m.label)
+  pendingMove.value = null
+  if (res) sel.clear()
+  await Promise.all([refreshConfirmed(), refreshOnHold(), refreshPacked()])
+}
+
+// Assign one courier to every selected packed order, one request at a time.
+const bulkCompany = ref<string | undefined>(undefined)
+const assigningBulk = ref(false)
+async function assignSelected() {
+  const companyId = bulkCompany.value
+  const ids = packedSel.ids()
+  if (!companyId || !ids.length) return
+  assigningBulk.value = true
+  let ok = 0
+  const problems: string[] = []
+  for (const id of ids) {
+    try {
+      await api(`/admin/fulfillment/orders/${id}/assign-company`, { method: 'POST', body: { shippingCompanyId: companyId } })
+      ok++
+    } catch (err: unknown) {
+      const data = (err as { data?: { message?: string | string[] } })?.data
+      const msg = Array.isArray(data?.message) ? data.message.join(' ') : data?.message
+      problems.push(`#${id.slice(0, 8)}: ${msg ?? 'failed'}`)
+    }
+  }
+  const name = companyOptions.value.find((c) => c.value === companyId)?.label
+  if (ok) toast.success(`${ok} order${ok > 1 ? 's' : ''} assigned${name ? ` to ${name}` : ''}`)
+  if (problems.length) toast.error(`${problems.length} order${problems.length > 1 ? 's' : ''} could not be assigned`, { description: problems.slice(0, 4).join(' · '), duration: 12000 })
+  packedSel.clear()
+  bulkCompany.value = undefined
+  await refreshPacked()
+  assigningBulk.value = false
 }
 
 async function markPacked(orderId: string) {
@@ -163,7 +223,7 @@ async function dispatch(orderId: string) {
 // Several packed orders at once — grouped by their shipping company, since the
 // courier API takes one account per request (100 orders max per request).
 async function dispatchSelected() {
-  const items = (packed.value?.items ?? []).filter((o) => selected.value.has(o.id) && selectable(o))
+  const items = dispatchableSelected.value
   if (!items.length) return
   acting.value = 'bulk'
   const byCompany = new Map<string, string[]>()
@@ -181,7 +241,7 @@ async function dispatchSelected() {
   }
   if (ok) toast.success(`${ok} order${ok > 1 ? 's' : ''} sent to the courier`)
   if (problems.length) toast.error(`${problems.length} order${problems.length > 1 ? 's' : ''} not sent`, { description: problems.slice(0, 4).join('\n'), duration: 12000 })
-  selected.value = new Set()
+  packedSel.clear()
   await Promise.all([refreshPacked(), refreshHandedOver()])
   acting.value = null
 }
@@ -202,14 +262,39 @@ async function confirmParcel(orderId: string) {
   await refreshHandedOver()
   acting.value = null
 }
-async function confirmAll() {
+// Confirm several parcels with the courier, one request at a time (progress "3 / 12").
+const confirmProgress = ref<{ done: number; total: number } | null>(null)
+const confirmAllOpen = ref(false)
+async function confirmSelected(ids: string[]) {
   if (askCollection.value === undefined) return toast.error('Choose ramassage or vers station first')
+  if (!ids.length) return
   acting.value = 'confirm-all'
-  for (const o of unconfirmed.value) {
-    await run(() => api(`/admin/fulfillment/orders/${o.id}/request-pickup`, { method: 'POST', body: { askCollection: askCollection.value } }), { errorFallback: `Could not confirm #${o.id.slice(0, 8)}` })
+  confirmProgress.value = { done: 0, total: ids.length }
+  let ok = 0
+  const problems: string[] = []
+  for (const id of ids) {
+    try {
+      await api(`/admin/fulfillment/orders/${id}/request-pickup`, { method: 'POST', body: { askCollection: askCollection.value } })
+      ok++
+    } catch (err: unknown) {
+      const data = (err as { data?: { message?: string | string[] } })?.data
+      const msg = Array.isArray(data?.message) ? data.message.join(' ') : data?.message
+      problems.push(`#${id.slice(0, 8)}: ${msg ?? 'failed'}`)
+    }
+    confirmProgress.value = { done: confirmProgress.value!.done + 1, total: ids.length }
   }
+  if (ok) toast.success(`${ok} parcel${ok > 1 ? 's' : ''} confirmed with the courier`)
+  if (problems.length) toast.error(`${problems.length} parcel${problems.length > 1 ? 's' : ''} not confirmed`, { description: problems.slice(0, 4).join(' · '), duration: 12000 })
+  labelSelected.value = new Set()
+  confirmProgress.value = null
   await refreshHandedOver()
   acting.value = null
+}
+async function confirmEverything() {
+  confirmAllOpen.value = false
+  const ids = unconfirmedIds.value
+  labelSelected.value = new Set(ids)
+  await confirmSelected(ids)
 }
 
 // Re-read every active parcel from the couriers now (also runs every 5 minutes).
@@ -244,10 +329,16 @@ async function syncCouriers() {
       <div class="card-head">
         <h2>Awaiting courier confirmation</h2>
         <span class="pill new">{{ unconfirmed.length }}</span>
-        <button v-if="labelSelected.size" class="btn btn-sm" type="button" :disabled="printing" style="margin-left: auto" @click="printLabels()"><AdsIcon name="i-lucide-printer" />Print {{ labelSelected.size }} label{{ labelSelected.size > 1 ? 's' : '' }}</button>
-        <AdsSelect v-model="pickupMode" :options="pickupOptions" placeholder="Ramassage or vers station…" aria-label="How the parcels reach the courier" style="min-width: 230px" :style="labelSelected.size ? '' : 'margin-left: auto'" />
-        <button class="btn btn-sm btn-primary" type="button" :disabled="acting === 'confirm-all' || !pickupMode" @click="confirmAll"><AdsIcon name="i-lucide-package-check" />Confirm all</button>
+        <template v-if="!labelSelected.size">
+          <AdsSelect v-model="pickupMode" :options="pickupOptions" placeholder="Ramassage or vers station…" aria-label="How the parcels reach the courier" style="min-width: 230px; margin-left: auto" />
+          <button class="btn btn-sm btn-primary" type="button" :disabled="acting === 'confirm-all' || !pickupMode" @click="confirmAllOpen = true"><AdsIcon name="i-lucide-package-check" />Confirm all ({{ unconfirmed.length }})</button>
+        </template>
       </div>
+      <BulkBar :count="labelSelected.size" :busy="acting === 'confirm-all'" @clear="labelSelected = new Set()">
+        <button class="btn" type="button" :disabled="printing" @click="printLabels()"><AdsIcon name="i-lucide-printer" />Print {{ labelSelected.size }} label{{ labelSelected.size > 1 ? 's' : '' }}</button>
+        <AdsSelect v-model="pickupMode" :options="pickupOptions" placeholder="Ramassage or vers station…" aria-label="How the parcels reach the courier" style="min-width: 230px" />
+        <button class="btn btn-primary" type="button" :disabled="acting === 'confirm-all' || !pickupMode" @click="confirmSelected([...labelSelected])"><AdsIcon name="i-lucide-package-check" />{{ confirmProgress ? `${confirmProgress.done} / ${confirmProgress.total}` : `Confirm ${labelSelected.size} with the courier` }}</button>
+      </BulkBar>
       <p class="muted" style="padding: 0 20px">These parcels exist at the courier but it will not collect them until they are confirmed.</p>
       <div class="table-wrap">
         <table style="min-width: 860px">
@@ -274,13 +365,19 @@ async function syncCouriers() {
     <!-- Awaiting packing -->
     <section class="card" aria-label="Awaiting packing">
       <div class="card-head"><h2>Awaiting packing</h2><span class="pill neutral">Confirmed</span></div>
+      <BulkBar :count="confSel.count.value" :busy="moving" @clear="confSel.clear()">
+        <button class="btn" type="button" :disabled="moving" @click="askMove('confirmed', 'Packed', 'Mark as packed', 'marked as packed')"><AdsIcon name="i-lucide-package-check" />Mark as packed</button>
+        <button class="btn" type="button" :disabled="moving" @click="askMove('confirmed', 'OnHold', 'Put on hold', 'put on hold')"><AdsIcon name="i-lucide-pause-circle" />Put on hold</button>
+        <button class="btn btn-danger" type="button" :disabled="moving" @click="askMove('confirmed', 'CancelledShipping', 'Cancel shipping', 'shipping cancelled')"><AdsIcon name="i-lucide-x" />Cancel shipping</button>
+      </BulkBar>
       <div class="table-wrap">
         <table style="min-width: 760px">
-          <thead><tr><th>Order</th><th>Products</th><th>Customer</th><th>Destination</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
+          <thead><tr><th style="width: 32px"><input type="checkbox" aria-label="Select all" :checked="confSel.allOf(confirmedIds)" :disabled="!confirmedIds.length" @change="confSel.toggleAll(confirmedIds)"></th><th>Order</th><th>Products</th><th>Customer</th><th>Destination</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
           <tbody>
-            <tr v-if="pendingConfirmed"><td colspan="6" class="empty">Loading…</td></tr>
-            <tr v-else-if="!confirmed?.items.length"><td colspan="6" class="empty">Nothing waiting to be packed.</td></tr>
+            <tr v-if="pendingConfirmed"><td colspan="7" class="empty">Loading…</td></tr>
+            <tr v-else-if="!confirmed?.items.length"><td colspan="7" class="empty">Nothing waiting to be packed.</td></tr>
             <tr v-for="o in confirmed?.items" v-else :key="o.id">
+              <td><input type="checkbox" :checked="confSel.has(o.id)" :aria-label="`Select #${o.id.slice(0, 8)}`" @change="confSel.toggle(o.id)"></td>
               <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
               <td><OrderLineItemsInline :items="o.items" compact /></td>
               <td>
@@ -302,12 +399,18 @@ async function syncCouriers() {
     <!-- On hold -->
     <section v-if="onHold?.items.length" class="card" aria-label="On hold">
       <div class="card-head"><h2>On hold</h2></div>
+      <BulkBar :count="holdSel.count.value" :busy="moving" @clear="holdSel.clear()">
+        <button class="btn" type="button" :disabled="moving" @click="askMove('onHold', 'Confirmed', 'Back to confirmed', 'moved back to confirmed')"><AdsIcon name="i-lucide-play-circle" />Back to confirmed</button>
+        <button class="btn" type="button" :disabled="moving" @click="askMove('onHold', 'Packed', 'Mark as packed', 'marked as packed')"><AdsIcon name="i-lucide-package-check" />Mark as packed</button>
+        <button class="btn btn-danger" type="button" :disabled="moving" @click="askMove('onHold', 'CancelledShipping', 'Cancel shipping', 'shipping cancelled')"><AdsIcon name="i-lucide-x" />Cancel shipping</button>
+      </BulkBar>
       <div class="table-wrap">
         <table style="min-width: 760px">
-          <thead><tr><th>Order</th><th>Products</th><th>Customer</th><th>Destination</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
+          <thead><tr><th style="width: 32px"><input type="checkbox" aria-label="Select all" :checked="holdSel.allOf(onHoldIds)" :disabled="!onHoldIds.length" @change="holdSel.toggleAll(onHoldIds)"></th><th>Order</th><th>Products</th><th>Customer</th><th>Destination</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
           <tbody>
-            <tr v-if="pendingOnHold"><td colspan="6" class="empty">Loading…</td></tr>
+            <tr v-if="pendingOnHold"><td colspan="7" class="empty">Loading…</td></tr>
             <tr v-for="o in onHold?.items" v-else :key="o.id">
+              <td><input type="checkbox" :checked="holdSel.has(o.id)" :aria-label="`Select #${o.id.slice(0, 8)}`" @change="holdSel.toggle(o.id)"></td>
               <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
               <td><OrderLineItemsInline :items="o.items" compact /></td>
               <td>
@@ -330,18 +433,22 @@ async function syncCouriers() {
     <section class="card" aria-label="Ready to dispatch">
       <div class="card-head">
         <h2>Ready to dispatch</h2><span class="pill neutral">Packed</span>
-        <span v-if="selectableIds.length" class="muted" style="font-size: 12px">{{ selected.size }} / {{ selectableIds.length }} selected</span>
         <span v-if="(packed?.total ?? 0) > (packed?.items.length ?? 0)" class="muted" style="font-size: 12px">· showing the first {{ packed?.items.length }} of {{ packed?.total }}</span>
-        <button v-if="selected.size" class="btn btn-sm btn-primary" type="button" :disabled="acting === 'bulk'" style="margin-left: auto" @click="dispatchSelected"><AdsIcon name="i-lucide-truck" />Send {{ selected.size }} selected</button>
       </div>
+      <BulkBar :count="packedSel.count.value" :busy="moving || assigningBulk || acting === 'bulk'" @clear="packedSel.clear()">
+        <button class="btn btn-primary" type="button" :disabled="!dispatchableSelected.length || acting === 'bulk' || assigningBulk || moving" :title="dispatchableSelected.length ? undefined : 'None of the selected orders has a courier yet'" @click="dispatchSelected"><AdsIcon name="i-lucide-truck" />Send {{ dispatchableSelected.length }} selected</button>
+        <AdsSelect v-if="companyOptions.length" v-model="bulkCompany" :options="companyOptions" placeholder="Courier…" aria-label="Courier to assign" style="min-width: 160px" />
+        <button class="btn" type="button" :disabled="!bulkCompany || assigningBulk || moving || acting === 'bulk'" @click="assignSelected"><AdsIcon name="i-lucide-link" />{{ assigningBulk ? 'Assigning…' : 'Assign courier' }}</button>
+        <button class="btn" type="button" :disabled="moving || assigningBulk || acting === 'bulk'" @click="askMove('packed', 'Confirmed', 'Back to confirmed', 'moved back to confirmed')"><AdsIcon name="i-lucide-undo-2" />Back to confirmed</button>
+      </BulkBar>
       <div class="table-wrap">
         <table style="min-width: 720px">
-          <thead><tr><th style="width: 32px"><input type="checkbox" aria-label="Select all" :checked="allSelected" :disabled="!selectableIds.length" @change="toggleAll"></th><th>Order</th><th>Products</th><th>Customer</th><th>Destination</th><th>Shipping</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
+          <thead><tr><th style="width: 32px"><input type="checkbox" aria-label="Select all" :checked="packedSel.allOf(packedIds)" :disabled="!packedIds.length" @change="packedSel.toggleAll(packedIds)"></th><th>Order</th><th>Products</th><th>Customer</th><th>Destination</th><th>Shipping</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
           <tbody>
             <tr v-if="pendingPacked"><td colspan="8" class="empty">Loading…</td></tr>
             <tr v-else-if="!packed?.items.length"><td colspan="8" class="empty">No orders ready to dispatch.</td></tr>
             <tr v-for="o in packed?.items" v-else :key="o.id">
-              <td><input v-if="selectable(o)" type="checkbox" :checked="selected.has(o.id)" :aria-label="`Select #${o.id.slice(0, 8)}`" @change="toggle(o.id)"></td>
+              <td><input type="checkbox" :checked="packedSel.has(o.id)" :aria-label="`Select #${o.id.slice(0, 8)}`" @change="packedSel.toggle(o.id)"></td>
               <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
               <td><OrderLineItemsInline :items="o.items" compact /></td>
               <td>
@@ -371,6 +478,18 @@ async function syncCouriers() {
         </table>
       </div>
     </section>
+    <AdsDialog v-model:open="moveOpen" :title="pendingMove ? `Move ${selections[pendingMove.section].count.value} order${selections[pendingMove.section].count.value > 1 ? 's' : ''}: ${pendingMove.verb}?` : ''" description="Each order is checked on its own; any that cannot move are reported." width="sm">
+      <template #footer>
+        <button class="btn" type="button" @click="pendingMove = null">Cancel</button>
+        <button class="btn" :class="pendingMove?.to === 'CancelledShipping' ? 'btn-danger' : 'btn-primary'" type="button" :disabled="moving" @click="runMove">{{ pendingMove?.verb }}</button>
+      </template>
+    </AdsDialog>
+    <AdsDialog v-model:open="confirmAllOpen" :title="`Confirm all ${unconfirmed.length} parcels with the courier?`" description="The courier will collect every parcel listed here." width="sm">
+      <template #footer>
+        <button class="btn" type="button" @click="confirmAllOpen = false">Cancel</button>
+        <button class="btn btn-primary" type="button" :disabled="!pickupMode" @click="confirmEverything">Confirm all</button>
+      </template>
+    </AdsDialog>
     <ConvertLocationDialog v-if="convertOrderId" v-model:open="convertOpen" :order-id="convertOrderId" @saved="onConverted" />
   </AdsPage>
 </template>

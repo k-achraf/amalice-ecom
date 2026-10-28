@@ -785,3 +785,15 @@ export const BulkDeleteOrdersSchema = z.object({
   orderIds: z.array(z.uuid()).min(1).max(200)
 })
 export type BulkDeleteOrders = z.infer<typeof BulkDeleteOrdersSchema>
+
+// Move several orders to the same state in one go (each is checked on its own, like the single transition).
+export const BulkTransitionOrdersSchema = z.object({
+  orderIds: z.array(z.uuid()).min(1).max(200),
+  to: OrderState,
+  postponedUntil: z.string().datetime().optional()
+})
+export type BulkTransitionOrders = z.infer<typeof BulkTransitionOrdersSchema>
+export interface BulkTransitionResult {
+  moved: string[]
+  failed: { id: string; reason: string }[]
+}

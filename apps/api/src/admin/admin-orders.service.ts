@@ -1,6 +1,6 @@
 import { StockService } from '../common/stock.service'
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { FUNNEL_COPY_AR, offerLabel, offerPriceCents, offerTotalQuantity, ADDRESS_EDITABLE_STATES, CALL_CENTER_WORK_STATES, STATES_REQUIRING_SHIPMENT, deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, STATE_TO_CALL_OUTCOME, type OrderState, type OrderFilterOptions, type OrderFilters, type PixelResendResult, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
+import { FUNNEL_COPY_AR, offerLabel, offerPriceCents, offerTotalQuantity, ADDRESS_EDITABLE_STATES, CALL_CENTER_WORK_STATES, STATES_REQUIRING_SHIPMENT, deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, STATE_TO_CALL_OUTCOME, type OrderState, type OrderFilterOptions, type OrderFilters, type BulkTransitionResult, type PixelResendResult, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
 import type { Prisma } from '../generated/prisma/client'
 import { PurchaseEventsService } from '../apps/purchase-events.service'
 import { PrismaService } from '../prisma/prisma.service'
@@ -379,6 +379,22 @@ export class AdminOrdersService {
     if (clearsAbandoned) this.purchaseEvents.sendForConfirmedOrder(id)
 
     return this.findOne(id)
+  }
+
+  // Several orders to the same state: each one goes through transition() (same legality checks, stock rules and
+  // audit trail), one failing never stops the others.
+  async bulkTransition(orderIds: string[], to: OrderState, actor: AuditActor, role?: string, postponedUntil?: string): Promise<BulkTransitionResult> {
+    const moved: string[] = []
+    const failed: { id: string; reason: string }[] = []
+    for (const id of [...new Set(orderIds)]) {
+      try {
+        await this.transition(id, to, actor, postponedUntil, role)
+        moved.push(id)
+      } catch (error) {
+        failed.push({ id, reason: error instanceof Error ? error.message : 'Could not update the order' })
+      }
+    }
+    return { moved, failed }
   }
 
   // Confirms returned parcels are physically back: each order still in

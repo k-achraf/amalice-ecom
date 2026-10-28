@@ -36,6 +36,7 @@ import {
   CALL_CENTER_VIEW_STATES,
   UpdateOrderPriceSchema,
   TransitionOrderSchema,
+  BulkTransitionOrdersSchema,
   UpdateOrderCustomerInfoSchema,
   OrderState,
   TIMELINE_CATEGORIES,
@@ -94,6 +95,7 @@ class UpdateProductUpsellDto extends createZodDto(UpdateProductUpsellSchema) {}
 class UpdateOrderNotesDto extends createZodDto(UpdateOrderNotesSchema) {}
 class UpdateOrderPriceDto extends createZodDto(UpdateOrderPriceSchema) {}
 class TransitionOrderDto extends createZodDto(TransitionOrderSchema) {}
+class BulkTransitionOrdersDto extends createZodDto(BulkTransitionOrdersSchema) {}
 class CreateBlacklistEntryDto extends createZodDto(CreateBlacklistEntrySchema) {}
 class UpdateBlacklistEntryDto extends createZodDto(UpdateBlacklistEntrySchema) {}
 class LogCallDto extends createZodDto(LogCallSchema) {}
@@ -353,6 +355,13 @@ export class AdminController {
   // call-center staff need to perform the PendingCallCenter → Confirmed/
   // CallCenterNoAnswer/Cancelled transitions from their own queue page —
   // the same generic transition endpoint every other stage already uses.
+  // Several orders to one state at once (Shipping / Fulfillment bulk actions).
+  @Post('orders/bulk-transition')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  bulkTransition(@Body() body: BulkTransitionOrdersDto, @Req() req: AuthedRequest) {
+    return this.orders.bulkTransition(body.orderIds, body.to, actorFrom(req), req.user.role, body.postponedUntil)
+  }
+
   @Post('orders/:id/transition')
   @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
   transition(@Param('id') id: string, @Body() body: TransitionOrderDto, @Req() req: AuthedRequest) {
