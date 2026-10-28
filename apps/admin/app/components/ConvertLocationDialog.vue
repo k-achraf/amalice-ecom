@@ -2,7 +2,7 @@
 import type { CourierCommuneOption, OrderCourierLocation } from '@amalice/shared'
 
 // "Convert location": maps the customer's wilaya/commune to the courier's own list for ONE
-// order. Pre-fills a proposal but never applies anything: the agent must press Save.
+// order. Nothing is pre-filled and nothing is applied until the agent picks both and presses Save.
 const props = defineProps<{ orderId: string; open: boolean }>()
 const emit = defineEmits<{ saved: []; close: []; 'update:open': [value: boolean] }>()
 
@@ -28,14 +28,6 @@ const wilayaId = ref('')
 const commune = ref<string | null>(null)
 const saving = ref(false)
 
-const SOURCE_LABELS: Record<string, string> = {
-  order: 'Saved on this order',
-  map: 'From saved mapping',
-  auto: 'Automatic near match — please check',
-  default: 'Default wilaya',
-  none: 'None'
-}
-const sourceLabel = computed(() => SOURCE_LABELS[loc.value?.proposal.source ?? 'none'] ?? 'None')
 
 async function loadCommunes(keep: string | null) {
   communes.value = []
@@ -58,9 +50,10 @@ async function load() {
   try {
     const data = await locApi.get(props.orderId)
     loc.value = data
-    wilayaId.value = data.proposal.courierWilayaId
+    // Nothing is pre-filled: the agent picks the wilaya and the commune by hand.
+    wilayaId.value = ''
     commune.value = null
-    await loadCommunes(data.proposal.courierCommune)
+    communes.value = []
   } catch (err: unknown) {
     loadError.value = (err as { data?: { message?: string } })?.data?.message ?? 'Could not load the location data'
   }
@@ -125,10 +118,10 @@ async function clear() {
       </AdsField>
 
       <AdsField label="Commune">
-        <AdsSearchSelect v-model="commune" :options="communeOptions" :disabled="loadingCommunes || !communes.length" :placeholder="loadingCommunes ? 'Loading communes…' : communes.length ? 'Choose a commune…' : 'No communes for this wilaya'" />
+        <AdsSearchSelect v-model="commune" :options="communeOptions" :disabled="loadingCommunes || !communes.length" :placeholder="!wilayaId ? 'Choose a wilaya first' : loadingCommunes ? 'Loading communes…' : communes.length ? 'Search a commune…' : 'No communes for this wilaya'" />
       </AdsField>
 
-      <p class="muted" style="font-size: 12px">Suggestion: {{ sourceLabel }}<template v-if="loc.current"> · saved on the order: {{ loc.current.courierCommune }} ({{ loc.current.courierWilayaId }})</template></p>
+      <p v-if="loc.current" class="muted" style="font-size: 12px">Currently saved on the order: {{ loc.current.courierCommune }} ({{ loc.current.courierWilayaId }})</p>
     </div>
 
     <template #footer>
