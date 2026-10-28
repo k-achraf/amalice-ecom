@@ -17,7 +17,7 @@ const { run } = useApiAction()
 
 // One filter bar for every section; its query is spread into each section's fetch.
 const { filters, query: filterQuery } = useOrderFilters({ syncRoute: true })
-const FILTER_FIELDS: OrderFilterKey[] = ['productId', 'funnelId', 'companyId', 'region', 'city', 'shippingType', 'from', 'to', 'hasTracking', 'confirmedByCourier', 'courierStatus']
+const FILTER_FIELDS: OrderFilterKey[] = ['productId', 'offerId', 'funnelId', 'companyId', 'region', 'city', 'shippingType', 'from', 'to', 'hasTracking', 'confirmedByCourier', 'courierStatus']
 const sectionQuery = (state: string) =>
   computed(() => ({ state, pageSize: 50, ...filterQuery.value })) as unknown as Record<string, unknown>
 

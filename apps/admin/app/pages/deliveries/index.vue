@@ -27,7 +27,7 @@ const loading = ref(true)
 const openHistory = ref<Set<string>>(new Set())
 
 const { filters, query: filterQuery } = useOrderFilters({ syncRoute: true })
-const FILTER_FIELDS: OrderFilterKey[] = ['productId', 'funnelId', 'companyId', 'region', 'city', 'shippingType', 'platform', 'minTotal', 'maxTotal', 'from', 'to', 'hasTracking', 'confirmedByCourier', 'courierStatus']
+const FILTER_FIELDS: OrderFilterKey[] = ['productId', 'offerId', 'funnelId', 'companyId', 'region', 'city', 'shippingType', 'platform', 'minTotal', 'maxTotal', 'from', 'to', 'hasTracking', 'confirmedByCourier', 'courierStatus']
 
 async function load(refresh = false) {
   loading.value = true

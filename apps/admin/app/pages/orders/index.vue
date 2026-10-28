@@ -22,7 +22,7 @@ const CHIPS: { label: string; value: string }[] = [
 // Shared filter bar (product, funnel, wilaya, risk, totals, dates, courier...). Hydrated
 // from the URL synchronously so the first fetch below already honours it.
 const { filters, query: filterQuery, toRouteQuery } = useOrderFilters({ syncRoute: true })
-const FILTER_FIELDS: OrderFilterKey[] = ['productId', 'funnelId', 'companyId', 'region', 'city', 'shippingType', 'platform', 'riskLevel', 'minTotal', 'maxTotal', 'from', 'to', 'hasTracking', 'confirmedByCourier']
+const FILTER_FIELDS: OrderFilterKey[] = ['productId', 'offerId', 'funnelId', 'companyId', 'region', 'city', 'shippingType', 'platform', 'riskLevel', 'minTotal', 'maxTotal', 'from', 'to', 'hasTracking', 'confirmedByCourier']
 const OTHER_STATES = [
   'CallCenterNoAnswer', 'WrongNumber', 'Postponed', 'OnHold', 'HandedToCourier', 'CashCollected', 'Reconciled',
   'DeliveryFailed', 'ReturnedToOrigin', 'Settled', 'CancelledShipping'

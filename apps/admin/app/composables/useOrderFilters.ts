@@ -1,7 +1,7 @@
 import { cleanOrderFilters, ORDER_FILTER_KEYS } from '@amalice/shared'
 import type { OrderFilterKey, OrderFilterOptions, OrderFilters } from '@amalice/shared'
 
-const EMPTY_OPTIONS: OrderFilterOptions = { products: [], funnels: [], companies: [], regions: [] }
+const EMPTY_OPTIONS: OrderFilterOptions = { products: [], funnels: [], companies: [], regions: [], offers: [] }
 const NUMERIC_KEYS: OrderFilterKey[] = ['minTotal', 'maxTotal']
 
 // Options for the <OrderFilters> selects. Fetched once per session and shared
@@ -18,7 +18,8 @@ export function useOrderFilterOptions() {
           products: d?.products ?? [],
           funnels: d?.funnels ?? [],
           companies: d?.companies ?? [],
-          regions: d?.regions ?? []
+          regions: d?.regions ?? [],
+          offers: d?.offers ?? []
         }
       })
       .catch(() => { /* tolerant: leave empty lists */ })

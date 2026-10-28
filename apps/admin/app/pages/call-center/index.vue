@@ -30,7 +30,7 @@ function queueQuery(s: QueueState): Record<string, string> {
 
 // Optional narrowing; applied to the list and to every tab count.
 const { filters, query: filterQuery } = useOrderFilters()
-const FILTER_FIELDS: OrderFilterKey[] = ['productId', 'funnelId', 'region', 'city', 'shippingType', 'platform', 'riskLevel', 'minTotal', 'maxTotal', 'from', 'to']
+const FILTER_FIELDS: OrderFilterKey[] = ['productId', 'offerId', 'funnelId', 'region', 'city', 'shippingType', 'platform', 'riskLevel', 'minTotal', 'maxTotal', 'from', 'to']
 
 const tab = ref<QueueState>('PendingCallCenter')
 const page = ref(1)

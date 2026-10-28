@@ -20,6 +20,11 @@ const m = computed(() => props.modelValue ?? {})
 const PLATFORMS = ['Meta', 'TikTok', 'Google', 'Snapchat', 'Other', 'Organic', 'Direct']
 const ANY = { label: 'Any', value: '' }
 const productOptions = computed(() => [{ label: 'All products', value: '' }, ...options.value.products.map((p) => ({ label: p.name, value: p.id }))])
+// Offers of the chosen product only (an offer belongs to one product).
+const offerOptions = computed(() => [
+  { label: 'Any offer', value: '' },
+  ...options.value.offers.filter((o) => o.productId === (m.value as Record<string, unknown>).productId).map((o) => ({ label: o.enabled ? o.label : `${o.label} (disabled)`, value: o.id }))
+])
 const funnelOptions = computed(() => [ANY, { label: 'No funnel (storefront)', value: FUNNEL_NONE }, ...options.value.funnels.map((f) => ({ label: f.name, value: f.id }))])
 const companyOptions = computed(() => [ANY, ...options.value.companies.map((c) => ({ label: c.name, value: c.id }))])
 const regionOptions = computed(() => [ANY, ...options.value.regions.map((r) => ({ label: r, value: r }))])
@@ -43,6 +48,8 @@ function commit(key: OrderFilterKey, val: unknown) {
   const next: Record<string, unknown> = { ...m.value }
   if (val === undefined || val === null || val === '') delete next[key]
   else next[key] = val
+  // An offer belongs to one product: changing or clearing the product drops the offer.
+  if (key === 'productId') delete next.offerId
   apply(next)
 }
 
@@ -94,6 +101,7 @@ const chips = computed(() => {
     switch (k) {
       case 'productId': label = `Product: ${nameOf(options.value.products, v)}`; break
       case 'variantId': label = 'Variant selected'; break
+      case 'offerId': label = `Offer: ${options.value.offers.find((o) => o.id === v)?.label ?? 'selected'}`; break
       case 'funnelId': label = `Funnel: ${v === FUNNEL_NONE ? 'No funnel (storefront)' : nameOf(options.value.funnels, v)}`; break
       case 'companyId': label = `Company: ${nameOf(options.value.companies, v)}`; break
       case 'region': label = `Wilaya: ${v}`; break
@@ -137,12 +145,15 @@ const activeCount = computed(() => chips.value.length)
 
     <div v-if="open" class="card of-panel">
       <div class="of-grid">
-        <section v-if="any('productId', 'funnelId', 'companyId')" class="of-group">
+        <section v-if="any('productId', 'offerId', 'funnelId', 'companyId')" class="of-group">
           <h4 class="of-title">Catalog</h4>
           <AdsField v-if="has('productId')" label="Product">
             <AdsSearchSelect :model-value="m.productId ?? ''" :options="productOptions" placeholder="All products" @update:model-value="commit('productId', $event)" />
           </AdsField>
-          <AdsField v-if="has('funnelId')" label="Funnel / offer">
+          <AdsField v-if="has('offerId') && m.productId" label="Offer">
+            <AdsSelect :model-value="m.offerId ?? ''" :options="offerOptions" @update:model-value="commit('offerId', $event)" />
+          </AdsField>
+          <AdsField v-if="has('funnelId')" label="Funnel">
             <AdsSelect :model-value="m.funnelId ?? ''" :options="funnelOptions" @update:model-value="commit('funnelId', $event)" />
           </AdsField>
           <AdsField v-if="has('companyId')" label="Shipping company">

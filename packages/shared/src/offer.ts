@@ -56,6 +56,14 @@ export const UpdateProductOfferSchema = ProductOfferInputBaseSchema.partial().ex
 })
 export type UpdateProductOffer = z.infer<typeof UpdateProductOfferSchema>
 
+// How an offer reads to staff (POS, filters).
+export function offerLabel(offer: Pick<ProductOffer, 'type' | 'requiredQuantity' | 'freeQuantity' | 'bundlePriceCents'>, unitPriceCents: number): string {
+  const priceCents = offer.type === 'BuyXGetYFree' ? Math.round(unitPriceCents * offer.requiredQuantity) : offerPriceCents(offer, unitPriceCents)
+  if (offer.type === 'FixedBundlePrice') return `Buy ${offer.requiredQuantity} for ${Math.round(priceCents / 100).toLocaleString('en')} DA`
+  if (offer.type === 'BuyXGetYFree') return `Buy ${offer.requiredQuantity}, get ${offer.freeQuantity} free`
+  return `Buy ${offer.requiredQuantity} — free shipping`
+}
+
 // Stock moves by the exact quantity of the line: a line of 1.5 takes 1.5 from it (and gives 1.5 back).
 // Rounded to 3 decimals so repeated additions/subtractions of fractions never drift (0.1 + 0.2).
 export function stockUnits(quantity: number): number {

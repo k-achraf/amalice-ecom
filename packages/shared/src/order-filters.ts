@@ -6,7 +6,7 @@ import { z } from 'zod'
 // bar builds them. All fields optional; an absent field means "no restriction".
 // Combine freely: they are ANDed (product + funnel + company + wilaya + …).
 export const ORDER_FILTER_KEYS = [
-  'productId', 'variantId', 'funnelId', 'companyId', 'region', 'city', 'shippingType',
+  'productId', 'variantId', 'offerId', 'funnelId', 'companyId', 'region', 'city', 'shippingType',
   'platform', 'riskLevel', 'minTotal', 'maxTotal', 'from', 'to', 'hasTracking', 'confirmedByCourier', 'courierStatus'
 ] as const
 export type OrderFilterKey = (typeof ORDER_FILTER_KEYS)[number]
@@ -16,6 +16,8 @@ export const OrderFiltersSchema = z.object({
   productId: z.string().optional(),
   // ...in this specific variant of it.
   variantId: z.string().optional(),
+  // Orders that contain a line sold through this product offer (the offers the funnels show).
+  offerId: z.string().optional(),
   // Orders placed through this funnel. Use the sentinel 'none' for orders not from any funnel (plain storefront).
   funnelId: z.string().optional(),
   // Shipping company the order is assigned to.
@@ -51,6 +53,8 @@ export interface OrderFilterOptions {
   funnels: { id: string; name: string }[]
   companies: { id: string; name: string }[]
   regions: string[]
+  // Every offer of every product (enabled or not: old orders keep theirs), to pick one after the product.
+  offers: { id: string; productId: string; label: string; enabled: boolean }[]
 }
 
 // Drop empty values so the URL / request stays clean.

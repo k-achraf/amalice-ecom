@@ -1,6 +1,6 @@
 import { StockService } from '../common/stock.service'
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { FUNNEL_COPY_AR, offerPriceCents, offerTotalQuantity, ADDRESS_EDITABLE_STATES, CALL_CENTER_WORK_STATES, STATES_REQUIRING_SHIPMENT, deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, STATE_TO_CALL_OUTCOME, type OrderState, type OrderFilterOptions, type OrderFilters, type PixelResendResult, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
+import { FUNNEL_COPY_AR, offerLabel, offerPriceCents, offerTotalQuantity, ADDRESS_EDITABLE_STATES, CALL_CENTER_WORK_STATES, STATES_REQUIRING_SHIPMENT, deriveCallCenterState, deriveShippingState, isValidTransition, normalizeAlgerianPhone, PRICE_EDITABLE_STATES, STATE_TO_CALL_OUTCOME, type OrderState, type OrderFilterOptions, type OrderFilters, type PixelResendResult, type UpdateOrderCustomerInfo, type UpdateOrderPrice } from '@amalice/shared'
 import type { Prisma } from '../generated/prisma/client'
 import { PurchaseEventsService } from '../apps/purchase-events.service'
 import { PrismaService } from '../prisma/prisma.service'
@@ -219,13 +219,15 @@ export class AdminOrdersService {
 
   // Fills the filter bar's selects (products, funnels, companies, wilayas).
   async filterOptions(): Promise<OrderFilterOptions> {
-    const [products, funnels, companies, regions] = await Promise.all([
+    const [products, funnels, companies, regions, offerRows] = await Promise.all([
       this.prisma.product.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' }, take: 1000 }),
       this.prisma.funnel.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
       this.prisma.shippingCompany.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
-      this.prisma.address.findMany({ where: { orders: { some: {} }, region: { not: '' } }, select: { region: true }, distinct: ['region'], orderBy: { region: 'asc' } })
+      this.prisma.address.findMany({ where: { orders: { some: {} }, region: { not: '' } }, select: { region: true }, distinct: ['region'], orderBy: { region: 'asc' } }),
+      this.prisma.productOffer.findMany({ select: { id: true, productId: true, type: true, requiredQuantity: true, freeQuantity: true, bundlePriceCents: true, enabled: true, product: { select: { priceCents: true } } }, orderBy: [{ productId: 'asc' }, { requiredQuantity: 'asc' }] })
     ])
-    return { products, funnels, companies, regions: regions.map((r) => r.region).filter(Boolean) }
+    const offers = offerRows.map((o) => ({ id: o.id, productId: o.productId, enabled: o.enabled, label: offerLabel(o, o.product.priceCents) }))
+    return { products, funnels, companies, regions: regions.map((r) => r.region).filter(Boolean), offers }
   }
 
   async findOne(id: string) {

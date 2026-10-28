@@ -44,6 +44,7 @@ export function buildOrderFilterWhere(f: OrderFilters, opts: { forShipment?: boo
   const and: Prisma.OrderWhereInput[] = []
   if (f.productId) and.push({ items: { some: { productId: f.productId } } })
   if (f.variantId) and.push({ items: { some: { variantId: f.variantId } } })
+  if (f.offerId) and.push({ items: { some: { offerId: f.offerId } } })
   if (f.funnelId) and.push(f.funnelId === FUNNEL_NONE ? { funnelId: null } : { funnelId: f.funnelId })
   if (f.companyId) and.push({ shippingCompanyId: f.companyId })
   if (f.region) and.push({ address: { region: { equals: f.region, mode: 'insensitive' } } })
