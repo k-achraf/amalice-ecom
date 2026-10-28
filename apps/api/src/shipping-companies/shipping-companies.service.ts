@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { SHIPPING_COMPANY_CATALOG, SHIPPING_COMPANY_WEBHOOK_SLUG } from '@amalice/shared'
+import { DEFAULT_COURIER_PARENT_WILAYA, SHIPPING_COMPANY_CATALOG, SHIPPING_COMPANY_WEBHOOK_SLUG } from '@amalice/shared'
 import type {
   ApplyShippingCompanyTariffs,
   ApplyShippingCompanyTariffsResult,
@@ -296,9 +296,32 @@ export class ShippingCompaniesService {
         })
     )
 
+    // Our newer wilayas (59-69, and 49/50/52/53/56 at couriers that don't list them) are communes of
+    // another wilaya in the courier's system, so it quotes no tariff for them. They get the PARENT
+    // wilaya's home price and no stop desk (price 0 = "not offered", which applies as desk delivery
+    // disabled). The parent is the one saved on the Location mapping page, else the default.
+    const savedParents = new Map(
+      (await this.prisma.shippingCompanyLocationMap.findMany({ where: { shippingCompanyId: company.id, ourCommune: '' } })).map((m) => [m.ourWilayaId, m.courierWilayaId])
+    )
+    const derived = Object.keys(DEFAULT_COURIER_PARENT_WILAYA).flatMap((wilayaId) => {
+      if (deliveryByWilaya.has(wilayaId) || !wilayaIds.has(wilayaId)) return []
+      const parent = deliveryByWilaya.get(savedParents.get(wilayaId) ?? DEFAULT_COURIER_PARENT_WILAYA[wilayaId]!)
+      if (!parent) return []
+      const deliveryPriceCents = (Number.parseInt(parent.tarif, 10) || 0) * 100
+      return [
+        this.prisma.shippingCompanyTariff.upsert({
+          where: { shippingCompanyId_wilayaId: { shippingCompanyId: company.id, wilayaId } },
+          update: { deliveryPriceCents, deliveryStopdeskPriceCents: 0 },
+          create: { shippingCompanyId: company.id, wilayaId, deliveryPriceCents, deliveryStopdeskPriceCents: 0 }
+        })
+      ]
+    })
+    if (derived.length) await this.prisma.$transaction(derived)
+    syncedCount += derived.length
+
     const lastSyncedAt = new Date()
     await this.prisma.shippingCompany.update({ where: { provider }, data: { lastSyncedAt } })
-    await this.audit.log({ actor, action: 'Update', entity: 'ShippingCompany', entityId: provider, metadata: { syncedTariffs: syncedCount } })
+    await this.audit.log({ actor, action: 'Update', entity: 'ShippingCompany', entityId: provider, metadata: { syncedTariffs: syncedCount, derivedFromParentWilaya: derived.length } })
 
     return { syncedCount, lastSyncedAt: lastSyncedAt.toISOString() }
   }
