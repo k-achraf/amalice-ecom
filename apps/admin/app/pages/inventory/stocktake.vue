@@ -77,9 +77,9 @@ async function submit() {
             <tr v-for="l in visible" v-else :key="l.key">
               <td><span class="strong">{{ l.label }}</span><span v-if="l.sub" class="sub">{{ l.sub }}</span></td>
               <td class="num">{{ l.recorded }}</td>
-              <td class="num"><input v-model.number="counted[l.key]" class="input sm" type="number" min="0" style="width: 90px; text-align: right" :aria-label="`Counted ${l.label} ${l.sub}`"></td>
+              <td class="num"><input v-model.number="counted[l.key]" class="input sm" type="number" min="0" step="0.5" style="width: 90px; text-align: right" :aria-label="`Counted ${l.label} ${l.sub}`"></td>
               <td class="num strong" :style="{ color: counted[l.key] == null || counted[l.key] === l.recorded ? '' : counted[l.key]! < l.recorded ? 'var(--danger)' : 'var(--teal)' }">
-                {{ counted[l.key] == null || counted[l.key] === (l.recorded) ? '—' : (counted[l.key]! - l.recorded > 0 ? '+' : '') + (counted[l.key]! - l.recorded) }}
+                {{ counted[l.key] == null || counted[l.key] === (l.recorded) ? '—' : (counted[l.key]! - l.recorded > 0 ? '+' : '') + Math.round((counted[l.key]! - l.recorded) * 1000) / 1000 }}
               </td>
             </tr>
           </tbody>

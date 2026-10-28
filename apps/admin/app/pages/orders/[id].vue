@@ -716,7 +716,7 @@ function initials(name: string | null) {
             <template v-else>
               <p style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
                 <b style="font-weight: 600">{{ ATTRIBUTION_PLATFORM_LABELS[order.attribution.platform] }}</b>
-                <span v-if="order.attribution.channel" class="muted">· {{ { storefront: 'Store', landing_page: 'Landing page', funnel: 'Funnel' }[order.attribution.channel] }}</span>
+                <span v-if="order.attribution.channel" class="muted">· {{ { storefront: 'Store', landing_page: 'Landing page', funnel: 'Funnel', pos: 'POS' }[order.attribution.channel] }}</span>
               </p>
               <dl class="details">
                 <template v-for="row in attributionRows" :key="row[0]"><dt>{{ row[0] }}</dt><dd style="word-break: break-all">{{ row[1] }}</dd></template>

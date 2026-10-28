@@ -328,8 +328,8 @@ export type ProductWhereInput = {
   visible?: Prisma.BoolFilter<"Product"> | boolean
   priceCents?: Prisma.IntFilter<"Product"> | number
   costCents?: Prisma.IntNullableFilter<"Product"> | number | null
-  stockQuantity?: Prisma.IntFilter<"Product"> | number
-  lowStockThreshold?: Prisma.IntFilter<"Product"> | number
+  stockQuantity?: Prisma.FloatFilter<"Product"> | number
+  lowStockThreshold?: Prisma.FloatFilter<"Product"> | number
   requireOfferSelection?: Prisma.BoolFilter<"Product"> | boolean
   keyBenefits?: Prisma.StringNullableListFilter<"Product">
   faqs?: Prisma.JsonNullableFilter<"Product">
@@ -405,8 +405,8 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   visible?: Prisma.BoolFilter<"Product"> | boolean
   priceCents?: Prisma.IntFilter<"Product"> | number
   costCents?: Prisma.IntNullableFilter<"Product"> | number | null
-  stockQuantity?: Prisma.IntFilter<"Product"> | number
-  lowStockThreshold?: Prisma.IntFilter<"Product"> | number
+  stockQuantity?: Prisma.FloatFilter<"Product"> | number
+  lowStockThreshold?: Prisma.FloatFilter<"Product"> | number
   requireOfferSelection?: Prisma.BoolFilter<"Product"> | boolean
   keyBenefits?: Prisma.StringNullableListFilter<"Product">
   faqs?: Prisma.JsonNullableFilter<"Product">
@@ -473,8 +473,8 @@ export type ProductScalarWhereWithAggregatesInput = {
   visible?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
   priceCents?: Prisma.IntWithAggregatesFilter<"Product"> | number
   costCents?: Prisma.IntNullableWithAggregatesFilter<"Product"> | number | null
-  stockQuantity?: Prisma.IntWithAggregatesFilter<"Product"> | number
-  lowStockThreshold?: Prisma.IntWithAggregatesFilter<"Product"> | number
+  stockQuantity?: Prisma.FloatWithAggregatesFilter<"Product"> | number
+  lowStockThreshold?: Prisma.FloatWithAggregatesFilter<"Product"> | number
   requireOfferSelection?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
   keyBenefits?: Prisma.StringNullableListFilter<"Product">
   faqs?: Prisma.JsonNullableWithAggregatesFilter<"Product">
@@ -567,8 +567,8 @@ export type ProductUpdateInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -604,8 +604,8 @@ export type ProductUncheckedUpdateInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -662,8 +662,8 @@ export type ProductUpdateManyMutationInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -685,8 +685,8 @@ export type ProductUncheckedUpdateManyInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -848,6 +848,14 @@ export type ProductCreatekeyBenefitsInput = {
 
 export type NullableIntFieldUpdateOperationsInput = {
   set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type FloatFieldUpdateOperationsInput = {
+  set?: number
   increment?: number
   decrement?: number
   multiply?: number
@@ -1155,8 +1163,8 @@ export type ProductScalarWhereInput = {
   visible?: Prisma.BoolFilter<"Product"> | boolean
   priceCents?: Prisma.IntFilter<"Product"> | number
   costCents?: Prisma.IntNullableFilter<"Product"> | number | null
-  stockQuantity?: Prisma.IntFilter<"Product"> | number
-  lowStockThreshold?: Prisma.IntFilter<"Product"> | number
+  stockQuantity?: Prisma.FloatFilter<"Product"> | number
+  lowStockThreshold?: Prisma.FloatFilter<"Product"> | number
   requireOfferSelection?: Prisma.BoolFilter<"Product"> | boolean
   keyBenefits?: Prisma.StringNullableListFilter<"Product">
   faqs?: Prisma.JsonNullableFilter<"Product">
@@ -1263,8 +1271,8 @@ export type ProductUpdateWithoutLandingPagesInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1299,8 +1307,8 @@ export type ProductUncheckedUpdateWithoutLandingPagesInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1419,8 +1427,8 @@ export type ProductUpdateWithoutImagesInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1455,8 +1463,8 @@ export type ProductUncheckedUpdateWithoutImagesInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1575,8 +1583,8 @@ export type ProductUpdateWithoutVariantsInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1611,8 +1619,8 @@ export type ProductUncheckedUpdateWithoutVariantsInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1731,8 +1739,8 @@ export type ProductUpdateWithoutStockAdjustmentsInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1767,8 +1775,8 @@ export type ProductUncheckedUpdateWithoutStockAdjustmentsInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1887,8 +1895,8 @@ export type ProductUpdateWithoutProductAttributesInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1923,8 +1931,8 @@ export type ProductUncheckedUpdateWithoutProductAttributesInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2043,8 +2051,8 @@ export type ProductUpdateWithoutReviewsInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2079,8 +2087,8 @@ export type ProductUncheckedUpdateWithoutReviewsInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2199,8 +2207,8 @@ export type ProductUpdateWithoutOrderItemsInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2235,8 +2243,8 @@ export type ProductUncheckedUpdateWithoutOrderItemsInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2355,8 +2363,8 @@ export type ProductUpdateWithoutOffersInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2391,8 +2399,8 @@ export type ProductUncheckedUpdateWithoutOffersInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2586,8 +2594,8 @@ export type ProductUpdateWithoutUpsellsOfferedInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2622,8 +2630,8 @@ export type ProductUncheckedUpdateWithoutUpsellsOfferedInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2667,8 +2675,8 @@ export type ProductUpdateWithoutUpsellsAsTargetInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2703,8 +2711,8 @@ export type ProductUncheckedUpdateWithoutUpsellsAsTargetInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2823,8 +2831,8 @@ export type ProductUpdateWithoutGoogleSheetsInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2859,8 +2867,8 @@ export type ProductUncheckedUpdateWithoutGoogleSheetsInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2979,8 +2987,8 @@ export type ProductUpdateWithoutSourcedFromInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3015,8 +3023,8 @@ export type ProductUncheckedUpdateWithoutSourcedFromInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3135,8 +3143,8 @@ export type ProductUpdateWithoutFunnelsInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3171,8 +3179,8 @@ export type ProductUncheckedUpdateWithoutFunnelsInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3227,8 +3235,8 @@ export type ProductUpdateWithoutCategoryRefInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3262,8 +3270,8 @@ export type ProductUncheckedUpdateWithoutCategoryRefInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3297,8 +3305,8 @@ export type ProductUncheckedUpdateManyWithoutCategoryRefInput = {
   visible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
-  lowStockThreshold?: Prisma.IntFieldUpdateOperationsInput | number
+  stockQuantity?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowStockThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   requireOfferSelection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keyBenefits?: Prisma.ProductUpdatekeyBenefitsInput | string[]
   faqs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4059,8 +4067,8 @@ export interface ProductFieldRefs {
   readonly visible: Prisma.FieldRef<"Product", 'Boolean'>
   readonly priceCents: Prisma.FieldRef<"Product", 'Int'>
   readonly costCents: Prisma.FieldRef<"Product", 'Int'>
-  readonly stockQuantity: Prisma.FieldRef<"Product", 'Int'>
-  readonly lowStockThreshold: Prisma.FieldRef<"Product", 'Int'>
+  readonly stockQuantity: Prisma.FieldRef<"Product", 'Float'>
+  readonly lowStockThreshold: Prisma.FieldRef<"Product", 'Float'>
   readonly requireOfferSelection: Prisma.FieldRef<"Product", 'Boolean'>
   readonly keyBenefits: Prisma.FieldRef<"Product", 'String[]'>
   readonly faqs: Prisma.FieldRef<"Product", 'Json'>

@@ -22,6 +22,7 @@ const groups: NavGroup[] = [
       { label: 'Overview', design: 'overview', to: '/', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Warehouse'], short: 'Home' },
       { label: 'Orders', design: 'orders', to: '/orders', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Support'] },
       { label: 'Call center', design: 'headset', to: '/call-center', roles: ['SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent'], count: 'calls', short: 'Calls' },
+      { label: 'POS', design: 'store', to: '/pos', roles: ['SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent'] },
       { label: 'Abandoned carts', design: 'cart', to: '/abandoned-carts', roles: ['SuperAdmin', 'OpsManager', 'Support'] },
       { label: 'Customers', design: 'customers', to: '/customers', roles: ['SuperAdmin', 'OpsManager', 'Finance', 'Support'] },
       { label: 'Blacklist', icon: ShieldBan, to: '/blacklist', roles: ['SuperAdmin', 'OpsManager', 'Support'] }

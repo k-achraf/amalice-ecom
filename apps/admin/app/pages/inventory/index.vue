@@ -332,11 +332,11 @@ async function deleteSelected() {
   <AdsDialog v-model:open="showAdjust" :title="`Adjust stock — ${adjusting?.name ?? ''}`" width="sm">
     <template v-if="adjusting">
       <p class="muted">Current stock: <b>{{ adjusting.stockQuantity }}</b></p>
-      <AdsField label="Change (negative for stock-out)"><AdsNumberInput v-model="adjustDelta" /></AdsField>
+      <AdsField label="Change (negative for stock-out)"><AdsNumberInput v-model="adjustDelta" :step="0.5" /></AdsField>
       <AdsField label="Reason"><AdsSelect v-model="adjustReason" :items="['Restock', 'Correction', 'Damage', 'Sale', 'Return']" /></AdsField>
       <AdsField v-if="adjustReason === 'Restock'" label="Supplier (optional)"><AdsSelect v-model="adjustSupplier" :items="supplierItems" /></AdsField>
       <AdsField label="Note (optional)"><AdsInput v-model="adjustNote" /></AdsField>
-      <p>New stock: <b>{{ adjusting.stockQuantity + adjustDelta }}</b></p>
+      <p>New stock: <b>{{ Math.round((adjusting.stockQuantity + adjustDelta) * 1000) / 1000 }}</b></p>
     </template>
     <template #footer>
       <button class="btn" type="button" @click="adjusting = null">Cancel</button>

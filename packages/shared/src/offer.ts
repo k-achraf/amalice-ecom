@@ -56,7 +56,8 @@ export const UpdateProductOfferSchema = ProductOfferInputBaseSchema.partial().ex
 })
 export type UpdateProductOffer = z.infer<typeof UpdateProductOfferSchema>
 
-// Stock is counted in whole pieces: a line of 1.5 takes 2 from it (and gives 2 back).
+// Stock moves by the exact quantity of the line: a line of 1.5 takes 1.5 from it (and gives 1.5 back).
+// Rounded to 3 decimals so repeated additions/subtractions of fractions never drift (0.1 + 0.2).
 export function stockUnits(quantity: number): number {
-  return Math.ceil(quantity)
+  return Math.round(quantity * 1000) / 1000
 }

@@ -51,7 +51,7 @@ export const CreateProductSchema = z.object({
   priceCents: z.number().int().nonnegative(),
   // Unit cost for profit reports; null/absent = unknown. Admin-only.
   costCents: z.number().int().nonnegative().nullable().optional(),
-  stockQuantity: z.number().int().nonnegative(),
+  stockQuantity: z.number().nonnegative(),
   lowStockThreshold: z.number().int().nonnegative().default(5),
   // For products only ever sold in fixed lots (wholesale packs of e.g. 40 or
   // 80 units, never a single unit) — when true, the storefront PDP hides its

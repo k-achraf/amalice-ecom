@@ -141,8 +141,8 @@ model Product {
   // profitability). Null = unknown: its cost counts as 0 and the report warns.
   // Never exposed publicly (see the catalog controller's withNormalizedContent).
   costCents             Int?                 @map("cost_cents")
-  stockQuantity         Int                  @default(0) @map("stock_quantity")
-  lowStockThreshold     Int                  @default(5) @map("low_stock_threshold")
+  stockQuantity         Float                @default(0) @map("stock_quantity")
+  lowStockThreshold     Float                @default(5) @map("low_stock_threshold")
   orderItems            OrderItem[]
   reviews               Review[]
   stockAdjustments      StockAdjustment[]
@@ -294,7 +294,7 @@ model ProductVariant {
   // source of truth but remains populated for older variants.
   attributes    Json
   priceCents    Int             @map("price_cents")
-  stockQuantity Int             @default(0) @map("stock_quantity")
+  stockQuantity Float           @default(0) @map("stock_quantity")
   // Normalized: which option this variant picked for each of its attributes.
   options       VariantOption[]
   orderItems    OrderItem[]
@@ -324,7 +324,7 @@ model StockAdjustment {
   product    Product               @relation(fields: [productId], references: [id])
   // Signed delta — positive for stock-in, negative for stock-out. The
   // absolute quantity is |delta|; sign carries direction.
-  delta      Int
+  delta      Float
   reason     StockAdjustmentReason
   note       String?
   // Who made the change — nullable so the seed/initial stock doesn't require

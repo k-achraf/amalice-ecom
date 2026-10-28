@@ -593,14 +593,6 @@ export type OrderItemUncheckedUpdateManyWithoutOrderNestedInput = {
   deleteMany?: Prisma.OrderItemScalarWhereInput | Prisma.OrderItemScalarWhereInput[]
 }
 
-export type FloatFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type OrderItemCreateNestedManyWithoutOfferInput = {
   create?: Prisma.XOR<Prisma.OrderItemCreateWithoutOfferInput, Prisma.OrderItemUncheckedCreateWithoutOfferInput> | Prisma.OrderItemCreateWithoutOfferInput[] | Prisma.OrderItemUncheckedCreateWithoutOfferInput[]
   connectOrCreate?: Prisma.OrderItemCreateOrConnectWithoutOfferInput | Prisma.OrderItemCreateOrConnectWithoutOfferInput[]

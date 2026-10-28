@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { addRiskFactor, isFuzzyDuplicate, normalizeAlgerianPhone, stockUnits, type AbandonedLeadOrder, type AcceptOrderUpsell, type Checkout, type CheckoutItem, type LeadOrder, type RecentOrderActivityItem, type ShippingType } from '@amalice/shared'
+import { addRiskFactor, isFuzzyDuplicate, normalizeAlgerianPhone, stockUnits, POS_SOURCES, type PosOrder, type PosOrderResult, type AbandonedLeadOrder, type AcceptOrderUpsell, type Checkout, type CheckoutItem, type LeadOrder, type RecentOrderActivityItem, type ShippingType } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import type { Product, ProductVariant, Prisma } from '../generated/prisma/client'
 import { NotificationsService } from '../notifications/notifications.service'
@@ -7,6 +7,7 @@ import { GoogleSheetsService } from '../apps/google-sheets.service'
 import { OrderItemsService, canAddOrderItems } from '../order-items/order-items.service'
 import { RedisService } from '../redis/redis.service'
 import { RiskService } from '../risk/risk.service'
+import { StockService } from '../common/stock.service'
 import { deviceTypeOf, fbcFromFbclid, resolvePlatform } from './order-attribution.util'
 
 // Request-derived context for the pixel apps' server-side purchase events —
@@ -44,7 +45,8 @@ export class OrdersService {
     private readonly orderItems: OrderItemsService,
     private readonly googleSheets: GoogleSheetsService,
     private readonly redis: RedisService,
-    private readonly risk: RiskService
+    private readonly risk: RiskService,
+    private readonly stock: StockService
   ) {}
 
   // Don't let the client submit the same order twice — double-click,
@@ -390,6 +392,112 @@ export class OrdersService {
       return order
     } catch (error) {
       if (!resolvedIdempotencyKey) await this.releaseIdempotencyKey(checkout.idempotencyKey)
+      throw error
+    }
+  }
+
+  // POS: an order typed in by staff (social media / chat / phone). Same rules as a lead-form order
+  // (server-side pricing, blacklist + risk, duplicate flag) but it is created by a person: no bot
+  // guards, no SMS, and the source is recorded as an organic POS attribution. With confirmNow the
+  // customer has already agreed in the conversation: the order is CONFIRMED right away (stock taken).
+  async createPosOrder(input: PosOrder): Promise<PosOrderResult> {
+    const replayOrderId = await this.reserveIdempotencyKey(input.idempotencyKey)
+    if (replayOrderId) {
+      const existing = await this.prisma.order.findUniqueOrThrow({ where: { id: replayOrderId } })
+      return {
+        orderId: existing.id,
+        state: existing.state,
+        itemsTotalCents: existing.totalCents - existing.shippingPriceCents,
+        shippingPriceCents: existing.shippingPriceCents,
+        totalCents: existing.totalCents,
+        riskLevel: existing.riskLevel,
+        duplicateOfOrderId: existing.duplicateOfOrderId
+      }
+    }
+
+    let resolved = false
+    try {
+      const productIds = [...new Set(input.items.map((i) => i.productId))]
+      const products = await this.prisma.product.findMany({ where: { id: { in: productIds } } })
+      const productById = new Map(products.map((p) => [p.id, p]))
+      const variantById = await this.loadVariants(input.items)
+      let itemsTotalCents = 0
+      const pricedItems = input.items.map((item) => {
+        const product = productById.get(item.productId)
+        if (!product) throw new NotFoundException(`Product ${item.productId} not found`)
+        const variant = item.variantId ? variantById.get(item.variantId) : undefined
+        if (item.variantId && (!variant || variant.productId !== item.productId)) {
+          throw new BadRequestException(`Selected variant is not available for "${product.name}"`)
+        }
+        const unitPriceCents = item.unitPriceCents ?? variant?.priceCents ?? product.priceCents
+        const lineTotalCents = Math.round(unitPriceCents * item.quantity)
+        itemsTotalCents += lineTotalCents
+        return { productId: item.productId, variantId: variant?.id ?? null, quantity: item.quantity, unitPriceCents, lineTotalCents, offerId: null }
+      })
+
+      const wilaya = await this.prisma.wilaya.findUnique({ where: { id: input.wilayaId } })
+      if (!wilaya) throw new BadRequestException('Selected wilaya not found')
+      // The configured rate unless the agent typed a fee (a negotiated or free delivery).
+      const shippingPriceCents = input.shippingPriceCents ?? (await this.priceShipping(input.wilayaId, input.shippingType)).priceCents
+      const totalCents = itemsTotalCents + shippingPriceCents
+
+      const phone = normalizeAlgerianPhone(input.phone)
+      if (!phone) throw new BadRequestException('Phone number is not valid')
+      const name = input.customerName
+      const commune = input.commune
+      const assessment = await this.risk.assess(phone, { line1: input.addressLine || commune, line2: null, city: commune, region: wilaya.name }, name)
+      this.risk.assertNotBlocked(assessment, phone)
+
+      const customer = await this.prisma.customer.upsert({ where: { phone }, update: { name }, create: { phone, name } })
+      const address = await this.prisma.address.create({
+        data: { customerId: customer.id, line1: input.addressLine || commune, city: commune, region: wilaya.name, postalCode: '00000', country: 'DZ' }
+      })
+      const duplicateOfOrderId = await this.findRecentDuplicate(customer.id, productIds, { phone, name, region: wilaya.name, city: commune })
+      const risk = duplicateOfOrderId ? addRiskFactor(assessment.risk, { code: 'DUPLICATE_ORDER', points: 10 }) : assessment.risk
+      const sourceLabel = POS_SOURCES.find((s) => s.id === input.source)?.label ?? input.source
+
+      const order = await this.prisma.$transaction(async (tx) => {
+        const created = await tx.order.create({
+          data: {
+            customerId: customer.id,
+            addressId: address.id,
+            state: input.confirmNow ? 'Confirmed' : 'PendingCallCenter',
+            totalCents,
+            shippingType: input.shippingType,
+            shippingPriceCents,
+            isDuplicate: !!duplicateOfOrderId,
+            duplicateOfOrderId,
+            riskScore: risk.score,
+            riskLevel: risk.level,
+            riskFactors: risk.factors,
+            notes: input.note ? `[POS · ${sourceLabel}] ${input.note}` : null,
+            deliveryNote: input.deliveryNote || null,
+            items: { create: pricedItems }
+          },
+          include: { items: true }
+        })
+        // Where it came from: an organic conversation, not an ad.
+        await tx.orderAttribution.create({
+          data: { orderId: created.id, platform: 'Organic', channel: 'pos', utmSource: input.source, utmMedium: 'social_dm', utmCampaign: input.sourceNote || null }
+        })
+        if (input.confirmNow) await this.stock.reserveForOrder(created.id, null, tx)
+        return created
+      })
+
+      await this.resolveIdempotencyKey(input.idempotencyKey, order.id)
+      resolved = true
+      this.pushToGoogleSheets(order.id)
+      return {
+        orderId: order.id,
+        state: order.state,
+        itemsTotalCents,
+        shippingPriceCents,
+        totalCents,
+        riskLevel: risk.level ?? null,
+        duplicateOfOrderId
+      }
+    } catch (error) {
+      if (!resolved) await this.releaseIdempotencyKey(input.idempotencyKey)
       throw error
     }
   }

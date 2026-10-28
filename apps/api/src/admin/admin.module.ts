@@ -1,5 +1,8 @@
 import { Global, Module } from '@nestjs/common'
 import { AdminController } from './admin.controller'
+import { PosController } from './pos.controller'
+import { PosService } from './pos.service'
+import { OrdersModule } from '../orders/orders.module'
 import { UploadController } from './upload.controller'
 import { AdminOrdersService } from './admin-orders.service'
 import { AdminCallCenterService } from './admin-call-center.service'
@@ -26,9 +29,9 @@ import { ShippingCompaniesModule } from '../shipping-companies/shipping-companie
   // product editor's "generate with AI" content drafter (see
   // AdminProductManagementService.generateContent) reuses the same free
   // Gemini client the landing-page builder uses, rather than a second one.
-  imports: [CommonModule, OrderItemsModule, AppsModule, LandingPagesModule, ShippingCompaniesModule, RiskModule, FulfillmentModule],
-  controllers: [AdminController, UploadController],
-  providers: [AdminOrdersService, AdminCallCenterService, AdminDeleteService, AdminOrderTimelineService, AdminDeliveriesService, AdminCatalogService, AdminUsersService, AdminStatsService, AdminProductManagementService, AdminShippingService, AdminInventoryService],
+  imports: [CommonModule, OrderItemsModule, AppsModule, LandingPagesModule, ShippingCompaniesModule, RiskModule, FulfillmentModule, OrdersModule],
+  controllers: [AdminController, UploadController, PosController],
+  providers: [AdminOrdersService, AdminCallCenterService, AdminDeleteService, AdminOrderTimelineService, AdminDeliveriesService, AdminCatalogService, AdminUsersService, AdminStatsService, AdminProductManagementService, AdminShippingService, AdminInventoryService, PosService],
   exports: [AdminInventoryService, AdminOrdersService, AdminCallCenterService, AdminCatalogService, AdminUsersService, AdminStatsService, AdminProductManagementService, AdminShippingService]
 })
 export class AdminModule {}

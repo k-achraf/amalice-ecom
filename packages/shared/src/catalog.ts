@@ -37,7 +37,7 @@ export const ProductVariantSchema = z.object({
   sku: z.string().min(1).max(100),
   attributes: z.record(z.string()),
   priceCents: z.number().int().nonnegative(),
-  stockQuantity: z.number().int().nonnegative()
+  stockQuantity: z.number().nonnegative()
 })
 export type ProductVariant = z.infer<typeof ProductVariantSchema>
 
@@ -92,7 +92,7 @@ export type StockAdjustmentReason = z.infer<typeof StockAdjustmentReasonSchema>
 
 export const AdjustStockSchema = z.object({
   // Signed delta — positive for stock-in, negative for stock-out.
-  delta: z.number().int().refine((n) => n !== 0, 'delta must be non-zero'),
+  delta: z.number().refine((n) => n !== 0, 'delta must be non-zero'),
   reason: StockAdjustmentReasonSchema,
   note: z.string().max(500).optional(),
   // Only meaningful for a variant's own stock; omit to adjust the product.
@@ -116,7 +116,7 @@ export type SupplierInput = z.infer<typeof SupplierInputSchema>
 export const StocktakeSchema = z.object({
   note: z.string().max(500).optional(),
   counts: z
-    .array(z.object({ productId: z.string().uuid(), variantId: z.string().uuid().optional(), counted: z.number().int().min(0) }))
+    .array(z.object({ productId: z.string().uuid(), variantId: z.string().uuid().optional(), counted: z.number().min(0) }))
     .min(1)
     .max(500)
 })
@@ -196,7 +196,7 @@ export type CreateAttributeOption = z.infer<typeof CreateAttributeOptionSchema>
 export const CreateProductVariantSchema = z.object({
   sku: z.string().min(1).max(100),
   priceCents: z.number().int().nonnegative(),
-  stockQuantity: z.number().int().nonnegative().default(0),
+  stockQuantity: z.number().nonnegative().default(0),
   optionIds: z.array(z.uuid()).min(1)
 })
 export type CreateProductVariant = z.infer<typeof CreateProductVariantSchema>
@@ -204,7 +204,7 @@ export type CreateProductVariant = z.infer<typeof CreateProductVariantSchema>
 export const UpdateProductVariantSchema = z.object({
   sku: z.string().min(1).max(100).optional(),
   priceCents: z.number().int().nonnegative().optional(),
-  stockQuantity: z.number().int().nonnegative().optional(),
+  stockQuantity: z.number().nonnegative().optional(),
   optionIds: z.array(z.uuid()).min(1).optional()
 })
 export type UpdateProductVariant = z.infer<typeof UpdateProductVariantSchema>

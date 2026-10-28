@@ -29,7 +29,7 @@ export const ATTRIBUTION_PLATFORM_LABELS: Record<AttributionPlatform, string> = 
   Direct: 'Direct'
 }
 
-export const AttributionChannelSchema = z.enum(['storefront', 'landing_page', 'funnel'])
+export const AttributionChannelSchema = z.enum(['storefront', 'landing_page', 'funnel', 'pos'])
 export type AttributionChannel = z.infer<typeof AttributionChannelSchema>
 
 const s = (max: number) => z.string().max(max).optional()

@@ -248,7 +248,7 @@ export type StockAdjustmentWhereInput = {
   NOT?: Prisma.StockAdjustmentWhereInput | Prisma.StockAdjustmentWhereInput[]
   id?: Prisma.StringFilter<"StockAdjustment"> | string
   productId?: Prisma.StringFilter<"StockAdjustment"> | string
-  delta?: Prisma.IntFilter<"StockAdjustment"> | number
+  delta?: Prisma.FloatFilter<"StockAdjustment"> | number
   reason?: Prisma.EnumStockAdjustmentReasonFilter<"StockAdjustment"> | $Enums.StockAdjustmentReason
   note?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
   actorId?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
@@ -281,7 +281,7 @@ export type StockAdjustmentWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.StockAdjustmentWhereInput[]
   NOT?: Prisma.StockAdjustmentWhereInput | Prisma.StockAdjustmentWhereInput[]
   productId?: Prisma.StringFilter<"StockAdjustment"> | string
-  delta?: Prisma.IntFilter<"StockAdjustment"> | number
+  delta?: Prisma.FloatFilter<"StockAdjustment"> | number
   reason?: Prisma.EnumStockAdjustmentReasonFilter<"StockAdjustment"> | $Enums.StockAdjustmentReason
   note?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
   actorId?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
@@ -317,7 +317,7 @@ export type StockAdjustmentScalarWhereWithAggregatesInput = {
   NOT?: Prisma.StockAdjustmentScalarWhereWithAggregatesInput | Prisma.StockAdjustmentScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"StockAdjustment"> | string
   productId?: Prisma.StringWithAggregatesFilter<"StockAdjustment"> | string
-  delta?: Prisma.IntWithAggregatesFilter<"StockAdjustment"> | number
+  delta?: Prisma.FloatWithAggregatesFilter<"StockAdjustment"> | number
   reason?: Prisma.EnumStockAdjustmentReasonWithAggregatesFilter<"StockAdjustment"> | $Enums.StockAdjustmentReason
   note?: Prisma.StringNullableWithAggregatesFilter<"StockAdjustment"> | string | null
   actorId?: Prisma.StringNullableWithAggregatesFilter<"StockAdjustment"> | string | null
@@ -355,7 +355,7 @@ export type StockAdjustmentUncheckedCreateInput = {
 
 export type StockAdjustmentUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  delta?: Prisma.IntFieldUpdateOperationsInput | number
+  delta?: Prisma.FloatFieldUpdateOperationsInput | number
   reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -369,7 +369,7 @@ export type StockAdjustmentUpdateInput = {
 export type StockAdjustmentUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
-  delta?: Prisma.IntFieldUpdateOperationsInput | number
+  delta?: Prisma.FloatFieldUpdateOperationsInput | number
   reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -394,7 +394,7 @@ export type StockAdjustmentCreateManyInput = {
 
 export type StockAdjustmentUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  delta?: Prisma.IntFieldUpdateOperationsInput | number
+  delta?: Prisma.FloatFieldUpdateOperationsInput | number
   reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -406,7 +406,7 @@ export type StockAdjustmentUpdateManyMutationInput = {
 export type StockAdjustmentUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
-  delta?: Prisma.IntFieldUpdateOperationsInput | number
+  delta?: Prisma.FloatFieldUpdateOperationsInput | number
   reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -617,7 +617,7 @@ export type StockAdjustmentScalarWhereInput = {
   NOT?: Prisma.StockAdjustmentScalarWhereInput | Prisma.StockAdjustmentScalarWhereInput[]
   id?: Prisma.StringFilter<"StockAdjustment"> | string
   productId?: Prisma.StringFilter<"StockAdjustment"> | string
-  delta?: Prisma.IntFilter<"StockAdjustment"> | number
+  delta?: Prisma.FloatFilter<"StockAdjustment"> | number
   reason?: Prisma.EnumStockAdjustmentReasonFilter<"StockAdjustment"> | $Enums.StockAdjustmentReason
   note?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
   actorId?: Prisma.StringNullableFilter<"StockAdjustment"> | string | null
@@ -691,7 +691,7 @@ export type StockAdjustmentCreateManyProductInput = {
 
 export type StockAdjustmentUpdateWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  delta?: Prisma.IntFieldUpdateOperationsInput | number
+  delta?: Prisma.FloatFieldUpdateOperationsInput | number
   reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -703,7 +703,7 @@ export type StockAdjustmentUpdateWithoutProductInput = {
 
 export type StockAdjustmentUncheckedUpdateWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  delta?: Prisma.IntFieldUpdateOperationsInput | number
+  delta?: Prisma.FloatFieldUpdateOperationsInput | number
   reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -715,7 +715,7 @@ export type StockAdjustmentUncheckedUpdateWithoutProductInput = {
 
 export type StockAdjustmentUncheckedUpdateManyWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  delta?: Prisma.IntFieldUpdateOperationsInput | number
+  delta?: Prisma.FloatFieldUpdateOperationsInput | number
   reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -739,7 +739,7 @@ export type StockAdjustmentCreateManySupplierInput = {
 
 export type StockAdjustmentUpdateWithoutSupplierInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  delta?: Prisma.IntFieldUpdateOperationsInput | number
+  delta?: Prisma.FloatFieldUpdateOperationsInput | number
   reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -752,7 +752,7 @@ export type StockAdjustmentUpdateWithoutSupplierInput = {
 export type StockAdjustmentUncheckedUpdateWithoutSupplierInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
-  delta?: Prisma.IntFieldUpdateOperationsInput | number
+  delta?: Prisma.FloatFieldUpdateOperationsInput | number
   reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -764,7 +764,7 @@ export type StockAdjustmentUncheckedUpdateWithoutSupplierInput = {
 export type StockAdjustmentUncheckedUpdateManyWithoutSupplierInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
-  delta?: Prisma.IntFieldUpdateOperationsInput | number
+  delta?: Prisma.FloatFieldUpdateOperationsInput | number
   reason?: Prisma.EnumStockAdjustmentReasonFieldUpdateOperationsInput | $Enums.StockAdjustmentReason
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1291,7 +1291,7 @@ export interface Prisma__StockAdjustmentClient<T, Null = never, ExtArgs extends 
 export interface StockAdjustmentFieldRefs {
   readonly id: Prisma.FieldRef<"StockAdjustment", 'String'>
   readonly productId: Prisma.FieldRef<"StockAdjustment", 'String'>
-  readonly delta: Prisma.FieldRef<"StockAdjustment", 'Int'>
+  readonly delta: Prisma.FieldRef<"StockAdjustment", 'Float'>
   readonly reason: Prisma.FieldRef<"StockAdjustment", 'StockAdjustmentReason'>
   readonly note: Prisma.FieldRef<"StockAdjustment", 'String'>
   readonly actorId: Prisma.FieldRef<"StockAdjustment", 'String'>

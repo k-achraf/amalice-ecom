@@ -1342,7 +1342,7 @@ async function deleteUpsell(upsellId: string) {
         <NuxtLink class="btn btn-sm" :to="`/inventory/${id}`"><AdsIcon name="i-lucide-bar-chart-3" />Stock details</NuxtLink>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <AdsField label="Change (+/-)">
-            <AdsNumberInput v-model="adjustDelta" class="w-full" />
+            <AdsNumberInput v-model="adjustDelta" :step="0.5" class="w-full" />
           </AdsField>
           <AdsField label="Reason">
             <AdsSelect v-model="adjustReason" :items="['Restock', 'Correction', 'Damage', 'Sale', 'Return']" class="w-full" />
@@ -1351,7 +1351,7 @@ async function deleteUpsell(upsellId: string) {
             <AdsInput v-model="adjustNote" placeholder="Optional…" class="w-full" />
           </AdsField>
         </div>
-        <p class="mt-3 text-sm text-muted">New stock: <span class="tabular font-medium">{{ product.stockQuantity + adjustDelta }}</span></p>
+        <p class="mt-3 text-sm text-muted">New stock: <span class="tabular font-medium">{{ Math.round((product.stockQuantity + adjustDelta) * 1000) / 1000 }}</span></p>
         <div class="mt-4 flex justify-end">
           <AdsButton :loading="savingAdjust" color="primary" @click="saveAdjust">Save adjustment</AdsButton>
         </div>
@@ -1365,7 +1365,7 @@ async function deleteUpsell(upsellId: string) {
         <AdsField label="SKU"><AdsInput v-model="editingVariant.sku" class="w-full" /></AdsField>
         <div class="grid-2">
           <AdsField label="Price (DZD)"><AdsNumberInput v-model="editingVariantPriceDzd" :min="0" class="w-full" /></AdsField>
-          <AdsField label="Stock"><AdsNumberInput v-model="editingVariant.stockQuantity" class="w-full" /></AdsField>
+          <AdsField label="Stock"><AdsNumberInput v-model="editingVariant.stockQuantity" :step="0.5" class="w-full" /></AdsField>
         </div>
         <!-- Option selectors: one per applied attribute, rendered by type -->
         <div v-for="attr in product?.attributes" :key="attr.id" class="stack" style="gap: 8px">
