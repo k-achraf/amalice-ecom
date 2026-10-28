@@ -1,5 +1,16 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
-import type { Stocktake, SupplierInput } from '@amalice/shared'
+import {
+  STOCK_BUCKETS,
+  STOCK_BUCKET_STATES,
+  stockUnits,
+  type OrderState,
+  type StockBucketKey,
+  type StockDetails,
+  type StockDetailsRow,
+  type StockMovementsResponse,
+  type Stocktake,
+  type SupplierInput
+} from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
 import type { AuditActor } from '../common/audit.service'
 
@@ -126,5 +137,162 @@ export class AdminInventoryService {
       }
       return { checked: input.counts.length, adjusted: results.length, results }
     })
+  }
+
+  // ---- one product's stock, in detail ----
+
+  private variantLabel(v: { sku: string; options: { option: { value: string; displayValue: string | null } }[] }): string {
+    const parts = v.options.map((o) => o.option.displayValue ?? o.option.value)
+    return parts.length ? parts.join(' / ') : v.sku
+  }
+
+  // Where the units of one product are: recorded stock, and the units of every order that contains
+  // it grouped by what became of the order (see STOCK_BUCKET_STATES). Cancelled orders and abandoned
+  // carts are not demand; archived orders still count as delivered/with the courier but an archived
+  // order that was never confirmed is not waiting for anything, so it is left out of "unconfirmed".
+  async stockDetails(productId: string): Promise<StockDetails> {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      select: {
+        id: true,
+        name: true,
+        imageUrl: true,
+        stockQuantity: true,
+        lowStockThreshold: true,
+        variants: { orderBy: { sku: 'asc' }, select: { id: true, sku: true, stockQuantity: true, options: { select: { option: { select: { value: true, displayValue: true } } } } } }
+      }
+    })
+    if (!product) throw new NotFoundException('Product not found')
+
+    const items = await this.prisma.orderItem.findMany({
+      where: { productId },
+      select: { variantId: true, quantity: true, order: { select: { id: true, state: true, isAbandoned: true, archived: true, stockReservedAt: true } } }
+    })
+
+    const bucketOf = new Map<OrderState, StockBucketKey>()
+    for (const key of STOCK_BUCKETS) for (const state of STOCK_BUCKET_STATES[key]) bucketOf.set(state, key)
+
+    const hasVariants = product.variants.length > 0
+    const rowKey = (variantId: string | null) => (hasVariants && variantId ? variantId : 'base')
+    type Acc = { orders: Set<string>; units: number }
+    const empty = () => Object.fromEntries(STOCK_BUCKETS.map((b) => [b, { orders: new Set<string>(), units: 0 }])) as Record<StockBucketKey, Acc>
+    const perRow = new Map<string, { buckets: Record<StockBucketKey, Acc>; reserved: number; hasItems: boolean }>()
+    const total = empty()
+    const byState = new Map<string, { bucket: StockBucketKey; state: OrderState; orders: Set<string>; units: number }>()
+    const abandonedOrders = new Set<string>()
+    let abandonedUnits = 0
+
+    for (const item of items) {
+      const units = stockUnits(item.quantity)
+      const o = item.order
+      if (o.isAbandoned) {
+        abandonedOrders.add(o.id)
+        abandonedUnits += units
+        continue
+      }
+      const bucket = bucketOf.get(o.state as OrderState)
+      if (!bucket) continue // cancelled
+      if (bucket === 'unconfirmed' && o.archived) continue
+      const key = rowKey(item.variantId)
+      const row = perRow.get(key) ?? { buckets: empty(), reserved: 0, hasItems: true }
+      perRow.set(key, row)
+      row.buckets[bucket].orders.add(o.id)
+      row.buckets[bucket].units += units
+      total[bucket].orders.add(o.id)
+      total[bucket].units += units
+      if (o.stockReservedAt && (bucket === 'unconfirmed' || bucket === 'confirmed')) row.reserved += units
+      const sk = `${bucket}|${o.state}`
+      const s = byState.get(sk) ?? { bucket, state: o.state as OrderState, orders: new Set<string>(), units: 0 }
+      s.orders.add(o.id)
+      s.units += units
+      byState.set(sk, s)
+    }
+
+    const toBuckets = (acc: Record<StockBucketKey, Acc>) => Object.fromEntries(STOCK_BUCKETS.map((b) => [b, { orders: acc[b].orders.size, units: acc[b].units }])) as StockDetailsRow['buckets']
+    const build = (variantId: string | null, label: string, sku: string | null, onHand: number, key: string): StockDetailsRow => {
+      const r = perRow.get(key)
+      const reservedUnits = r?.reserved ?? 0
+      return {
+        variantId,
+        label,
+        sku,
+        onHand,
+        lowStockThreshold: product.lowStockThreshold,
+        buckets: toBuckets(r?.buckets ?? empty()),
+        reservedUnits,
+        physicalInWarehouse: onHand + reservedUnits
+      }
+    }
+    const rows: StockDetailsRow[] = hasVariants
+      ? product.variants.map((v) => build(v.id, this.variantLabel(v), v.sku, v.stockQuantity, v.id))
+      : [build(null, product.name, null, product.stockQuantity, 'base')]
+    // Order lines that name no variant on a product that has variants (older orders).
+    if (hasVariants && perRow.has('base')) rows.push(build(null, 'No variant (base product)', null, product.stockQuantity, 'base'))
+
+    const onHand = rows.reduce((a, r) => a + r.onHand, 0)
+    const reservedUnits = rows.reduce((a, r) => a + r.reservedUnits, 0)
+    const buckets = Object.fromEntries(
+      STOCK_BUCKETS.map((b) => [
+        b,
+        {
+          orders: total[b].orders.size,
+          units: total[b].units,
+          byState: [...byState.values()].filter((s) => s.bucket === b).map((s) => ({ state: s.state, orders: s.orders.size, units: s.units }))
+        }
+      ])
+    ) as StockDetails['buckets']
+
+    return {
+      product: { id: product.id, name: product.name, imageUrl: product.imageUrl, sku: null, lowStockThreshold: product.lowStockThreshold, hasVariants },
+      onHand,
+      reservedUnits,
+      physicalInWarehouse: onHand + reservedUnits,
+      buckets,
+      abandoned: { orders: abandonedOrders.size, units: abandonedUnits },
+      rows,
+      generatedAt: new Date().toISOString()
+    }
+  }
+
+  // The stock ledger of one product (every movement, newest first).
+  async stockMovements(productId: string, q: { page: number; pageSize: number; variantId?: string; reason?: string }): Promise<StockMovementsResponse> {
+    const validReasons = ['Restock', 'Correction', 'Damage', 'Sale', 'Return', 'Release', 'Stocktake'] as const
+    const reason = validReasons.find((r) => r === q.reason)
+    const where = { productId, ...(q.variantId && { variantId: q.variantId }), ...(reason && { reason }) }
+    const [rows, total] = await Promise.all([
+      this.prisma.stockAdjustment.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (q.page - 1) * q.pageSize,
+        take: q.pageSize,
+        include: { supplier: { select: { name: true } } }
+      }),
+      this.prisma.stockAdjustment.count({ where })
+    ])
+    const actorIds = [...new Set(rows.map((r) => r.actorId).filter((x): x is string => !!x))]
+    const actors = actorIds.length ? await this.prisma.adminUser.findMany({ where: { id: { in: actorIds } }, select: { id: true, email: true } }) : []
+    const emailById = new Map(actors.map((a) => [a.id, a.email]))
+    const variantIds = [...new Set(rows.map((r) => r.variantId).filter((x): x is string => !!x))]
+    const variants = variantIds.length
+      ? await this.prisma.productVariant.findMany({ where: { id: { in: variantIds } }, select: { id: true, sku: true, options: { select: { option: { select: { value: true, displayValue: true } } } } } })
+      : []
+    const labelById = new Map(variants.map((v) => [v.id, this.variantLabel(v)]))
+    return {
+      items: rows.map((r) => ({
+        id: r.id,
+        createdAt: r.createdAt.toISOString(),
+        delta: r.delta,
+        reason: r.reason,
+        note: r.note,
+        variantId: r.variantId,
+        variantLabel: r.variantId ? (labelById.get(r.variantId) ?? null) : null,
+        orderId: r.orderId,
+        actorEmail: r.actorId ? (emailById.get(r.actorId) ?? null) : null,
+        supplierName: r.supplier?.name ?? null
+      })),
+      total,
+      page: q.page,
+      pageSize: q.pageSize
+    }
   }
 }

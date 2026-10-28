@@ -226,7 +226,7 @@ async function syncCouriers() {
 </script>
 
 <template>
-  <AdsPage title="Fulfillment" :description="`${(confirmed?.total ?? 0) + (packed?.total ?? 0) + (onHold?.total ?? 0) + (handedOver?.total ?? 0)} orders · Pack, hold and dispatch confirmed orders`">
+  <AdsPage title="Fulfillment" :description="`${(confirmed?.total ?? 0) + (packed?.total ?? 0) + (onHold?.total ?? 0) + unconfirmed.length} orders · Pack, hold and dispatch confirmed orders`">
     <template #actions>
       <button class="btn" type="button" :disabled="acting === 'sync'" @click="syncCouriers"><AdsIcon name="i-lucide-refresh-cw" />Sync with couriers</button>
     </template>

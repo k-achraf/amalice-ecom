@@ -9,6 +9,7 @@
     "test": "tsx --test \"src/**/*.test.ts\"",
     "create-admin": "tsx prisma/create-admin.ts",
     "seed-locations": "tsx prisma/seed-locations.ts",
+    "rebalance-unconfirmed-stock": "tsx prisma/rebalance-unconfirmed-stock.ts",
     "reset-test-data": "tsx prisma/reset-test-data.ts"
   },
   "dependencies": {

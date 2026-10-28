@@ -324,7 +324,8 @@ export class AdminCallCenterService {
     })
     if (updated.count === 0) throw new ConflictException('This order was just updated by someone else — reload it')
 
-    if (clearsAbandoned) await this.stock.reserveForOrder(id, actor.id)
+    // Stock is taken when the order is confirmed.
+    if (input.outcome === 'Confirmed') await this.stock.reserveForOrder(id, actor.id)
     if (input.outcome === 'Cancelled') await this.stock.releaseForOrder(id, actor.id)
 
     const attempt = await this.prisma.callAttempt.create({

@@ -63,6 +63,6 @@ export const DHD_WEBHOOK_EVENT_TO_STATE: Record<string, OrderState | null> = {
   'order.delivered_cod_pending': 'Delivered',
   'order.delivered_cod_not_paid': 'Delivered',
   'order.payment_ready': 'CashCollected',
-  'order.returned_archived': 'Restocked',
+  'order.returned_archived': 'ReturnedToOrigin',
   'order.payment_archived': 'Settled'
 }

@@ -17,6 +17,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service'
 import type { Prisma } from '../generated/prisma/client'
 import { AuditService, type AuditActor } from '../common/audit.service'
+import { StockService } from '../common/stock.service'
 import { GoogleSheetsClientService, GOOGLE_SHEET_COLUMNS, GOOGLE_SHEET_HEADER_ROW, COLUMN_INDEX, type GoogleSheetStatusColumn } from './google-sheets-client.service'
 
 // Reverse of ORDER_STATE_LABELS — resolves a sheet cell's label text back to
@@ -120,6 +121,7 @@ export class GoogleSheetsService implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly stock: StockService,
     private readonly client: GoogleSheetsClientService,
     @InjectQueue('google-sheets-sync') private readonly syncQueue: Queue
   ) {}
@@ -503,6 +505,10 @@ export class GoogleSheetsService implements OnModuleInit {
 
   private async applyTransitionFromSheet(orderId: string, from: OrderState, to: OrderState): Promise<void> {
     await this.prisma.order.update({ where: { id: orderId }, data: { state: to } })
+    // Same stock rules as every other way of changing a state.
+    if (to === 'Confirmed') await this.stock.reserveForOrder(orderId)
+    if (to === 'Cancelled' || to === 'CancelledShipping') await this.stock.releaseForOrder(orderId)
+    if (to === 'Restocked') await this.stock.restockForOrder(orderId)
     await this.audit.log({
       actor: SHEETS_SYNC_ACTOR,
       action: 'StateTransition',

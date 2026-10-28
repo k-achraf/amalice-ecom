@@ -56,6 +56,14 @@ const attributionRows = computed<[string, string][]>(() => {
 })
 
 const transitioning = ref<OrderState | null>(null)
+
+const returnConfirmOpen = ref(false)
+const { confirmReturns, confirming: confirmingReturn } = useConfirmReturns()
+async function confirmReturnReceived() {
+  await confirmReturns([id])
+  returnConfirmOpen.value = false
+  await refresh()
+}
 // No in-transit states before a courier shipment exists (server enforces it too).
 const needsShipment = computed(() => !!order.value && !order.value.shipment && (VALID_TRANSITIONS[order.value.state] ?? []).some((s) => STATES_REQUIRING_SHIPMENT.includes(s as OrderState)))
 const nextStates = computed(() => (order.value ? (VALID_TRANSITIONS[order.value.state] ?? []).filter((s) => order.value!.shipment || !STATES_REQUIRING_SHIPMENT.includes(s as OrderState)) : []))
@@ -666,9 +674,10 @@ function initials(name: string | null) {
 
         <div class="stack">
           <!-- Manual transition: only valid next states are offered (server re-validates). -->
-          <section v-if="VALID_TRANSITIONS[order.state]?.length" id="action-card" class="card" aria-labelledby="ac-h">
+          <section v-if="VALID_TRANSITIONS[order.state]?.length || order.state === 'ReturnedToOrigin'" id="action-card" class="card" aria-labelledby="ac-h">
             <div class="card-head"><h2 id="ac-h">Next step</h2></div>
             <div class="stack" style="gap: 8px">
+              <button v-if="order.state === 'ReturnedToOrigin'" class="btn btn-primary btn-block" type="button" :disabled="confirmingReturn" @click="returnConfirmOpen = true">Confirm return received</button>
               <p class="muted" style="line-height: 1.5">Only valid transitions are offered; the server re-validates each one.</p>
               <p v-if="needsShipment" class="muted" style="line-height: 1.5"><AdsIcon name="i-lucide-truck" /> "Out for delivery" is only available once the order has been sent to the courier (Dispatch to courier, or Mark as sent).</p>
               <button
@@ -768,6 +777,13 @@ function initials(name: string | null) {
     <template #footer>
       <button class="btn" type="button" @click="priceModalOpen = false">Cancel</button>
       <button class="btn btn-primary" type="button" :disabled="savingPrice" @click="savePrice">Save</button>
+    </template>
+  </AdsDialog>
+
+  <AdsDialog v-model:open="returnConfirmOpen" title="Confirm return received" description="Confirm the parcel is physically back. The order becomes Restocked and stock will increase by the units of this order." width="sm">
+    <template #footer>
+      <button class="btn" type="button" @click="returnConfirmOpen = false">Cancel</button>
+      <button class="btn btn-primary" type="button" :disabled="confirmingReturn" @click="confirmReturnReceived">Confirm return received</button>
     </template>
   </AdsDialog>
 

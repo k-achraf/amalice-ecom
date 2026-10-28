@@ -262,7 +262,7 @@ async function deleteSelected() {
                   <div class="prod">
                     <span class="thumb"><AdsIcon name="i-lucide-package" /></span>
                     <span>
-                      <NuxtLink :to="`/products/${p.id}`" class="strong" style="text-decoration: none; color: var(--pine)" @click.stop>{{ p.name }}</NuxtLink>
+                      <NuxtLink :to="`/inventory/${p.id}`" class="strong" style="text-decoration: none; color: var(--pine)" @click.stop>{{ p.name }}</NuxtLink>
                       <span class="sub">{{ p.slug }}<template v-if="!p.visible"> · Hidden from catalog</template></span>
                     </span>
                   </div>
@@ -299,6 +299,7 @@ async function deleteSelected() {
                       </div>
                     </template>
                   </AdsPopover>
+                  <NuxtLink class="row-btn" :to="`/inventory/${p.id}`" :aria-label="`Stock details for ${p.name}`" title="Stock details"><AdsIcon name="i-lucide-bar-chart-3" /></NuxtLink>
                   <NuxtLink class="row-btn" :to="`/products/${p.id}`" :aria-label="`Edit ${p.name}`" title="Edit"><AdsIcon name="i-lucide-pencil" /></NuxtLink>
                   <button class="row-btn" type="button" :aria-label="`Adjust stock for ${p.name}`" title="Adjust stock" @click="openAdjust(p)"><AdsIcon name="i-lucide-boxes" /></button>
                 </td>

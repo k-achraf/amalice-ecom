@@ -950,7 +950,7 @@ export class FulfillmentService {
   // the courier's state directly, but only between shipping states: finance-closed, cancelled or
   // restocked orders are never overwritten (reported as blocked instead).
   private static readonly FORCE_FROM: OrderState[] = ['Packed', 'HandedToCourier', 'OutForDelivery', 'DeliveryFailed', 'Delivered', 'ReturnedToOrigin']
-  private static readonly FORCE_TO: OrderState[] = ['HandedToCourier', 'OutForDelivery', 'DeliveryFailed', 'Delivered', 'ReturnedToOrigin', 'Restocked', 'CancelledShipping']
+  private static readonly FORCE_TO: OrderState[] = ['HandedToCourier', 'OutForDelivery', 'DeliveryFailed', 'Delivered', 'ReturnedToOrigin', 'CancelledShipping']
   private resolveTarget(from: OrderState, to: OrderState): { path: OrderState[]; forced?: true } | { blocked: string } {
     // "Paiement archivé" (paid and archived at the courier) maps to our Settled/Reconciled, but those
     // are OUR finance steps and cannot be walked to from a shipping state: such a parcel is delivered,

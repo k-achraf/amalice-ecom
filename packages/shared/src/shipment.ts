@@ -165,8 +165,10 @@ export const COURIER_STATUS_TO_ORDER_STATE: Record<string, string | null> = {
   retours_recu: 'ReturnedToOrigin',
   retours_a_dispatcher_vers_stock: 'ReturnedToOrigin',
   retours_en_stock: 'ReturnedToOrigin',
-  retour_archive: 'Restocked',
-  retours_archive: 'Restocked',
+  // Archived returns stay ReturnedToOrigin: "Restocked" (units back in stock) is only reached by a
+  // person confirming the parcel is physically back ("Confirm return received").
+  retour_archive: 'ReturnedToOrigin',
+  retours_archive: 'ReturnedToOrigin',
   annule: 'CancelledShipping'
 }
 

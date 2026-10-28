@@ -352,7 +352,8 @@ export class AdminOrdersService {
         }
       })
     }
-    if (clearsAbandoned) await this.stock.reserveForOrder(id, actor.id)
+    // Stock is taken when the order is confirmed (nothing before, nothing for abandoned carts).
+    if (to === 'Confirmed') await this.stock.reserveForOrder(id, actor.id)
     if (to === 'Cancelled' || to === 'CancelledShipping') await this.stock.releaseForOrder(id, actor.id)
     if (to === 'Restocked') await this.stock.restockForOrder(id, actor.id)
     await this.audit.log({

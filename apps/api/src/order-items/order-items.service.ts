@@ -58,8 +58,8 @@ export class OrderItemsService {
     const unitPriceCents = input.priceCentsOverride ?? variant?.priceCents ?? product.priceCents
     const lineTotalCents = unitPriceCents * input.quantity
 
-    // An abandoned cart holds no stock yet (taken when it is confirmed).
-    const takesStock = !order.isAbandoned
+    // Only a confirmed order holds stock (taken at confirmation); before that nothing is reserved.
+    const takesStock = !!order.stockReservedAt
     const available = variant?.stockQuantity ?? product.stockQuantity
     if (takesStock && available < input.quantity) {
       throw new ConflictException(`Insufficient stock for "${product.name}"`)
@@ -118,7 +118,7 @@ export class OrderItemsService {
 
   // Edit one line of an order that hasn't reached a courier yet: its quantity
   // and/or its total price. Stock follows the quantity (whole pieces) unless
-  // the order is an abandoned cart, which holds none; Order.totalCents moves
+  // the order is not confirmed yet, which holds none; Order.totalCents moves
   // by the same line delta so shipping and any manual discount stay as set.
   async updateItem(orderId: string, itemId: string, input: UpdateOrderItem, actor: AuditActor) {
     const { order, item } = await this.loadEditable(orderId, itemId)
@@ -139,7 +139,7 @@ export class OrderItemsService {
         lineTotalCents = input.lineTotalCents ?? Math.round(item.unitPriceCents * quantity)
       }
     }
-    const stockDelta = order.isAbandoned ? 0 : stockUnits(quantity) - stockUnits(item.quantity)
+    const stockDelta = !order.stockReservedAt ? 0 : stockUnits(quantity) - stockUnits(item.quantity)
 
     await this.prisma.$transaction(async (tx) => {
       if (stockDelta !== 0) await this.moveStock(tx, item, -stockDelta, `Order ${orderId.slice(0, 8)} item quantity edited`, actor)
@@ -160,7 +160,7 @@ export class OrderItemsService {
     const count = await this.prisma.orderItem.count({ where: { orderId } })
     if (count <= 1) throw new BadRequestException('An order needs at least one item - cancel the order instead.')
     await this.prisma.$transaction(async (tx) => {
-      if (!order.isAbandoned) await this.moveStock(tx, item, stockUnits(item.quantity), `Order ${orderId.slice(0, 8)} item removed`, actor)
+      if (order.stockReservedAt) await this.moveStock(tx, item, stockUnits(item.quantity), `Order ${orderId.slice(0, 8)} item removed`, actor)
       await tx.orderItem.delete({ where: { id: itemId } })
       await tx.order.update({ where: { id: orderId }, data: { totalCents: { decrement: item.lineTotalCents } } })
     })

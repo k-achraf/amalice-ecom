@@ -53,6 +53,31 @@ async function transition(orderId: string, to: OrderState) {
   acting.value = null
 }
 
+// Returned parcels: warehouse confirms the parcel is physically back (restock + courier validation).
+const { confirmReturns, confirming: confirmingReturn } = useConfirmReturns()
+const returnSelected = ref(new Set<string>())
+const returnConfirmOpen = ref(false)
+const pendingReturnIds = ref<string[]>([])
+const allReturnedSelected = computed(() => !!returned.value?.items.length && returned.value.items.every((o) => returnSelected.value.has(o.id)))
+function toggleReturned(id: string) {
+  const next = new Set(returnSelected.value)
+  if (!next.delete(id)) next.add(id)
+  returnSelected.value = next
+}
+function toggleAllReturned() {
+  returnSelected.value = allReturnedSelected.value ? new Set() : new Set((returned.value?.items ?? []).map((o) => o.id))
+}
+function askConfirm(ids: string[]) {
+  pendingReturnIds.value = ids
+  returnConfirmOpen.value = true
+}
+async function doConfirmReturns() {
+  await confirmReturns(pendingReturnIds.value)
+  returnConfirmOpen.value = false
+  returnSelected.value = new Set()
+  await refreshAll()
+}
+
 // Dev-only mock status driver (COU-01 mock). Drives a shipment through the
 // status flow to simulate a real courier webhook — not a production route.
 const mockRef = ref('')
@@ -127,13 +152,16 @@ async function sendMockStatus() {
     </section>
 
     <section class="card" v-if="failed?.items.length || returned?.items.length" aria-label="Delivery issues">
-      <div class="card-head"><h2>Delivery issues</h2></div>
+      <div class="card-head">
+        <h2>Delivery issues</h2>
+        <button v-if="returnSelected.size" class="btn btn-primary btn-sm" type="button" :disabled="confirmingReturn" @click="askConfirm([...returnSelected])">Confirm {{ returnSelected.size }} return{{ returnSelected.size === 1 ? '' : 's' }} received</button>
+      </div>
       <div class="table-wrap">
         <table style="min-width: 760px">
-          <thead><tr><th>Order</th><th>Products</th><th>Customer</th><th>Destination</th><th>Status</th><th class="num">Advance</th></tr></thead>
+          <thead><tr><th style="width: 32px"><input v-if="returned?.items.length" type="checkbox" aria-label="Select all returned parcels" :checked="allReturnedSelected" @change="toggleAllReturned"></th><th>Order</th><th>Products</th><th>Customer</th><th>Destination</th><th>Status</th><th class="num">Advance</th></tr></thead>
           <tbody>
-            
             <tr v-for="o in [...(failed?.items ?? []), ...(returned?.items ?? [])]" :key="o.id">
+              <td><input v-if="o.state === 'ReturnedToOrigin'" type="checkbox" :aria-label="`Select order ${o.id.slice(0, 8)}`" :checked="returnSelected.has(o.id)" @change="toggleReturned(o.id)"></td>
               <td><NuxtLink :to="`/orders/${o.id}`" class="link-cell">#{{ o.id.slice(0, 8) }}</NuxtLink></td>
               <td><OrderLineItemsInline :items="o.items" compact /></td>
               <td>
@@ -143,6 +171,7 @@ async function sendMockStatus() {
               <td><OrderDestination :address="o.address" :shipping-type="o.shippingType" /></td>
               <td><AdsOrderStatus :state="o.state" /></td>
               <td class="num" style="white-space: nowrap">
+                <AdsButton v-if="o.state === 'ReturnedToOrigin'" size="sm" style="margin-left: 6px" :disabled="confirmingReturn" label="Confirm return received" @click="askConfirm([o.id])" />
                 <AdsButton v-for="next in VALID_TRANSITIONS[o.state]" :key="next" size="sm" :appearance="next === 'DeliveryFailed' ? 'danger' : 'default'" style="margin-left: 6px" :loading="acting === `${o.id}:${next}`" :label="`→ ${next}`" @click="transition(o.id, next)" />
               </td>
             </tr>
@@ -150,6 +179,13 @@ async function sendMockStatus() {
         </table>
       </div>
     </section>
+
+    <AdsDialog v-model:open="returnConfirmOpen" title="Confirm return received" :description="`Confirm ${pendingReturnIds.length} parcel${pendingReturnIds.length === 1 ? ' is' : 's are'} physically back. Stock will increase by the units of ${pendingReturnIds.length === 1 ? 'this order' : 'those orders'} and the order${pendingReturnIds.length === 1 ? '' : 's'} will become Restocked.`" width="sm">
+      <template #footer>
+        <button class="btn" type="button" @click="returnConfirmOpen = false">Cancel</button>
+        <button class="btn btn-primary" type="button" :disabled="confirmingReturn" @click="doConfirmReturns">Confirm return{{ pendingReturnIds.length === 1 ? '' : 's' }} received</button>
+      </template>
+    </AdsDialog>
 
     <!-- Dev-only mock status driver -->
     <section class="card" aria-label="Mock courier status">

@@ -374,6 +374,7 @@ export const OrderScalarFieldEnum = {
   courierCommune: 'courierCommune',
   courierPostalCode: 'courierPostalCode',
   courierLocationCompanyId: 'courierLocationCompanyId',
+  stockReservedAt: 'stockReservedAt',
   funnelId: 'funnelId',
   riskScore: 'riskScore',
   riskLevel: 'riskLevel',

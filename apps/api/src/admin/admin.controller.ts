@@ -550,6 +550,30 @@ export class AdminController {
     return this.inventory.supplierHistory(id)
   }
 
+  // One product's stock in detail: recorded stock + where the units of its orders are.
+  @Get('inventory/products/:id/details')
+  @Roles('SuperAdmin', 'OpsManager', 'Warehouse')
+  stockDetails(@Param('id') id: string) {
+    return this.inventory.stockDetails(id)
+  }
+
+  @Get('inventory/products/:id/movements')
+  @Roles('SuperAdmin', 'OpsManager', 'Warehouse')
+  stockMovements(
+    @Param('id') id: string,
+    @Query('page') page: string = '1',
+    @Query('pageSize') pageSize: string = '25',
+    @Query('variantId') variantId?: string,
+    @Query('reason') reason?: string
+  ) {
+    return this.inventory.stockMovements(id, {
+      page: Math.max(Number(page) || 1, 1),
+      pageSize: Math.min(Math.max(Number(pageSize) || 25, 1), 100),
+      variantId: variantId || undefined,
+      reason: reason || undefined
+    })
+  }
+
   @Get('products/:id/stock-history')
   @Roles('SuperAdmin', 'OpsManager', 'Warehouse')
   stockHistory(@Param('id') id: string) {

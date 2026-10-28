@@ -3,11 +3,13 @@ import { stockUnits } from '@amalice/shared'
 import { Prisma } from '../generated/prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 
-// Order-driven stock movements. Stock is taken when an order is created
-// (OrdersService.decrementStock) — that is the reservation. This gives it back
-// when an order dies before shipping, and takes it when an abandoned-cart
-// order is confirmed (abandoned carts never decrement). Both write a
-// StockAdjustment row keyed by orderId so a repeat call is a no-op.
+// Order-driven stock movements. An order takes its units out of stock when it is CONFIRMED
+// (reserveForOrder), never when it is created: an order that is not confirmed (unreachable,
+// wrong number, postponed, abandoned, cancelled by the customer...) never touches the stock.
+// The units go back when a confirmed order dies before reaching the customer (releaseForOrder)
+// or when a returned parcel is confirmed back on the shelf (restockForOrder).
+// Order.stockReservedAt is the single source of truth for "this order currently holds stock":
+// each movement flips it atomically, so a repeated call (double click, webhook + admin) is a no-op.
 @Injectable()
 export class StockService {
   constructor(private readonly prisma: PrismaService) {}
@@ -16,58 +18,54 @@ export class StockService {
     return tx.orderItem.findMany({ where: { orderId }, select: { productId: true, variantId: true, quantity: true } })
   }
 
-  async releaseForOrder(orderId: string, actorId?: string | null, tx?: Prisma.TransactionClient): Promise<boolean> {
+  private async move(
+    t: Prisma.TransactionClient,
+    orderId: string,
+    sign: 1 | -1,
+    reason: 'Sale' | 'Release' | 'Return',
+    note: string,
+    actorId?: string | null
+  ): Promise<boolean> {
+    const lines = await this.lines(t, orderId)
+    for (const l of lines) {
+      const delta = sign * stockUnits(l.quantity)
+      if (l.variantId) await t.productVariant.updateMany({ where: { id: l.variantId }, data: { stockQuantity: { increment: delta } } })
+      else await t.product.updateMany({ where: { id: l.productId }, data: { stockQuantity: { increment: delta } } })
+      await t.stockAdjustment.create({ data: { productId: l.productId, variantId: l.variantId, orderId, delta, reason, note, actorId: actorId ?? null } })
+    }
+    return lines.length > 0
+  }
+
+  // The order is confirmed: take its units out of stock (once).
+  async reserveForOrder(orderId: string, actorId?: string | null, tx?: Prisma.TransactionClient): Promise<boolean> {
     const run = async (t: Prisma.TransactionClient) => {
-      const order = await t.order.findUnique({ where: { id: orderId }, select: { isAbandoned: true } })
-      // Abandoned rows never took stock.
-      if (!order || order.isAbandoned) return false
-      if (await t.stockAdjustment.findFirst({ where: { orderId, reason: 'Release' }, select: { id: true } })) return false
-      const lines = await this.lines(t, orderId)
-      for (const l of lines) {
-        if (l.variantId) await t.productVariant.updateMany({ where: { id: l.variantId }, data: { stockQuantity: { increment: stockUnits(l.quantity) } } })
-        else await t.product.updateMany({ where: { id: l.productId }, data: { stockQuantity: { increment: stockUnits(l.quantity) } } })
-        await t.stockAdjustment.create({
-          data: { productId: l.productId, variantId: l.variantId, orderId, delta: stockUnits(l.quantity), reason: 'Release', note: 'Order cancelled', actorId: actorId ?? null }
-        })
-      }
-      return lines.length > 0
+      // Abandoned carts are not real orders yet and never hold stock.
+      const claimed = await t.order.updateMany({ where: { id: orderId, isAbandoned: false, stockReservedAt: null }, data: { stockReservedAt: new Date() } })
+      if (claimed.count === 0) return false
+      return this.move(t, orderId, -1, 'Sale', 'Order confirmed', actorId)
     }
     return tx ? run(tx) : this.prisma.$transaction(run)
   }
 
-  // A returned parcel confirmed back on the shelf: units go back into stock.
-  // Idempotent per order (one Return row set). Called when an order reaches
-  // Restocked — the explicit "received and counted" step after ReturnedToOrigin.
-  async restockForOrder(orderId: string, actorId?: string | null): Promise<boolean> {
-    return this.prisma.$transaction(async (t) => {
-      if (await t.stockAdjustment.findFirst({ where: { orderId, reason: 'Return' }, select: { id: true } })) return false
-      // A cancelled-before-ship order was already released; never give it back twice.
-      if (await t.stockAdjustment.findFirst({ where: { orderId, reason: 'Release' }, select: { id: true } })) return false
-      const lines = await this.lines(t, orderId)
-      for (const l of lines) {
-        if (l.variantId) await t.productVariant.updateMany({ where: { id: l.variantId }, data: { stockQuantity: { increment: stockUnits(l.quantity) } } })
-        else await t.product.updateMany({ where: { id: l.productId }, data: { stockQuantity: { increment: stockUnits(l.quantity) } } })
-        await t.stockAdjustment.create({
-          data: { productId: l.productId, variantId: l.variantId, orderId, delta: stockUnits(l.quantity), reason: 'Return', note: 'Returned parcel restocked', actorId: actorId ?? null }
-        })
-      }
-      return lines.length > 0
-    })
+  // A confirmed order died before shipping (cancelled, courier cancelled it): give the units back.
+  // An order that never took stock (never confirmed) gives nothing back.
+  async releaseForOrder(orderId: string, actorId?: string | null, tx?: Prisma.TransactionClient): Promise<boolean> {
+    const run = async (t: Prisma.TransactionClient) => {
+      const claimed = await t.order.updateMany({ where: { id: orderId, stockReservedAt: { not: null } }, data: { stockReservedAt: null } })
+      if (claimed.count === 0) return false
+      return this.move(t, orderId, 1, 'Release', 'Order cancelled', actorId)
+    }
+    return tx ? run(tx) : this.prisma.$transaction(run)
   }
 
-  // Called when an abandoned-cart order becomes a real (confirmed) one.
-  async reserveForOrder(orderId: string, actorId?: string | null): Promise<boolean> {
-    return this.prisma.$transaction(async (t) => {
-      if (await t.stockAdjustment.findFirst({ where: { orderId, reason: 'Sale' }, select: { id: true } })) return false
-      const lines = await this.lines(t, orderId)
-      for (const l of lines) {
-        if (l.variantId) await t.productVariant.updateMany({ where: { id: l.variantId }, data: { stockQuantity: { decrement: stockUnits(l.quantity) } } })
-        else await t.product.updateMany({ where: { id: l.productId }, data: { stockQuantity: { decrement: stockUnits(l.quantity) } } })
-        await t.stockAdjustment.create({
-          data: { productId: l.productId, variantId: l.variantId, orderId, delta: -stockUnits(l.quantity), reason: 'Sale', note: 'Abandoned cart confirmed', actorId: actorId ?? null }
-        })
-      }
-      return lines.length > 0
-    })
+  // A returned parcel confirmed back on the shelf ("Confirm return received" -> Restocked):
+  // its units go back into stock (once, and only if the order had taken them).
+  async restockForOrder(orderId: string, actorId?: string | null, tx?: Prisma.TransactionClient): Promise<boolean> {
+    const run = async (t: Prisma.TransactionClient) => {
+      const claimed = await t.order.updateMany({ where: { id: orderId, stockReservedAt: { not: null } }, data: { stockReservedAt: null } })
+      if (claimed.count === 0) return false
+      return this.move(t, orderId, 1, 'Return', 'Returned parcel restocked', actorId)
+    }
+    return tx ? run(tx) : this.prisma.$transaction(run)
   }
 }

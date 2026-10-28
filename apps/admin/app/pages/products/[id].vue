@@ -1339,6 +1339,7 @@ async function deleteUpsell(upsellId: string) {
     <div v-show="activeTab === 'inventory'" class="stack">
       <div class="card">
         <h2>Current stock: <span class="tabular text-lg font-bold text-highlighted">{{ product.stockQuantity }}</span></h2>
+        <NuxtLink class="btn btn-sm" :to="`/inventory/${id}`"><AdsIcon name="i-lucide-bar-chart-3" />Stock details</NuxtLink>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <AdsField label="Change (+/-)">
             <AdsNumberInput v-model="adjustDelta" class="w-full" />

@@ -578,6 +578,9 @@ model Order {
   courierCommune           String?               @map("courier_commune")
   courierPostalCode        String?               @map("courier_postal_code")
   courierLocationCompanyId String?               @map("courier_location_company_id")
+  // When this order took its units out of stock (set when it is CONFIRMED; null = it holds none:
+  // unconfirmed, cancelled, or already given back). StockService is the only writer.
+  stockReservedAt          DateTime?             @map("stock_reserved_at")
   items                    OrderItem[]
   shipment                 Shipment?
   cashReconciliation       CashReconciliation?

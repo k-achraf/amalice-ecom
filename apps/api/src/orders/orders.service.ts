@@ -282,30 +282,9 @@ export class OrdersService {
 
   // Stock is deliberately NEVER a reason to reject an order — this store
   // keeps selling and accepting orders on a product even at (or below) zero
-  // recorded stock, rather than blocking checkout. There is intentionally no
-  // pre-decrement "is there enough stock" check here; see decrementStock
-  // below for the other half of this (unconditional decrement, no floor).
-
-  // Decrements the variant's own stock when the item has one, otherwise the
-  // base product's — no stock-sufficiency gate (see the note above), so this
-  // always succeeds and stock is allowed to go negative, which then reads as
-  // a backorder signal for ops rather than a blocked sale. Still verifies
-  // the row actually exists (a bogus id is a real error, unlike low stock).
-  private async decrementStock(tx: Prisma.TransactionClient, item: CheckoutItem, variantById: Map<string, ProductVariant>): Promise<void> {
-    if (item.variantId && variantById.has(item.variantId)) {
-      const result = await tx.productVariant.updateMany({
-        where: { id: item.variantId },
-        data: { stockQuantity: { decrement: stockUnits(item.quantity) } }
-      })
-      if (result.count === 0) throw new NotFoundException(`Variant ${item.variantId} not found`)
-      return
-    }
-    const result = await tx.product.updateMany({
-      where: { id: item.productId },
-      data: { stockQuantity: { decrement: stockUnits(item.quantity) } }
-    })
-    if (result.count === 0) throw new NotFoundException(`Product ${item.productId} not found`)
-  }
+  // recorded stock. And an order does not touch stock when it is created:
+  // the units are taken when it is confirmed (StockService.reserveForOrder),
+  // so only confirmed orders ever reduce the quantity.
 
   // Prices delivery server-side from WilayaShippingRate — never trusts a
   // client-submitted shipping price (same rule as priceCheckoutItems above).
@@ -375,16 +354,8 @@ export class OrdersService {
       const risk = duplicateOfOrderId ? addRiskFactor(assessment.risk, { code: 'DUPLICATE_ORDER', points: 10 }) : assessment.risk
 
       const order = await this.prisma.$transaction(async (tx) => {
-        // Atomic conditional decrement — the WHERE clause makes the update
-        // itself the concurrency check. Two customers checking out the last
-        // unit at once: exactly one UPDATE matches a row, the other's
-        // `count` comes back 0, which is what actually prevents overselling
-        // (not the earlier stock check above, which is just an early UX
-        // rejection).
-        for (const item of checkout.items) {
-          await this.decrementStock(tx, item, variantById)
-        }
-
+        // No stock is taken here: an order takes its units when it is CONFIRMED
+        // (StockService.reserveForOrder), so unconfirmed orders never reduce stock.
         return tx.order.create({
           data: {
             customerId: customer.id,
@@ -533,11 +504,7 @@ export class OrdersService {
       const risk = duplicateOfOrderId ? addRiskFactor(assessment.risk, { code: 'DUPLICATE_ORDER', points: 10 }) : assessment.risk
 
       order = await this.prisma.$transaction(async (tx) => {
-        // Atomic stock decrement for each item
-        for (const item of lead.items) {
-          await this.decrementStock(tx, item, variantById)
-        }
-
+        // No stock is taken here: it is taken when the order is confirmed.
         if (convertingAbandoned) {
           await tx.orderItem.deleteMany({ where: { orderId: abandonedOrder!.id } })
           return tx.order.update({
