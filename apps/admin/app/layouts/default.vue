@@ -51,7 +51,8 @@ const groups: NavGroup[] = [
     title: 'Shipping',
     items: [
       { label: 'Shipping rates', design: 'rates', to: '/settings/shipping', roles: ['SuperAdmin', 'OpsManager'] },
-      { label: 'Shipping companies', design: 'delivery', to: '/settings/shipping-companies', roles: ['SuperAdmin', 'OpsManager'] }
+      { label: 'Shipping companies', design: 'delivery', to: '/settings/shipping-companies', roles: ['SuperAdmin', 'OpsManager'] },
+      { label: 'Location mapping', design: 'layers', to: '/settings/location-mapping', roles: ['SuperAdmin', 'OpsManager'] }
     ]
   },
   {

@@ -91,6 +91,7 @@ export const ModelName = {
   Commune: 'Commune',
   ShippingCompany: 'ShippingCompany',
   ShippingCompanyCommune: 'ShippingCompanyCommune',
+  ShippingCompanyLocationMap: 'ShippingCompanyLocationMap',
   ShipmentEvent: 'ShipmentEvent',
   CourierWebhookEvent: 'CourierWebhookEvent',
   CourierWebhookLog: 'CourierWebhookLog',
@@ -369,6 +370,10 @@ export const OrderScalarFieldEnum = {
   gpsLink: 'gpsLink',
   courierOperation: 'courierOperation',
   exchangeProduct: 'exchangeProduct',
+  courierWilayaId: 'courierWilayaId',
+  courierCommune: 'courierCommune',
+  courierPostalCode: 'courierPostalCode',
+  courierLocationCompanyId: 'courierLocationCompanyId',
   funnelId: 'funnelId',
   riskScore: 'riskScore',
   riskLevel: 'riskLevel',
@@ -727,6 +732,21 @@ export const ShippingCompanyCommuneScalarFieldEnum = {
 } as const
 
 export type ShippingCompanyCommuneScalarFieldEnum = (typeof ShippingCompanyCommuneScalarFieldEnum)[keyof typeof ShippingCompanyCommuneScalarFieldEnum]
+
+
+export const ShippingCompanyLocationMapScalarFieldEnum = {
+  id: 'id',
+  shippingCompanyId: 'shippingCompanyId',
+  ourWilayaId: 'ourWilayaId',
+  ourCommune: 'ourCommune',
+  courierWilayaId: 'courierWilayaId',
+  courierCommune: 'courierCommune',
+  courierPostalCode: 'courierPostalCode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ShippingCompanyLocationMapScalarFieldEnum = (typeof ShippingCompanyLocationMapScalarFieldEnum)[keyof typeof ShippingCompanyLocationMapScalarFieldEnum]
 
 
 export const ShipmentEventScalarFieldEnum = {

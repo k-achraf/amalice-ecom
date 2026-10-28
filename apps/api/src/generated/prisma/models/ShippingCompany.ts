@@ -239,6 +239,7 @@ export type ShippingCompanyWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"ShippingCompany"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ShippingCompany"> | Date | string
   communes?: Prisma.ShippingCompanyCommuneListRelationFilter
+  locationMaps?: Prisma.ShippingCompanyLocationMapListRelationFilter
   tariffs?: Prisma.ShippingCompanyTariffListRelationFilter
   orders?: Prisma.OrderListRelationFilter
   webhookEvents?: Prisma.CourierWebhookEventListRelationFilter
@@ -258,6 +259,7 @@ export type ShippingCompanyOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   communes?: Prisma.ShippingCompanyCommuneOrderByRelationAggregateInput
+  locationMaps?: Prisma.ShippingCompanyLocationMapOrderByRelationAggregateInput
   tariffs?: Prisma.ShippingCompanyTariffOrderByRelationAggregateInput
   orders?: Prisma.OrderOrderByRelationAggregateInput
   webhookEvents?: Prisma.CourierWebhookEventOrderByRelationAggregateInput
@@ -280,6 +282,7 @@ export type ShippingCompanyWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"ShippingCompany"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ShippingCompany"> | Date | string
   communes?: Prisma.ShippingCompanyCommuneListRelationFilter
+  locationMaps?: Prisma.ShippingCompanyLocationMapListRelationFilter
   tariffs?: Prisma.ShippingCompanyTariffListRelationFilter
   orders?: Prisma.OrderListRelationFilter
   webhookEvents?: Prisma.CourierWebhookEventListRelationFilter
@@ -335,6 +338,7 @@ export type ShippingCompanyCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   communes?: Prisma.ShippingCompanyCommuneCreateNestedManyWithoutShippingCompanyInput
+  locationMaps?: Prisma.ShippingCompanyLocationMapCreateNestedManyWithoutShippingCompanyInput
   tariffs?: Prisma.ShippingCompanyTariffCreateNestedManyWithoutShippingCompanyInput
   orders?: Prisma.OrderCreateNestedManyWithoutShippingCompanyInput
   webhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutShippingCompanyInput
@@ -354,6 +358,7 @@ export type ShippingCompanyUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   communes?: Prisma.ShippingCompanyCommuneUncheckedCreateNestedManyWithoutShippingCompanyInput
+  locationMaps?: Prisma.ShippingCompanyLocationMapUncheckedCreateNestedManyWithoutShippingCompanyInput
   tariffs?: Prisma.ShippingCompanyTariffUncheckedCreateNestedManyWithoutShippingCompanyInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutShippingCompanyInput
   webhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutShippingCompanyInput
@@ -373,6 +378,7 @@ export type ShippingCompanyUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   communes?: Prisma.ShippingCompanyCommuneUpdateManyWithoutShippingCompanyNestedInput
+  locationMaps?: Prisma.ShippingCompanyLocationMapUpdateManyWithoutShippingCompanyNestedInput
   tariffs?: Prisma.ShippingCompanyTariffUpdateManyWithoutShippingCompanyNestedInput
   orders?: Prisma.OrderUpdateManyWithoutShippingCompanyNestedInput
   webhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutShippingCompanyNestedInput
@@ -392,6 +398,7 @@ export type ShippingCompanyUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   communes?: Prisma.ShippingCompanyCommuneUncheckedUpdateManyWithoutShippingCompanyNestedInput
+  locationMaps?: Prisma.ShippingCompanyLocationMapUncheckedUpdateManyWithoutShippingCompanyNestedInput
   tariffs?: Prisma.ShippingCompanyTariffUncheckedUpdateManyWithoutShippingCompanyNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutShippingCompanyNestedInput
   webhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutShippingCompanyNestedInput
@@ -531,6 +538,20 @@ export type ShippingCompanyUpdateOneRequiredWithoutCommunesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ShippingCompanyUpdateToOneWithWhereWithoutCommunesInput, Prisma.ShippingCompanyUpdateWithoutCommunesInput>, Prisma.ShippingCompanyUncheckedUpdateWithoutCommunesInput>
 }
 
+export type ShippingCompanyCreateNestedOneWithoutLocationMapsInput = {
+  create?: Prisma.XOR<Prisma.ShippingCompanyCreateWithoutLocationMapsInput, Prisma.ShippingCompanyUncheckedCreateWithoutLocationMapsInput>
+  connectOrCreate?: Prisma.ShippingCompanyCreateOrConnectWithoutLocationMapsInput
+  connect?: Prisma.ShippingCompanyWhereUniqueInput
+}
+
+export type ShippingCompanyUpdateOneRequiredWithoutLocationMapsNestedInput = {
+  create?: Prisma.XOR<Prisma.ShippingCompanyCreateWithoutLocationMapsInput, Prisma.ShippingCompanyUncheckedCreateWithoutLocationMapsInput>
+  connectOrCreate?: Prisma.ShippingCompanyCreateOrConnectWithoutLocationMapsInput
+  upsert?: Prisma.ShippingCompanyUpsertWithoutLocationMapsInput
+  connect?: Prisma.ShippingCompanyWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ShippingCompanyUpdateToOneWithWhereWithoutLocationMapsInput, Prisma.ShippingCompanyUpdateWithoutLocationMapsInput>, Prisma.ShippingCompanyUncheckedUpdateWithoutLocationMapsInput>
+}
+
 export type ShippingCompanyCreateNestedOneWithoutWebhookEventsInput = {
   create?: Prisma.XOR<Prisma.ShippingCompanyCreateWithoutWebhookEventsInput, Prisma.ShippingCompanyUncheckedCreateWithoutWebhookEventsInput>
   connectOrCreate?: Prisma.ShippingCompanyCreateOrConnectWithoutWebhookEventsInput
@@ -573,6 +594,7 @@ export type ShippingCompanyCreateWithoutOrdersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   communes?: Prisma.ShippingCompanyCommuneCreateNestedManyWithoutShippingCompanyInput
+  locationMaps?: Prisma.ShippingCompanyLocationMapCreateNestedManyWithoutShippingCompanyInput
   tariffs?: Prisma.ShippingCompanyTariffCreateNestedManyWithoutShippingCompanyInput
   webhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutShippingCompanyInput
 }
@@ -591,6 +613,7 @@ export type ShippingCompanyUncheckedCreateWithoutOrdersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   communes?: Prisma.ShippingCompanyCommuneUncheckedCreateNestedManyWithoutShippingCompanyInput
+  locationMaps?: Prisma.ShippingCompanyLocationMapUncheckedCreateNestedManyWithoutShippingCompanyInput
   tariffs?: Prisma.ShippingCompanyTariffUncheckedCreateNestedManyWithoutShippingCompanyInput
   webhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutShippingCompanyInput
 }
@@ -625,6 +648,7 @@ export type ShippingCompanyUpdateWithoutOrdersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   communes?: Prisma.ShippingCompanyCommuneUpdateManyWithoutShippingCompanyNestedInput
+  locationMaps?: Prisma.ShippingCompanyLocationMapUpdateManyWithoutShippingCompanyNestedInput
   tariffs?: Prisma.ShippingCompanyTariffUpdateManyWithoutShippingCompanyNestedInput
   webhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutShippingCompanyNestedInput
 }
@@ -643,6 +667,7 @@ export type ShippingCompanyUncheckedUpdateWithoutOrdersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   communes?: Prisma.ShippingCompanyCommuneUncheckedUpdateManyWithoutShippingCompanyNestedInput
+  locationMaps?: Prisma.ShippingCompanyLocationMapUncheckedUpdateManyWithoutShippingCompanyNestedInput
   tariffs?: Prisma.ShippingCompanyTariffUncheckedUpdateManyWithoutShippingCompanyNestedInput
   webhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutShippingCompanyNestedInput
 }
@@ -660,6 +685,7 @@ export type ShippingCompanyCreateWithoutCommunesInput = {
   locationsSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  locationMaps?: Prisma.ShippingCompanyLocationMapCreateNestedManyWithoutShippingCompanyInput
   tariffs?: Prisma.ShippingCompanyTariffCreateNestedManyWithoutShippingCompanyInput
   orders?: Prisma.OrderCreateNestedManyWithoutShippingCompanyInput
   webhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutShippingCompanyInput
@@ -678,6 +704,7 @@ export type ShippingCompanyUncheckedCreateWithoutCommunesInput = {
   locationsSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  locationMaps?: Prisma.ShippingCompanyLocationMapUncheckedCreateNestedManyWithoutShippingCompanyInput
   tariffs?: Prisma.ShippingCompanyTariffUncheckedCreateNestedManyWithoutShippingCompanyInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutShippingCompanyInput
   webhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutShippingCompanyInput
@@ -712,6 +739,7 @@ export type ShippingCompanyUpdateWithoutCommunesInput = {
   locationsSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  locationMaps?: Prisma.ShippingCompanyLocationMapUpdateManyWithoutShippingCompanyNestedInput
   tariffs?: Prisma.ShippingCompanyTariffUpdateManyWithoutShippingCompanyNestedInput
   orders?: Prisma.OrderUpdateManyWithoutShippingCompanyNestedInput
   webhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutShippingCompanyNestedInput
@@ -730,6 +758,99 @@ export type ShippingCompanyUncheckedUpdateWithoutCommunesInput = {
   locationsSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  locationMaps?: Prisma.ShippingCompanyLocationMapUncheckedUpdateManyWithoutShippingCompanyNestedInput
+  tariffs?: Prisma.ShippingCompanyTariffUncheckedUpdateManyWithoutShippingCompanyNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutShippingCompanyNestedInput
+  webhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutShippingCompanyNestedInput
+}
+
+export type ShippingCompanyCreateWithoutLocationMapsInput = {
+  id?: string
+  provider: $Enums.ShippingCompanyProvider
+  name: string
+  baseUrl: string
+  apiToken?: string | null
+  webhookSecret?: string | null
+  isLinked?: boolean
+  isDefault?: boolean
+  lastSyncedAt?: Date | string | null
+  locationsSyncedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  communes?: Prisma.ShippingCompanyCommuneCreateNestedManyWithoutShippingCompanyInput
+  tariffs?: Prisma.ShippingCompanyTariffCreateNestedManyWithoutShippingCompanyInput
+  orders?: Prisma.OrderCreateNestedManyWithoutShippingCompanyInput
+  webhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutShippingCompanyInput
+}
+
+export type ShippingCompanyUncheckedCreateWithoutLocationMapsInput = {
+  id?: string
+  provider: $Enums.ShippingCompanyProvider
+  name: string
+  baseUrl: string
+  apiToken?: string | null
+  webhookSecret?: string | null
+  isLinked?: boolean
+  isDefault?: boolean
+  lastSyncedAt?: Date | string | null
+  locationsSyncedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  communes?: Prisma.ShippingCompanyCommuneUncheckedCreateNestedManyWithoutShippingCompanyInput
+  tariffs?: Prisma.ShippingCompanyTariffUncheckedCreateNestedManyWithoutShippingCompanyInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutShippingCompanyInput
+  webhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutShippingCompanyInput
+}
+
+export type ShippingCompanyCreateOrConnectWithoutLocationMapsInput = {
+  where: Prisma.ShippingCompanyWhereUniqueInput
+  create: Prisma.XOR<Prisma.ShippingCompanyCreateWithoutLocationMapsInput, Prisma.ShippingCompanyUncheckedCreateWithoutLocationMapsInput>
+}
+
+export type ShippingCompanyUpsertWithoutLocationMapsInput = {
+  update: Prisma.XOR<Prisma.ShippingCompanyUpdateWithoutLocationMapsInput, Prisma.ShippingCompanyUncheckedUpdateWithoutLocationMapsInput>
+  create: Prisma.XOR<Prisma.ShippingCompanyCreateWithoutLocationMapsInput, Prisma.ShippingCompanyUncheckedCreateWithoutLocationMapsInput>
+  where?: Prisma.ShippingCompanyWhereInput
+}
+
+export type ShippingCompanyUpdateToOneWithWhereWithoutLocationMapsInput = {
+  where?: Prisma.ShippingCompanyWhereInput
+  data: Prisma.XOR<Prisma.ShippingCompanyUpdateWithoutLocationMapsInput, Prisma.ShippingCompanyUncheckedUpdateWithoutLocationMapsInput>
+}
+
+export type ShippingCompanyUpdateWithoutLocationMapsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  provider?: Prisma.EnumShippingCompanyProviderFieldUpdateOperationsInput | $Enums.ShippingCompanyProvider
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  baseUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  webhookSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isLinked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  locationsSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  communes?: Prisma.ShippingCompanyCommuneUpdateManyWithoutShippingCompanyNestedInput
+  tariffs?: Prisma.ShippingCompanyTariffUpdateManyWithoutShippingCompanyNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutShippingCompanyNestedInput
+  webhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutShippingCompanyNestedInput
+}
+
+export type ShippingCompanyUncheckedUpdateWithoutLocationMapsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  provider?: Prisma.EnumShippingCompanyProviderFieldUpdateOperationsInput | $Enums.ShippingCompanyProvider
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  baseUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  webhookSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isLinked?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  locationsSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  communes?: Prisma.ShippingCompanyCommuneUncheckedUpdateManyWithoutShippingCompanyNestedInput
   tariffs?: Prisma.ShippingCompanyTariffUncheckedUpdateManyWithoutShippingCompanyNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutShippingCompanyNestedInput
   webhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutShippingCompanyNestedInput
@@ -749,6 +870,7 @@ export type ShippingCompanyCreateWithoutWebhookEventsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   communes?: Prisma.ShippingCompanyCommuneCreateNestedManyWithoutShippingCompanyInput
+  locationMaps?: Prisma.ShippingCompanyLocationMapCreateNestedManyWithoutShippingCompanyInput
   tariffs?: Prisma.ShippingCompanyTariffCreateNestedManyWithoutShippingCompanyInput
   orders?: Prisma.OrderCreateNestedManyWithoutShippingCompanyInput
 }
@@ -767,6 +889,7 @@ export type ShippingCompanyUncheckedCreateWithoutWebhookEventsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   communes?: Prisma.ShippingCompanyCommuneUncheckedCreateNestedManyWithoutShippingCompanyInput
+  locationMaps?: Prisma.ShippingCompanyLocationMapUncheckedCreateNestedManyWithoutShippingCompanyInput
   tariffs?: Prisma.ShippingCompanyTariffUncheckedCreateNestedManyWithoutShippingCompanyInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutShippingCompanyInput
 }
@@ -801,6 +924,7 @@ export type ShippingCompanyUpdateWithoutWebhookEventsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   communes?: Prisma.ShippingCompanyCommuneUpdateManyWithoutShippingCompanyNestedInput
+  locationMaps?: Prisma.ShippingCompanyLocationMapUpdateManyWithoutShippingCompanyNestedInput
   tariffs?: Prisma.ShippingCompanyTariffUpdateManyWithoutShippingCompanyNestedInput
   orders?: Prisma.OrderUpdateManyWithoutShippingCompanyNestedInput
 }
@@ -819,6 +943,7 @@ export type ShippingCompanyUncheckedUpdateWithoutWebhookEventsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   communes?: Prisma.ShippingCompanyCommuneUncheckedUpdateManyWithoutShippingCompanyNestedInput
+  locationMaps?: Prisma.ShippingCompanyLocationMapUncheckedUpdateManyWithoutShippingCompanyNestedInput
   tariffs?: Prisma.ShippingCompanyTariffUncheckedUpdateManyWithoutShippingCompanyNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutShippingCompanyNestedInput
 }
@@ -837,6 +962,7 @@ export type ShippingCompanyCreateWithoutTariffsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   communes?: Prisma.ShippingCompanyCommuneCreateNestedManyWithoutShippingCompanyInput
+  locationMaps?: Prisma.ShippingCompanyLocationMapCreateNestedManyWithoutShippingCompanyInput
   orders?: Prisma.OrderCreateNestedManyWithoutShippingCompanyInput
   webhookEvents?: Prisma.CourierWebhookEventCreateNestedManyWithoutShippingCompanyInput
 }
@@ -855,6 +981,7 @@ export type ShippingCompanyUncheckedCreateWithoutTariffsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   communes?: Prisma.ShippingCompanyCommuneUncheckedCreateNestedManyWithoutShippingCompanyInput
+  locationMaps?: Prisma.ShippingCompanyLocationMapUncheckedCreateNestedManyWithoutShippingCompanyInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutShippingCompanyInput
   webhookEvents?: Prisma.CourierWebhookEventUncheckedCreateNestedManyWithoutShippingCompanyInput
 }
@@ -889,6 +1016,7 @@ export type ShippingCompanyUpdateWithoutTariffsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   communes?: Prisma.ShippingCompanyCommuneUpdateManyWithoutShippingCompanyNestedInput
+  locationMaps?: Prisma.ShippingCompanyLocationMapUpdateManyWithoutShippingCompanyNestedInput
   orders?: Prisma.OrderUpdateManyWithoutShippingCompanyNestedInput
   webhookEvents?: Prisma.CourierWebhookEventUpdateManyWithoutShippingCompanyNestedInput
 }
@@ -907,6 +1035,7 @@ export type ShippingCompanyUncheckedUpdateWithoutTariffsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   communes?: Prisma.ShippingCompanyCommuneUncheckedUpdateManyWithoutShippingCompanyNestedInput
+  locationMaps?: Prisma.ShippingCompanyLocationMapUncheckedUpdateManyWithoutShippingCompanyNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutShippingCompanyNestedInput
   webhookEvents?: Prisma.CourierWebhookEventUncheckedUpdateManyWithoutShippingCompanyNestedInput
 }
@@ -918,6 +1047,7 @@ export type ShippingCompanyUncheckedUpdateWithoutTariffsInput = {
 
 export type ShippingCompanyCountOutputType = {
   communes: number
+  locationMaps: number
   tariffs: number
   orders: number
   webhookEvents: number
@@ -925,6 +1055,7 @@ export type ShippingCompanyCountOutputType = {
 
 export type ShippingCompanyCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   communes?: boolean | ShippingCompanyCountOutputTypeCountCommunesArgs
+  locationMaps?: boolean | ShippingCompanyCountOutputTypeCountLocationMapsArgs
   tariffs?: boolean | ShippingCompanyCountOutputTypeCountTariffsArgs
   orders?: boolean | ShippingCompanyCountOutputTypeCountOrdersArgs
   webhookEvents?: boolean | ShippingCompanyCountOutputTypeCountWebhookEventsArgs
@@ -945,6 +1076,13 @@ export type ShippingCompanyCountOutputTypeDefaultArgs<ExtArgs extends runtime.Ty
  */
 export type ShippingCompanyCountOutputTypeCountCommunesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ShippingCompanyCommuneWhereInput
+}
+
+/**
+ * ShippingCompanyCountOutputType without action
+ */
+export type ShippingCompanyCountOutputTypeCountLocationMapsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ShippingCompanyLocationMapWhereInput
 }
 
 /**
@@ -983,6 +1121,7 @@ export type ShippingCompanySelect<ExtArgs extends runtime.Types.Extensions.Inter
   createdAt?: boolean
   updatedAt?: boolean
   communes?: boolean | Prisma.ShippingCompany$communesArgs<ExtArgs>
+  locationMaps?: boolean | Prisma.ShippingCompany$locationMapsArgs<ExtArgs>
   tariffs?: boolean | Prisma.ShippingCompany$tariffsArgs<ExtArgs>
   orders?: boolean | Prisma.ShippingCompany$ordersArgs<ExtArgs>
   webhookEvents?: boolean | Prisma.ShippingCompany$webhookEventsArgs<ExtArgs>
@@ -1037,6 +1176,7 @@ export type ShippingCompanySelectScalar = {
 export type ShippingCompanyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "provider" | "name" | "baseUrl" | "apiToken" | "webhookSecret" | "isLinked" | "isDefault" | "lastSyncedAt" | "locationsSyncedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["shippingCompany"]>
 export type ShippingCompanyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   communes?: boolean | Prisma.ShippingCompany$communesArgs<ExtArgs>
+  locationMaps?: boolean | Prisma.ShippingCompany$locationMapsArgs<ExtArgs>
   tariffs?: boolean | Prisma.ShippingCompany$tariffsArgs<ExtArgs>
   orders?: boolean | Prisma.ShippingCompany$ordersArgs<ExtArgs>
   webhookEvents?: boolean | Prisma.ShippingCompany$webhookEventsArgs<ExtArgs>
@@ -1049,6 +1189,7 @@ export type $ShippingCompanyPayload<ExtArgs extends runtime.Types.Extensions.Int
   name: "ShippingCompany"
   objects: {
     communes: Prisma.$ShippingCompanyCommunePayload<ExtArgs>[]
+    locationMaps: Prisma.$ShippingCompanyLocationMapPayload<ExtArgs>[]
     tariffs: Prisma.$ShippingCompanyTariffPayload<ExtArgs>[]
     orders: Prisma.$OrderPayload<ExtArgs>[]
     webhookEvents: Prisma.$CourierWebhookEventPayload<ExtArgs>[]
@@ -1461,6 +1602,7 @@ readonly fields: ShippingCompanyFieldRefs;
 export interface Prisma__ShippingCompanyClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   communes<T extends Prisma.ShippingCompany$communesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ShippingCompany$communesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ShippingCompanyCommunePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  locationMaps<T extends Prisma.ShippingCompany$locationMapsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ShippingCompany$locationMapsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ShippingCompanyLocationMapPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   tariffs<T extends Prisma.ShippingCompany$tariffsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ShippingCompany$tariffsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ShippingCompanyTariffPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   orders<T extends Prisma.ShippingCompany$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ShippingCompany$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   webhookEvents<T extends Prisma.ShippingCompany$webhookEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ShippingCompany$webhookEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CourierWebhookEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -1919,6 +2061,30 @@ export type ShippingCompany$communesArgs<ExtArgs extends runtime.Types.Extension
   take?: number
   skip?: number
   distinct?: Prisma.ShippingCompanyCommuneScalarFieldEnum | Prisma.ShippingCompanyCommuneScalarFieldEnum[]
+}
+
+/**
+ * ShippingCompany.locationMaps
+ */
+export type ShippingCompany$locationMapsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ShippingCompanyLocationMap
+   */
+  select?: Prisma.ShippingCompanyLocationMapSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ShippingCompanyLocationMap
+   */
+  omit?: Prisma.ShippingCompanyLocationMapOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ShippingCompanyLocationMapInclude<ExtArgs> | null
+  where?: Prisma.ShippingCompanyLocationMapWhereInput
+  orderBy?: Prisma.ShippingCompanyLocationMapOrderByWithRelationInput | Prisma.ShippingCompanyLocationMapOrderByWithRelationInput[]
+  cursor?: Prisma.ShippingCompanyLocationMapWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ShippingCompanyLocationMapScalarFieldEnum | Prisma.ShippingCompanyLocationMapScalarFieldEnum[]
 }
 
 /**

@@ -475,21 +475,21 @@ model Courier {
 }
 
 model Order {
-  id                   String                @id @default(uuid())
-  customerId           String                @map("customer_id")
-  customer             Customer              @relation(fields: [customerId], references: [id])
-  addressId            String                @map("address_id")
-  address              Address               @relation(fields: [addressId], references: [id])
-  state                OrderState            @default(PendingCallCenter)
+  id                       String                @id @default(uuid())
+  customerId               String                @map("customer_id")
+  customer                 Customer              @relation(fields: [customerId], references: [id])
+  addressId                String                @map("address_id")
+  address                  Address               @relation(fields: [addressId], references: [id])
+  state                    OrderState            @default(PendingCallCenter)
   // Total amount actually due (items + shipping) — the number shown as
   // "cash due on delivery" everywhere. shippingPriceCents is the shipping
   // portion of it, priced server-side from WilayaShippingRate at order time
   // (never trusts a client-submitted price — same rule as ProductOffer
   // pricing); shippingType is null only for pre-shipping-feature historical
   // orders, never for new ones.
-  totalCents           Int                   @map("total_cents")
-  shippingType         ShippingType?         @map("shipping_type")
-  shippingPriceCents   Int                   @default(0) @map("shipping_price_cents")
+  totalCents               Int                   @map("total_cents")
+  shippingType             ShippingType?         @map("shipping_type")
+  shippingPriceCents       Int                   @default(0) @map("shipping_price_cents")
   // True for an order auto-created from an unfinished lead form (customer
   // typed a phone number, then went idle past the store's configured
   // abandoned-cart delay without submitting — see
@@ -497,11 +497,11 @@ model Order {
   // never actually confirmed by the customer, not a fabricated real order.
   // Cleared in place (never a second row) if the same customer goes on to
   // actually submit the form — see createLeadOrder's convertsAbandonedOrderId.
-  isAbandoned          Boolean               @default(false) @map("is_abandoned")
+  isAbandoned              Boolean               @default(false) @map("is_abandoned")
   // True for every order that started as an abandoned-cart capture, for good: it stays set after the
   // order is confirmed or completed by the customer, so the "Abandoned cart" label never disappears.
   // (isAbandoned is the live state: the customer has not submitted yet.)
-  fromAbandoned        Boolean               @default(false) @map("from_abandoned")
+  fromAbandoned            Boolean               @default(false) @map("from_abandoned")
   // Which shipping company (if any) this order is assigned to before it can
   // be dispatched — deliberately NOT auto-resolved from whichever company is
   // "default" at dispatch time (that was the earlier behavior; a manual
@@ -509,12 +509,12 @@ model Order {
   // may legitimately go through different companies). Unassigned is the
   // starting state for every order reaching fulfillment; dispatch requires
   // ShippingCompany + shippingCompanyId set, or Manual (see FulfillmentService).
-  fulfillmentMethod    FulfillmentMethod     @default(Unassigned) @map("fulfillment_method")
-  shippingCompanyId    String?               @map("shipping_company_id")
-  shippingCompany      ShippingCompany?      @relation(fields: [shippingCompanyId], references: [id], onDelete: SetNull)
+  fulfillmentMethod        FulfillmentMethod     @default(Unassigned) @map("fulfillment_method")
+  shippingCompanyId        String?               @map("shipping_company_id")
+  shippingCompany          ShippingCompany?      @relation(fields: [shippingCompanyId], references: [id], onDelete: SetNull)
   // Free-text call-center notes — see UpdateOrderNotesSchema. Also mirrored
   // into the Google Sheets integration's Notes column (GoogleSheetsService).
-  notes                String?
+  notes                    String?
   // When a call-center agent postpones an order (transition to Postponed),
   // they must now pick a follow-up date/time — this is it. The Drop Queue
   // hides a Postponed order until this is reached (see
@@ -524,7 +524,7 @@ model Order {
   // moves on). Null for Postponed orders that predate this field —
   // dropQueue treats a null postponedUntil as "no date on record, show it"
   // rather than hiding it forever.
-  postponedUntil       DateTime?             @map("postponed_until")
+  postponedUntil           DateTime?             @map("postponed_until")
   // Set when OrdersService.findRecentDuplicate finds a prior (non-abandoned)
   // order for the same customer sharing at least one product within the
   // last 2 days — never blocks the order, just flags it so call-center can
@@ -532,10 +532,10 @@ model Order {
   // duplicateOfOrderId points at the earlier order it matched, kept even if
   // that order is later cancelled/deleted-in-spirit (SetNull, not cascade —
   // this flag itself should survive independent of the other row's fate).
-  isDuplicate          Boolean               @default(false) @map("is_duplicate")
-  duplicateOfOrderId   String?               @map("duplicate_of_order_id")
-  duplicateOfOrder     Order?                @relation("OrderDuplicate", fields: [duplicateOfOrderId], references: [id], onDelete: SetNull)
-  duplicateOrders      Order[]               @relation("OrderDuplicate")
+  isDuplicate              Boolean               @default(false) @map("is_duplicate")
+  duplicateOfOrderId       String?               @map("duplicate_of_order_id")
+  duplicateOfOrder         Order?                @relation("OrderDuplicate", fields: [duplicateOfOrderId], references: [id], onDelete: SetNull)
+  duplicateOrders          Order[]               @relation("OrderDuplicate")
   // Soft-hide, not delete — an order is referenced by OrderItem, Shipment,
   // CashReconciliation/LedgerEntry, and AuditLog, so hard-deleting one would
   // either cascade-destroy real financial/reconciliation history or dangle
@@ -545,8 +545,8 @@ model Order {
   // `archived=only` still lists archived orders for anyone who needs to
   // find one again. archivedAt is separate from updatedAt so "when was this
   // archived" survives any later edit made while un-archived again.
-  archived             Boolean               @default(false)
-  archivedAt           DateTime?             @map("archived_at")
+  archived                 Boolean               @default(false)
+  archivedAt               DateTime?             @map("archived_at")
   // ---- Call-center work tracking ----
   // assignedToId/lockedUntil: soft claim so two agents never get the same
   // order from the drop queue (AdminCallCenterService.claimNext). The lock
@@ -554,48 +554,56 @@ model Order {
   // logged. skippedUntil defers an order the agent skipped. callAttempts /
   // lastCalledAt drive the progressive no-answer cooldown and the max-attempts
   // flag (see packages/shared call-center.ts).
-  assignedToId         String?               @map("assigned_to_id")
-  assignedToEmail      String?               @map("assigned_to_email")
-  lockedUntil          DateTime?             @map("locked_until")
-  skippedUntil         DateTime?             @map("skipped_until")
-  callAttemptsCount    Int                   @default(0) @map("call_attempts_count")
-  lastCalledAt         DateTime?             @map("last_called_at")
-  callAttempts         CallAttempt[]
+  assignedToId             String?               @map("assigned_to_id")
+  assignedToEmail          String?               @map("assigned_to_email")
+  lockedUntil              DateTime?             @map("locked_until")
+  skippedUntil             DateTime?             @map("skipped_until")
+  callAttemptsCount        Int                   @default(0) @map("call_attempts_count")
+  lastCalledAt             DateTime?             @map("last_called_at")
+  callAttempts             CallAttempt[]
   // ---- Courier delivery details (editable until a shipment exists) ----
   // deliveryNote is sent to the courier as `remarque`; isFragile / gpsLink map
   // to its `fragile` / `gps_link`. courierOperation + exchangeProduct select the
   // courier's operation type (1 = Livraison, 2 = Échange / produit_a_recuperer).
-  deliveryNote         String?               @map("delivery_note")
-  isFragile            Boolean               @default(false) @map("is_fragile")
-  gpsLink              String?               @map("gps_link")
-  courierOperation     CourierOperation      @default(Delivery) @map("courier_operation")
-  exchangeProduct      String?               @map("exchange_product")
-  items                OrderItem[]
-  shipment             Shipment?
-  cashReconciliation   CashReconciliation?
-  ledgerEntries        LedgerEntry[]
-  notifications        Notification[]
-  googleSheetRows      GoogleSheetOrderRow[]
-  courierWebhookEvents CourierWebhookEvent[]
+  deliveryNote             String?               @map("delivery_note")
+  isFragile                Boolean               @default(false) @map("is_fragile")
+  gpsLink                  String?               @map("gps_link")
+  courierOperation         CourierOperation      @default(Delivery) @map("courier_operation")
+  exchangeProduct          String?               @map("exchange_product")
+  // Manual "convert location" at shipping time: the wilaya/commune AS THE ASSIGNED COURIER
+  // KNOWS THEM (our 69 wilayas vs the courier's older 58, differently spelled communes).
+  // Set by an agent, valid only for courierLocationCompanyId (cleared if the company changes).
+  // address.region/city (what the customer picked) are never touched.
+  courierWilayaId          String?               @map("courier_wilaya_id")
+  courierCommune           String?               @map("courier_commune")
+  courierPostalCode        String?               @map("courier_postal_code")
+  courierLocationCompanyId String?               @map("courier_location_company_id")
+  items                    OrderItem[]
+  shipment                 Shipment?
+  cashReconciliation       CashReconciliation?
+  ledgerEntries            LedgerEntry[]
+  notifications            Notification[]
+  googleSheetRows          GoogleSheetOrderRow[]
+  courierWebhookEvents     CourierWebhookEvent[]
   // Where the order came from (ad platform, campaign, click ids, IP…) — null
   // for orders placed before attribution existed.
-  attribution          OrderAttribution?
+  attribution              OrderAttribution?
   // The funnel this order was placed on (set server-side from the funnel's
   // slug, never from the browser). SetNull so deleting a funnel keeps its orders.
-  funnelId             String?               @map("funnel_id")
-  funnel               Funnel?               @relation(fields: [funnelId], references: [id], onDelete: SetNull)
+  funnelId                 String?               @map("funnel_id")
+  funnel                   Funnel?               @relation(fields: [funnelId], references: [id], onDelete: SetNull)
   // Fake/returned-order risk, scored once when the order is placed (see
   // packages/shared risk.ts and RiskService.assess). riskFactors is the
   // [{code, points, detail}] list that explains the score. Null for orders
   // placed before scoring existed and for abandoned-cart captures.
-  riskScore            Int?                  @map("risk_score")
-  riskLevel            RiskLevel?            @map("risk_level")
-  riskFactors          Json?                 @map("risk_factors")
+  riskScore                Int?                  @map("risk_score")
+  riskLevel                RiskLevel?            @map("risk_level")
+  riskFactors              Json?                 @map("risk_factors")
   // When the server-side "Delivered" event was sent to Meta CAPI / TikTok
   // Events API (ReportsModule's delivery sweep). Null = not sent yet.
-  deliveredEventSentAt DateTime?             @map("delivered_event_sent_at")
-  createdAt            DateTime              @default(now()) @map("created_at")
-  updatedAt            DateTime              @updatedAt @map("updated_at")
+  deliveredEventSentAt     DateTime?             @map("delivered_event_sent_at")
+  createdAt                DateTime              @default(now()) @map("created_at")
+  updatedAt                DateTime              @updatedAt @map("updated_at")
 
   @@index([customerId])
   @@index([funnelId])
@@ -1248,25 +1256,26 @@ enum ShippingCompanyProvider {
 }
 
 model ShippingCompany {
-  id                String                   @id @default(uuid())
-  provider          ShippingCompanyProvider  @unique
+  id                String                       @id @default(uuid())
+  provider          ShippingCompanyProvider      @unique
   name              String
-  baseUrl           String                   @map("base_url")
-  apiToken          String?                  @map("api_token")
+  baseUrl           String                       @map("base_url")
+  apiToken          String?                      @map("api_token")
   // HMAC-SHA256 secret the provider's webhook config signs each inbound
   // request with — pasted in from whatever value the provider's own
   // platform generated/the admin set when configuring the webhook there
   // (see SetWebhookSecretSchema). Never generated on our side, since it has
   // to match exactly what the provider is actually signing with.
-  webhookSecret     String?                  @map("webhook_secret")
-  isLinked          Boolean                  @default(false) @map("is_linked")
-  isDefault         Boolean                  @default(false) @map("is_default")
-  lastSyncedAt      DateTime?                @map("last_synced_at")
+  webhookSecret     String?                      @map("webhook_secret")
+  isLinked          Boolean                      @default(false) @map("is_linked")
+  isDefault         Boolean                      @default(false) @map("is_default")
+  lastSyncedAt      DateTime?                    @map("last_synced_at")
   // Last successful sync of the courier's wilaya/commune list (get/communes).
-  locationsSyncedAt DateTime?                @map("locations_synced_at")
-  createdAt         DateTime                 @default(now()) @map("created_at")
-  updatedAt         DateTime                 @updatedAt @map("updated_at")
+  locationsSyncedAt DateTime?                    @map("locations_synced_at")
+  createdAt         DateTime                     @default(now()) @map("created_at")
+  updatedAt         DateTime                     @updatedAt @map("updated_at")
   communes          ShippingCompanyCommune[]
+  locationMaps      ShippingCompanyLocationMap[]
   tariffs           ShippingCompanyTariff[]
   orders            Order[]
   webhookEvents     CourierWebhookEvent[]
@@ -1289,6 +1298,26 @@ model ShippingCompanyCommune {
   @@unique([shippingCompanyId, wilayaId, name])
   @@index([shippingCompanyId, wilayaId])
   @@map("shipping_company_communes")
+}
+
+// PER COMPANY: how one of OUR locations is called by that courier. ourCommune = '' is a
+// wilaya-level row (e.g. our wilaya 59 Aflou -> the courier's wilaya 3); otherwise it is one
+// commune of ours (by name, as orders store it) -> the courier's exact commune spelling.
+// Filled on the "Location mapping" page and applied manually by an agent when shipping.
+model ShippingCompanyLocationMap {
+  id                String          @id @default(uuid())
+  shippingCompanyId String          @map("shipping_company_id")
+  shippingCompany   ShippingCompany @relation(fields: [shippingCompanyId], references: [id], onDelete: Cascade)
+  ourWilayaId       String          @map("our_wilaya_id")
+  ourCommune        String          @default("") @map("our_commune")
+  courierWilayaId   String          @map("courier_wilaya_id")
+  courierCommune    String?         @map("courier_commune")
+  courierPostalCode String?         @map("courier_postal_code")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  @@unique([shippingCompanyId, ourWilayaId, ourCommune])
+  @@map("shipping_company_location_maps")
 }
 
 // The courier-side history of a parcel, kept permanently. Shipment.activity only

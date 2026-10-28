@@ -13,7 +13,9 @@ import {
   type CourierActivityView,
   type CourierUpdateView,
   type DispatchOrder,
+  type OrderCourierLocation,
   type OrderState,
+  type SetOrderCourierLocation,
   type ShipmentTrackingView,
   type UpdateDeliveryInfo
 } from '@amalice/shared'
@@ -21,12 +23,16 @@ import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
 import { DhdApiService, type DhdOrderPayload, type DhdParcelUpdate, type DhdTrackingInfo } from '../shipping-companies/dhd-api.service'
 import { matchCommune } from '../shipping-companies/address-matching'
+import { buildProposal, resolveCourierWilaya, type MapRowLike } from '../shipping-companies/location-map.util'
 import { GoogleSheetsService } from '../apps/google-sheets.service'
 
 // Maps the courier's normalized status onto the order lifecycle (plan §7).
 // This is the single place that translation happens — COU-04's "one code path
 // for admin-changed and courier-told" rule. Both the webhook handler and the
 // admin manual-transition path funnel through here for status writes.
+// Cleared whenever an order's shipping company changes: the courier location is only valid for the company it was set for.
+const CLEAR_COURIER_LOCATION = { courierWilayaId: null, courierCommune: null, courierPostalCode: null, courierLocationCompanyId: null }
+
 const STATUS_TO_ORDER_STATE: Record<NormalizedCourierStatus, string | null> = {
   created: null, // shipment created, but order stays HandedToCourier (set on createShipment)
   picked_up: 'HandedToCourier',
@@ -126,7 +132,7 @@ export class FulfillmentService {
 
     await this.prisma.order.update({
       where: { id: orderId },
-      data: { fulfillmentMethod: 'ShippingCompany', shippingCompanyId }
+      data: { fulfillmentMethod: 'ShippingCompany', shippingCompanyId, ...(order.shippingCompanyId !== shippingCompanyId ? CLEAR_COURIER_LOCATION : {}) }
     })
 
     await this.audit.log({
@@ -150,7 +156,7 @@ export class FulfillmentService {
 
     await this.prisma.order.update({
       where: { id: orderId },
-      data: { fulfillmentMethod: 'Manual', shippingCompanyId: null }
+      data: { fulfillmentMethod: 'Manual', shippingCompanyId: null, ...CLEAR_COURIER_LOCATION }
     })
 
     await this.audit.log({
@@ -179,25 +185,129 @@ export class FulfillmentService {
   // near-match and use the courier's spelling), and a stop desk may only be
   // chosen where one exists. Couriers reject anything else at creation time.
   async checkAddress(orderId: string): Promise<AddressCheckResult> {
+    return (await this.runAddressCheck(orderId)).result
+  }
+
+  // Same as checkAddress, plus the wilaya code to send to the courier (the COURIER's own wilaya id,
+  // which differs from ours for wilayas 59-69 and for any mapped location).
+  // An order with a courier location saved by an agent for its current company skips fuzzy matching.
+  private async runAddressCheck(orderId: string): Promise<{ result: AddressCheckResult; courierWilayaId: string | null }> {
     const order = await this.prisma.order.findUnique({ where: { id: orderId }, include: { address: true } })
     if (!order) throw new NotFoundException('Order not found')
     const company = await this.companyForCheck(order.shippingCompanyId)
+    const saved = !!company && order.shippingCompanyId === company.id && order.courierLocationCompanyId === company.id && !!order.courierWilayaId && !!order.courierCommune
+    const savedWilaya = saved ? order.courierWilayaId : null
     const base = { shippingCompanyId: company?.id ?? null, shippingCompanyName: company?.name ?? null, matchedCommune: null, postalCode: null, stopDeskAvailable: null, suggestions: [] as string[] }
-    if (!company || !company.isLinked) return { ...base, checked: false, ok: true, issues: [] }
-    if (!company.locationsSyncedAt) return { ...base, checked: false, ok: true, issues: [`${company.name}: commune list not synced yet — sync it under Shipping companies.`] }
+    const wrap = (result: AddressCheckResult, courierWilayaId: string | null = savedWilaya) => ({ result, courierWilayaId })
+    if (!company || !company.isLinked) return wrap({ ...base, checked: false, ok: true, issues: [] })
+    if (!company.locationsSyncedAt) return wrap({ ...base, checked: false, ok: true, issues: [`${company.name}: commune list not synced yet — sync it under Shipping companies.`] })
+
+    if (saved) {
+      const row = await this.prisma.shippingCompanyCommune.findUnique({
+        where: { shippingCompanyId_wilayaId_name: { shippingCompanyId: company.id, wilayaId: order.courierWilayaId!, name: order.courierCommune! } }
+      })
+      if (!row) {
+        return wrap({ ...base, checked: true, ok: false, issues: [`${company.name}: the saved courier location "${order.courierCommune}" (wilaya ${order.courierWilayaId}) is not in its commune list any more — use "Convert location" again.`] })
+      }
+      const issues: string[] = []
+      if (order.shippingType === 'Desk' && !row.hasStopDesk) issues.push(`${company.name} has no stop desk in ${row.name}: switch to home delivery or another commune.`)
+      return wrap({ ...base, checked: true, ok: issues.length === 0, issues, matchedCommune: row.name, postalCode: order.courierPostalCode ?? row.postalCode, stopDeskAvailable: row.hasStopDesk })
+    }
 
     const wilaya = await this.prisma.wilaya.findFirst({ where: { name: order.address.region } })
-    if (!wilaya) return { ...base, checked: true, ok: false, issues: [`Unknown wilaya "${order.address.region}".`] }
+    if (!wilaya) return wrap({ ...base, checked: true, ok: false, issues: [`Unknown wilaya "${order.address.region}".`] })
     const communes = await this.prisma.shippingCompanyCommune.findMany({ where: { shippingCompanyId: company.id, wilayaId: wilaya.id } })
-    if (!communes.length) return { ...base, checked: true, ok: false, issues: [`${company.name} does not deliver to ${wilaya.name}.`] }
+    if (!communes.length) {
+      // Our wilayas 59-69 do not exist at couriers still on the old 58-wilaya list: never guess, the agent converts.
+      const issue = Number(wilaya.id) >= 59
+        ? `${company.name} has no wilaya ${wilaya.id} (${wilaya.name}) in its list: use "Convert location" on this order to pick the courier's wilaya and commune.`
+        : `${company.name} does not deliver to ${wilaya.name}.`
+      return wrap({ ...base, checked: true, ok: false, issues: [issue] }, wilaya.id)
+    }
 
     const { match, suggestions } = matchCommune(communes.map((c) => ({ name: c.name, postalCode: c.postalCode, hasStopDesk: c.hasStopDesk })), order.address.city)
     if (!match) {
-      return { ...base, checked: true, ok: false, issues: [`${company.name} does not recognise the commune "${order.address.city}" in ${wilaya.name}.`], suggestions }
+      return wrap({ ...base, checked: true, ok: false, issues: [`${company.name} does not recognise the commune "${order.address.city}" in ${wilaya.name}.`], suggestions }, wilaya.id)
     }
     const issues: string[] = []
     if (order.shippingType === 'Desk' && !match.hasStopDesk) issues.push(`${company.name} has no stop desk in ${match.name}: switch to home delivery or another commune.`)
-    return { ...base, checked: true, ok: issues.length === 0, issues, matchedCommune: match.name, postalCode: match.postalCode, stopDeskAvailable: match.hasStopDesk }
+    return wrap({ ...base, checked: true, ok: issues.length === 0, issues, matchedCommune: match.name, postalCode: match.postalCode, stopDeskAvailable: match.hasStopDesk }, wilaya.id)
+  }
+
+  // ---- "Convert location": the courier's own wilaya/commune for one order ----
+
+  private async findWilayaForOrder(region: string) {
+    const byName = await this.prisma.wilaya.findFirst({ where: { name: region } })
+    return byName ?? (await this.prisma.wilaya.findUnique({ where: { id: region } }))
+  }
+
+  async getCourierLocation(orderId: string): Promise<OrderCourierLocation> {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId }, include: { address: true, shippingCompany: true } })
+    if (!order) throw new NotFoundException('Order not found')
+    const company = order.shippingCompany
+    const wilaya = await this.findWilayaForOrder(order.address.region)
+    const ourCommune = order.address.city
+    const out: OrderCourierLocation = {
+      company: company ? { id: company.id, name: company.name, provider: company.provider } : null,
+      ourWilaya: { id: wilaya?.id ?? null, name: wilaya?.name ?? order.address.region },
+      ourCommune,
+      current: null,
+      proposal: { courierWilayaId: '', courierCommune: null, courierPostalCode: null, source: 'none' },
+      courierWilayaIds: []
+    }
+    if (!company) return out
+
+    const [wilayaIds, maps] = await Promise.all([
+      this.prisma.shippingCompanyCommune.findMany({ where: { shippingCompanyId: company.id }, distinct: ['wilayaId'], select: { wilayaId: true } }),
+      wilaya ? this.prisma.shippingCompanyLocationMap.findMany({ where: { shippingCompanyId: company.id, ourWilayaId: wilaya.id, ourCommune: { in: ['', ourCommune] } } }) : Promise.resolve([])
+    ])
+    out.courierWilayaIds = wilayaIds.map((w) => w.wilayaId).sort((a, b) => Number(a) - Number(b))
+    out.current =
+      order.courierLocationCompanyId === company.id && order.courierWilayaId && order.courierCommune
+        ? { courierWilayaId: order.courierWilayaId, courierCommune: order.courierCommune, courierPostalCode: order.courierPostalCode }
+        : null
+
+    const communeRow: MapRowLike | null = ourCommune ? (maps.find((m) => m.ourCommune === ourCommune) ?? null) : null
+    const wilayaRow: MapRowLike | null = maps.find((m) => m.ourCommune === '') ?? null
+    const target = wilaya ? resolveCourierWilaya(wilaya.id, wilayaRow, communeRow).id : null
+    const communes = target ? await this.prisma.shippingCompanyCommune.findMany({ where: { shippingCompanyId: company.id, wilayaId: target }, select: { name: true, postalCode: true, hasStopDesk: true } }) : []
+    out.proposal = buildProposal({ ourWilayaId: wilaya?.id ?? null, ourCommune, current: out.current, communeRow, wilayaRow, communesOf: () => communes })
+    return out
+  }
+
+  async setCourierLocation(orderId: string, input: SetOrderCourierLocation, actor: AuditActor): Promise<OrderCourierLocation> {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId }, include: { shipment: true } })
+    if (!order) throw new NotFoundException('Order not found')
+    if (order.shipment) throw new BadRequestException('A shipment already exists for this order — the courier location can no longer be changed.')
+    if (order.fulfillmentMethod !== 'ShippingCompany' || !order.shippingCompanyId) throw new BadRequestException('Assign a shipping company to this order first.')
+    const company = await this.prisma.shippingCompany.findUnique({ where: { id: order.shippingCompanyId } })
+    if (!company) throw new NotFoundException('Assigned shipping company not found.')
+    const row = await this.prisma.shippingCompanyCommune.findUnique({
+      where: { shippingCompanyId_wilayaId_name: { shippingCompanyId: company.id, wilayaId: input.courierWilayaId, name: input.courierCommune } }
+    })
+    if (!row) throw new BadRequestException(`"${input.courierCommune}" is not in the commune list of ${company.name} for wilaya ${input.courierWilayaId}.`)
+    const courierPostalCode = input.courierPostalCode || row.postalCode
+    await this.prisma.order.update({
+      where: { id: orderId },
+      data: { courierWilayaId: input.courierWilayaId, courierCommune: row.name, courierPostalCode, courierLocationCompanyId: company.id }
+    })
+    await this.audit.log({
+      actor,
+      action: 'Update',
+      entity: 'Order',
+      entityId: orderId,
+      metadata: { courierLocation: { company: company.name, courierWilayaId: input.courierWilayaId, courierCommune: row.name, courierPostalCode } }
+    })
+    return this.getCourierLocation(orderId)
+  }
+
+  async clearCourierLocation(orderId: string, actor: AuditActor): Promise<OrderCourierLocation> {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId }, include: { shipment: true } })
+    if (!order) throw new NotFoundException('Order not found')
+    if (order.shipment) throw new BadRequestException('A shipment already exists for this order — the courier location can no longer be changed.')
+    await this.prisma.order.update({ where: { id: orderId }, data: CLEAR_COURIER_LOCATION })
+    await this.audit.log({ actor, action: 'Update', entity: 'Order', entityId: orderId, metadata: { courierLocation: null } })
+    return this.getCourierLocation(orderId)
   }
 
   private async shopName(): Promise<string | undefined> {
@@ -238,7 +348,7 @@ export class FulfillmentService {
       )
     }
 
-    const check = await this.checkAddress(orderId)
+    const { result: check, courierWilayaId } = await this.runAddressCheck(orderId)
     if (check.checked && !check.ok) throw new BadRequestException(this.addressErrorMessage(check))
     if (order.courierOperation === 'Exchange' && !order.exchangeProduct) {
       throw new BadRequestException('Exchange orders need the product to collect from the customer.')
@@ -262,6 +372,7 @@ export class FulfillmentService {
       codAmountCents: order.totalCents,
       stopDesk: order.shippingType === 'Desk',
       items: order.items.map((item) => ({ name: item.product.name, quantity: item.quantity })),
+      courierWilayaId: courierWilayaId ?? undefined,
       courierCommune: check.matchedCommune ?? undefined,
       courierPostalCode: check.postalCode ?? undefined,
       notes: order.deliveryNote ?? undefined,
@@ -589,7 +700,7 @@ export class FulfillmentService {
 
     const ready: { order: (typeof candidates)[number]; payload: DhdOrderPayload }[] = []
     for (const order of candidates) {
-      const check = await this.checkAddress(order.id)
+      const { result: check, courierWilayaId } = await this.runAddressCheck(order.id)
       if (check.checked && !check.ok) {
         failed.push({ orderId: order.id, reason: this.addressErrorMessage(check) })
         continue
@@ -607,7 +718,7 @@ export class FulfillmentService {
           adresse: order.address.line2 ? `${order.address.line1}, ${order.address.line2}` : order.address.line1,
           commune: check.matchedCommune ?? order.address.city,
           code_postal: check.postalCode ?? undefined,
-          code_wilaya: wilayaCodeByName.get(order.address.region) ?? '',
+          code_wilaya: courierWilayaId ?? wilayaCodeByName.get(order.address.region) ?? '',
           montant: String(Math.round(order.totalCents / 100)),
           remarque: order.deliveryNote?.slice(0, 255) || undefined,
           produit: order.items.map((i) => i.product.name).join(',') || undefined,

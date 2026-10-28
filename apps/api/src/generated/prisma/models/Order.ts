@@ -69,6 +69,10 @@ export type OrderMinAggregateOutputType = {
   gpsLink: string | null
   courierOperation: $Enums.CourierOperation | null
   exchangeProduct: string | null
+  courierWilayaId: string | null
+  courierCommune: string | null
+  courierPostalCode: string | null
+  courierLocationCompanyId: string | null
   funnelId: string | null
   riskScore: number | null
   riskLevel: $Enums.RiskLevel | null
@@ -106,6 +110,10 @@ export type OrderMaxAggregateOutputType = {
   gpsLink: string | null
   courierOperation: $Enums.CourierOperation | null
   exchangeProduct: string | null
+  courierWilayaId: string | null
+  courierCommune: string | null
+  courierPostalCode: string | null
+  courierLocationCompanyId: string | null
   funnelId: string | null
   riskScore: number | null
   riskLevel: $Enums.RiskLevel | null
@@ -143,6 +151,10 @@ export type OrderCountAggregateOutputType = {
   gpsLink: number
   courierOperation: number
   exchangeProduct: number
+  courierWilayaId: number
+  courierCommune: number
+  courierPostalCode: number
+  courierLocationCompanyId: number
   funnelId: number
   riskScore: number
   riskLevel: number
@@ -197,6 +209,10 @@ export type OrderMinAggregateInputType = {
   gpsLink?: true
   courierOperation?: true
   exchangeProduct?: true
+  courierWilayaId?: true
+  courierCommune?: true
+  courierPostalCode?: true
+  courierLocationCompanyId?: true
   funnelId?: true
   riskScore?: true
   riskLevel?: true
@@ -234,6 +250,10 @@ export type OrderMaxAggregateInputType = {
   gpsLink?: true
   courierOperation?: true
   exchangeProduct?: true
+  courierWilayaId?: true
+  courierCommune?: true
+  courierPostalCode?: true
+  courierLocationCompanyId?: true
   funnelId?: true
   riskScore?: true
   riskLevel?: true
@@ -271,6 +291,10 @@ export type OrderCountAggregateInputType = {
   gpsLink?: true
   courierOperation?: true
   exchangeProduct?: true
+  courierWilayaId?: true
+  courierCommune?: true
+  courierPostalCode?: true
+  courierLocationCompanyId?: true
   funnelId?: true
   riskScore?: true
   riskLevel?: true
@@ -396,6 +420,10 @@ export type OrderGroupByOutputType = {
   gpsLink: string | null
   courierOperation: $Enums.CourierOperation
   exchangeProduct: string | null
+  courierWilayaId: string | null
+  courierCommune: string | null
+  courierPostalCode: string | null
+  courierLocationCompanyId: string | null
   funnelId: string | null
   riskScore: number | null
   riskLevel: $Enums.RiskLevel | null
@@ -457,6 +485,10 @@ export type OrderWhereInput = {
   gpsLink?: Prisma.StringNullableFilter<"Order"> | string | null
   courierOperation?: Prisma.EnumCourierOperationFilter<"Order"> | $Enums.CourierOperation
   exchangeProduct?: Prisma.StringNullableFilter<"Order"> | string | null
+  courierWilayaId?: Prisma.StringNullableFilter<"Order"> | string | null
+  courierCommune?: Prisma.StringNullableFilter<"Order"> | string | null
+  courierPostalCode?: Prisma.StringNullableFilter<"Order"> | string | null
+  courierLocationCompanyId?: Prisma.StringNullableFilter<"Order"> | string | null
   funnelId?: Prisma.StringNullableFilter<"Order"> | string | null
   riskScore?: Prisma.IntNullableFilter<"Order"> | number | null
   riskLevel?: Prisma.EnumRiskLevelNullableFilter<"Order"> | $Enums.RiskLevel | null
@@ -510,6 +542,10 @@ export type OrderOrderByWithRelationInput = {
   gpsLink?: Prisma.SortOrderInput | Prisma.SortOrder
   courierOperation?: Prisma.SortOrder
   exchangeProduct?: Prisma.SortOrderInput | Prisma.SortOrder
+  courierWilayaId?: Prisma.SortOrderInput | Prisma.SortOrder
+  courierCommune?: Prisma.SortOrderInput | Prisma.SortOrder
+  courierPostalCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  courierLocationCompanyId?: Prisma.SortOrderInput | Prisma.SortOrder
   funnelId?: Prisma.SortOrderInput | Prisma.SortOrder
   riskScore?: Prisma.SortOrderInput | Prisma.SortOrder
   riskLevel?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -566,6 +602,10 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   gpsLink?: Prisma.StringNullableFilter<"Order"> | string | null
   courierOperation?: Prisma.EnumCourierOperationFilter<"Order"> | $Enums.CourierOperation
   exchangeProduct?: Prisma.StringNullableFilter<"Order"> | string | null
+  courierWilayaId?: Prisma.StringNullableFilter<"Order"> | string | null
+  courierCommune?: Prisma.StringNullableFilter<"Order"> | string | null
+  courierPostalCode?: Prisma.StringNullableFilter<"Order"> | string | null
+  courierLocationCompanyId?: Prisma.StringNullableFilter<"Order"> | string | null
   funnelId?: Prisma.StringNullableFilter<"Order"> | string | null
   riskScore?: Prisma.IntNullableFilter<"Order"> | number | null
   riskLevel?: Prisma.EnumRiskLevelNullableFilter<"Order"> | $Enums.RiskLevel | null
@@ -619,6 +659,10 @@ export type OrderOrderByWithAggregationInput = {
   gpsLink?: Prisma.SortOrderInput | Prisma.SortOrder
   courierOperation?: Prisma.SortOrder
   exchangeProduct?: Prisma.SortOrderInput | Prisma.SortOrder
+  courierWilayaId?: Prisma.SortOrderInput | Prisma.SortOrder
+  courierCommune?: Prisma.SortOrderInput | Prisma.SortOrder
+  courierPostalCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  courierLocationCompanyId?: Prisma.SortOrderInput | Prisma.SortOrder
   funnelId?: Prisma.SortOrderInput | Prisma.SortOrder
   riskScore?: Prisma.SortOrderInput | Prisma.SortOrder
   riskLevel?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -665,6 +709,10 @@ export type OrderScalarWhereWithAggregatesInput = {
   gpsLink?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   courierOperation?: Prisma.EnumCourierOperationWithAggregatesFilter<"Order"> | $Enums.CourierOperation
   exchangeProduct?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  courierWilayaId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  courierCommune?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  courierPostalCode?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  courierLocationCompanyId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   funnelId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   riskScore?: Prisma.IntNullableWithAggregatesFilter<"Order"> | number | null
   riskLevel?: Prisma.EnumRiskLevelNullableWithAggregatesFilter<"Order"> | $Enums.RiskLevel | null
@@ -699,6 +747,10 @@ export type OrderCreateInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -751,6 +803,10 @@ export type OrderUncheckedCreateInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -795,6 +851,10 @@ export type OrderUpdateInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -847,6 +907,10 @@ export type OrderUncheckedUpdateInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -895,6 +959,10 @@ export type OrderCreateManyInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -929,6 +997,10 @@ export type OrderUpdateManyMutationInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -966,6 +1038,10 @@ export type OrderUncheckedUpdateManyInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -1019,6 +1095,10 @@ export type OrderCountOrderByAggregateInput = {
   gpsLink?: Prisma.SortOrder
   courierOperation?: Prisma.SortOrder
   exchangeProduct?: Prisma.SortOrder
+  courierWilayaId?: Prisma.SortOrder
+  courierCommune?: Prisma.SortOrder
+  courierPostalCode?: Prisma.SortOrder
+  courierLocationCompanyId?: Prisma.SortOrder
   funnelId?: Prisma.SortOrder
   riskScore?: Prisma.SortOrder
   riskLevel?: Prisma.SortOrder
@@ -1064,6 +1144,10 @@ export type OrderMaxOrderByAggregateInput = {
   gpsLink?: Prisma.SortOrder
   courierOperation?: Prisma.SortOrder
   exchangeProduct?: Prisma.SortOrder
+  courierWilayaId?: Prisma.SortOrder
+  courierCommune?: Prisma.SortOrder
+  courierPostalCode?: Prisma.SortOrder
+  courierLocationCompanyId?: Prisma.SortOrder
   funnelId?: Prisma.SortOrder
   riskScore?: Prisma.SortOrder
   riskLevel?: Prisma.SortOrder
@@ -1101,6 +1185,10 @@ export type OrderMinOrderByAggregateInput = {
   gpsLink?: Prisma.SortOrder
   courierOperation?: Prisma.SortOrder
   exchangeProduct?: Prisma.SortOrder
+  courierWilayaId?: Prisma.SortOrder
+  courierCommune?: Prisma.SortOrder
+  courierPostalCode?: Prisma.SortOrder
+  courierLocationCompanyId?: Prisma.SortOrder
   funnelId?: Prisma.SortOrder
   riskScore?: Prisma.SortOrder
   riskLevel?: Prisma.SortOrder
@@ -1528,6 +1616,10 @@ export type OrderCreateWithoutCustomerInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1578,6 +1670,10 @@ export type OrderUncheckedCreateWithoutCustomerInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -1655,6 +1751,10 @@ export type OrderScalarWhereInput = {
   gpsLink?: Prisma.StringNullableFilter<"Order"> | string | null
   courierOperation?: Prisma.EnumCourierOperationFilter<"Order"> | $Enums.CourierOperation
   exchangeProduct?: Prisma.StringNullableFilter<"Order"> | string | null
+  courierWilayaId?: Prisma.StringNullableFilter<"Order"> | string | null
+  courierCommune?: Prisma.StringNullableFilter<"Order"> | string | null
+  courierPostalCode?: Prisma.StringNullableFilter<"Order"> | string | null
+  courierLocationCompanyId?: Prisma.StringNullableFilter<"Order"> | string | null
   funnelId?: Prisma.StringNullableFilter<"Order"> | string | null
   riskScore?: Prisma.IntNullableFilter<"Order"> | number | null
   riskLevel?: Prisma.EnumRiskLevelNullableFilter<"Order"> | $Enums.RiskLevel | null
@@ -1689,6 +1789,10 @@ export type OrderCreateWithoutAddressInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1739,6 +1843,10 @@ export type OrderUncheckedCreateWithoutAddressInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -1809,6 +1917,10 @@ export type OrderCreateWithoutDuplicateOrdersInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1860,6 +1972,10 @@ export type OrderUncheckedCreateWithoutDuplicateOrdersInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -1908,6 +2024,10 @@ export type OrderCreateWithoutDuplicateOfOrderInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1958,6 +2078,10 @@ export type OrderUncheckedCreateWithoutDuplicateOfOrderInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -2023,6 +2147,10 @@ export type OrderUpdateWithoutDuplicateOrdersInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2074,6 +2202,10 @@ export type OrderUncheckedUpdateWithoutDuplicateOrdersInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -2133,6 +2265,10 @@ export type OrderCreateWithoutAttributionInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2184,6 +2320,10 @@ export type OrderUncheckedCreateWithoutAttributionInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -2243,6 +2383,10 @@ export type OrderUpdateWithoutAttributionInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2294,6 +2438,10 @@ export type OrderUncheckedUpdateWithoutAttributionInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -2337,6 +2485,10 @@ export type OrderCreateWithoutCallAttemptsInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2388,6 +2540,10 @@ export type OrderUncheckedCreateWithoutCallAttemptsInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -2447,6 +2603,10 @@ export type OrderUpdateWithoutCallAttemptsInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2498,6 +2658,10 @@ export type OrderUncheckedUpdateWithoutCallAttemptsInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -2541,6 +2705,10 @@ export type OrderCreateWithoutItemsInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2592,6 +2760,10 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -2651,6 +2823,10 @@ export type OrderUpdateWithoutItemsInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2702,6 +2878,10 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -2745,6 +2925,10 @@ export type OrderCreateWithoutShipmentInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2796,6 +2980,10 @@ export type OrderUncheckedCreateWithoutShipmentInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -2855,6 +3043,10 @@ export type OrderUpdateWithoutShipmentInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2906,6 +3098,10 @@ export type OrderUncheckedUpdateWithoutShipmentInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -2949,6 +3145,10 @@ export type OrderCreateWithoutCashReconciliationInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3000,6 +3200,10 @@ export type OrderUncheckedCreateWithoutCashReconciliationInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -3059,6 +3263,10 @@ export type OrderUpdateWithoutCashReconciliationInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3110,6 +3318,10 @@ export type OrderUncheckedUpdateWithoutCashReconciliationInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -3153,6 +3365,10 @@ export type OrderCreateWithoutLedgerEntriesInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3204,6 +3420,10 @@ export type OrderUncheckedCreateWithoutLedgerEntriesInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -3263,6 +3483,10 @@ export type OrderUpdateWithoutLedgerEntriesInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3314,6 +3538,10 @@ export type OrderUncheckedUpdateWithoutLedgerEntriesInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -3357,6 +3585,10 @@ export type OrderCreateWithoutNotificationsInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3408,6 +3640,10 @@ export type OrderUncheckedCreateWithoutNotificationsInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -3467,6 +3703,10 @@ export type OrderUpdateWithoutNotificationsInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3518,6 +3758,10 @@ export type OrderUncheckedUpdateWithoutNotificationsInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -3561,6 +3805,10 @@ export type OrderCreateWithoutGoogleSheetRowsInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3612,6 +3860,10 @@ export type OrderUncheckedCreateWithoutGoogleSheetRowsInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -3671,6 +3923,10 @@ export type OrderUpdateWithoutGoogleSheetRowsInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3722,6 +3978,10 @@ export type OrderUncheckedUpdateWithoutGoogleSheetRowsInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -3765,6 +4025,10 @@ export type OrderCreateWithoutShippingCompanyInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3815,6 +4079,10 @@ export type OrderUncheckedCreateWithoutShippingCompanyInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -3885,6 +4153,10 @@ export type OrderCreateWithoutCourierWebhookEventsInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -3936,6 +4208,10 @@ export type OrderUncheckedCreateWithoutCourierWebhookEventsInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -3995,6 +4271,10 @@ export type OrderUpdateWithoutCourierWebhookEventsInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4046,6 +4326,10 @@ export type OrderUncheckedUpdateWithoutCourierWebhookEventsInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -4089,6 +4373,10 @@ export type OrderCreateWithoutFunnelInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4140,6 +4428,10 @@ export type OrderUncheckedCreateWithoutFunnelInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4212,6 +4504,10 @@ export type OrderCreateManyCustomerInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -4246,6 +4542,10 @@ export type OrderUpdateWithoutCustomerInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4296,6 +4596,10 @@ export type OrderUncheckedUpdateWithoutCustomerInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -4343,6 +4647,10 @@ export type OrderUncheckedUpdateManyWithoutCustomerInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -4380,6 +4688,10 @@ export type OrderCreateManyAddressInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -4414,6 +4726,10 @@ export type OrderUpdateWithoutAddressInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4464,6 +4780,10 @@ export type OrderUncheckedUpdateWithoutAddressInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -4511,6 +4831,10 @@ export type OrderUncheckedUpdateManyWithoutAddressInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -4548,6 +4872,10 @@ export type OrderCreateManyDuplicateOfOrderInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -4582,6 +4910,10 @@ export type OrderUpdateWithoutDuplicateOfOrderInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4632,6 +4964,10 @@ export type OrderUncheckedUpdateWithoutDuplicateOfOrderInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -4679,6 +5015,10 @@ export type OrderUncheckedUpdateManyWithoutDuplicateOfOrderInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -4716,6 +5056,10 @@ export type OrderCreateManyShippingCompanyInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   funnelId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
@@ -4750,6 +5094,10 @@ export type OrderUpdateWithoutShippingCompanyInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4800,6 +5148,10 @@ export type OrderUncheckedUpdateWithoutShippingCompanyInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -4847,6 +5199,10 @@ export type OrderUncheckedUpdateManyWithoutShippingCompanyInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   funnelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
@@ -4885,6 +5241,10 @@ export type OrderCreateManyFunnelInput = {
   gpsLink?: string | null
   courierOperation?: $Enums.CourierOperation
   exchangeProduct?: string | null
+  courierWilayaId?: string | null
+  courierCommune?: string | null
+  courierPostalCode?: string | null
+  courierLocationCompanyId?: string | null
   riskScore?: number | null
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4918,6 +5278,10 @@ export type OrderUpdateWithoutFunnelInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -4969,6 +5333,10 @@ export type OrderUncheckedUpdateWithoutFunnelInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5016,6 +5384,10 @@ export type OrderUncheckedUpdateManyWithoutFunnelInput = {
   gpsLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courierOperation?: Prisma.EnumCourierOperationFieldUpdateOperationsInput | $Enums.CourierOperation
   exchangeProduct?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierWilayaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierCommune?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierPostalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  courierLocationCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   riskScore?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -5138,6 +5510,10 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   gpsLink?: boolean
   courierOperation?: boolean
   exchangeProduct?: boolean
+  courierWilayaId?: boolean
+  courierCommune?: boolean
+  courierPostalCode?: boolean
+  courierLocationCompanyId?: boolean
   funnelId?: boolean
   riskScore?: boolean
   riskLevel?: boolean
@@ -5192,6 +5568,10 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   gpsLink?: boolean
   courierOperation?: boolean
   exchangeProduct?: boolean
+  courierWilayaId?: boolean
+  courierCommune?: boolean
+  courierPostalCode?: boolean
+  courierLocationCompanyId?: boolean
   funnelId?: boolean
   riskScore?: boolean
   riskLevel?: boolean
@@ -5235,6 +5615,10 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   gpsLink?: boolean
   courierOperation?: boolean
   exchangeProduct?: boolean
+  courierWilayaId?: boolean
+  courierCommune?: boolean
+  courierPostalCode?: boolean
+  courierLocationCompanyId?: boolean
   funnelId?: boolean
   riskScore?: boolean
   riskLevel?: boolean
@@ -5278,6 +5662,10 @@ export type OrderSelectScalar = {
   gpsLink?: boolean
   courierOperation?: boolean
   exchangeProduct?: boolean
+  courierWilayaId?: boolean
+  courierCommune?: boolean
+  courierPostalCode?: boolean
+  courierLocationCompanyId?: boolean
   funnelId?: boolean
   riskScore?: boolean
   riskLevel?: boolean
@@ -5287,7 +5675,7 @@ export type OrderSelectScalar = {
   updatedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "addressId" | "state" | "totalCents" | "shippingType" | "shippingPriceCents" | "isAbandoned" | "fromAbandoned" | "fulfillmentMethod" | "shippingCompanyId" | "notes" | "postponedUntil" | "isDuplicate" | "duplicateOfOrderId" | "archived" | "archivedAt" | "assignedToId" | "assignedToEmail" | "lockedUntil" | "skippedUntil" | "callAttemptsCount" | "lastCalledAt" | "deliveryNote" | "isFragile" | "gpsLink" | "courierOperation" | "exchangeProduct" | "funnelId" | "riskScore" | "riskLevel" | "riskFactors" | "deliveredEventSentAt" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "addressId" | "state" | "totalCents" | "shippingType" | "shippingPriceCents" | "isAbandoned" | "fromAbandoned" | "fulfillmentMethod" | "shippingCompanyId" | "notes" | "postponedUntil" | "isDuplicate" | "duplicateOfOrderId" | "archived" | "archivedAt" | "assignedToId" | "assignedToEmail" | "lockedUntil" | "skippedUntil" | "callAttemptsCount" | "lastCalledAt" | "deliveryNote" | "isFragile" | "gpsLink" | "courierOperation" | "exchangeProduct" | "courierWilayaId" | "courierCommune" | "courierPostalCode" | "courierLocationCompanyId" | "funnelId" | "riskScore" | "riskLevel" | "riskFactors" | "deliveredEventSentAt" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
   address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
@@ -5369,6 +5757,10 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     gpsLink: string | null
     courierOperation: $Enums.CourierOperation
     exchangeProduct: string | null
+    courierWilayaId: string | null
+    courierCommune: string | null
+    courierPostalCode: string | null
+    courierLocationCompanyId: string | null
     funnelId: string | null
     riskScore: number | null
     riskLevel: $Enums.RiskLevel | null
@@ -5842,6 +6234,10 @@ export interface OrderFieldRefs {
   readonly gpsLink: Prisma.FieldRef<"Order", 'String'>
   readonly courierOperation: Prisma.FieldRef<"Order", 'CourierOperation'>
   readonly exchangeProduct: Prisma.FieldRef<"Order", 'String'>
+  readonly courierWilayaId: Prisma.FieldRef<"Order", 'String'>
+  readonly courierCommune: Prisma.FieldRef<"Order", 'String'>
+  readonly courierPostalCode: Prisma.FieldRef<"Order", 'String'>
+  readonly courierLocationCompanyId: Prisma.FieldRef<"Order", 'String'>
   readonly funnelId: Prisma.FieldRef<"Order", 'String'>
   readonly riskScore: Prisma.FieldRef<"Order", 'Int'>
   readonly riskLevel: Prisma.FieldRef<"Order", 'RiskLevel'>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AddressCheckResult, AdminOrderDetail } from '@amalice/shared'
+import type { AddressCheckResult, AdminOrderDetail, OrderCourierLocation } from '@amalice/shared'
 import { toast } from 'vue-sonner'
 
 // What the courier needs besides the address: remark/instructions, fragile,
@@ -35,6 +35,24 @@ async function loadCheck() {
   check.value = await api<AddressCheckResult>(`/admin/fulfillment/orders/${props.order.id}/address-check`).catch(() => null)
 }
 watch(() => [props.order.id, props.order.address.city, props.order.address.region, props.order.shippingType, props.order.shippingCompanyId], loadCheck, { immediate: true })
+
+// Convert location: map the customer's wilaya/commune to the courier's list (agent confirms).
+const locApi = useCourierLocationApi()
+const convertOpen = ref(false)
+const canConvert = computed(() => !props.order.shipment && !!props.order.shippingCompanyId)
+const courierLoc = ref<OrderCourierLocation | null>(null)
+async function loadCourierLoc() {
+  courierLoc.value = canConvert.value ? await locApi.get(props.order.id).catch(() => null) : null
+}
+watch(() => [props.order.id, props.order.shippingCompanyId, !!props.order.shipment], loadCourierLoc, { immediate: true })
+const convertWarn = computed(() => {
+  const w = Number(courierLoc.value?.ourWilaya.id)
+  return (Number.isFinite(w) && w >= 59) || (!!check.value && check.value.checked && !check.value.ok)
+})
+async function onConverted() {
+  emit('changed')
+  await Promise.all([loadCheck(), loadCourierLoc()])
+}
 
 async function save() {
   saving.value = true
@@ -90,6 +108,12 @@ async function switchToHome() {
       <span>Address accepted by {{ check.shippingCompanyName }}<template v-if="check.matchedCommune && check.matchedCommune !== order.address.city"> — will be sent as “{{ check.matchedCommune }}”</template>.</span>
     </div>
     <div v-else-if="check && check.issues.length" class="muted" style="font-size: 12px">{{ check.issues[0] }}</div>
+
+    <div v-if="canConvert" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+      <button class="btn btn-sm" type="button" :class="convertWarn && 'btn-warning'" :style="convertWarn ? 'border-color: var(--brass); color: var(--brass)' : undefined" @click="convertOpen = true"><AdsIcon name="i-lucide-map-pinned" />Convert location</button>
+      <span v-if="courierLoc?.current" class="pill shipping">Courier: {{ courierLoc.current.courierCommune }} ({{ courierLoc.current.courierWilayaId }})</span>
+    </div>
+    <ConvertLocationDialog v-if="canConvert" v-model:open="convertOpen" :order-id="order.id" @saved="onConverted" />
 
     <div v-if="locked" class="muted" style="font-size: 13px">The courier already has this parcel, so these details are locked. Use “Note for the courier” instead.</div>
     <template v-else>

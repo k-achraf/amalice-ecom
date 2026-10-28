@@ -218,6 +218,11 @@ export type ShippingCompany = Prisma.ShippingCompanyModel
  */
 export type ShippingCompanyCommune = Prisma.ShippingCompanyCommuneModel
 /**
+ * Model ShippingCompanyLocationMap
+ * 
+ */
+export type ShippingCompanyLocationMap = Prisma.ShippingCompanyLocationMapModel
+/**
  * Model ShipmentEvent
  * 
  */

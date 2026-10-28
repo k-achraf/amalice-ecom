@@ -5,6 +5,7 @@ import { MetaAdsModule } from '../meta-ads/meta-ads.module'
 import { CommonModule } from '../common/common.module'
 import { IdentityModule } from '../identity/identity.module'
 import { DeliveryEventsService } from './delivery-events.service'
+import { CallCenterSweepService } from './call-center-sweep.service'
 import { ReportSettingsService } from './report-settings.service'
 import { ReportsController } from './reports.controller'
 import { ReportsProcessor } from './reports.processor'
@@ -14,6 +15,6 @@ import { TelegramService } from './telegram.service'
 @Module({
   imports: [CommonModule, IdentityModule, AppsModule, MetaAdsModule, BullModule.registerQueue({ name: 'reports' })],
   controllers: [ReportsController],
-  providers: [TelegramService, ReportSettingsService, ReportsService, DeliveryEventsService, ReportsProcessor]
+  providers: [TelegramService, ReportSettingsService, ReportsService, DeliveryEventsService, CallCenterSweepService, ReportsProcessor]
 })
 export class ReportsModule {}

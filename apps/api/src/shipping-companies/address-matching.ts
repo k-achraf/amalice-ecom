@@ -54,3 +54,16 @@ export function matchCommune(communes: CourierCommune[], city: string): { match:
   }
   return { match: null, suggestions: scored.slice(0, 5).map((x) => x.c.name) }
 }
+
+// All courier communes ranked closest-first to `city` (containment counts as distance 0).
+export function rankCommunes(communes: CourierCommune[], city: string): { commune: CourierCommune; score: number }[] {
+  const wanted = normalizePlaceName(city)
+  if (!wanted) return []
+  return communes
+    .map((c) => {
+      const n = normalizePlaceName(c.name)
+      const contains = n.length > 0 && (n.includes(wanted) || wanted.includes(n))
+      return { commune: c, score: contains ? 0 : levenshtein(n, wanted) }
+    })
+    .sort((a, b) => a.score - b.score || a.commune.name.localeCompare(b.commune.name))
+}

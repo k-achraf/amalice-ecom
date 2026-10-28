@@ -1,9 +1,10 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common'
+import { BadRequestException, Body, Controller, Delete, Get, Param, Put, Post, Query, Req, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
-import { ApplyShippingCompanyTariffsSchema, LinkShippingCompanySchema, SetWebhookSecretSchema, ShippingCompanyProviderSchema, type ShippingCompanyProvider } from '@amalice/shared'
+import { SetLocationMapSchema, ApplyShippingCompanyTariffsSchema, LinkShippingCompanySchema, SetWebhookSecretSchema, ShippingCompanyProviderSchema, type ShippingCompanyProvider } from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
 import { ShippingCompaniesService } from './shipping-companies.service'
+import { LocationMapService } from './location-map.service'
 import { JwtAuthGuard } from '../identity/admin-auth/jwt-auth.guard'
 import { RolesGuard } from '../identity/admin-auth/roles.guard'
 import { Roles } from '../identity/admin-auth/roles.decorator'
@@ -12,6 +13,7 @@ import type { AuditActor } from '../common/audit.service'
 
 class LinkShippingCompanyDto extends createZodDto(LinkShippingCompanySchema) {}
 class ApplyShippingCompanyTariffsDto extends createZodDto(ApplyShippingCompanyTariffsSchema) {}
+class SetLocationMapDto extends createZodDto(SetLocationMapSchema) {}
 class SetWebhookSecretDto extends createZodDto(SetWebhookSecretSchema) {}
 
 interface AuthedRequest extends Request {
@@ -34,7 +36,10 @@ function parseProvider(provider: string): ShippingCompanyProvider {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('SuperAdmin', 'OpsManager')
 export class ShippingCompaniesController {
-  constructor(private readonly shippingCompanies: ShippingCompaniesService) {}
+  constructor(
+    private readonly shippingCompanies: ShippingCompaniesService,
+    private readonly locationMap: LocationMapService
+  ) {}
 
   @Get()
   list() {
@@ -109,5 +114,39 @@ export class ShippingCompaniesController {
   @Get(':provider/webhook-raw-logs')
   webhookRawLogs(@Param('provider') provider: string, @Query('page') page: string = '1', @Query('pageSize') pageSize: string = '20') {
     return this.shippingCompanies.listWebhookRawLogs(parseProvider(provider), { page: Number(page), pageSize: Number(pageSize) })
+  }
+
+  // ---- Location mapping (our wilayas/communes -> this courier's), applied by hand per order ----
+
+  @Get(':provider/location-map')
+  locationMapSummary(@Param('provider') provider: string) {
+    return this.locationMap.summary(parseProvider(provider))
+  }
+
+  @Put(':provider/location-map')
+  setLocationMap(@Param('provider') provider: string, @Body() body: SetLocationMapDto, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.locationMap.set(parseProvider(provider), body, actor)
+  }
+
+  @Delete(':provider/location-map')
+  deleteLocationMap(@Param('provider') provider: string, @Query('ourWilayaId') ourWilayaId: string, @Query('ourCommune') ourCommune: string = '', @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.locationMap.remove(parseProvider(provider), ourWilayaId, ourCommune, actor)
+  }
+
+  @Get(':provider/location-map/copy-from/:otherProvider')
+  copyLocationMap(@Param('provider') provider: string, @Param('otherProvider') otherProvider: string, @Query('wilayaId') wilayaId?: string) {
+    return this.locationMap.copyFrom(parseProvider(provider), parseProvider(otherProvider), wilayaId)
+  }
+
+  @Get(':provider/location-map/:wilayaId')
+  locationMapWilaya(@Param('provider') provider: string, @Param('wilayaId') wilayaId: string) {
+    return this.locationMap.wilayaDetail(parseProvider(provider), wilayaId)
+  }
+
+  @Get(':provider/courier-communes')
+  courierCommunes(@Param('provider') provider: string, @Query('wilayaId') wilayaId: string) {
+    return this.locationMap.courierCommunes(parseProvider(provider), wilayaId)
   }
 }

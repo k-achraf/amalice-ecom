@@ -53,7 +53,7 @@ export class DhdCourierProvider implements CourierProvider {
 
   async createShipment(input: CreateShipmentInput): Promise<ShipmentResult> {
     const { baseUrl, apiToken } = await this.company(input.shippingCompanyId)
-    const codeWilaya = await this.wilayaCode(input.address.region)
+    const codeWilaya = input.courierWilayaId ?? (await this.wilayaCode(input.address.region))
 
     const payload: DhdOrderPayload = {
       reference: input.orderId,

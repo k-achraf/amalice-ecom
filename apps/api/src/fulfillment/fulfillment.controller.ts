@@ -1,9 +1,9 @@
 import { CourierRecommendationService } from '../shipping-companies/courier-recommendation.service'
-import { Body, Controller, Get, Header, Param, Patch, Post, Query, Req, Res, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Header, Param, Patch, Post, Query, Req, Res, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import type { Request, Response } from 'express'
 import { createZodDto } from 'nestjs-zod'
-import { RequestPickupSchema, UpdateShipmentSchema, BulkDispatchSchema, ValidateOrderReturnsSchema, AssignShippingCompanySchema, DispatchManualSchema, DispatchOrderSchema, UpdateDeliveryInfoSchema, CourierNoteSchema, BulkLabelsSchema } from '@amalice/shared'
+import { SetOrderCourierLocationSchema, RequestPickupSchema, UpdateShipmentSchema, BulkDispatchSchema, ValidateOrderReturnsSchema, AssignShippingCompanySchema, DispatchManualSchema, DispatchOrderSchema, UpdateDeliveryInfoSchema, CourierNoteSchema, BulkLabelsSchema } from '@amalice/shared'
 import { FulfillmentService } from './fulfillment.service'
 import { MockCourierProvider } from './mock-courier.provider'
 import { JwtAuthGuard } from '../identity/admin-auth/jwt-auth.guard'
@@ -12,6 +12,7 @@ import { Roles } from '../identity/admin-auth/roles.decorator'
 import type { AdminJwtPayload } from '../identity/admin-auth/jwt-payload.interface'
 import type { AuditActor } from '../common/audit.service'
 
+class SetOrderCourierLocationDto extends createZodDto(SetOrderCourierLocationSchema) {}
 class RequestPickupDto extends createZodDto(RequestPickupSchema) {}
 class UpdateShipmentDto extends createZodDto(UpdateShipmentSchema) {}
 class BulkDispatchDto extends createZodDto(BulkDispatchSchema) {}
@@ -48,6 +49,33 @@ export class FulfillmentController {
   @Roles('SuperAdmin', 'OpsManager')
   courierSuggestion(@Param('id') id: string) {
     return this.recommendation.forOrder(id)
+  }
+
+  // "Convert location": the courier's own wilaya/commune for this order (the proposal is always confirmed by an agent).
+  @Get('admin/fulfillment/orders/:id/courier-location')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager')
+  getCourierLocation(@Param('id') id: string) {
+    return this.fulfillment.getCourierLocation(id)
+  }
+
+  @Post('admin/fulfillment/orders/:id/courier-location')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager')
+  setCourierLocation(@Param('id') id: string, @Body() body: SetOrderCourierLocationDto, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.fulfillment.setCourierLocation(id, body, actor)
+  }
+
+  @Delete('admin/fulfillment/orders/:id/courier-location')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager')
+  clearCourierLocation(@Param('id') id: string, @Req() req: AuthedRequest) {
+    const actor: AuditActor = { id: req.user.sub, email: req.user.email }
+    return this.fulfillment.clearCourierLocation(id, actor)
   }
 
   // Assign a shipping company to an order — required before dispatch.

@@ -29,6 +29,18 @@ async function main() {
   const wilayas = await prisma.wilaya.createMany({ data: wilayasData, skipDuplicates: true })
   const communes = await prisma.commune.createMany({ data: communesData, skipDuplicates: true })
   console.log(`Seeded ${wilayas.count} wilayas and ${communes.count} communes (${wilayasData.length}/${communesData.length} in source data — the rest already existed).`)
+
+  // Repair pass for databases seeded from an older (wrong) copy of the data: the
+  // vendor's wilaya names 49-58 were shifted against their communes, and its newest
+  // wilayas still carried duplicate rows from their parent wilaya. createMany above
+  // never touches existing rows, so bring them in line with the vendored files here.
+  // Nothing references a commune id (orders keep the wilaya/commune name as text).
+  for (const w of wilayasData) await prisma.wilaya.update({ where: { id: w.id }, data: { name: w.name } })
+  for (const c of communesData) {
+    await prisma.commune.update({ where: { id: c.id }, data: { name: c.name, postCode: c.postCode, wilayaId: c.wilayaId } })
+  }
+  const removed = await prisma.commune.deleteMany({ where: { id: { notIn: communesData.map((c) => c.id) } } })
+  console.log(`Aligned ${wilayasData.length} wilaya names and ${communesData.length} communes; removed ${removed.count} stale/duplicate communes.`)
 }
 
 main()

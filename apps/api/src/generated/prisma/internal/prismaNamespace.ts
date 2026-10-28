@@ -424,6 +424,7 @@ export const ModelName = {
   Commune: 'Commune',
   ShippingCompany: 'ShippingCompany',
   ShippingCompanyCommune: 'ShippingCompanyCommune',
+  ShippingCompanyLocationMap: 'ShippingCompanyLocationMap',
   ShipmentEvent: 'ShipmentEvent',
   CourierWebhookEvent: 'CourierWebhookEvent',
   CourierWebhookLog: 'CourierWebhookLog',
@@ -463,7 +464,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "supplier" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderAttribution" | "callAttempt" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "shippingCompanyCommune" | "shipmentEvent" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "sourcedProductVideoCreative" | "sourcedProductCompetitor" | "productAdTest" | "productSourcingRequest" | "pageViewEvent" | "funnel" | "funnelRecording" | "funnelRecordingChunk" | "funnelStep" | "metaConnection" | "metaAdAccount" | "metaAppCredentials" | "blacklistEntry" | "reportSettings" | "aiProviderCredential" | "aiSettings" | "alertLog"
+    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "supplier" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderAttribution" | "callAttempt" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "shippingCompanyCommune" | "shippingCompanyLocationMap" | "shipmentEvent" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "sourcedProductVideoCreative" | "sourcedProductCompetitor" | "productAdTest" | "productSourcingRequest" | "pageViewEvent" | "funnel" | "funnelRecording" | "funnelRecordingChunk" | "funnelStep" | "metaConnection" | "metaAdAccount" | "metaAppCredentials" | "blacklistEntry" | "reportSettings" | "aiProviderCredential" | "aiSettings" | "alertLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3427,6 +3428,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ShippingCompanyLocationMap: {
+      payload: Prisma.$ShippingCompanyLocationMapPayload<ExtArgs>
+      fields: Prisma.ShippingCompanyLocationMapFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ShippingCompanyLocationMapFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ShippingCompanyLocationMapPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ShippingCompanyLocationMapFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ShippingCompanyLocationMapPayload>
+        }
+        findFirst: {
+          args: Prisma.ShippingCompanyLocationMapFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ShippingCompanyLocationMapPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ShippingCompanyLocationMapFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ShippingCompanyLocationMapPayload>
+        }
+        findMany: {
+          args: Prisma.ShippingCompanyLocationMapFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ShippingCompanyLocationMapPayload>[]
+        }
+        create: {
+          args: Prisma.ShippingCompanyLocationMapCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ShippingCompanyLocationMapPayload>
+        }
+        createMany: {
+          args: Prisma.ShippingCompanyLocationMapCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ShippingCompanyLocationMapCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ShippingCompanyLocationMapPayload>[]
+        }
+        delete: {
+          args: Prisma.ShippingCompanyLocationMapDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ShippingCompanyLocationMapPayload>
+        }
+        update: {
+          args: Prisma.ShippingCompanyLocationMapUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ShippingCompanyLocationMapPayload>
+        }
+        deleteMany: {
+          args: Prisma.ShippingCompanyLocationMapDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ShippingCompanyLocationMapUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ShippingCompanyLocationMapUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ShippingCompanyLocationMapPayload>[]
+        }
+        upsert: {
+          args: Prisma.ShippingCompanyLocationMapUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ShippingCompanyLocationMapPayload>
+        }
+        aggregate: {
+          args: Prisma.ShippingCompanyLocationMapAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateShippingCompanyLocationMap>
+        }
+        groupBy: {
+          args: Prisma.ShippingCompanyLocationMapGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ShippingCompanyLocationMapGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ShippingCompanyLocationMapCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ShippingCompanyLocationMapCountAggregateOutputType> | number
+        }
+      }
+    }
     ShipmentEvent: {
       payload: Prisma.$ShipmentEventPayload<ExtArgs>
       fields: Prisma.ShipmentEventFieldRefs
@@ -5478,6 +5553,10 @@ export const OrderScalarFieldEnum = {
   gpsLink: 'gpsLink',
   courierOperation: 'courierOperation',
   exchangeProduct: 'exchangeProduct',
+  courierWilayaId: 'courierWilayaId',
+  courierCommune: 'courierCommune',
+  courierPostalCode: 'courierPostalCode',
+  courierLocationCompanyId: 'courierLocationCompanyId',
   funnelId: 'funnelId',
   riskScore: 'riskScore',
   riskLevel: 'riskLevel',
@@ -5836,6 +5915,21 @@ export const ShippingCompanyCommuneScalarFieldEnum = {
 } as const
 
 export type ShippingCompanyCommuneScalarFieldEnum = (typeof ShippingCompanyCommuneScalarFieldEnum)[keyof typeof ShippingCompanyCommuneScalarFieldEnum]
+
+
+export const ShippingCompanyLocationMapScalarFieldEnum = {
+  id: 'id',
+  shippingCompanyId: 'shippingCompanyId',
+  ourWilayaId: 'ourWilayaId',
+  ourCommune: 'ourCommune',
+  courierWilayaId: 'courierWilayaId',
+  courierCommune: 'courierCommune',
+  courierPostalCode: 'courierPostalCode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ShippingCompanyLocationMapScalarFieldEnum = (typeof ShippingCompanyLocationMapScalarFieldEnum)[keyof typeof ShippingCompanyLocationMapScalarFieldEnum]
 
 
 export const ShipmentEventScalarFieldEnum = {
@@ -6964,6 +7058,7 @@ export type GlobalOmitConfig = {
   commune?: Prisma.CommuneOmit
   shippingCompany?: Prisma.ShippingCompanyOmit
   shippingCompanyCommune?: Prisma.ShippingCompanyCommuneOmit
+  shippingCompanyLocationMap?: Prisma.ShippingCompanyLocationMapOmit
   shipmentEvent?: Prisma.ShipmentEventOmit
   courierWebhookEvent?: Prisma.CourierWebhookEventOmit
   courierWebhookLog?: Prisma.CourierWebhookLogOmit

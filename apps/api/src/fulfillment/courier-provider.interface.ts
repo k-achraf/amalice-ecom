@@ -42,6 +42,9 @@ export interface CreateShipmentInput {
   // The courier's own spelling of the commune and its postal code, resolved from
   // its commune list (see FulfillmentService.checkAddress) — preferred over the
   // free-form address.city when present.
+  // The COURIER's wilaya code (not our Wilaya.id) - set by FulfillmentService from the order's saved
+  // courier location or the address check; adapters fall back to our wilaya id only when absent.
+  courierWilayaId?: string
   courierCommune?: string
   courierPostalCode?: string
   fragile?: boolean

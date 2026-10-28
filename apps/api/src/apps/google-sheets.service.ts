@@ -514,7 +514,7 @@ export class GoogleSheetsService implements OnModuleInit {
   }
 
   private async assignManualFromSheet(orderId: string): Promise<void> {
-    await this.prisma.order.update({ where: { id: orderId }, data: { fulfillmentMethod: 'Manual', shippingCompanyId: null } })
+    await this.prisma.order.update({ where: { id: orderId }, data: { fulfillmentMethod: 'Manual', shippingCompanyId: null, courierWilayaId: null, courierCommune: null, courierPostalCode: null, courierLocationCompanyId: null } })
     await this.audit.log({
       actor: SHEETS_SYNC_ACTOR,
       action: 'Update',
@@ -526,7 +526,7 @@ export class GoogleSheetsService implements OnModuleInit {
   }
 
   private async assignCompanyFromSheet(orderId: string, shippingCompanyId: string, companyName: string): Promise<void> {
-    await this.prisma.order.update({ where: { id: orderId }, data: { fulfillmentMethod: 'ShippingCompany', shippingCompanyId } })
+    await this.prisma.order.update({ where: { id: orderId }, data: { fulfillmentMethod: 'ShippingCompany', shippingCompanyId, courierWilayaId: null, courierCommune: null, courierPostalCode: null, courierLocationCompanyId: null } })
     await this.audit.log({
       actor: SHEETS_SYNC_ACTOR,
       action: 'Update',

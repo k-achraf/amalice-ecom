@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PICKUP_MODES, type AdminOrderListItem, type OrderFilterKey, type OrderListResponse, type PickupMode, type ShippingCompanyView } from '@amalice/shared'
+import { PICKUP_MODES, type AdminOrderListItem, type OrderCourierLocation, type OrderFilterKey,type OrderListResponse, type PickupMode, type ShippingCompanyView } from '@amalice/shared'
 import { toast } from 'vue-sonner'
 
 // Stage 2 of the order pipeline: warehouse picks/packs a call-center-confirmed
@@ -63,6 +63,30 @@ async function assignCompany(orderId: string, shippingCompanyId: unknown) {
   await refreshPacked()
   acting.value = null
 }
+// Convert location: the list items don't carry the courier conversion, so it is loaded
+// lazily per Packed row that has a courier assigned.
+const locApi = useCourierLocationApi()
+const courierLocs = ref<Record<string, OrderCourierLocation>>({})
+const convertOrderId = ref<string | null>(null)
+const convertOpen = ref(false)
+async function loadCourierLoc(orderId: string) {
+  try {
+    courierLocs.value = { ...courierLocs.value, [orderId]: await locApi.get(orderId) }
+  } catch { /* the dialog reports its own errors */ }
+}
+watch(() => packed.value?.items, (items) => {
+  for (const o of items ?? []) if (o.fulfillmentMethod === 'ShippingCompany' && o.shippingCompanyId) loadCourierLoc(o.id)
+}, { immediate: true })
+const needsConvert = (o: AdminOrderListItem) => Number(courierLocs.value[o.id]?.ourWilaya.id) >= 59
+function openConvert(orderId: string) {
+  convertOrderId.value = orderId
+  convertOpen.value = true
+}
+async function onConverted() {
+  if (convertOrderId.value) await loadCourierLoc(convertOrderId.value)
+  await refreshPacked()
+}
+
 const selected = ref<Set<string>>(new Set())
 // Selections refer to rows that may no longer be listed once the filters change.
 watch(filterQuery, () => {
@@ -322,12 +346,14 @@ async function syncCouriers() {
                 <span v-else-if="o.fulfillmentMethod === 'Unassigned'" class="pill new">Unassigned</span>
                 <span v-else-if="o.fulfillmentMethod === 'Manual'" class="pill neutral">Manual</span>
                 <span v-else class="pill shipping">{{ o.shippingCompanyName }}</span>
+                <div v-if="courierLocs[o.id]?.current" style="margin-top: 4px"><span class="pill neutral">Courier: {{ courierLocs[o.id]!.current!.courierCommune }} ({{ courierLocs[o.id]!.current!.courierWilayaId }})</span></div>
               </td>
               <td class="num"><AdsPrice :amount-cents="o.totalCents" /></td>
               <td class="num" style="white-space: nowrap">
                 <AdsButton v-if="o.fulfillmentMethod === 'Unassigned'" appearance="default" size="sm" icon="i-lucide-link" label="Assign" :to="`/orders/${o.id}`" />
                 <AdsButton v-else-if="o.fulfillmentMethod === 'Manual'" appearance="default" size="sm" icon="i-lucide-truck" label="Hand to driver" :to="`/orders/${o.id}`" />
                 <template v-else>
+                  <AdsButton appearance="default" size="sm" icon="i-lucide-map-pinned" label="Convert location" :style="needsConvert(o) ? 'border-color: var(--brass); color: var(--brass)' : undefined" title="Match the customer's wilaya/commune to the courier's list" @click="openConvert(o.id)" />
                   <AdsButton appearance="default" size="sm" icon="i-lucide-package-check" label="Mark as sent" :to="`/orders/${o.id}`" title="Created by hand at the courier? Record it as sent." />
                   <AdsButton size="sm" icon="i-lucide-truck" :loading="acting === o.id" label="Send to courier" @click="dispatch(o.id)" />
                 </template>
@@ -337,6 +363,7 @@ async function syncCouriers() {
         </table>
       </div>
     </section>
+    <ConvertLocationDialog v-if="convertOrderId" v-model:open="convertOpen" :order-id="convertOrderId" @saved="onConverted" />
   </AdsPage>
 </template>
 
