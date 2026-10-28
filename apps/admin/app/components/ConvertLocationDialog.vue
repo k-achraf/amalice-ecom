@@ -21,10 +21,11 @@ const loc = ref<OrderCourierLocation | null>(null)
 const loading = ref(false)
 const loadError = ref('')
 const communes = ref<CourierCommuneOption[]>([])
+// Names for the courier wilaya ids (the courier numbers are the official wilaya numbers).
+const { data: wilayaList } = useAdminFetch<{ id: string; name: string }[]>('/wilayas', { key: 'convert-location-wilayas' })
 const loadingCommunes = ref(false)
 const wilayaId = ref('')
 const commune = ref<string | null>(null)
-const search = ref('')
 const saving = ref(false)
 
 const SOURCE_LABELS: Record<string, string> = {
@@ -54,7 +55,6 @@ async function load() {
   loading.value = true
   loadError.value = ''
   loc.value = null
-  search.value = ''
   try {
     const data = await locApi.get(props.orderId)
     loc.value = data
@@ -71,22 +71,16 @@ watch(() => props.open, (o) => { if (o) load() }, { immediate: true })
 async function onWilaya(v: unknown) {
   if (typeof v !== 'string') return
   wilayaId.value = v
-  search.value = ''
   await loadCommunes(null)
 }
 
 const wilayaOptions = computed(() => {
   const ids = new Set(loc.value?.courierWilayaIds ?? [])
   if (wilayaId.value) ids.add(wilayaId.value)
-  return [...ids].sort((a, b) => Number(a) - Number(b)).map((id) => ({ label: `Wilaya ${id}`, value: id }))
+  const nameById = new Map((wilayaList.value ?? []).map((w) => [w.id, w.name]))
+  return [...ids].sort((a, b) => Number(a) - Number(b)).map((id) => ({ label: nameById.get(id) ? `${id} — ${nameById.get(id)}` : `Wilaya ${id}`, value: id }))
 })
-const communeOptions = computed(() => {
-  const q = search.value.trim().toLowerCase()
-  const list = q ? communes.value.filter((c) => c.name.toLowerCase().includes(q) || c.name === commune.value) : communes.value
-  return list.map((c) => ({ label: c.name, value: c.name }))
-})
-const chosen = computed(() => communes.value.find((c) => c.name === commune.value) ?? null)
-const postalCode = computed(() => chosen.value?.postalCode ?? null)
+const communeOptions = computed(() => communes.value.map((c) => ({ label: c.name, value: c.name })))
 const noCompany = computed(() => !!loc.value && !loc.value.company)
 
 async function save() {
@@ -94,8 +88,7 @@ async function save() {
   saving.value = true
   const res = await run(() => locApi.save(props.orderId, {
     courierWilayaId: wilayaId.value,
-    courierCommune: commune.value!,
-    courierPostalCode: postalCode.value
+    courierCommune: commune.value!
   }), { success: 'Courier location saved', errorFallback: 'Could not save the courier location' })
   saving.value = false
   if (res !== undefined) {
@@ -127,18 +120,12 @@ async function clear() {
         <div class="muted" style="font-size: 12px">Courier: {{ loc.company?.name }}</div>
       </div>
 
-      <div class="grid-2">
-        <AdsField label="Courier wilaya">
-          <AdsSelect :model-value="wilayaId" :options="wilayaOptions" placeholder="Choose a wilaya…" @update:model-value="onWilaya" />
-        </AdsField>
-        <AdsField label="Postal code">
-          <AdsInput :model-value="postalCode ?? ''" readonly placeholder="—" />
-        </AdsField>
-      </div>
+      <AdsField label="Wilaya">
+        <AdsSearchSelect :model-value="wilayaId" :options="wilayaOptions" placeholder="Search a wilaya…" @update:model-value="onWilaya" />
+      </AdsField>
 
-      <AdsField label="Courier commune">
-        <AdsInput v-model="search" placeholder="Search communes…" style="margin-bottom: 6px" />
-        <AdsSelect v-model="commune" :options="communeOptions" :disabled="loadingCommunes || !communes.length" :placeholder="loadingCommunes ? 'Loading communes…' : communes.length ? 'Choose a commune…' : 'No communes for this wilaya'" />
+      <AdsField label="Commune">
+        <AdsSearchSelect v-model="commune" :options="communeOptions" :disabled="loadingCommunes || !communes.length" :placeholder="loadingCommunes ? 'Loading communes…' : communes.length ? 'Choose a commune…' : 'No communes for this wilaya'" />
       </AdsField>
 
       <p class="muted" style="font-size: 12px">Suggestion: {{ sourceLabel }}<template v-if="loc.current"> · saved on the order: {{ loc.current.courierCommune }} ({{ loc.current.courierWilayaId }})</template></p>

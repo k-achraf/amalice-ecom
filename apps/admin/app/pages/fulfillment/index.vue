@@ -100,6 +100,12 @@ function toggle(id: string) {
   selected.value = next
 }
 const selectable = (o: AdminOrderListItem) => o.fulfillmentMethod === 'ShippingCompany' && !!o.shippingCompanyId
+// Select all / none of the packed orders that can be sent to a courier.
+const selectableIds = computed(() => (packed.value?.items ?? []).filter(selectable).map((o) => o.id))
+const allSelected = computed(() => selectableIds.value.length > 0 && selectableIds.value.every((id) => selected.value.has(id)))
+function toggleAll() {
+  selected.value = allSelected.value ? new Set() : new Set(selectableIds.value)
+}
 
 async function markPacked(orderId: string) {
   acting.value = orderId
@@ -324,11 +330,13 @@ async function syncCouriers() {
     <section class="card" aria-label="Ready to dispatch">
       <div class="card-head">
         <h2>Ready to dispatch</h2><span class="pill neutral">Packed</span>
+        <span v-if="selectableIds.length" class="muted" style="font-size: 12px">{{ selected.size }} / {{ selectableIds.length }} selected</span>
+        <span v-if="(packed?.total ?? 0) > (packed?.items.length ?? 0)" class="muted" style="font-size: 12px">· showing the first {{ packed?.items.length }} of {{ packed?.total }}</span>
         <button v-if="selected.size" class="btn btn-sm btn-primary" type="button" :disabled="acting === 'bulk'" style="margin-left: auto" @click="dispatchSelected"><AdsIcon name="i-lucide-truck" />Send {{ selected.size }} selected</button>
       </div>
       <div class="table-wrap">
         <table style="min-width: 720px">
-          <thead><tr><th style="width: 32px" /><th>Order</th><th>Products</th><th>Customer</th><th>Destination</th><th>Shipping</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
+          <thead><tr><th style="width: 32px"><input type="checkbox" aria-label="Select all" :checked="allSelected" :disabled="!selectableIds.length" @change="toggleAll"></th><th>Order</th><th>Products</th><th>Customer</th><th>Destination</th><th>Shipping</th><th class="num">COD</th><th class="num">Action</th></tr></thead>
           <tbody>
             <tr v-if="pendingPacked"><td colspan="8" class="empty">Loading…</td></tr>
             <tr v-else-if="!packed?.items.length"><td colspan="8" class="empty">No orders ready to dispatch.</td></tr>
