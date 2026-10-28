@@ -13,6 +13,7 @@ import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
 import { normalizePlaceName, type CourierCommune } from './address-matching'
 import { classifyCommune, resolveCourierWilaya, type MapRowLike } from './location-map.util'
+import { ShippingCompaniesService } from './shipping-companies.service'
 
 const numericOrder = (a: string, b: string) => Number(a) - Number(b) || a.localeCompare(b)
 const toOption = (c: CourierCommune): CourierCommuneOption => ({ name: c.name, postalCode: c.postalCode, hasStopDesk: c.hasStopDesk })
@@ -23,7 +24,8 @@ const toOption = (c: CourierCommune): CourierCommuneOption => ({ name: c.name, p
 export class LocationMapService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly audit: AuditService
+    private readonly audit: AuditService,
+    private readonly shippingCompanies: ShippingCompaniesService
   ) {}
 
   private async company(provider: ShippingCompanyProvider) {
@@ -124,6 +126,11 @@ export class LocationMapService {
   async courierCommunes(provider: ShippingCompanyProvider, wilayaId: string): Promise<CourierCommuneOption[]> {
     if (!wilayaId) throw new BadRequestException('wilayaId is required')
     const company = await this.company(provider)
+    // A linked company whose commune list was never synced would offer nothing to choose from: read it
+    // from the courier now (once), then answer.
+    if (company.isLinked && company.apiToken && !(await this.prisma.shippingCompanyCommune.findFirst({ where: { shippingCompanyId: company.id }, select: { id: true } }))) {
+      await this.shippingCompanies.syncLocations(provider, null).catch(() => undefined)
+    }
     return ((await this.communesByWilaya(company.id, wilayaId)).get(wilayaId) ?? []).map(toOption)
   }
 

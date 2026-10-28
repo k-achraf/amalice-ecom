@@ -67,11 +67,11 @@ async function onWilaya(v: unknown) {
   await loadCommunes(null)
 }
 
+// Every wilaya of the system (as when registering an order), plus any id the courier lists that we do not know.
 const wilayaOptions = computed(() => {
-  const ids = new Set(loc.value?.courierWilayaIds ?? [])
-  if (wilayaId.value) ids.add(wilayaId.value)
-  const nameById = new Map((wilayaList.value ?? []).map((w) => [w.id, w.name]))
-  return [...ids].sort((a, b) => Number(a) - Number(b)).map((id) => ({ label: nameById.get(id) ? `${id} — ${nameById.get(id)}` : `Wilaya ${id}`, value: id }))
+  const names = new Map((wilayaList.value ?? []).map((w) => [w.id, w.name]))
+  const ids = new Set<string>([...names.keys(), ...(loc.value?.courierWilayaIds ?? [])])
+  return [...ids].sort((a, b) => Number(a) - Number(b)).map((id) => ({ label: names.get(id) ? `${id} — ${names.get(id)}` : `Wilaya ${id}`, value: id }))
 })
 const communeOptions = computed(() => communes.value.map((c) => ({ label: c.name, value: c.name })))
 const noCompany = computed(() => !!loc.value && !loc.value.company)
