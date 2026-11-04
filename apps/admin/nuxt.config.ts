@@ -44,7 +44,10 @@ export default defineNuxtConfig({
       // Base URL of the standalone funnels site (apps/funnels), used to build the public link of a
       // funnel: <funnelsBase>/f/<slug>. Same build-time caveat as above; override with
       // NUXT_PUBLIC_FUNNELS_BASE=http://localhost:3002 for local dev (see apps/admin/.env.example).
-      funnelsBase: 'https://leezil.com'
+      funnelsBase: 'https://leezil.com',
+      // Public address of the MCP server (apps/mcp) shown on Settings > AI agents, e.g. https://mcp.yourdomain.com/mcp.
+      // Display only (build-time). Override with NUXT_PUBLIC_MCP_URL.
+      mcpUrl: ''
     }
   },
   app: {

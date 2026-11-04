@@ -262,6 +262,19 @@ export class AdminController {
     return this.callCenter.claimNext(actorFrom(req))
   }
 
+  @Get('call-center/drop-pause')
+  @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
+  async dropPause() {
+    return { pausedUntil: await this.callCenter.dropPausedUntil() }
+  }
+
+  // Hides every order from the drop queue for one hour (or resumes it early).
+  @Put('call-center/drop-pause')
+  @Roles('SuperAdmin', 'OpsManager')
+  setDropPause(@Body() body: { paused?: boolean }, @Req() req: AuthedRequest) {
+    return this.callCenter.setDropPause(body.paused !== false, actorFrom(req))
+  }
+
   @Get('call-center/stats')
   @Roles('SuperAdmin', 'OpsManager', 'Support', 'CallCenterAgent')
   callCenterStats(@Req() req: AuthedRequest) {

@@ -39,7 +39,7 @@ const { data: product, pending, refresh } = await useAdminFetch<AdminProductDeta
 const { data: categories } = await useAdminFetch<Category[]>('/categories', { key: 'admin-all-categories' })
 const { data: allAttributes } = await useAdminFetch<{ id: string; name: string; type: string; options: { id: string; value: string; colorHex: string | null }[] }[]>('/admin/attributes', { key: 'admin-attributes' })
 
-const activeTab = ref<'details' | 'content' | 'variants' | 'images' | 'landingPage' | 'offers' | 'upsells' | 'inventory'>('details')
+const activeTab = ref<'details' | 'content' | 'variants' | 'images' | 'landingPage' | 'offers' | 'upsells' | 'inventory' | 'social'>('details')
 
 // Every *Cents field is stored as amount * 100 internally (this app's one
 // money convention — see PriceDisplay), but admins think in plain DZD, not
@@ -808,9 +808,12 @@ async function deleteUpsell(upsellId: string) {
         { label: 'Landing Page', value: 'landingPage', icon: 'i-lucide-sparkles' },
         { label: 'Offers', value: 'offers', icon: 'i-lucide-tag' },
         { label: 'Upsells', value: 'upsells', icon: 'i-lucide-plus-circle' },
-        { label: 'Inventory', value: 'inventory', icon: 'i-lucide-boxes' }
+        { label: 'Inventory', value: 'inventory', icon: 'i-lucide-boxes' },
+        { label: 'Social', value: 'social', icon: 'i-lucide-share-2' }
       ]"
     />
+
+    <ProductSocial v-if="activeTab === 'social'" :product-id="id" />
 
     <!-- Details Tab -->
     <div v-show="activeTab === 'details'" class="stack">

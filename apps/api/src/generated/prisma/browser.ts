@@ -342,3 +342,18 @@ export type AiSettings = Prisma.AiSettingsModel
  * 
  */
 export type AlertLog = Prisma.AlertLogModel
+/**
+ * Model SocialAccount
+ * 
+ */
+export type SocialAccount = Prisma.SocialAccountModel
+/**
+ * Model SocialPost
+ * 
+ */
+export type SocialPost = Prisma.SocialPostModel
+/**
+ * Model McpToken
+ * 
+ */
+export type McpToken = Prisma.McpTokenModel

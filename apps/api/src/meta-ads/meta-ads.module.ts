@@ -9,6 +9,6 @@ import { MetaCredentialsService } from './meta-credentials.service'
   imports: [CommonModule],
   controllers: [MetaAdsController],
   providers: [MetaAdsService, MetaGraphService, MetaCredentialsService],
-  exports: [MetaAdsService]
+  exports: [MetaAdsService, MetaGraphService, MetaCredentialsService]
 })
 export class MetaAdsModule {}

@@ -11,6 +11,8 @@ const envSchema = z.object({
   // configure, not a relative path). Not used for anything internal, so a
   // wrong value only breaks that one displayed URL, not the API itself.
   PUBLIC_API_URL: z.string().default('http://localhost:3333'),
+  // The customer-facing storefront's URL — the product link put in social posts.
+  PUBLIC_STOREFRONT_URL: z.string().default('https://amalice.shop'),
   // No code-level defaults for secrets — that's how a placeholder value
   // quietly ends up in production. Dev-only values live in .env.example.
   JWT_SECRET: z.string().min(32),

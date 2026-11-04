@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common'
 import type { Request } from 'express'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Throttle } from '@nestjs/throttler'
@@ -49,5 +49,35 @@ export class AnalyticsController {
   @Roles('SuperAdmin', 'OpsManager', 'Finance', 'Support', 'Warehouse')
   overview(@Query('days') days: string = '7') {
     return this.analytics.getOverview(Number(days) || 7)
+  }
+
+  // Visitor list + one visitor's journey (page views, funnel session
+  // recordings, orders). Used by the MCP server and available to the admin.
+  @Get('admin/analytics/visitors')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager')
+  visitors(
+    @Query('days') days: string = '7',
+    @Query('page') page: string = '1',
+    @Query('pageSize') pageSize: string = '25',
+    @Query('source') source?: string,
+    @Query('type') type?: string
+  ) {
+    return this.analytics.listVisitors({
+      days: Math.min(90, Math.max(1, Math.floor(Number(days)) || 7)),
+      page: Math.max(1, Math.floor(Number(page)) || 1),
+      pageSize: Math.min(100, Math.max(1, Math.floor(Number(pageSize)) || 25)),
+      source: source || undefined,
+      type: type || undefined
+    })
+  }
+
+  @Get('admin/analytics/visitors/:visitorId')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'OpsManager')
+  visitor(@Param('visitorId') visitorId: string) {
+    return this.analytics.getVisitor(visitorId)
   }
 }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import type { AdminRoleName, DashboardStats } from '@amalice/shared'
-import { Filter, SearchCode, PackageCheck, Receipt, History, Server, FileWarning, Truck, PackageSearch, LayoutDashboard, Megaphone, Link2, Wallet, ShieldBan, Palette, BellRing, ClipboardList, Handshake, Sparkles, Cpu } from 'lucide-vue-next'
+import { Filter, SearchCode, PackageCheck, Receipt, History, Server, FileWarning, Truck, PackageSearch, LayoutDashboard, Megaphone, Link2, Wallet, ShieldBan, Palette, BellRing, ClipboardList, Handshake, Sparkles, Cpu, Bot } from 'lucide-vue-next'
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -79,7 +79,8 @@ const groups: NavGroup[] = [
     title: 'AI',
     items: [
       { label: 'AI assistant', icon: Sparkles, to: '/ai', roles: ['SuperAdmin', 'OpsManager', 'Finance'] },
-      { label: 'Meta ad copy', icon: Megaphone, to: '/ai/ad-copy', roles: ['SuperAdmin', 'OpsManager'] }
+      { label: 'Meta ad copy', icon: Megaphone, to: '/ai/ad-copy', roles: ['SuperAdmin', 'OpsManager'] },
+      { label: 'AI agents (MCP)', icon: Bot, to: '/settings/ai-agents', roles: ['SuperAdmin'] }
     ]
   },
   {

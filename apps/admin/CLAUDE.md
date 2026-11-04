@@ -41,6 +41,10 @@ The courier card (`components/ShipmentPanel.vue`) has an **Analyze notes with AI
 
 `pages/ai/ad-copy.vue` (nav: AI → Meta ad copy; SuperAdmin/OpsManager) generates Meta ad angles for a product with copy buttons. The funnel Stats tab starts with a **Next test** card (`components/funnel/NextTest.vue`), and the sourcing detail page has a **Research analysis** card (`components/sourcing/Analysis.vue`, on demand).
 
+## AI agents (MCP tokens)
+
+`pages/settings/ai-agents.vue` (SuperAdmin; nav: AI → AI agents (MCP)): create/edit/revoke/delete tokens for AI assistants. The ability matrix (sections × View / Create & edit / Delete, with "sensitive" warnings and presets) comes from `MCP_SECTIONS` in `packages/shared/src/mcp.ts`; nothing is ticked by default; ticking edit/delete also ticks view. The full token is shown once at creation with ready-made Claude Code / Gemini CLI snippets (server address from `NUXT_PUBLIC_MCP_URL`, display only). API: `admin/mcp-tokens` (see `apps/api/CLAUDE.md`, server in `apps/mcp`).
+
 ## Reports & alerts
 
 `pages/settings/reports.vue` (SuperAdmin; nav: Online store → Reports & alerts): Telegram bot token/chat id, daily-summary hour, max cost per order, wilaya return-rate and courier-silence thresholds. API: `admin/reports/*` (see `apps/api/CLAUDE.md`).

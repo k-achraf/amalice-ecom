@@ -15,6 +15,7 @@ const { run } = useApiAction()
 
 const order = ref<AdminOrderListItem | null>(null)
 const loading = ref(true)
+const pausedUntil = ref<string | null>(null)
 const stats = ref<CallCenterStatsResponse | null>(null)
 
 async function loadStats() {
@@ -23,8 +24,9 @@ async function loadStats() {
 
 async function claim() {
   loading.value = true
-  const res = await run(() => api<{ order: AdminOrderListItem | null }>('/admin/call-center/claim-next', { method: 'POST' }), { errorFallback: 'Could not load the next order' })
+  const res = await run(() => api<{ order: AdminOrderListItem | null; pausedUntil?: string | null }>('/admin/call-center/claim-next', { method: 'POST' }), { errorFallback: 'Could not load the next order' })
   order.value = res?.order ?? null
+  pausedUntil.value = res?.pausedUntil ?? null
   loading.value = false
   loadStats()
 }
@@ -94,8 +96,9 @@ const remaining = computed(() => stats.value?.queue.ready ?? 0)
       <section v-else-if="!order" class="card" aria-label="Queue cleared">
         <div class="empty" style="padding: 60px 20px">
           <AdsIcon name="i-lucide-party-popper" style="width: 32px; height: 32px; color: var(--teal); display: block; margin: 0 auto" />
-          <h2 style="font-size: 18px; margin-top: 10px; color: var(--pine)">Nothing to call right now</h2>
-          <p>Retries and callbacks come back automatically when their time is due. This page checks every 30 seconds.</p>
+          <h2 style="font-size: 18px; margin-top: 10px; color: var(--pine)">{{ pausedUntil ? 'Drop queue paused' : 'Nothing to call right now' }}</h2>
+          <p v-if="pausedUntil">A manager hid the drop orders until {{ new Date(pausedUntil).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}. This page checks every 30 seconds.</p>
+          <p v-else>Retries and callbacks come back automatically when their time is due. This page checks every 30 seconds.</p>
         </div>
       </section>
       <CallWorkspace v-else :key="order.id" :order="order" shortcuts can-skip @logged="claim" @changed="reloadCurrent" @skip="skip" />

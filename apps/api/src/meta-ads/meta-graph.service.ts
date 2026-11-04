@@ -69,6 +69,27 @@ export class MetaGraphService {
     return body
   }
 
+  // POST with a form body (publishing). Same error handling and appsecret_proof as get().
+  async post<T>(path: string, form: Record<string, string | undefined>, token: string, proofSecret?: string): Promise<T> {
+    const body = new URLSearchParams()
+    for (const [k, v] of Object.entries(form)) if (v !== undefined && v !== '') body.set(k, v)
+    body.set('access_token', token)
+    if (proofSecret) body.set('appsecret_proof', createHmac('sha256', proofSecret).update(token).digest('hex'))
+    let response: Response
+    try {
+      response = await fetch(`https://graph.facebook.com/${this.version}/${path.replace(/^\//, '')}`, { method: 'POST', body, signal: AbortSignal.timeout(60_000) })
+    } catch (error) {
+      this.logger.warn(`Graph POST to ${path} failed: ${(error as Error).name}: ${(error as Error).message}`)
+      throw new MetaGraphError('Could not reach Meta. Try again in a moment.', undefined, undefined, 502)
+    }
+    const json = (await response.json().catch(() => ({}))) as { error?: { message?: string; code?: number; error_subcode?: number } } & T
+    if (!response.ok || json.error) {
+      const e = json.error
+      throw new MetaGraphError(e?.message ?? `Meta returned HTTP ${response.status}`, e?.code, e?.error_subcode, response.status)
+    }
+    return json
+  }
+
   // code -> short-lived token -> long-lived (~60 days) token.
   async exchangeCode(creds: MetaAppCredentials, code: string, redirectUri: string): Promise<{ token: string; expiresInSeconds: number | null }> {
     const short = await this.get<{ access_token: string }>('oauth/access_token', { client_id: creds.appId, client_secret: creds.appSecret, redirect_uri: redirectUri, code })

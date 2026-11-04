@@ -116,6 +116,7 @@ model Product {
   // the full gallery; this denormalized field is the fast path for cards.
   imageUrl              String?              @map("image_url")
   images                ProductImage[]
+  socialPosts           SocialPost[]
   // SF-15: variants (size/color/etc.). A product with no variants is
   // single-SKU and behaves exactly as before — variant rows are optional.
   variants              ProductVariant[]
@@ -2036,4 +2037,82 @@ model AlertLog {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("alert_logs")
+}
+
+// ---- Social publishing (product editor → Social tab) ----
+// The store's own Facebook Pages / Instagram business accounts, linked once by
+// pasting a Meta token; each Page (and its linked Instagram account) becomes a
+// row. The Page access token is AES-256-GCM encrypted (MetaCredentialsService)
+// and never leaves the API. SocialPost is the publish history per product.
+enum SocialPlatform {
+  Facebook
+  Instagram
+}
+
+enum SocialAccountStatus {
+  Active
+  Expired
+}
+
+enum SocialPostStatus {
+  Published
+  Failed
+}
+
+model SocialAccount {
+  id             String              @id @default(uuid())
+  platform       SocialPlatform
+  // Facebook Page id, or the Instagram business account id.
+  externalId     String              @map("external_id")
+  name           String
+  handle         String?
+  // Page access token (Instagram publishes with its Page's token).
+  accessTokenEnc String              @map("access_token_enc")
+  status         SocialAccountStatus @default(Active)
+  posts          SocialPost[]
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+
+  @@unique([platform, externalId])
+  @@map("social_accounts")
+}
+
+model SocialPost {
+  id          String           @id @default(uuid())
+  productId   String           @map("product_id")
+  product     Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  accountId   String           @map("account_id")
+  account     SocialAccount    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  status      SocialPostStatus
+  message     String
+  externalId  String?          @map("external_id")
+  externalUrl String?          @map("external_url")
+  error       String?
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  @@index([productId, createdAt])
+  @@map("social_posts")
+}
+
+// AI-agent access tokens (MCP). Created in the admin (Settings → AI agents),
+// shown once, stored only as a SHA-256 hash. `abilities` holds "<section>:<level>"
+// strings from packages/shared/src/mcp.ts; JwtAuthGuard's token strategy checks
+// every request against them. No FK to AdminUser: the creator's email is kept
+// as text so a token survives its creator being deactivated or deleted.
+model McpToken {
+  id             String    @id @default(uuid())
+  name           String
+  tokenHash      String    @unique @map("token_hash")
+  prefix         String
+  abilities      String[]
+  createdById    String?   @map("created_by_id")
+  createdByEmail String?   @map("created_by_email")
+  expiresAt      DateTime? @map("expires_at")
+  revokedAt      DateTime? @map("revoked_at")
+  lastUsedAt     DateTime? @map("last_used_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@index([revokedAt])
+  @@map("mcp_tokens")
 }

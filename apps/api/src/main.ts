@@ -8,6 +8,7 @@ import * as fs from 'fs'
 import * as dns from 'dns'
 import { AppModule } from './app.module'
 import { PersistentLogger } from './common/persistent-logger.service'
+import { McpEndpointCatalog } from './mcp/mcp-endpoint-catalog.service'
 
 // Node's fetch (undici) races IPv4 and IPv6 for a dual-stack host and uses
 // whichever connects first ("Happy Eyeballs") — normally harmless, but
@@ -86,14 +87,17 @@ async function bootstrap() {
   fs.mkdirSync(uploadsDir, { recursive: true })
   app.useStaticAssets(uploadsDir, { prefix: '/uploads/' })
 
+  const config = new DocumentBuilder()
+    .setTitle('Amalice API')
+    .setDescription('COD commerce platform — catalog, orders, fulfillment, reconciliation, identity, notifications')
+    .setVersion('0.1.0')
+    .addBearerAuth()
+    .build()
+  const document = SwaggerModule.createDocument(app, config)
+  // AI-agent tokens discover endpoints through GET /mcp/endpoints, so the document is built in
+  // production too; only the public /docs UI stays dev-only.
+  app.get(McpEndpointCatalog).set(document)
   if (process.env.NODE_ENV !== 'production') {
-    const config = new DocumentBuilder()
-      .setTitle('Amalice API')
-      .setDescription('COD commerce platform — catalog, orders, fulfillment, reconciliation, identity, notifications')
-      .setVersion('0.1.0')
-      .addBearerAuth()
-      .build()
-    const document = SwaggerModule.createDocument(app, config)
     SwaggerModule.setup('docs', app, document)
   }
 

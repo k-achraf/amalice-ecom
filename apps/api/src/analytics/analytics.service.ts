@@ -112,4 +112,83 @@ export class AnalyticsService {
       topLandingPages
     }
   }
+
+  // ---- Visitor analysis (admin / MCP) ------------------------------------
+  // One row per visitor in the window: first/last seen, pages viewed, device
+  // and traffic source (from the visitor's funnel visits when there are any).
+  async listVisitors(opts: { days: number; page: number; pageSize: number; source?: string; type?: string }) {
+    const since = new Date(Date.now() - opts.days * 24 * 60 * 60 * 1000)
+    const where = {
+      createdAt: { gte: since },
+      ...(opts.source ? { source: opts.source } : {}),
+      ...(opts.type ? { type: opts.type as never } : {})
+    }
+    const groups = await this.prisma.pageViewEvent.groupBy({
+      by: ['visitorId'],
+      where,
+      _count: { _all: true },
+      _min: { createdAt: true },
+      _max: { createdAt: true, durationSeconds: true, scrollDepth: true },
+      orderBy: { _max: { createdAt: 'desc' } },
+      skip: (opts.page - 1) * opts.pageSize,
+      take: opts.pageSize
+    })
+    const total = (await this.prisma.pageViewEvent.findMany({ where, distinct: ['visitorId'], select: { visitorId: true } })).length
+    const ids = groups.map((g) => g.visitorId)
+    const meta = ids.length
+      ? await this.prisma.pageViewEvent.findMany({
+          where: { visitorId: { in: ids }, createdAt: { gte: since } },
+          select: { visitorId: true, deviceType: true, source: true, campaign: true },
+          orderBy: { createdAt: 'asc' }
+        })
+      : []
+    const metaBy = new Map<string, { deviceType: string | null; source: string | null; campaign: string | null }>()
+    for (const m of meta) {
+      const cur = metaBy.get(m.visitorId)
+      metaBy.set(m.visitorId, {
+        deviceType: cur?.deviceType ?? m.deviceType,
+        source: cur?.source ?? m.source,
+        campaign: cur?.campaign ?? m.campaign
+      })
+    }
+    return {
+      days: opts.days,
+      page: opts.page,
+      pageSize: opts.pageSize,
+      total,
+      items: groups.map((g) => ({
+        visitorId: g.visitorId,
+        views: g._count._all,
+        firstSeen: g._min.createdAt,
+        lastSeen: g._max.createdAt,
+        maxDurationSeconds: g._max.durationSeconds,
+        maxScrollDepth: g._max.scrollDepth,
+        ...(metaBy.get(g.visitorId) ?? { deviceType: null, source: null, campaign: null })
+      }))
+    }
+  }
+
+  // One visitor's full journey: every page view in order, the funnel session
+  // recordings that belong to them, and the orders they placed.
+  async getVisitor(visitorId: string) {
+    const [views, recordings, attributions] = await Promise.all([
+      this.prisma.pageViewEvent.findMany({ where: { visitorId }, orderBy: { createdAt: 'asc' }, take: 500 }),
+      this.prisma.funnelRecording.findMany({
+        where: { visitorId },
+        orderBy: { startedAt: 'asc' },
+        take: 50,
+        select: { id: true, funnelId: true, eventCount: true, startedAt: true, endedAt: true }
+      }),
+      this.prisma.orderAttribution.findMany({
+        where: { visitorId },
+        select: { order: { select: { id: true, number: true, state: true, totalCents: true, createdAt: true } }, platform: true, campaignName: true, utmSource: true }
+      })
+    ])
+    return {
+      visitorId,
+      views,
+      recordings,
+      orders: attributions.map((a) => ({ ...a.order, platform: a.platform, campaignName: a.campaignName, utmSource: a.utmSource }))
+    }
+  }
 }

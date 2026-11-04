@@ -31,6 +31,24 @@ const rtoRate = computed(() => {
   return `${((stats.value.rtoCount30d / stats.value.totalOrders30d) * 100).toFixed(1)}%`
 })
 
+// Manager switch: hide every order from the call-center drop queue for one hour.
+const canPauseDrop = computed(() => auth.role === 'SuperAdmin' || auth.role === 'OpsManager')
+const dropApi = useAdminApi()
+const { run: runDrop } = useApiAction()
+const dropPausedUntil = ref<string | null>(null)
+const togglingDrop = ref(false)
+if (canPauseDrop.value) dropApi<{ pausedUntil: string | null }>('/admin/call-center/drop-pause').then((r) => { dropPausedUntil.value = r.pausedUntil }).catch(() => undefined)
+async function toggleDropPause() {
+  togglingDrop.value = true
+  const paused = !dropPausedUntil.value
+  const res = await runDrop(() => dropApi<{ pausedUntil: string | null }>('/admin/call-center/drop-pause', { method: 'PUT', body: { paused } }), {
+    success: paused ? 'Drop queue hidden for 1 hour' : 'Drop queue resumed',
+    errorFallback: 'Could not change the drop queue'
+  })
+  togglingDrop.value = false
+  if (res) dropPausedUntil.value = res.pausedUntil
+}
+
 // Money is shown the design's way: "3,651 DA", no currency symbol or decimals.
 const money = (cents: number) => Math.round(cents / 100).toLocaleString('en-US')
 
@@ -88,6 +106,9 @@ const attention = computed(() => stats.value
             </li>
           </ul>
           <NuxtLink to="/call-center" class="btn btn-primary" style="margin-top: auto">Open the call-center queue</NuxtLink>
+          <button v-if="canPauseDrop" class="btn" type="button" :disabled="togglingDrop" @click="toggleDropPause">
+            <AdsIcon :name="dropPausedUntil ? 'i-lucide-play' : 'i-lucide-pause'" />{{ dropPausedUntil ? `Drop hidden until ${new Date(dropPausedUntil).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} — resume` : 'Hide drop orders for 1 hour' }}
+          </button>
         </section>
 
         <section class="card narrow" aria-labelledby="rto-h">

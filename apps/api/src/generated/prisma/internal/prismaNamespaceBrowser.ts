@@ -115,7 +115,10 @@ export const ModelName = {
   ReportSettings: 'ReportSettings',
   AiProviderCredential: 'AiProviderCredential',
   AiSettings: 'AiSettings',
-  AlertLog: 'AlertLog'
+  AlertLog: 'AlertLog',
+  SocialAccount: 'SocialAccount',
+  SocialPost: 'SocialPost',
+  McpToken: 'McpToken'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1118,6 +1121,54 @@ export const AlertLogScalarFieldEnum = {
 } as const
 
 export type AlertLogScalarFieldEnum = (typeof AlertLogScalarFieldEnum)[keyof typeof AlertLogScalarFieldEnum]
+
+
+export const SocialAccountScalarFieldEnum = {
+  id: 'id',
+  platform: 'platform',
+  externalId: 'externalId',
+  name: 'name',
+  handle: 'handle',
+  accessTokenEnc: 'accessTokenEnc',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SocialAccountScalarFieldEnum = (typeof SocialAccountScalarFieldEnum)[keyof typeof SocialAccountScalarFieldEnum]
+
+
+export const SocialPostScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  accountId: 'accountId',
+  status: 'status',
+  message: 'message',
+  externalId: 'externalId',
+  externalUrl: 'externalUrl',
+  error: 'error',
+  createdAt: 'createdAt'
+} as const
+
+export type SocialPostScalarFieldEnum = (typeof SocialPostScalarFieldEnum)[keyof typeof SocialPostScalarFieldEnum]
+
+
+export const McpTokenScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  tokenHash: 'tokenHash',
+  prefix: 'prefix',
+  abilities: 'abilities',
+  createdById: 'createdById',
+  createdByEmail: 'createdByEmail',
+  expiresAt: 'expiresAt',
+  revokedAt: 'revokedAt',
+  lastUsedAt: 'lastUsedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type McpTokenScalarFieldEnum = (typeof McpTokenScalarFieldEnum)[keyof typeof McpTokenScalarFieldEnum]
 
 
 export const SortOrder = {

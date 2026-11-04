@@ -488,6 +488,21 @@ then `pm2 restart amalice-api`).
 
 ---
 
+## 12c. MCP server for AI agents (optional)
+
+`apps/mcp` lets Claude, Gemini or any MCP client work on the store over HTTPS. It holds no secrets: each AI client uses a token created in the admin, and the API enforces what that token may do.
+
+1. Apply the migration (`pnpm exec prisma migrate deploy` in `apps/api`) and rebuild + restart the API and admin (steps 5, 6, 8). The admin gets a new page, **AI -> AI agents (MCP)** (SuperAdmin).
+2. `apps/mcp/.env` (copy `.env.example`): `MCP_PORT=3004`, `MCP_HOST=127.0.0.1`, `API_BASE_URL=http://127.0.0.1:3333`. Optional, for the address shown on the admin page: `NUXT_PUBLIC_MCP_URL=https://mcp.yourdomain.com/mcp` in `apps/admin/.env` (build-time, then rebuild the admin).
+3. DNS e.g. `mcp.yourdomain.com` -> Nginx -> `127.0.0.1:3004` (HTTPS only, certbot as in step 10). In the location block set `proxy_buffering off;` and `proxy_read_timeout 300s;`. Only `/mcp` and `/health` are served.
+4. Build and run: `pnpm --filter mcp build`, then add to `ecosystem.config.cjs`:
+   `{ name: 'amalice-mcp', cwd: './apps/mcp', script: 'dist/server.js', env: { NODE_ENV: 'production', ...loadEnvFile('apps/mcp/.env') } }`
+   and `pm2 start ecosystem.config.cjs --only amalice-mcp && pm2 save`.
+5. In the admin, create a token, tick its abilities, copy it (shown once) and connect the client; the dialog shows ready-made commands, e.g. Claude Code: `claude mcp add --transport http amalice https://mcp.yourdomain.com/mcp --header "Authorization: Bearer <token>"`.
+6. Revoking a token in the admin stops it immediately; edited abilities apply within ~30 s. Everything an agent does is in the audit log / order timeline as `mcp:<token name>`.
+
+---
+
 ## 13. Smoke test
 
 - `https://yourdomain.com` — storefront loads, products render.

@@ -17,6 +17,7 @@ import {
   type LogCall,
   type OrderState
 } from '@amalice/shared'
+import { RedisService } from '../redis/redis.service'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
 import { GoogleSheetsService } from '../apps/google-sheets.service'
@@ -73,6 +74,9 @@ function tierOf(o: Candidate): number {
   return 2
 }
 
+const DROP_PAUSE_KEY = 'callcenter:drop-paused-until'
+const DROP_PAUSE_SECONDS = 60 * 60
+
 @Injectable()
 export class AdminCallCenterService {
   private readonly logger = new Logger(AdminCallCenterService.name)
@@ -83,7 +87,8 @@ export class AdminCallCenterService {
     private readonly googleSheets: GoogleSheetsService,
     private readonly orders: AdminOrdersService,
     private readonly stock: StockService,
-    private readonly purchaseEvents: PurchaseEventsService
+    private readonly purchaseEvents: PurchaseEventsService,
+    private readonly redis: RedisService
   ) {}
 
   // ---- queue ---------------------------------------------------------------
@@ -159,10 +164,35 @@ export class AdminCallCenterService {
     return !!o.lockedUntil && o.lockedUntil > now && !!o.assignedToId && o.assignedToId !== agentId
   }
 
+  // Manager switch: while paused the drop hands out nothing, to every agent. The
+  // flag is a Redis key that expires by itself after DROP_PAUSE_SECONDS, so a
+  // forgotten pause can never block the queue for good. Redis trouble = not paused.
+  async dropPausedUntil(): Promise<string | null> {
+    try {
+      return (await this.redis.get(DROP_PAUSE_KEY)) ?? null
+    } catch {
+      return null
+    }
+  }
+
+  async setDropPause(paused: boolean, actor: AuditActor): Promise<{ pausedUntil: string | null }> {
+    if (!paused) {
+      await this.redis.del(DROP_PAUSE_KEY)
+      await this.audit.log({ actor, action: 'Update', entity: 'CallCenter', entityId: 'drop', metadata: { dropPaused: false } })
+      return { pausedUntil: null }
+    }
+    const pausedUntil = new Date(Date.now() + DROP_PAUSE_SECONDS * 1000).toISOString()
+    await this.redis.set(DROP_PAUSE_KEY, pausedUntil, 'EX', DROP_PAUSE_SECONDS)
+    await this.audit.log({ actor, action: 'Update', entity: 'CallCenter', entityId: 'drop', metadata: { dropPaused: true, pausedUntil } })
+    return { pausedUntil }
+  }
+
   // Hands the calling agent the next order and locks it to them, atomically —
   // two agents hitting this at once can never receive the same order.
   async claimNext(actor: AuditActor) {
     const now = new Date()
+    const pausedUntil = await this.dropPausedUntil()
+    if (pausedUntil) return { order: null, pausedUntil }
     const lockUntil = new Date(now.getTime() + CALL_LOCK_MINUTES * 60 * 1000)
 
     // Resume what this agent already holds (page reload / reopened tab).
@@ -192,7 +222,7 @@ export class AdminCallCenterService {
         return { order: await this.orders.findOne(c.id) }
       }
     }
-    return { order: null }
+    return { order: null, pausedUntil: null }
   }
 
   // Heartbeat: keeps the lock alive while the agent has the order open.

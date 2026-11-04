@@ -356,3 +356,27 @@ export const BlacklistSource = {
 } as const
 
 export type BlacklistSource = (typeof BlacklistSource)[keyof typeof BlacklistSource]
+
+
+export const SocialPlatform = {
+  Facebook: 'Facebook',
+  Instagram: 'Instagram'
+} as const
+
+export type SocialPlatform = (typeof SocialPlatform)[keyof typeof SocialPlatform]
+
+
+export const SocialAccountStatus = {
+  Active: 'Active',
+  Expired: 'Expired'
+} as const
+
+export type SocialAccountStatus = (typeof SocialAccountStatus)[keyof typeof SocialAccountStatus]
+
+
+export const SocialPostStatus = {
+  Published: 'Published',
+  Failed: 'Failed'
+} as const
+
+export type SocialPostStatus = (typeof SocialPostStatus)[keyof typeof SocialPostStatus]

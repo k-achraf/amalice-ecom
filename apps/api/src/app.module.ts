@@ -26,7 +26,9 @@ import { FunnelsModule } from './funnels/funnels.module'
 import { ServerPerformanceModule } from './server-performance/server-performance.module'
 import { AnalyticsModule } from './analytics/analytics.module'
 import { MetaAdsModule } from './meta-ads/meta-ads.module'
+import { SocialModule } from './social/social.module'
 import { ReportsModule } from './reports/reports.module'
+import { McpModule } from './mcp/mcp.module'
 import { AiModule } from './ai/ai.module'
 
 @Module({
@@ -75,7 +77,9 @@ import { AiModule } from './ai/ai.module'
     ServerPerformanceModule,
     AnalyticsModule,
     MetaAdsModule,
+    SocialModule,
     ReportsModule,
+    McpModule,
     AiModule
   ],
   providers: [
