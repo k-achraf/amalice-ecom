@@ -191,12 +191,19 @@ ${field('phone', T.phone, `<input class="in" name="phone" type="tel" inputmode="
 ${field('wilaya', T.wilaya, `<select class="in" name="wilaya" autocomplete="off" required><option value="">${T.chooseWilaya}</option>${[...f.wilayas].sort((a, b) => Number(a.id) - Number(b.id) || a.name.localeCompare(b.name)).map((w) => `<option value="${esc(w.id)}">${esc(`${w.id} - ${w.name}`)}</option>`).join('')}</select>`, T.errWilaya)}
 ${field('commune', `${T.commune} ${T.optional}`, `<select class="in" name="commune" autocomplete="off" disabled><option value="">${T.chooseCommune}</option></select>`, T.errCommune)}
 </div>
+${f.protection.honeypot ? '<div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Website<input name="company_url" type="text" tabindex="-1" autocomplete="off"></label></div>' : ''}
 ${s.addressField === 'hidden' ? '' : field('address', addrLabel, '<input class="in" name="address" autocomplete="street-address">', T.errAddress)}
 <div class="fl" data-f="ship"><span>${T.delivery}</span><div class="opts"><label class="opt"><input type="radio" name="ship" value="Home" checked disabled><i class="rd"></i><span data-sl="Home">${T.homeDelivery}</span></label><label class="opt"><input type="radio" name="ship" value="Desk" disabled><i class="rd"></i><span data-sl="Desk">${T.deskDelivery}</span></label></div><span class="em">${T.errDelivery}</span></div>
 ${s.showNotes ? `<div class="fl"><span>${T.notes}</span><textarea class="in" name="notes" maxlength="300"></textarea></div>` : ''}
 ${
   s.showPrice
     ? `<div class="sum"><div><span>${T.product}</span><span data-sub>${formatDa(subtotal)}</span></div>${s.hideShipping ? '' : `<div><span>${T.delivery}</span><span data-ship>${T.deliveryByWilaya}</span></div>`}<div class="gr"><span>${T.toPay}</span><b data-total>${formatDa(subtotal)}</b></div></div>`
+    : ''
+}
+${f.protection.captchaSiteKey ? '<div id="ts" style="min-height:0;margin:8px 0"></div>' : ''}
+${
+  f.protection.otp
+    ? `<div class="fl" id="otp" style="display:none"><span>${T.otpTitle}</span><p style="margin:0 0 8px;color:var(--ink2);font-size:15px">${T.otpHint}</p><input class="in" id="otpc" inputmode="numeric" autocomplete="one-time-code" maxlength="8" dir="ltr" placeholder="${T.otpPlaceholder}" style="text-align:center;letter-spacing:.3em"><div class="fe" id="otpe" role="alert"></div><button type="button" class="cta" id="otpv"><span>${T.otpConfirm}</span></button><button type="button" class="ghost" id="otpr">${T.otpResend}</button></div>`
     : ''
 }
 <div class="fe" id="fe" role="alert"></div>
@@ -277,6 +284,8 @@ ${s.trustBadges ? `<ul class="trust"><li>${ico('truck')}${T.trust[0]}</li><li>${
       sending: T.sending,
       generic: T.errGeneric,
       network: T.errNetwork,
+      captcha: T.errCaptcha,
+      otpSent: T.otpSent,
       thanksBody: T.thanksBody('\u0000')
     },
     bump: bumpStep?.offerProduct ? { id: bumpStep.id, p: bumpStep.offerProduct.priceCents } : null,
@@ -286,6 +295,7 @@ ${s.trustBadges ? `<ul class="trust"><li>${ico('truck')}${T.trust[0]}</li><li>${
     hs: s.hideShipping ? 1 : 0,
     rr: s.recordSessions ? RECORDER_URL : null,
     ab: f.abandonedDelaySeconds,
+    pr: { otp: f.protection.otp ? 1 : 0, ck: f.protection.captchaSiteKey },
     px: { m: metaId, t: ttId },
     sold: soldOut
   }

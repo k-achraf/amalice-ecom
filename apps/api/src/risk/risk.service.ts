@@ -17,6 +17,8 @@ import {
   type BlacklistEntryView,
   type BlacklistType,
   type CreateBlacklistEntry,
+  type FunnelBlockReason,
+  type FunnelFakeAction,
   type RiskResult,
   type UpdateBlacklistEntry
 } from '@amalice/shared'
@@ -31,10 +33,46 @@ export interface AddressInput {
   region: string
 }
 
+// A funnel's own rules for scoring/refusing an order (FunnelProtection.risk, plus the whitelist). Without
+// one, the global defaults apply: blacklist on, auto rule at 2/3 returns, fake identity = warning only.
+export interface RiskPolicy {
+  useBlacklist: boolean
+  autoWarnReturns: number
+  autoBlockReturns: number
+  fakeNameAction: FunnelFakeAction
+  fakeAddressAction: FunnelFakeAction
+  mediumFrom: number
+  highFrom: number
+  blockAtScore: number
+  blockedMessage: string
+  // Whitelisted phone / IP: scored as usual but never refused.
+  bypass: boolean
+}
+
+export type RiskBlockCause = 'Phone' | 'Address' | 'FakeName' | 'FakeAddress' | 'HighRisk'
+
 export interface RiskAssessment {
   risk: RiskResult
-  // Set when a Block entry matches: the order must be refused.
-  blockedBy: 'Phone' | 'Address' | null
+  // Set when the order must be refused: a Block entry matched, or the funnel's policy says so.
+  blockedBy: RiskBlockCause | null
+}
+
+const CAUSE_TO_REASON: Record<RiskBlockCause, FunnelBlockReason> = {
+  Phone: 'Blacklist',
+  Address: 'Blacklist',
+  FakeName: 'FakeName',
+  FakeAddress: 'FakeAddress',
+  HighRisk: 'HighRisk'
+}
+
+// The refusal the shopper gets; carries why, so the funnel can log the attempt.
+export class RiskBlockedException extends ForbiddenException {
+  constructor(
+    message: string,
+    readonly reason: FunnelBlockReason
+  ) {
+    super(message)
+  }
 }
 
 // Shown to the shopper when a blocked phone/address tries to order. Kept
@@ -99,37 +137,55 @@ export class RiskService {
   // Scores an order about to be placed by `phone` for `address`. Safe to call
   // before the customer/address rows exist. Side effect: applies the
   // automatic blacklist rule (see applyAutoRule).
-  async assess(phone: string, address: AddressInput, name?: string | null): Promise<RiskAssessment> {
+  async assess(phone: string, address: AddressInput, name?: string | null, policy?: RiskPolicy): Promise<RiskAssessment> {
     const customer = await this.prisma.customer.findUnique({ where: { phone }, select: { id: true } })
     const history = customer ? await this.customerHistory(customer.id) : { delivered: 0, returned: 0, cancelled: 0, unreachable: 0, total: 0, last24h: 0 }
 
-    const phoneEntry = await this.applyAutoRule(phone, history.returned)
+    const useBlacklist = policy?.useBlacklist ?? true
+    const phoneEntry = useBlacklist
+      ? await this.applyAutoRule(phone, history.returned, policy ? { warnAt: policy.autoWarnReturns, blockAt: policy.autoBlockReturns } : undefined)
+      : null
     const addressKey = addressKeyOf(address)
-    const addressEntry = addressKey
+    const addressEntry = useBlacklist && addressKey
       ? await this.prisma.blacklistEntry.findFirst({ where: { type: 'Address', value: addressKey, active: true } })
       : null
 
     const [wilaya, commune] = await Promise.all([this.areaStats({ region: address.region }), this.areaStats({ region: address.region, city: address.city })])
 
-    const risk = computeOrderRisk({
-      history,
-      wilaya,
-      commune,
-      phoneBlacklist: phoneEntry?.action ?? null,
-      addressBlacklist: addressEntry?.action ?? null,
-      isDuplicate: false,
-      // Warning only (never a block): the call center decides.
-      fakeIdentity: detectFakeIdentity({ name, addressText: [address.line1, addressText(address.line2)].filter(Boolean).join(' ') })
-    })
-    const blockedBy = phoneEntry?.action === 'Block' ? 'Phone' : addressEntry?.action === 'Block' ? 'Address' : null
+    // Warning only by default (the call center decides); a funnel can ignore it or refuse the order.
+    const found = detectFakeIdentity({ name, addressText: [address.line1, addressText(address.line2)].filter(Boolean).join(' ') })
+    const fakeName = policy?.fakeNameAction === 'ignore' ? null : found.name
+    const fakeAddress = policy?.fakeAddressAction === 'ignore' ? null : found.address
+
+    const thresholds = policy ? { mediumFrom: policy.mediumFrom, highFrom: policy.highFrom } : undefined
+    const risk = computeOrderRisk(
+      {
+        history,
+        wilaya,
+        commune,
+        phoneBlacklist: phoneEntry?.action ?? null,
+        addressBlacklist: addressEntry?.action ?? null,
+        isDuplicate: false,
+        fakeIdentity: { name: fakeName, address: fakeAddress }
+      },
+      thresholds
+    )
+
+    let blockedBy: RiskBlockCause | null = null
+    if (phoneEntry?.action === 'Block') blockedBy = 'Phone'
+    else if (addressEntry?.action === 'Block') blockedBy = 'Address'
+    else if (policy?.fakeNameAction === 'block' && fakeName) blockedBy = 'FakeName'
+    else if (policy?.fakeAddressAction === 'block' && fakeAddress) blockedBy = 'FakeAddress'
+    else if (policy && policy.blockAtScore > 0 && risk.score >= policy.blockAtScore) blockedBy = 'HighRisk'
+    if (policy?.bypass) blockedBy = null
     return { risk, blockedBy }
   }
 
-  // Throws the refusal the shopper sees when the assessment says Block.
-  assertNotBlocked(assessment: RiskAssessment, phone: string): void {
+  // Throws the refusal the shopper sees when the assessment says Block. `message` is a funnel's own text.
+  assertNotBlocked(assessment: RiskAssessment, phone: string, message?: string): void {
     if (!assessment.blockedBy) return
-    this.logger.warn(`Refused order from ${phone}: ${assessment.blockedBy} is blacklisted`)
-    throw new ForbiddenException(BLOCKED_ORDER_MESSAGE)
+    this.logger.warn(`Refused order from ${phone}: ${assessment.blockedBy}`)
+    throw new RiskBlockedException(message?.trim() || BLOCKED_ORDER_MESSAGE, CAUSE_TO_REASON[assessment.blockedBy])
   }
 
   private async customerHistory(customerId: string) {
@@ -172,9 +228,9 @@ export class RiskService {
   // next order (so it needs no hook in every place a return is recorded).
   // An entry that already exists — including one an admin released — is never
   // overwritten, except that an Auto Warn is raised to Block when returns grow.
-  private async applyAutoRule(phone: string, returned: number): Promise<BlacklistEntry | null> {
+  private async applyAutoRule(phone: string, returned: number, limits?: { warnAt: number; blockAt: number }): Promise<BlacklistEntry | null> {
     const existing = await this.prisma.blacklistEntry.findUnique({ where: { type_value: { type: 'Phone', value: phone } } })
-    const wanted = autoBlacklistAction(returned)
+    const wanted = autoBlacklistAction(returned, limits)
     if (!wanted) return existing?.active ? existing : null
     if (!existing) {
       const created = await this.prisma.blacklistEntry.create({

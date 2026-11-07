@@ -2,6 +2,9 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import {
   FUNNEL_STEP_TYPE_META,
   getFunnelTemplate,
+  normalizeAlgerianPhone,
+  parseFunnelProtection,
+  type FunnelProtection,
   type CreateFunnel,
   type CreateFunnelStep,
   type FunnelDetail,
@@ -13,6 +16,7 @@ import {
   type UpdateFunnel,
   type UpdateFunnelStep
 } from '@amalice/shared'
+import type { Prisma } from '../generated/prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
 
@@ -48,6 +52,7 @@ type FunnelRow = {
   templateId: string
   metaPixelId: string | null
   tiktokPixelCode: string | null
+  protection: unknown
   createdAt: Date
   updatedAt: Date
   product: { id: string; name: string; slug: string; imageUrl: string | null }
@@ -139,8 +144,17 @@ export class FunnelsService {
     await this.ensureFunnel(id)
     if (input.productId) await this.ensureProduct(input.productId)
     if (input.slug) await this.assertSlugFree(input.slug, id)
-    await this.prisma.funnel.update({ where: { id }, data: input })
-    await this.audit.log({ actor, action: 'Update', entity: 'Funnel', entityId: id, metadata: input })
+    const { protection, ...rest } = input
+    const data: Prisma.FunnelUpdateInput = { ...rest }
+    // Protection is stored whole. A blank captcha secret means "keep the saved one" (the API never returns it).
+    if (protection) {
+      const current = await this.prisma.funnel.findUnique({ where: { id }, select: { protection: true } })
+      data.protection = this.prepareProtection(protection, parseFunnelProtection(current?.protection)) as unknown as Prisma.InputJsonValue
+    }
+    await this.prisma.funnel.update({ where: { id }, data })
+    // The audit trail never carries the captcha secret.
+    const logged = protection ? { ...rest, protection: { ...protection, bots: { ...protection.bots, captcha: { ...protection.bots.captcha, secretKey: undefined } } } } : rest
+    await this.audit.log({ actor, action: 'Update', entity: 'Funnel', entityId: id, metadata: logged })
     return this.get(id)
   }
 
@@ -160,6 +174,7 @@ export class FunnelsService {
         slug,
         templateId: src.templateId,
         productId: src.product.id,
+        protection: (await this.prisma.funnel.findUnique({ where: { id }, select: { protection: true } }))?.protection ?? undefined,
         steps: {
           create: src.steps.map((s) => ({ position: s.position, type: s.type, name: s.name, enabled: s.enabled, config: s.config as object }))
         }
@@ -264,7 +279,25 @@ export class FunnelsService {
         offerProduct: config.offerProductId ? (byId.get(config.offerProductId) ?? null) : null
       }
     })
-    return { ...toListItem(row, steps.length), steps: stepViews }
+    return { ...toListItem(row, steps.length), steps: stepViews, protection: this.protectionView(row.protection) }
+  }
+
+  // What the admin sees: the stored settings with the captcha secret removed (`secretSet` says if one is saved).
+  private protectionView(raw: unknown): FunnelProtection {
+    const p = parseFunnelProtection(raw)
+    return { ...p, bots: { ...p.bots, captcha: { ...p.bots.captcha, secretKey: '', secretSet: !!p.bots.captcha.secretKey } } }
+  }
+
+  private prepareProtection(input: FunnelProtection, current: FunnelProtection): FunnelProtection {
+    const secretKey = input.bots.captcha.secretKey || current.bots.captcha.secretKey
+    const uniq = (list: string[]) => [...new Set(list.map((v) => v.trim()).filter(Boolean))]
+    return {
+      ...input,
+      bots: { ...input.bots, captcha: { ...input.bots.captcha, secretKey, secretSet: !!secretKey } },
+      // Whitelisted phones are kept in the canonical E.164 form orders are compared in.
+      whitelist: { phones: uniq(input.whitelist.phones.map(normalizeAlgerianPhone)), ips: uniq(input.whitelist.ips) },
+      network: { ...input.network, blockedIps: uniq(input.network.blockedIps) }
+    }
   }
 
   private async ensureFunnel(id: string) {

@@ -137,8 +137,8 @@ async function addStep() {
 }
 
 // ---- landing page tab ----
-type Tab = 'flow' | 'landing' | 'stats' | 'sessions' | 'orders'
-const TABS: Tab[] = ['flow', 'landing', 'stats', 'sessions', 'orders']
+type Tab = 'flow' | 'landing' | 'stats' | 'sessions' | 'orders' | 'protection'
+const TABS: Tab[] = ['flow', 'landing', 'stats', 'sessions', 'orders', 'protection']
 const tab = ref<Tab>(TABS.includes(route.query.tab as Tab) ? (route.query.tab as Tab) : 'flow')
 watch(tab, (t) => router.replace({ query: { ...route.query, tab: t === 'flow' ? undefined : t } }))
 // The data tabs fetch on first open (v-if), then stay mounted so switching back is instant.
@@ -301,12 +301,13 @@ const warnings = computed(() => {
       <AdsTabs
         v-model="tab"
         underline
-        :items="[{ label: 'Flow', value: 'flow' }, { label: 'Landing page', value: 'landing' }, { label: 'Stats', value: 'stats' }, { label: 'Sessions', value: 'sessions' }, { label: 'Orders', value: 'orders' }]"
+        :items="[{ label: 'Flow', value: 'flow' }, { label: 'Landing page', value: 'landing' }, { label: 'Stats', value: 'stats' }, { label: 'Sessions', value: 'sessions' }, { label: 'Orders', value: 'orders' }, { label: 'Protection', value: 'protection' }]"
       />
 
       <FunnelStats v-if="opened.stats" v-show="tab === 'stats'" :funnel-id="id" />
       <FunnelSessions v-if="opened.sessions" v-show="tab === 'sessions'" :funnel-id="id" />
       <FunnelOrders v-if="opened.orders" v-show="tab === 'orders'" :funnel-id="id" />
+      <FunnelProtection v-if="funnel && tab === 'protection'" :funnel="funnel" @saved="(f) => (funnel = f)" />
 
       <section v-show="tab === 'landing'" class="stack" aria-label="Landing page settings">
         <div v-if="loadingProduct && !productDetail" class="empty">Loading the product…</div>

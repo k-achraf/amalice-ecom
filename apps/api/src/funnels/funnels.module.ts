@@ -10,10 +10,12 @@ import { FunnelsRecordingsService } from './funnels-recordings.service'
 import { CommonModule } from '../common/common.module'
 import { OrdersModule } from '../orders/orders.module'
 import { OrderItemsModule } from '../order-items/order-items.module'
+import { NotificationsModule } from '../notifications/notifications.module'
+import { FunnelProtectionService } from './funnels-protection.service'
 
 @Module({
-  imports: [CommonModule, OrdersModule, OrderItemsModule, LandingPagesModule],
+  imports: [CommonModule, OrdersModule, OrderItemsModule, LandingPagesModule, NotificationsModule],
   controllers: [FunnelsController, FunnelsPublicController],
-  providers: [FunnelsService, FunnelsAiService, FunnelsStatsService, FunnelsPublicService, FunnelsRecordingsService]
+  providers: [FunnelsService, FunnelsAiService, FunnelsStatsService, FunnelsPublicService, FunnelsRecordingsService, FunnelProtectionService]
 })
 export class FunnelsModule {}

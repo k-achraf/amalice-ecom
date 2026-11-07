@@ -16,6 +16,7 @@ import { FunnelsService } from './funnels.service'
 import { FunnelsStatsService } from './funnels-stats.service'
 import { FunnelsRecordingsService } from './funnels-recordings.service'
 import { FunnelsAiService } from './funnels-ai.service'
+import { FunnelProtectionService } from './funnels-protection.service'
 import { JwtAuthGuard } from '../identity/admin-auth/jwt-auth.guard'
 import { RolesGuard } from '../identity/admin-auth/roles.guard'
 import { Roles } from '../identity/admin-auth/roles.decorator'
@@ -45,7 +46,8 @@ export class FunnelsController {
     private readonly funnels: FunnelsService,
     private readonly stats: FunnelsStatsService,
     private readonly ai: FunnelsAiService,
-    private readonly recordings: FunnelsRecordingsService
+    private readonly recordings: FunnelsRecordingsService,
+    private readonly protection: FunnelProtectionService
   ) {}
 
   // Static catalog from packages/shared — declared before ':id' so it is not captured as an id.
@@ -81,6 +83,12 @@ export class FunnelsController {
   async deleteRecording(@Param('id') id: string, @Param('viewId') viewId: string) {
     await this.recordings.remove(id, viewId)
     return { ok: true }
+  }
+
+  // Order attempts this funnel's protection refused (last 30 days), newest first, with a count per reason.
+  @Get(':id/blocked-attempts')
+  blockedAttempts(@Param('id') id: string, @Query('page') page = '1') {
+    return this.protection.listBlocked(id, Math.max(1, Math.floor(Number(page)) || 1))
   }
 
   @Get(':id/stats')

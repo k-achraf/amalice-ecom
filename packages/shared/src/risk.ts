@@ -103,13 +103,18 @@ export interface RiskResult {
   factors: RiskFactor[]
 }
 
-export function riskLevelFor(score: number): RiskLevel {
-  return score >= RISK_HIGH_FROM ? 'High' : score >= RISK_MEDIUM_FROM ? 'Medium' : 'Low'
+export interface RiskThresholds {
+  mediumFrom: number
+  highFrom: number
+}
+
+export function riskLevelFor(score: number, t: RiskThresholds = { mediumFrom: RISK_MEDIUM_FROM, highFrom: RISK_HIGH_FROM }): RiskLevel {
+  return score >= t.highFrom ? 'High' : score >= t.mediumFrom ? 'Medium' : 'Low'
 }
 
 const pct = (n: number, d: number) => Math.round((n / d) * 100)
 
-export function computeOrderRisk(input: RiskInput): RiskResult {
+export function computeOrderRisk(input: RiskInput, thresholds?: RiskThresholds): RiskResult {
   const { history: h } = input
   const factors: RiskFactor[] = []
   const add = (code: string, points: number, detail?: string) => factors.push({ code, points, ...(detail && { detail }) })
@@ -148,21 +153,24 @@ export function computeOrderRisk(input: RiskInput): RiskResult {
   if (h.delivered >= 2 && h.returned === 0 && h.cancelled === 0) add('GOOD_HISTORY', -15, `${h.delivered} delivered`)
 
   const score = Math.max(0, Math.min(100, factors.reduce((sum, f) => sum + f.points, 0)))
-  return { score, level: riskLevelFor(score), factors }
+  return { score, level: riskLevelFor(score, thresholds), factors }
 }
 
 // Adds a factor discovered after the first scoring pass (the duplicate flag is
 // only known once the order's customer row exists).
-export function addRiskFactor(result: RiskResult, factor: RiskFactor): RiskResult {
+export function addRiskFactor(result: RiskResult, factor: RiskFactor, thresholds?: RiskThresholds): RiskResult {
   const factors = [...result.factors, factor]
   const score = Math.max(0, Math.min(100, factors.reduce((sum, f) => sum + f.points, 0)))
-  return { score, level: riskLevelFor(score), factors }
+  return { score, level: riskLevelFor(score, thresholds), factors }
 }
 
 // What the automatic rule does for a customer with this many returns:
 // null = nothing yet.
-export function autoBlacklistAction(returned: number): BlacklistAction | null {
-  return returned >= AUTO_BLOCK_RETURNS ? 'Block' : returned >= AUTO_WARN_RETURNS ? 'Warn' : null
+// `limits` overrides the defaults; 0 turns that step off.
+export function autoBlacklistAction(returned: number, limits: { warnAt: number; blockAt: number } = { warnAt: AUTO_WARN_RETURNS, blockAt: AUTO_BLOCK_RETURNS }): BlacklistAction | null {
+  if (limits.blockAt > 0 && returned >= limits.blockAt) return 'Block'
+  if (limits.warnAt > 0 && returned >= limits.warnAt) return 'Warn'
+  return null
 }
 
 // Canonical form of an address for blacklist matching: lowercase, accents and

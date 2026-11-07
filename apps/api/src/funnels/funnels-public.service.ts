@@ -1,6 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { randomUUID } from 'node:crypto'
+import type { IncomingHttpHeaders } from 'node:http'
 import {
   BrandSchema,
+  isCaptchaActive,
+  parseFunnelProtection,
   LandingSettingsSchema,
   defaultLandingSettings,
   withDescriptionSection,
@@ -8,6 +12,8 @@ import {
   type AcceptFunnelOffer,
   type FunnelOrder,
   type FunnelOrderResult,
+  type FunnelOtpSend,
+  type FunnelOtpVerify,
   type FunnelStepConfig,
   type FunnelStepType,
   type LandingSettings,
@@ -19,6 +25,8 @@ import {
 import { PrismaService } from '../prisma/prisma.service'
 import { OrdersService, type OrderRequestContext } from '../orders/orders.service'
 import { OrderItemsService } from '../order-items/order-items.service'
+import { RiskBlockedException } from '../risk/risk.service'
+import { FunnelProtectionService } from './funnels-protection.service'
 
 const OFFER_STEPS: FunnelStepType[] = ['Upsell', 'Downsell', 'OrderBump']
 
@@ -30,7 +38,8 @@ export class FunnelsPublicService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly orders: OrdersService,
-    private readonly orderItems: OrderItemsService
+    private readonly orderItems: OrderItemsService,
+    private readonly protection: FunnelProtectionService
   ) {}
 
   async get(slug: string): Promise<PublicFunnel> {
@@ -135,6 +144,10 @@ export class FunnelsPublicService {
       generatedImageUrl,
       pixels: { metaPixelId, tiktokPixelCode },
       abandonedDelaySeconds: settings?.abandonedCartDelaySeconds ?? 60,
+      protection: (() => {
+        const prot = parseFunnelProtection(funnel.protection)
+        return { honeypot: prot.bots.honeypot, otp: prot.phone.otp, captchaSiteKey: isCaptchaActive(prot) ? prot.bots.captcha.siteKey : null }
+      })(),
       // Only wilayas the admin has priced for at least one delivery type: a visitor can't order to the rest.
       wilayas: wilayas
         .map((w) => ({
@@ -147,9 +160,13 @@ export class FunnelsPublicService {
     }
   }
 
-  async placeOrder(slug: string, input: FunnelOrder, context: OrderRequestContext): Promise<FunnelOrderResult> {
+  async placeOrder(slug: string, input: FunnelOrder, context: OrderRequestContext & { headers?: IncomingHttpHeaders }): Promise<FunnelOrderResult> {
     const funnel = await this.loadLive(slug)
     const product = funnel.product
+
+    // The funnel's Protection settings (bots, limits, phone, network). A refusal throws; a filled honeypot gets a fake success.
+    const guard = await this.protection.guard(funnel, input, context)
+    if (guard.silent) return { id: randomUUID(), totalCents: 0 }
 
     let quantity = input.quantity
     if (input.offerId) {
@@ -172,22 +189,38 @@ export class FunnelsPublicService {
     }
 
     // The funnel only ever sells its own product: the items are built here, not taken from the request.
-    const order = await this.orders.createLeadOrder(
-      {
-        fields: input.fields,
-        wilayaId: input.wilayaId,
-        shippingType: input.shippingType,
-        items: [{ productId: product.id, variantId: input.variantId, quantity, offerId: input.offerId }],
-        tracking: input.tracking,
-        idempotencyKey: input.idempotencyKey,
-        formLoadedAt: input.formLoadedAt,
-        convertsAbandonedOrderId: input.convertsAbandonedOrderId
-      },
-      { ...context, funnelId: funnel.id }
-    )
+    let order: Awaited<ReturnType<OrdersService['createLeadOrder']>>
+    try {
+      order = await this.orders.createLeadOrder(
+        {
+          fields: input.fields,
+          wilayaId: input.wilayaId,
+          shippingType: input.shippingType,
+          items: [{ productId: product.id, variantId: input.variantId, quantity, offerId: input.offerId }],
+          tracking: input.tracking,
+          idempotencyKey: input.idempotencyKey,
+          formLoadedAt: input.formLoadedAt,
+          convertsAbandonedOrderId: input.convertsAbandonedOrderId
+        },
+        { ip: context.ip, userAgent: context.userAgent, funnelId: funnel.id, riskPolicy: guard.riskPolicy }
+      )
+    } catch (err) {
+      // Blacklist / fake identity / risk score refusals come from the risk service: log them with the others.
+      if (err instanceof RiskBlockedException) await this.protection.logBlocked(funnel.id, err.reason, context, guard.phone)
+      throw err
+    }
+    await this.protection.consumeOtp(funnel.id, input.otpToken)
 
     if (bump) await this.addOfferItem(order.id, bump.productId, bump.priceCents)
     return this.result(order.id)
+  }
+
+  async sendOtp(slug: string, input: FunnelOtpSend, context: { ip?: string; userAgent?: string; headers?: IncomingHttpHeaders }) {
+    return this.protection.sendOtp(await this.loadLive(slug), input.phone, context)
+  }
+
+  async verifyOtp(slug: string, input: FunnelOtpVerify) {
+    return this.protection.verifyOtp(await this.loadLive(slug), input.phone, input.code)
   }
 
   async acceptOffer(slug: string, orderId: string, stepId: string, input: AcceptFunnelOffer): Promise<FunnelOrderResult> {

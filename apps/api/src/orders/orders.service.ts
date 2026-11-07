@@ -6,7 +6,7 @@ import { NotificationsService } from '../notifications/notifications.service'
 import { GoogleSheetsService } from '../apps/google-sheets.service'
 import { OrderItemsService, canAddOrderItems } from '../order-items/order-items.service'
 import { RedisService } from '../redis/redis.service'
-import { RiskService } from '../risk/risk.service'
+import { RiskService, type RiskPolicy } from '../risk/risk.service'
 import { StockService } from '../common/stock.service'
 import { deviceTypeOf, fbcFromFbclid, resolvePlatform } from './order-attribution.util'
 
@@ -19,6 +19,8 @@ export interface OrderRequestContext {
   userAgent?: string
   // Set server-side by the funnels controller (from the slug) — ties the order to its funnel.
   funnelId?: string
+  // Set by the funnels service: that funnel's own risk rules (see RiskPolicy).
+  riskPolicy?: RiskPolicy
 }
 
 // Same customer submitting the same product twice within this window gets
@@ -585,8 +587,8 @@ export class OrdersService {
     }
 
     const addressLine2 = Object.keys(extras).length > 0 ? JSON.stringify(extras) : null
-    const assessment = await this.risk.assess(phone, { line1: commune || wilaya, line2: addressLine2, city: commune, region: wilaya }, name)
-    this.risk.assertNotBlocked(assessment, phone)
+    const assessment = await this.risk.assess(phone, { line1: commune || wilaya, line2: addressLine2, city: commune, region: wilaya }, name, context.riskPolicy)
+    this.risk.assertNotBlocked(assessment, phone, context.riskPolicy?.blockedMessage)
 
     const customer = await this.prisma.customer.upsert({
       where: { phone },
@@ -626,7 +628,10 @@ export class OrdersService {
       // Only relevant for a genuinely new row — converting this visit's own
       // abandoned capture into a real order isn't a second submission.
       const duplicateOfOrderId = convertingAbandoned ? null : await this.findRecentDuplicate(customer.id, productIds, { phone, name, region: wilaya, city: commune })
-      const risk = duplicateOfOrderId ? addRiskFactor(assessment.risk, { code: 'DUPLICATE_ORDER', points: 10 }) : assessment.risk
+      const policy = context.riskPolicy
+      const risk = duplicateOfOrderId
+        ? addRiskFactor(assessment.risk, { code: 'DUPLICATE_ORDER', points: 10 }, policy ? { mediumFrom: policy.mediumFrom, highFrom: policy.highFrom } : undefined)
+        : assessment.risk
 
       order = await this.prisma.$transaction(async (tx) => {
         // No stock is taken here: it is taken when the order is confirmed.

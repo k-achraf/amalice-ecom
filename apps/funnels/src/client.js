@@ -457,9 +457,70 @@
   var btn = $('#sub'), fe = $('#fe'), busy = false, key = uuid()
   function busyUi(on) { busy = on; btn.disabled = on; $('span', btn).textContent = on ? L.sending : fd.cta }
   function fail(msg) { fe.textContent = msg || L.generic; fe.className = 'fe on'; fe.scrollIntoView({ block: 'center' }) }
+  // ---------- protection: captcha (Turnstile) + phone verification (OTP) ----------
+  var ctoken = null, tsId = null, otpToken = null, otpPhone = null
+  var tsBox = $('#ts'), otpBox = $('#otp'), otpIn = $('#otpc'), otpErr = $('#otpe'), hp = form.company_url
+  if (fd.pr.ck && tsBox) {
+    var ts = document.createElement('script')
+    ts.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
+    ts.async = true
+    ts.onload = function () {
+      try { tsId = window.turnstile.render(tsBox, { sitekey: fd.pr.ck, callback: function (t) { ctoken = t }, 'expired-callback': function () { ctoken = null }, 'error-callback': function () { ctoken = null } }) } catch (e) {}
+    }
+    document.head.appendChild(ts)
+  }
+  function resetCaptcha() { ctoken = null; try { if (tsId !== null) window.turnstile.reset(tsId) } catch (e) {} }
+  function msgOf(j) { var m = j && j.message; return typeof m === 'string' ? m : Array.isArray(m) ? m[0] : null }
+  function post(path, body) {
+    return fetch(fd.api + '/public/funnels/' + fd.slug + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j } }, function () { return { ok: r.ok, j: {} } }) })
+  }
+  function otpFail(m) { otpErr.textContent = m || L.generic; otpErr.className = 'fe on' }
+  function sendOtp() {
+    busyUi(true)
+    return post('/otp/send', { phone: phoneOf(form.phone.value) })
+      .then(function (res) {
+        busyUi(false)
+        if (!res.ok) return fail(msgOf(res.j))
+        otpBox.style.display = 'block'
+        btn.style.display = 'none'
+        otpErr.className = 'fe'
+        otpIn.value = ''
+        otpBox.scrollIntoView({ block: 'center' })
+        otpIn.focus({ preventScroll: true })
+      })
+      .catch(function () { busyUi(false); fail(L.network) })
+  }
+  if (otpBox) {
+    $('#otpr').addEventListener('click', function () {
+      var b = this
+      post('/otp/send', { phone: phoneOf(form.phone.value) }).then(function (res) {
+        if (!res.ok) return otpFail(msgOf(res.j))
+        otpErr.className = 'fe'
+        var t = b.textContent
+        b.textContent = L.otpSent
+        setTimeout(function () { b.textContent = t }, 3000)
+      }).catch(function () { otpFail(L.network) })
+    })
+    $('#otpv').addEventListener('click', function () {
+      var code = digits(otpIn.value).replace(/\s/g, '')
+      if (!/^\d{4,8}$/.test(code)) return otpFail(L.generic)
+      var phone = phoneOf(form.phone.value)
+      post('/otp/verify', { phone: phone, code: code }).then(function (res) {
+        if (!res.ok || !res.j.otpToken) return otpFail(msgOf(res.j))
+        otpToken = res.j.otpToken
+        otpPhone = phone
+        otpBox.style.display = 'none'
+        btn.style.display = ''
+        submit()
+      }).catch(function () { otpFail(L.network) })
+    })
+  }
+
   function submit(e) {
     if (e) e.preventDefault()
     if (busy) return
+    if (otpBox && otpBox.style.display === 'block') { otpIn.focus(); return }
     var bad = validate()
     if (bad.length) {
       var t = $('[data-f="' + bad[0] + '"]', form)
@@ -468,6 +529,8 @@
       if (i) i.focus({ preventScroll: true })
       return
     }
+    if (fd.pr.ck && !ctoken) return fail(L.captcha)
+    if (fd.pr.otp && (!otpToken || otpPhone !== phoneOf(form.phone.value))) { otpToken = null; return sendOtp() }
     busyUi(true)
     fe.className = 'fe'
     clearTimeout(abTimer)
@@ -480,11 +543,15 @@
     if (o) body.offerId = o.id
     if (st.bump && fd.bump) body.bumpStepId = fd.bump.id
     if (abId) body.convertsAbandonedOrderId = abId
+    if (hp && hp.value) body.website = hp.value
+    if (ctoken) body.captchaToken = ctoken
+    if (otpToken) body.otpToken = otpToken
     fetch(fd.api + '/public/funnels/' + fd.slug + '/orders', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j } }, function () { return { ok: r.ok, j: {} } }) })
       .then(function (res) {
         if (!res.ok || !res.j.id) {
           busyUi(false)
+          resetCaptcha()
           var m = res.j && res.j.message
           return fail(typeof m === 'string' ? m : Array.isArray(m) ? m[0] : null)
         }

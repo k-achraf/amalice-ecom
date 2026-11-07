@@ -90,6 +90,8 @@ export interface PublicFunnel {
   generatedImageUrl: string | null
   pixels: { metaPixelId: string | null; tiktokPixelCode: string | null }
   abandonedDelaySeconds: number
+  // What the page needs from the funnel's protection settings (never the secret parts).
+  protection: { honeypot: boolean; otp: boolean; captchaSiteKey: string | null }
   wilayas: PublicFunnelWilaya[]
 }
 
@@ -105,6 +107,11 @@ export const FunnelOrderSchema = z.object({
   bumpStepId: z.uuid().optional(),
   tracking: CheckoutTrackingSchema.optional(),
   convertsAbandonedOrderId: z.uuid().optional(),
+  // Protection (see funnel-protection.ts): the honeypot field (must stay empty), the Turnstile token and
+  // the token returned by the phone-verification step.
+  website: z.string().max(300).optional(),
+  captchaToken: z.string().max(4000).optional(),
+  otpToken: z.string().max(100).optional(),
   ...OrderSubmitGuardFields
 })
 export type FunnelOrder = z.infer<typeof FunnelOrderSchema>
@@ -195,6 +202,13 @@ export const FUNNEL_COPY_AR = {
   errGeneric: 'حدث خطأ، حاول مرة أخرى',
   errNetwork: 'تعذّر الاتصال. تحقق من الإنترنت وحاول مرة أخرى.',
   sending: 'جارٍ الإرسال…',
+  errCaptcha: 'يرجى إكمال التحقق الأمني قبل إرسال الطلب.',
+  otpTitle: 'تأكيد رقم الهاتف',
+  otpHint: 'أرسلنا رمز تحقق إلى هاتفك، أدخله لإرسال الطلب.',
+  otpPlaceholder: 'رمز التحقق',
+  otpConfirm: 'تأكيد وإرسال الطلب',
+  otpResend: 'إعادة إرسال الرمز',
+  otpSent: 'تم إرسال الرمز.',
   thanksTitle: 'تم استلام طلبك!',
   thanksBody: (phone: string) => `سنتصل بك قريباً على الرقم ${phone} لتأكيد الطلب.`,
   orderNumber: 'رقم الطلب',

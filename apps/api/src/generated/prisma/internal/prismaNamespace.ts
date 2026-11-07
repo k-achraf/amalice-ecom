@@ -438,6 +438,7 @@ export const ModelName = {
   ProductSourcingRequest: 'ProductSourcingRequest',
   PageViewEvent: 'PageViewEvent',
   Funnel: 'Funnel',
+  FunnelBlockedAttempt: 'FunnelBlockedAttempt',
   FunnelRecording: 'FunnelRecording',
   FunnelRecordingChunk: 'FunnelRecordingChunk',
   FunnelStep: 'FunnelStep',
@@ -467,7 +468,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "supplier" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderAttribution" | "callAttempt" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "shippingCompanyCommune" | "shippingCompanyLocationMap" | "shipmentEvent" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "sourcedProductVideoCreative" | "sourcedProductCompetitor" | "productAdTest" | "productSourcingRequest" | "pageViewEvent" | "funnel" | "funnelRecording" | "funnelRecordingChunk" | "funnelStep" | "metaConnection" | "metaAdAccount" | "metaAppCredentials" | "blacklistEntry" | "reportSettings" | "aiProviderCredential" | "aiSettings" | "alertLog" | "socialAccount" | "socialPost" | "mcpToken"
+    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "supplier" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderAttribution" | "callAttempt" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "shippingCompanyCommune" | "shippingCompanyLocationMap" | "shipmentEvent" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "sourcedProductVideoCreative" | "sourcedProductCompetitor" | "productAdTest" | "productSourcingRequest" | "pageViewEvent" | "funnel" | "funnelBlockedAttempt" | "funnelRecording" | "funnelRecordingChunk" | "funnelStep" | "metaConnection" | "metaAdAccount" | "metaAppCredentials" | "blacklistEntry" | "reportSettings" | "aiProviderCredential" | "aiSettings" | "alertLog" | "socialAccount" | "socialPost" | "mcpToken"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4467,6 +4468,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    FunnelBlockedAttempt: {
+      payload: Prisma.$FunnelBlockedAttemptPayload<ExtArgs>
+      fields: Prisma.FunnelBlockedAttemptFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FunnelBlockedAttemptFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelBlockedAttemptPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FunnelBlockedAttemptFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelBlockedAttemptPayload>
+        }
+        findFirst: {
+          args: Prisma.FunnelBlockedAttemptFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelBlockedAttemptPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FunnelBlockedAttemptFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelBlockedAttemptPayload>
+        }
+        findMany: {
+          args: Prisma.FunnelBlockedAttemptFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelBlockedAttemptPayload>[]
+        }
+        create: {
+          args: Prisma.FunnelBlockedAttemptCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelBlockedAttemptPayload>
+        }
+        createMany: {
+          args: Prisma.FunnelBlockedAttemptCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FunnelBlockedAttemptCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelBlockedAttemptPayload>[]
+        }
+        delete: {
+          args: Prisma.FunnelBlockedAttemptDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelBlockedAttemptPayload>
+        }
+        update: {
+          args: Prisma.FunnelBlockedAttemptUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelBlockedAttemptPayload>
+        }
+        deleteMany: {
+          args: Prisma.FunnelBlockedAttemptDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FunnelBlockedAttemptUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FunnelBlockedAttemptUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelBlockedAttemptPayload>[]
+        }
+        upsert: {
+          args: Prisma.FunnelBlockedAttemptUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FunnelBlockedAttemptPayload>
+        }
+        aggregate: {
+          args: Prisma.FunnelBlockedAttemptAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFunnelBlockedAttempt>
+        }
+        groupBy: {
+          args: Prisma.FunnelBlockedAttemptGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FunnelBlockedAttemptGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FunnelBlockedAttemptCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FunnelBlockedAttemptCountAggregateOutputType> | number
+        }
+      }
+    }
     FunnelRecording: {
       payload: Prisma.$FunnelRecordingPayload<ExtArgs>
       fields: Prisma.FunnelRecordingFieldRefs
@@ -6368,11 +6443,26 @@ export const FunnelScalarFieldEnum = {
   productId: 'productId',
   metaPixelId: 'metaPixelId',
   tiktokPixelCode: 'tiktokPixelCode',
+  protection: 'protection',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type FunnelScalarFieldEnum = (typeof FunnelScalarFieldEnum)[keyof typeof FunnelScalarFieldEnum]
+
+
+export const FunnelBlockedAttemptScalarFieldEnum = {
+  id: 'id',
+  funnelId: 'funnelId',
+  reason: 'reason',
+  phone: 'phone',
+  ip: 'ip',
+  userAgent: 'userAgent',
+  detail: 'detail',
+  createdAt: 'createdAt'
+} as const
+
+export type FunnelBlockedAttemptScalarFieldEnum = (typeof FunnelBlockedAttemptScalarFieldEnum)[keyof typeof FunnelBlockedAttemptScalarFieldEnum]
 
 
 export const FunnelRecordingScalarFieldEnum = {
@@ -7388,6 +7478,7 @@ export type GlobalOmitConfig = {
   productSourcingRequest?: Prisma.ProductSourcingRequestOmit
   pageViewEvent?: Prisma.PageViewEventOmit
   funnel?: Prisma.FunnelOmit
+  funnelBlockedAttempt?: Prisma.FunnelBlockedAttemptOmit
   funnelRecording?: Prisma.FunnelRecordingOmit
   funnelRecordingChunk?: Prisma.FunnelRecordingChunkOmit
   funnelStep?: Prisma.FunnelStepOmit

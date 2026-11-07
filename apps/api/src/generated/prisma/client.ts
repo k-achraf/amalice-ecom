@@ -310,6 +310,11 @@ export type PageViewEvent = Prisma.PageViewEventModel
  */
 export type Funnel = Prisma.FunnelModel
 /**
+ * Model FunnelBlockedAttempt
+ * 
+ */
+export type FunnelBlockedAttempt = Prisma.FunnelBlockedAttemptModel
+/**
  * Model FunnelRecording
  * 
  */

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Header, Param, Post, Req } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { SkipThrottle, Throttle } from '@nestjs/throttler'
-import { AcceptFunnelOfferSchema, FunnelOrderSchema, RecordingChunkSchema } from '@amalice/shared'
+import { AcceptFunnelOfferSchema, FunnelOrderSchema, FunnelOtpSendSchema, FunnelOtpVerifySchema, RecordingChunkSchema } from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
 import { clientIp } from '../orders/order-attribution.util'
@@ -9,6 +9,8 @@ import { FunnelsPublicService } from './funnels-public.service'
 import { FunnelsRecordingsService } from './funnels-recordings.service'
 
 class FunnelOrderDto extends createZodDto(FunnelOrderSchema) {}
+class FunnelOtpSendDto extends createZodDto(FunnelOtpSendSchema) {}
+class FunnelOtpVerifyDto extends createZodDto(FunnelOtpVerifySchema) {}
 class AcceptFunnelOfferDto extends createZodDto(AcceptFunnelOfferSchema) {}
 class RecordingChunkDto extends createZodDto(RecordingChunkSchema) {}
 
@@ -34,7 +36,20 @@ export class FunnelsPublicController {
   @Post(':slug/orders')
   @Throttle({ default: { limit: 15, ttl: 60 * 1000 } })
   placeOrder(@Param('slug') slug: string, @Body() body: FunnelOrderDto, @Req() req: Request) {
-    return this.funnels.placeOrder(slug, body, { ip: clientIp(req), userAgent: req.headers['user-agent'] })
+    return this.funnels.placeOrder(slug, body, { ip: clientIp(req), userAgent: req.headers['user-agent'], headers: req.headers })
+  }
+
+  // Phone verification (only for funnels that turned it on): a code by SMS, then a single-use token the order carries.
+  @Post(':slug/otp/send')
+  @Throttle({ default: { limit: 6, ttl: 10 * 60 * 1000 } })
+  sendOtp(@Param('slug') slug: string, @Body() body: FunnelOtpSendDto, @Req() req: Request) {
+    return this.funnels.sendOtp(slug, body, { ip: clientIp(req), userAgent: req.headers['user-agent'], headers: req.headers })
+  }
+
+  @Post(':slug/otp/verify')
+  @Throttle({ default: { limit: 20, ttl: 10 * 60 * 1000 } })
+  verifyOtp(@Param('slug') slug: string, @Body() body: FunnelOtpVerifyDto) {
+    return this.funnels.verifyOtp(slug, body)
   }
 
   @Post(':slug/orders/:orderId/offers/:stepId')

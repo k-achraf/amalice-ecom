@@ -105,6 +105,7 @@ export const ModelName = {
   ProductSourcingRequest: 'ProductSourcingRequest',
   PageViewEvent: 'PageViewEvent',
   Funnel: 'Funnel',
+  FunnelBlockedAttempt: 'FunnelBlockedAttempt',
   FunnelRecording: 'FunnelRecording',
   FunnelRecordingChunk: 'FunnelRecordingChunk',
   FunnelStep: 'FunnelStep',
@@ -963,11 +964,26 @@ export const FunnelScalarFieldEnum = {
   productId: 'productId',
   metaPixelId: 'metaPixelId',
   tiktokPixelCode: 'tiktokPixelCode',
+  protection: 'protection',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type FunnelScalarFieldEnum = (typeof FunnelScalarFieldEnum)[keyof typeof FunnelScalarFieldEnum]
+
+
+export const FunnelBlockedAttemptScalarFieldEnum = {
+  id: 'id',
+  funnelId: 'funnelId',
+  reason: 'reason',
+  phone: 'phone',
+  ip: 'ip',
+  userAgent: 'userAgent',
+  detail: 'detail',
+  createdAt: 'createdAt'
+} as const
+
+export type FunnelBlockedAttemptScalarFieldEnum = (typeof FunnelBlockedAttemptScalarFieldEnum)[keyof typeof FunnelBlockedAttemptScalarFieldEnum]
 
 
 export const FunnelRecordingScalarFieldEnum = {

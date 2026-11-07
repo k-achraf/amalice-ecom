@@ -1785,26 +1785,46 @@ enum FunnelStepType {
 }
 
 model Funnel {
-  id              String            @id @default(uuid())
+  id              String                 @id @default(uuid())
   name            String
-  slug            String            @unique
-  templateId      String            @map("template_id")
-  status          FunnelStatus      @default(Draft)
-  productId       String            @map("product_id")
-  product         Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  slug            String                 @unique
+  templateId      String                 @map("template_id")
+  status          FunnelStatus           @default(Draft)
+  productId       String                 @map("product_id")
+  product         Product                @relation(fields: [productId], references: [id], onDelete: Cascade)
   // Optional per-funnel pixels that replace the store-wide Meta / TikTok pixel
   // on this funnel's page and in its server-side events. Null = use the store's.
-  metaPixelId     String?           @map("meta_pixel_id")
-  tiktokPixelCode String?           @map("tiktok_pixel_code")
+  metaPixelId     String?                @map("meta_pixel_id")
+  tiktokPixelCode String?                @map("tiktok_pixel_code")
+  // Anti-spam / fake-order settings (FunnelProtectionSchema in packages/shared). Null = defaults.
+  protection      Json?
   steps           FunnelStep[]
   orders          Order[]
   recordings      FunnelRecording[]
-  createdAt       DateTime          @default(now()) @map("created_at")
-  updatedAt       DateTime          @updatedAt @map("updated_at")
+  blockedAttempts FunnelBlockedAttempt[]
+  createdAt       DateTime               @default(now()) @map("created_at")
+  updatedAt       DateTime               @updatedAt @map("updated_at")
 
   @@index([productId])
   @@index([status])
   @@map("funnels")
+}
+
+// An order attempt a funnel's protection refused (honeypot, rate limit, blacklist …). Kept 30 days so the
+// owner can tell whether the rules are too strict. `reason` is a FunnelBlockReason code.
+model FunnelBlockedAttempt {
+  id        String   @id @default(uuid())
+  funnelId  String   @map("funnel_id")
+  funnel    Funnel   @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+  reason    String
+  phone     String?
+  ip        String?
+  userAgent String?  @map("user_agent")
+  detail    String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([funnelId, createdAt])
+  @@map("funnel_blocked_attempts")
 }
 
 // Session replay of a funnel page visit (rrweb events, inputs masked in the browser). `id` is the
