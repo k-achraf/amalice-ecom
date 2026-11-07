@@ -17,6 +17,7 @@ import {
   type FunnelProtection
 } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
+import { deviceTypeOf } from '../orders/order-attribution.util'
 import { RedisService } from '../redis/redis.service'
 import { NotificationsService } from '../notifications/notifications.service'
 import { BLOCKED_ORDER_MESSAGE, type RiskPolicy } from '../risk/risk.service'
@@ -105,6 +106,7 @@ export class FunnelProtectionService {
     if (p.bots.blockBotUserAgents && isBotUserAgent(req.userAgent)) await refuse('BotAgent', MSG.generic, (req.userAgent ?? '').slice(0, 120))
 
     // Network
+    if (p.network.blockDesktop && deviceTypeOf(req.userAgent) === 'desktop') await refuse('Desktop', MSG.generic, (req.userAgent ?? '').slice(0, 120))
     if (p.network.blockedIps.length && ipInList(req.ip, p.network.blockedIps)) await refuse('IpBlocked', MSG.generic)
     const country = (headerOf(req.headers, 'cf-ipcountry') ?? headerOf(req.headers, 'cloudfront-viewer-country') ?? headerOf(req.headers, 'x-vercel-ip-country') ?? '').toUpperCase()
     if (p.network.blockProxies && (country === 'T1' || headerOf(req.headers, 'proxy-connection'))) await refuse('Proxy', MSG.generic, country === 'T1' ? 'Tor' : 'Proxy header')

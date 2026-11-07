@@ -94,6 +94,8 @@ export const FunnelProtectionSchema = z.object({
     .object({
       // Only visitors in Algeria (needs the CDN's country header, e.g. Cloudflare's CF-IPCountry; without it nobody is refused).
       algeriaOnly: z.boolean().default(false),
+      // Refuse orders placed from a desktop / laptop browser (phones and tablets still order).
+      blockDesktop: z.boolean().default(false),
       // Tor exit nodes and requests that go through an open proxy (Via / Forwarded-through headers).
       blockProxies: z.boolean().default(false),
       // IPv4 addresses or CIDR ranges (e.g. 41.200.1.5, 41.200.0.0/16).
@@ -144,6 +146,7 @@ export const FUNNEL_BLOCK_REASONS = {
   Duplicate: 'Duplicate order',
   Country: 'Outside Algeria',
   Proxy: 'Proxy / Tor',
+  Desktop: 'Desktop device',
   IpBlocked: 'IP blocked',
   Blacklist: 'Blacklisted phone / address',
   FakeName: 'Fake-looking name',

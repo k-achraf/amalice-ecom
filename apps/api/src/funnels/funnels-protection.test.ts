@@ -166,6 +166,7 @@ test('bots, speed, visit and phone format are refused and logged', async () => {
     { name: 'repeated phone', funnel: { id: 'f1', protection: null }, input: order({ fields: { name: 'Amine K', phone: '0666666666' } }), request: req(), reason: 'RepeatedPhone' },
     { name: 'blocked ip', funnel: withProtection((p) => (p.network.blockedIps = ['41.100.0.0/16'])), input: order(), request: req(), reason: 'IpBlocked' },
     { name: 'outside Algeria', funnel: withProtection((p) => (p.network.algeriaOnly = true)), input: order(), request: req({ headers: { 'cf-ipcountry': 'FR' } }), reason: 'Country' },
+    { name: 'desktop', funnel: withProtection((p) => (p.network.blockDesktop = true)), input: order(), request: req({ userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }), reason: 'Desktop' },
     { name: 'tor', funnel: withProtection((p) => (p.network.blockProxies = true)), input: order(), request: req({ headers: { 'cf-ipcountry': 'T1' } }), reason: 'Proxy' }
   ]
   for (const c of cases) {
@@ -174,6 +175,10 @@ test('bots, speed, visit and phone format are refused and logged', async () => {
     assert.ok(message, `${c.name} should be refused`)
     assert.deepEqual(logged.map((l) => l.reason), [c.reason], c.name)
   }
+})
+
+test('block desktop lets phones through', async () => {
+  await makeGuard().service.guard(withProtection((p) => (p.network.blockDesktop = true)), order(), req())
 })
 
 test('Algeria-only never refuses when the CDN gives no country (or DZ)', async () => {

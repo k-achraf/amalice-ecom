@@ -193,6 +193,7 @@ const totalBlocked30 = computed(() => (blocked.value?.summary ?? []).reduce((n, 
     <section class="card" aria-label="Network">
       <div class="card-head"><h2>Location &amp; network</h2></div>
       <div class="stack">
+        <AdsSwitch v-model="form.network.blockDesktop" label="Block desktop orders" description="Only phones and tablets can order. Orders from a computer browser are refused." />
         <AdsSwitch v-model="form.network.algeriaOnly" label="Algeria only" description="Needs the country header of a CDN such as Cloudflare (CF-IPCountry). Without it nobody is refused." />
         <AdsSwitch v-model="form.network.blockProxies" label="Block Tor and anonymous proxies" description="Detected from the CDN's country header (Tor = T1) and proxy request headers. It cannot spot every VPN." />
         <AdsField label="Blocked IPs" help="One per line: an address (41.200.1.5) or a range (41.200.0.0/16).">
