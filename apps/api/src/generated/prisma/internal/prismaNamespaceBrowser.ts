@@ -104,6 +104,7 @@ export const ModelName = {
   ProductAdTest: 'ProductAdTest',
   ProductSourcingRequest: 'ProductSourcingRequest',
   PageViewEvent: 'PageViewEvent',
+  Pixel: 'Pixel',
   Funnel: 'Funnel',
   FunnelBlockedAttempt: 'FunnelBlockedAttempt',
   FunnelRecording: 'FunnelRecording',
@@ -955,6 +956,21 @@ export const PageViewEventScalarFieldEnum = {
 export type PageViewEventScalarFieldEnum = (typeof PageViewEventScalarFieldEnum)[keyof typeof PageViewEventScalarFieldEnum]
 
 
+export const PixelScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  platform: 'platform',
+  pixelId: 'pixelId',
+  serverEventsEnabled: 'serverEventsEnabled',
+  accessToken: 'accessToken',
+  testEventCode: 'testEventCode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PixelScalarFieldEnum = (typeof PixelScalarFieldEnum)[keyof typeof PixelScalarFieldEnum]
+
+
 export const FunnelScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -964,6 +980,7 @@ export const FunnelScalarFieldEnum = {
   productId: 'productId',
   metaPixelId: 'metaPixelId',
   tiktokPixelCode: 'tiktokPixelCode',
+  pixelIds: 'pixelIds',
   protection: 'protection',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

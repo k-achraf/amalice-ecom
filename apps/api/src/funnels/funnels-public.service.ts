@@ -23,6 +23,7 @@ import {
   type PublicFunnelStep
 } from '@amalice/shared'
 import { PrismaService } from '../prisma/prisma.service'
+import { PixelsService } from '../apps/pixels.service'
 import { OrdersService, type OrderRequestContext } from '../orders/orders.service'
 import { OrderItemsService } from '../order-items/order-items.service'
 import { RiskBlockedException } from '../risk/risk.service'
@@ -39,7 +40,8 @@ export class FunnelsPublicService {
     private readonly prisma: PrismaService,
     private readonly orders: OrdersService,
     private readonly orderItems: OrderItemsService,
-    private readonly protection: FunnelProtectionService
+    private readonly protection: FunnelProtectionService,
+    private readonly pixels: PixelsService
   ) {}
 
   async get(slug: string): Promise<PublicFunnel> {
@@ -82,11 +84,12 @@ export class FunnelsPublicService {
       generatedImageUrl = page?.finalImageUrl ?? null
     }
 
-    const [wilayas, settings, meta, tiktok, reviewRows, ratingAgg] = await Promise.all([
+    const [wilayas, settings, meta, tiktok, ownPixels, reviewRows, ratingAgg] = await Promise.all([
       this.prisma.wilaya.findMany({ orderBy: { name: 'asc' }, include: { shippingRate: true } }),
       this.prisma.storeSettings.findUnique({ where: { id: 'singleton' }, select: { storeName: true, abandonedCartDelaySeconds: true, brand: true } }),
       this.prisma.appInstallation.findUnique({ where: { appId: 'meta-pixel' } }),
       this.prisma.appInstallation.findUnique({ where: { appId: 'tiktok-pixel' } }),
+      this.pixels.forFunnel(funnel.pixelIds),
       this.prisma.review.findMany({
         where: { productId: product.id, approved: true },
         orderBy: { createdAt: 'desc' },
@@ -96,9 +99,13 @@ export class FunnelsPublicService {
       this.prisma.review.aggregate({ where: { productId: product.id, approved: true }, _avg: { rating: true }, _count: { _all: true } })
     ])
 
-    // A funnel's own pixel wins over the store-wide one (and works even if the store-wide app is off).
-    const metaPixelId = funnel.metaPixelId ?? (meta?.enabled ? ((meta.config as { pixelId?: string } | null)?.pixelId ?? null) : null)
-    const tiktokPixelCode = funnel.tiktokPixelCode ?? (tiktok?.enabled ? ((tiktok.config as { pixelCode?: string } | null)?.pixelCode ?? null) : null)
+    // The funnel's own pixels win over the store-wide ones (and work even if the store-wide app is off).
+    const storeMeta = meta?.enabled ? ((meta.config as { pixelId?: string } | null)?.pixelId ?? null) : null
+    const storeTiktok = tiktok?.enabled ? ((tiktok.config as { pixelCode?: string } | null)?.pixelCode ?? null) : null
+    const hasOwn = ownPixels.meta.length + ownPixels.tiktok.length > 0
+    const pixels = hasOwn
+      ? { meta: ownPixels.meta.map((p) => p.pixelId), tiktok: ownPixels.tiktok.map((p) => p.pixelId) }
+      : { meta: storeMeta ? [storeMeta] : [], tiktok: storeTiktok ? [storeTiktok] : [] }
 
     return {
       id: funnel.id,
@@ -142,7 +149,7 @@ export class FunnelsPublicService {
       steps: usable,
       landing,
       generatedImageUrl,
-      pixels: { metaPixelId, tiktokPixelCode },
+      pixels,
       abandonedDelaySeconds: settings?.abandonedCartDelaySeconds ?? 60,
       protection: (() => {
         const prot = parseFunnelProtection(funnel.protection)

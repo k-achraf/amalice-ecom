@@ -19,6 +19,7 @@ import {
 import type { Prisma } from '../generated/prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuditService, type AuditActor } from '../common/audit.service'
+import { PixelsService } from '../apps/pixels.service'
 
 const OFFER_TYPES: FunnelStepType[] = ['Upsell', 'Downsell', 'OrderBump']
 
@@ -50,8 +51,7 @@ type FunnelRow = {
   slug: string
   status: string
   templateId: string
-  metaPixelId: string | null
-  tiktokPixelCode: string | null
+  pixelIds: string[]
   protection: unknown
   createdAt: Date
   updatedAt: Date
@@ -67,8 +67,7 @@ function toListItem(row: FunnelRow, stepCount: number): FunnelListItem {
     templateId: row.templateId,
     product: row.product,
     stepCount,
-    metaPixelId: row.metaPixelId,
-    tiktokPixelCode: row.tiktokPixelCode,
+    pixelIds: row.pixelIds,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString()
   }
@@ -78,7 +77,8 @@ function toListItem(row: FunnelRow, stepCount: number): FunnelListItem {
 export class FunnelsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly audit: AuditService
+    private readonly audit: AuditService,
+    private readonly pixels: PixelsService
   ) {}
 
   async list(): Promise<FunnelListItem[]> {
@@ -144,8 +144,9 @@ export class FunnelsService {
     await this.ensureFunnel(id)
     if (input.productId) await this.ensureProduct(input.productId)
     if (input.slug) await this.assertSlugFree(input.slug, id)
-    const { protection, ...rest } = input
-    const data: Prisma.FunnelUpdateInput = { ...rest }
+    const { protection, pixelIds, ...rest } = input
+    if (pixelIds) await this.pixels.assertExist(pixelIds)
+    const data: Prisma.FunnelUpdateInput = { ...rest, ...(pixelIds ? { pixelIds: [...new Set(pixelIds)] } : {}) }
     // Protection is stored whole. A blank captcha secret means "keep the saved one" (the API never returns it).
     if (protection) {
       const current = await this.prisma.funnel.findUnique({ where: { id }, select: { protection: true } })
@@ -153,7 +154,7 @@ export class FunnelsService {
     }
     await this.prisma.funnel.update({ where: { id }, data })
     // The audit trail never carries the captcha secret.
-    const logged = protection ? { ...rest, protection: { ...protection, bots: { ...protection.bots, captcha: { ...protection.bots.captcha, secretKey: undefined } } } } : rest
+    const logged = protection ? { ...rest, pixelIds, protection: { ...protection, bots: { ...protection.bots, captcha: { ...protection.bots.captcha, secretKey: undefined } } } } : rest
     await this.audit.log({ actor, action: 'Update', entity: 'Funnel', entityId: id, metadata: logged })
     return this.get(id)
   }
@@ -175,6 +176,7 @@ export class FunnelsService {
         templateId: src.templateId,
         productId: src.product.id,
         protection: (await this.prisma.funnel.findUnique({ where: { id }, select: { protection: true } }))?.protection ?? undefined,
+        pixelIds: (await this.prisma.funnel.findUnique({ where: { id }, select: { pixelIds: true } }))?.pixelIds ?? [],
         steps: {
           create: src.steps.map((s) => ({ position: s.position, type: s.type, name: s.name, enabled: s.enabled, config: s.config as object }))
         }

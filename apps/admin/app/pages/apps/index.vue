@@ -11,6 +11,7 @@ const view = ref<'all' | 'installed'>('all')
 const cat = ref('All')
 const search = ref('')
 const cats = computed(() => ['All', ...new Set((apps.value ?? []).map((a) => a.category))])
+const showPixelsCard = computed(() => view.value === 'all' && (cat.value === 'All' || cat.value === 'Analytics & Marketing') && (!search.value.trim() || 'pixels meta tiktok'.includes(search.value.trim().toLowerCase())))
 const shown = computed(() => {
   const q = search.value.trim().toLowerCase()
   return (apps.value ?? []).filter((a) =>
@@ -36,6 +37,18 @@ const shown = computed(() => {
 
       <div class="cards-grid">
         <p v-if="!shown.length" class="empty" style="grid-column: 1 / -1">No apps match your search.</p>
+        <article v-if="showPixelsCard" class="app-card">
+          <div class="top">
+            <span class="app-logo" style="background: var(--teal); color: var(--ivory)" aria-hidden="true"><AdsIcon name="i-lucide-target" /></span>
+            <div class="grow"><h3>Pixels</h3><span class="by">Analytics &amp; Marketing</span></div>
+            <span class="pill outline">Multi-pixel</span>
+          </div>
+          <p>Add several named Meta and TikTok pixels, then choose which ones each funnel fires.</p>
+          <div class="foot">
+            <span class="grow muted">Used by funnels</span>
+            <NuxtLink class="btn btn-sm" to="/apps/pixels"><AdsIcon name="i-lucide-settings" />Manage</NuxtLink>
+          </div>
+        </article>
         <article v-for="app in shown" :key="app.appId" class="app-card">
           <div class="top">
             <span class="app-logo" style="background: var(--teal); color: var(--ivory)" aria-hidden="true"><AdsIcon :name="app.icon" /></span>

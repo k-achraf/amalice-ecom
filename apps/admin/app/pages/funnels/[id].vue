@@ -4,6 +4,7 @@ import {
   FunnelStepTypeSchema,
   getFunnelTemplate,
   type FunnelDetail,
+  type PixelView,
   type FunnelStatus,
   type FunnelStepType,
   type FunnelStepView,
@@ -53,7 +54,13 @@ async function mutate(fn: () => Promise<FunnelDetail>, opts?: { success?: string
 }
 
 // ---- settings ----
-const form = reactive({ name: '', slug: '', productId: '', metaPixelId: '', tiktokPixelCode: '' })
+const form = reactive({ name: '', slug: '', productId: '', pixelIds: [] as string[] })
+// Pixels created in Apps → Pixels; the funnel only picks from this list.
+const { data: pixelList } = await useAdminFetch<PixelView[]>('/admin/pixels', { key: 'admin-pixels' })
+const pixelGroups = computed(() => (['Meta', 'TikTok'] as const).map((platform) => ({ platform, items: (pixelList.value ?? []).filter((x) => x.platform === platform) })).filter((g) => g.items.length))
+function togglePixel(pid: string, on: boolean) {
+  form.pixelIds = on ? [...new Set([...form.pixelIds, pid])] : form.pixelIds.filter((x) => x !== pid)
+}
 watch(
   funnel,
   (f) => {
@@ -61,16 +68,15 @@ watch(
     form.name = f.name
     form.slug = f.slug
     form.productId = f.product.id
-    form.metaPixelId = f.metaPixelId ?? ''
-    form.tiktokPixelCode = f.tiktokPixelCode ?? ''
+    form.pixelIds = [...f.pixelIds]
   },
   { immediate: true }
 )
-const dirty = computed(() => !!funnel.value && (form.name !== funnel.value.name || form.slug !== funnel.value.slug || form.productId !== funnel.value.product.id || form.metaPixelId !== (funnel.value.metaPixelId ?? '') || form.tiktokPixelCode !== (funnel.value.tiktokPixelCode ?? '')))
+const dirty = computed(() => !!funnel.value && (form.name !== funnel.value.name || form.slug !== funnel.value.slug || form.productId !== funnel.value.product.id || [...form.pixelIds].sort().join() !== [...funnel.value.pixelIds].sort().join()))
 const saving = ref(false)
 async function saveSettings() {
   saving.value = true
-  await mutate(() => api<FunnelDetail>(`/admin/funnels/${id}`, { method: 'PATCH', body: { name: form.name, slug: form.slug, productId: form.productId, metaPixelId: form.metaPixelId.trim(), tiktokPixelCode: form.tiktokPixelCode.trim() } }), {
+  await mutate(() => api<FunnelDetail>(`/admin/funnels/${id}`, { method: 'PATCH', body: { name: form.name, slug: form.slug, productId: form.productId, pixelIds: form.pixelIds } }), {
     success: 'Funnel saved',
     errorFallback: 'Could not save the funnel'
   })
@@ -376,8 +382,19 @@ const warnings = computed(() => {
             <AdsField label="Name"><AdsInput v-model="form.name" /></AdsField>
             <AdsField label="Slug" help="Used in the funnel URL once the storefront serves funnels."><AdsInput v-model="form.slug" class="mono" /></AdsField>
             <AdsField label="Product"><AdsSelect v-model="form.productId" :items="productOptions" /></AdsField>
-            <AdsField label="Meta pixel ID (this funnel)" help="Leave empty to use the store's pixel. Server-side events for this funnel's orders go to this pixel too, using the store's access token (works when both pixels are in the same Meta business)."><AdsInput v-model="form.metaPixelId" class="mono" placeholder="e.g. 1234567890123" /></AdsField>
-            <AdsField label="TikTok pixel code (this funnel)" help="Leave empty to use the store's pixel."><AdsInput v-model="form.tiktokPixelCode" class="mono" placeholder="e.g. C1ABCDEFGH23" /></AdsField>
+            <AdsField label="Pixels (this funnel)" help="Choose from the pixels you added in Apps → Pixels. None selected = the store-wide pixel. Server-side events (Conversions / Events API) use each pixel's own access token.">
+              <div v-if="pixelGroups.length" class="stack" style="gap: 10px">
+                <div v-for="g in pixelGroups" :key="g.platform">
+                  <div class="muted" style="margin-bottom: 4px">{{ g.platform }}</div>
+                  <label v-for="px in g.items" :key="px.id" style="display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer">
+                    <input type="checkbox" :checked="form.pixelIds.includes(px.id)" @change="togglePixel(px.id, ($event.target as HTMLInputElement).checked)">
+                    <b>{{ px.name }}</b>
+                    <span class="mono muted">{{ px.pixelId }}</span>
+                  </label>
+                </div>
+              </div>
+              <p v-else class="muted">No pixels yet. <NuxtLink to="/apps/pixels">Add one in Apps → Pixels</NuxtLink>.</p>
+            </AdsField>
             <AdsButton :loading="saving" :disabled="!dirty || !form.name.trim() || !form.slug.trim()" icon="i-lucide-check" @click="saveSettings">Save settings</AdsButton>
           </section>
 

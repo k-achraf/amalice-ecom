@@ -88,7 +88,7 @@ export interface PublicFunnel {
   landing: LandingSettings
   // image-page template: the generated long image shown below the order form.
   generatedImageUrl: string | null
-  pixels: { metaPixelId: string | null; tiktokPixelCode: string | null }
+  pixels: { meta: string[]; tiktok: string[] }
   abandonedDelaySeconds: number
   // What the page needs from the funnel's protection settings (never the secret parts).
   protection: { honeypot: boolean; otp: boolean; captchaSiteKey: string | null }

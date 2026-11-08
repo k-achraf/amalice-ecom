@@ -437,6 +437,7 @@ export const ModelName = {
   ProductAdTest: 'ProductAdTest',
   ProductSourcingRequest: 'ProductSourcingRequest',
   PageViewEvent: 'PageViewEvent',
+  Pixel: 'Pixel',
   Funnel: 'Funnel',
   FunnelBlockedAttempt: 'FunnelBlockedAttempt',
   FunnelRecording: 'FunnelRecording',
@@ -468,7 +469,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "supplier" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderAttribution" | "callAttempt" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "shippingCompanyCommune" | "shippingCompanyLocationMap" | "shipmentEvent" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "sourcedProductVideoCreative" | "sourcedProductCompetitor" | "productAdTest" | "productSourcingRequest" | "pageViewEvent" | "funnel" | "funnelBlockedAttempt" | "funnelRecording" | "funnelRecordingChunk" | "funnelStep" | "metaConnection" | "metaAdAccount" | "metaAppCredentials" | "blacklistEntry" | "reportSettings" | "aiProviderCredential" | "aiSettings" | "alertLog" | "socialAccount" | "socialPost" | "mcpToken"
+    modelProps: "customer" | "address" | "category" | "product" | "productLandingPage" | "productImage" | "productVariant" | "stockAdjustment" | "supplier" | "attribute" | "attributeOption" | "productAttribute" | "variantOption" | "review" | "courier" | "order" | "orderAttribution" | "callAttempt" | "orderItem" | "productOffer" | "productUpsell" | "shipment" | "cashReconciliation" | "remittanceBatch" | "ledgerEntry" | "role" | "adminUser" | "notification" | "auditLog" | "serverLog" | "storeSettings" | "appInstallation" | "googleSheet" | "productGoogleSheet" | "googleSheetOrderRow" | "wilaya" | "wilayaShippingRate" | "commune" | "shippingCompany" | "shippingCompanyCommune" | "shippingCompanyLocationMap" | "shipmentEvent" | "courierWebhookEvent" | "courierWebhookLog" | "shippingCompanyTariff" | "sourcedProduct" | "sourcedProductMedia" | "sourcedProductLink" | "sourcedProductVideoCreative" | "sourcedProductCompetitor" | "productAdTest" | "productSourcingRequest" | "pageViewEvent" | "pixel" | "funnel" | "funnelBlockedAttempt" | "funnelRecording" | "funnelRecordingChunk" | "funnelStep" | "metaConnection" | "metaAdAccount" | "metaAppCredentials" | "blacklistEntry" | "reportSettings" | "aiProviderCredential" | "aiSettings" | "alertLog" | "socialAccount" | "socialPost" | "mcpToken"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4394,6 +4395,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Pixel: {
+      payload: Prisma.$PixelPayload<ExtArgs>
+      fields: Prisma.PixelFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PixelFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PixelPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PixelFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PixelPayload>
+        }
+        findFirst: {
+          args: Prisma.PixelFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PixelPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PixelFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PixelPayload>
+        }
+        findMany: {
+          args: Prisma.PixelFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PixelPayload>[]
+        }
+        create: {
+          args: Prisma.PixelCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PixelPayload>
+        }
+        createMany: {
+          args: Prisma.PixelCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PixelCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PixelPayload>[]
+        }
+        delete: {
+          args: Prisma.PixelDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PixelPayload>
+        }
+        update: {
+          args: Prisma.PixelUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PixelPayload>
+        }
+        deleteMany: {
+          args: Prisma.PixelDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PixelUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PixelUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PixelPayload>[]
+        }
+        upsert: {
+          args: Prisma.PixelUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PixelPayload>
+        }
+        aggregate: {
+          args: Prisma.PixelAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePixel>
+        }
+        groupBy: {
+          args: Prisma.PixelGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PixelGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PixelCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PixelCountAggregateOutputType> | number
+        }
+      }
+    }
     Funnel: {
       payload: Prisma.$FunnelPayload<ExtArgs>
       fields: Prisma.FunnelFieldRefs
@@ -6434,6 +6509,21 @@ export const PageViewEventScalarFieldEnum = {
 export type PageViewEventScalarFieldEnum = (typeof PageViewEventScalarFieldEnum)[keyof typeof PageViewEventScalarFieldEnum]
 
 
+export const PixelScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  platform: 'platform',
+  pixelId: 'pixelId',
+  serverEventsEnabled: 'serverEventsEnabled',
+  accessToken: 'accessToken',
+  testEventCode: 'testEventCode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PixelScalarFieldEnum = (typeof PixelScalarFieldEnum)[keyof typeof PixelScalarFieldEnum]
+
+
 export const FunnelScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -6443,6 +6533,7 @@ export const FunnelScalarFieldEnum = {
   productId: 'productId',
   metaPixelId: 'metaPixelId',
   tiktokPixelCode: 'tiktokPixelCode',
+  pixelIds: 'pixelIds',
   protection: 'protection',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -7477,6 +7568,7 @@ export type GlobalOmitConfig = {
   productAdTest?: Prisma.ProductAdTestOmit
   productSourcingRequest?: Prisma.ProductSourcingRequestOmit
   pageViewEvent?: Prisma.PageViewEventOmit
+  pixel?: Prisma.PixelOmit
   funnel?: Prisma.FunnelOmit
   funnelBlockedAttempt?: Prisma.FunnelBlockedAttemptOmit
   funnelRecording?: Prisma.FunnelRecordingOmit

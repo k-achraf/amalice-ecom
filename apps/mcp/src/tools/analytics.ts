@@ -179,14 +179,13 @@ export function registerAnalyticsTools({ server, api }: ToolContext) {
     'update_funnel',
     {
       title: 'Update funnel',
-      description: 'Change a funnel: name, status (Draft | Live | Paused), slug, pixel ids. Setting Live publishes it to the funnels site.',
+      description: 'Change a funnel: name, status (Draft | Live | Paused), slug, pixels (pixelIds = ids of the named pixels created in Apps → Pixels). Setting Live publishes it to the funnels site.',
       inputSchema: {
         funnelId: z.string(),
         name: z.string().optional(),
         status: z.enum(['Draft', 'Live', 'Paused']).optional(),
         slug: z.string().optional(),
-        metaPixelId: z.string().nullable().optional(),
-        tiktokPixelCode: z.string().nullable().optional()
+        pixelIds: z.array(z.string()).optional()
       }
     },
     safe(({ funnelId, ...body }) => api.patch(`/admin/funnels/${funnelId}`, body))

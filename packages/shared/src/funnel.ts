@@ -123,9 +123,8 @@ export const FunnelListItemSchema = z.object({
   templateId: z.string(),
   product: FunnelProductRefSchema,
   stepCount: z.number().int().nonnegative(),
-  // Per-funnel pixel overrides (null = the store-wide pixel).
-  metaPixelId: z.string().nullable(),
-  tiktokPixelCode: z.string().nullable(),
+  // Pixels (Apps → Pixels) this funnel fires. Empty = the store-wide pixel apps.
+  pixelIds: z.array(z.uuid()),
   createdAt: z.string(),
   updatedAt: z.string()
 })
@@ -154,9 +153,8 @@ export const UpdateFunnelSchema = z.object({
   productId: z.uuid().optional(),
   status: FunnelStatusSchema.optional(),
   slug: SlugSchema.optional(),
-  // Empty string / null clears the override.
-  metaPixelId: z.union([z.string().trim().regex(/^[0-9]{5,20}$/, 'Meta pixel id is 5-20 digits'), z.literal('').transform(() => null), z.null()]).optional(),
-  tiktokPixelCode: z.union([z.string().trim().regex(/^[A-Za-z0-9]{6,40}$/, 'TikTok pixel code is 6-40 letters/digits'), z.literal('').transform(() => null), z.null()]).optional(),
+  // Ids of the pixels to fire on this funnel (replaces the whole selection).
+  pixelIds: z.array(z.uuid()).max(20).optional(),
   // Anti-spam / fake-order settings (see funnel-protection.ts). Sent whole; an empty captcha secret keeps the saved one.
   protection: FunnelProtectionSchema.optional()
 })

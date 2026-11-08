@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { AppsService } from '../apps/apps.service'
-import { MetaConversionsApiService } from '../apps/meta-conversions-api.service'
-import { TikTokEventsApiService } from '../apps/tiktok-events-api.service'
+import { PixelsService } from '../apps/pixels.service'
+import { MetaConversionsApiService, type MetaCapiCredentials } from '../apps/meta-conversions-api.service'
+import { TikTokEventsApiService, type TikTokEapiCredentials } from '../apps/tiktok-events-api.service'
 
 const DELIVERED_STATES = ['Delivered', 'CashCollected', 'Reconciled', 'Settled'] as const
 // Meta drops events older than 7 days; stay inside that.
@@ -21,20 +22,20 @@ export class DeliveryEventsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly apps: AppsService,
+    private readonly pixels: PixelsService,
     private readonly meta: MetaConversionsApiService,
     private readonly tiktok: TikTokEventsApiService
   ) {}
 
   async sweep(): Promise<number> {
-    // Store-wide credentials need the app switched on; an order from a funnel with its own pixel is
-    // sent even while it is off (its browser pixel runs regardless), using the saved token.
-    const [storeMeta, storeTiktok, anyMeta, anyTiktok] = await Promise.all([
+    // Store-wide credentials need the app switched on. A funnel with its own pixels sends to those instead
+    // (each with its own token), even while the store-wide app is off.
+    const [storeMeta, storeTiktok, ownServerPixels] = await Promise.all([
       this.apps.getMetaPixelCapiCredentials(),
       this.apps.getTikTokPixelEapiCredentials(),
-      this.apps.getMetaPixelCapiCredentials(undefined, true),
-      this.apps.getTikTokPixelEapiCredentials(undefined, true)
+      this.prisma.pixel.count({ where: { serverEventsEnabled: true, accessToken: { not: null } } })
     ])
-    if (!anyMeta && !anyTiktok) return 0
+    if (!storeMeta && !storeTiktok && !ownServerPixels) return 0
 
     const orders = await this.prisma.order.findMany({
       where: { state: { in: [...DELIVERED_STATES] }, deliveredEventSentAt: null, isAbandoned: false, updatedAt: { gte: new Date(Date.now() - MAX_AGE_MS) } },
@@ -45,7 +46,7 @@ export class DeliveryEventsService {
         totalCents: true,
         updatedAt: true,
         customer: { select: { phone: true } },
-        funnel: { select: { metaPixelId: true, tiktokPixelCode: true } },
+        funnel: { select: { pixelIds: true } },
         items: { select: { productId: true, quantity: true, unitPriceCents: true } },
         attribution: { select: { platform: true, ipAddress: true, userAgent: true, fbp: true, fbc: true, ttp: true, pageUrl: true } }
       }
@@ -57,13 +58,22 @@ export class DeliveryEventsService {
       const eventId = `delivered-${o.id}`
       const eventTime = Math.floor(o.updatedAt.getTime() / 1000)
       const value = Math.round(o.totalCents) / 100
-      const metaCreds = o.funnel?.metaPixelId ? anyMeta : storeMeta
-      const tiktokCreds = o.funnel?.tiktokPixelCode ? anyTiktok : storeTiktok
-      if (!metaCreds && !tiktokCreds) continue
+      const own = o.funnel?.pixelIds ?? []
+      let metaCreds: MetaCapiCredentials[]
+      let tiktokCreds: TikTokEapiCredentials[]
+      if (own.length) {
+        const t = await this.pixels.serverTargets(own)
+        metaCreds = t.meta
+        tiktokCreds = t.tiktok
+      } else {
+        metaCreds = storeMeta ? [storeMeta] : []
+        tiktokCreds = storeTiktok ? [storeTiktok] : []
+      }
+      if (!metaCreds.length && !tiktokCreds.length) continue
       let ok = true
       try {
-        if (metaCreds && (!a || a.platform === 'Meta' || a.fbp || a.fbc)) {
-          await this.meta.sendEvent({ ...metaCreds, pixelId: o.funnel?.metaPixelId || metaCreds.pixelId }, {
+        if (metaCreds.length && (!a || a.platform === 'Meta' || a.fbp || a.fbc)) {
+          for (const creds of metaCreds) await this.meta.sendEvent(creds, {
             eventName: 'Delivered',
             eventId,
             eventTime,
@@ -72,8 +82,8 @@ export class DeliveryEventsService {
             customData: { value, currency: 'DZD', order_id: o.id, content_ids: o.items.map((i) => i.productId), content_type: 'product' }
           })
         }
-        if (tiktokCreds && (!a || a.platform === 'TikTok' || a.ttp)) {
-          await this.tiktok.sendEvent({ ...tiktokCreds, pixelCode: o.funnel?.tiktokPixelCode || tiktokCreds.pixelCode }, {
+        if (tiktokCreds.length && (!a || a.platform === 'TikTok' || a.ttp)) {
+          for (const creds of tiktokCreds) await this.tiktok.sendEvent(creds, {
             eventName: 'Delivered',
             eventId,
             eventTime,

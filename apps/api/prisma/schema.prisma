@@ -1784,6 +1784,23 @@ enum FunnelStepType {
   ThankYou
 }
 
+// A named tracking pixel (Meta or TikTok). Any number of them; funnels pick which to fire (Funnel.pixelIds).
+// accessToken (Conversions API / Events API) is write-only from the admin.
+model Pixel {
+  id                  String   @id @default(uuid())
+  name                String
+  platform            String
+  pixelId             String   @map("pixel_id")
+  serverEventsEnabled Boolean  @default(false) @map("server_events_enabled")
+  accessToken         String?  @map("access_token")
+  testEventCode       String?  @map("test_event_code")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  @@index([platform])
+  @@map("pixels")
+}
+
 model Funnel {
   id              String                 @id @default(uuid())
   name            String
@@ -1794,8 +1811,11 @@ model Funnel {
   product         Product                @relation(fields: [productId], references: [id], onDelete: Cascade)
   // Optional per-funnel pixels that replace the store-wide Meta / TikTok pixel
   // on this funnel's page and in its server-side events. Null = use the store's.
+  // DEPRECATED: replaced by pixelIds (migrated into Pixel rows); no longer read.
   metaPixelId     String?                @map("meta_pixel_id")
   tiktokPixelCode String?                @map("tiktok_pixel_code")
+  // Pixel rows (Apps → Pixels) this funnel fires. Empty = the store-wide pixel apps.
+  pixelIds        String[]               @default([]) @map("pixel_ids")
   // Anti-spam / fake-order settings (FunnelProtectionSchema in packages/shared). Null = defaults.
   protection      Json?
   steps           FunnelStep[]

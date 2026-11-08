@@ -263,8 +263,8 @@ ${s.trustBadges ? `<ul class="trust"><li>${ico('truck')}${T.trust[0]}</li><li>${
   const thanks = `<section class="scr" data-screen="thanks" hidden><div><div class="ok">${ico('check')}</div><h1 style="margin-top:16px">${T.thanksTitle}</h1><p class="lead" id="tb"></p><p class="lead">${T.orderNumber}: <span class="oid" id="oid"></span></p></div><div class="card"><b>${T.thanksNext}</b><ol class="nx">${T.thanksSteps.map((x, i) => `<li><b>${i + 1}</b><span>${x}</span></li>`).join('')}</ol></div></section>`
 
   // ---- client data (everything the script needs, nothing it must fetch) ----
-  const metaId = f.pixels.metaPixelId && PIXEL_META.test(f.pixels.metaPixelId) ? f.pixels.metaPixelId : null
-  const ttId = f.pixels.tiktokPixelCode && PIXEL_TIKTOK.test(f.pixels.tiktokPixelCode) ? f.pixels.tiktokPixelCode : null
+  const metaIds = [...new Set(f.pixels.meta.filter((x) => PIXEL_META.test(x)))]
+  const ttIds = [...new Set(f.pixels.tiktok.filter((x) => PIXEL_TIKTOK.test(x)))]
   const fd = {
     id: f.id,
     slug: f.slug,
@@ -296,7 +296,7 @@ ${s.trustBadges ? `<ul class="trust"><li>${ico('truck')}${T.trust[0]}</li><li>${
     rr: s.recordSessions ? RECORDER_URL : null,
     ab: f.abandonedDelaySeconds,
     pr: { otp: f.protection.otp ? 1 : 0, ck: f.protection.captchaSiteKey },
-    px: { m: metaId, t: ttId },
+    px: { m: metaIds, t: ttIds },
     sold: soldOut
   }
 

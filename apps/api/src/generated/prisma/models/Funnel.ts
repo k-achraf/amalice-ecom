@@ -59,6 +59,7 @@ export type FunnelCountAggregateOutputType = {
   productId: number
   metaPixelId: number
   tiktokPixelCode: number
+  pixelIds: number
   protection: number
   createdAt: number
   updatedAt: number
@@ -101,6 +102,7 @@ export type FunnelCountAggregateInputType = {
   productId?: true
   metaPixelId?: true
   tiktokPixelCode?: true
+  pixelIds?: true
   protection?: true
   createdAt?: true
   updatedAt?: true
@@ -188,6 +190,7 @@ export type FunnelGroupByOutputType = {
   productId: string
   metaPixelId: string | null
   tiktokPixelCode: string | null
+  pixelIds: string[]
   protection: runtime.JsonValue | null
   createdAt: Date
   updatedAt: Date
@@ -223,6 +226,7 @@ export type FunnelWhereInput = {
   productId?: Prisma.StringFilter<"Funnel"> | string
   metaPixelId?: Prisma.StringNullableFilter<"Funnel"> | string | null
   tiktokPixelCode?: Prisma.StringNullableFilter<"Funnel"> | string | null
+  pixelIds?: Prisma.StringNullableListFilter<"Funnel">
   protection?: Prisma.JsonNullableFilter<"Funnel">
   createdAt?: Prisma.DateTimeFilter<"Funnel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Funnel"> | Date | string
@@ -242,6 +246,7 @@ export type FunnelOrderByWithRelationInput = {
   productId?: Prisma.SortOrder
   metaPixelId?: Prisma.SortOrderInput | Prisma.SortOrder
   tiktokPixelCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  pixelIds?: Prisma.SortOrder
   protection?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -264,6 +269,7 @@ export type FunnelWhereUniqueInput = Prisma.AtLeast<{
   productId?: Prisma.StringFilter<"Funnel"> | string
   metaPixelId?: Prisma.StringNullableFilter<"Funnel"> | string | null
   tiktokPixelCode?: Prisma.StringNullableFilter<"Funnel"> | string | null
+  pixelIds?: Prisma.StringNullableListFilter<"Funnel">
   protection?: Prisma.JsonNullableFilter<"Funnel">
   createdAt?: Prisma.DateTimeFilter<"Funnel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Funnel"> | Date | string
@@ -283,6 +289,7 @@ export type FunnelOrderByWithAggregationInput = {
   productId?: Prisma.SortOrder
   metaPixelId?: Prisma.SortOrderInput | Prisma.SortOrder
   tiktokPixelCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  pixelIds?: Prisma.SortOrder
   protection?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -303,6 +310,7 @@ export type FunnelScalarWhereWithAggregatesInput = {
   productId?: Prisma.StringWithAggregatesFilter<"Funnel"> | string
   metaPixelId?: Prisma.StringNullableWithAggregatesFilter<"Funnel"> | string | null
   tiktokPixelCode?: Prisma.StringNullableWithAggregatesFilter<"Funnel"> | string | null
+  pixelIds?: Prisma.StringNullableListFilter<"Funnel">
   protection?: Prisma.JsonNullableWithAggregatesFilter<"Funnel">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Funnel"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Funnel"> | Date | string
@@ -316,6 +324,7 @@ export type FunnelCreateInput = {
   status?: $Enums.FunnelStatus
   metaPixelId?: string | null
   tiktokPixelCode?: string | null
+  pixelIds?: Prisma.FunnelCreatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -335,6 +344,7 @@ export type FunnelUncheckedCreateInput = {
   productId: string
   metaPixelId?: string | null
   tiktokPixelCode?: string | null
+  pixelIds?: Prisma.FunnelCreatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -352,6 +362,7 @@ export type FunnelUpdateInput = {
   status?: Prisma.EnumFunnelStatusFieldUpdateOperationsInput | $Enums.FunnelStatus
   metaPixelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tiktokPixelCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixelIds?: Prisma.FunnelUpdatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -371,6 +382,7 @@ export type FunnelUncheckedUpdateInput = {
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   metaPixelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tiktokPixelCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixelIds?: Prisma.FunnelUpdatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -389,6 +401,7 @@ export type FunnelCreateManyInput = {
   productId: string
   metaPixelId?: string | null
   tiktokPixelCode?: string | null
+  pixelIds?: Prisma.FunnelCreatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -402,6 +415,7 @@ export type FunnelUpdateManyMutationInput = {
   status?: Prisma.EnumFunnelStatusFieldUpdateOperationsInput | $Enums.FunnelStatus
   metaPixelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tiktokPixelCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixelIds?: Prisma.FunnelUpdatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -416,6 +430,7 @@ export type FunnelUncheckedUpdateManyInput = {
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   metaPixelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tiktokPixelCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixelIds?: Prisma.FunnelUpdatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -445,6 +460,7 @@ export type FunnelCountOrderByAggregateInput = {
   productId?: Prisma.SortOrder
   metaPixelId?: Prisma.SortOrder
   tiktokPixelCode?: Prisma.SortOrder
+  pixelIds?: Prisma.SortOrder
   protection?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -539,8 +555,17 @@ export type FunnelUpdateOneWithoutOrdersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.FunnelUpdateToOneWithWhereWithoutOrdersInput, Prisma.FunnelUpdateWithoutOrdersInput>, Prisma.FunnelUncheckedUpdateWithoutOrdersInput>
 }
 
+export type FunnelCreatepixelIdsInput = {
+  set: string[]
+}
+
 export type EnumFunnelStatusFieldUpdateOperationsInput = {
   set?: $Enums.FunnelStatus
+}
+
+export type FunnelUpdatepixelIdsInput = {
+  set?: string[]
+  push?: string | string[]
 }
 
 export type FunnelCreateNestedOneWithoutBlockedAttemptsInput = {
@@ -593,6 +618,7 @@ export type FunnelCreateWithoutProductInput = {
   status?: $Enums.FunnelStatus
   metaPixelId?: string | null
   tiktokPixelCode?: string | null
+  pixelIds?: Prisma.FunnelCreatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -610,6 +636,7 @@ export type FunnelUncheckedCreateWithoutProductInput = {
   status?: $Enums.FunnelStatus
   metaPixelId?: string | null
   tiktokPixelCode?: string | null
+  pixelIds?: Prisma.FunnelCreatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -657,6 +684,7 @@ export type FunnelScalarWhereInput = {
   productId?: Prisma.StringFilter<"Funnel"> | string
   metaPixelId?: Prisma.StringNullableFilter<"Funnel"> | string | null
   tiktokPixelCode?: Prisma.StringNullableFilter<"Funnel"> | string | null
+  pixelIds?: Prisma.StringNullableListFilter<"Funnel">
   protection?: Prisma.JsonNullableFilter<"Funnel">
   createdAt?: Prisma.DateTimeFilter<"Funnel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Funnel"> | Date | string
@@ -670,6 +698,7 @@ export type FunnelCreateWithoutOrdersInput = {
   status?: $Enums.FunnelStatus
   metaPixelId?: string | null
   tiktokPixelCode?: string | null
+  pixelIds?: Prisma.FunnelCreatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -688,6 +717,7 @@ export type FunnelUncheckedCreateWithoutOrdersInput = {
   productId: string
   metaPixelId?: string | null
   tiktokPixelCode?: string | null
+  pixelIds?: Prisma.FunnelCreatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -720,6 +750,7 @@ export type FunnelUpdateWithoutOrdersInput = {
   status?: Prisma.EnumFunnelStatusFieldUpdateOperationsInput | $Enums.FunnelStatus
   metaPixelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tiktokPixelCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixelIds?: Prisma.FunnelUpdatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -738,6 +769,7 @@ export type FunnelUncheckedUpdateWithoutOrdersInput = {
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   metaPixelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tiktokPixelCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixelIds?: Prisma.FunnelUpdatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -754,6 +786,7 @@ export type FunnelCreateWithoutBlockedAttemptsInput = {
   status?: $Enums.FunnelStatus
   metaPixelId?: string | null
   tiktokPixelCode?: string | null
+  pixelIds?: Prisma.FunnelCreatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -772,6 +805,7 @@ export type FunnelUncheckedCreateWithoutBlockedAttemptsInput = {
   productId: string
   metaPixelId?: string | null
   tiktokPixelCode?: string | null
+  pixelIds?: Prisma.FunnelCreatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -804,6 +838,7 @@ export type FunnelUpdateWithoutBlockedAttemptsInput = {
   status?: Prisma.EnumFunnelStatusFieldUpdateOperationsInput | $Enums.FunnelStatus
   metaPixelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tiktokPixelCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixelIds?: Prisma.FunnelUpdatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -822,6 +857,7 @@ export type FunnelUncheckedUpdateWithoutBlockedAttemptsInput = {
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   metaPixelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tiktokPixelCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixelIds?: Prisma.FunnelUpdatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -838,6 +874,7 @@ export type FunnelCreateWithoutRecordingsInput = {
   status?: $Enums.FunnelStatus
   metaPixelId?: string | null
   tiktokPixelCode?: string | null
+  pixelIds?: Prisma.FunnelCreatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -856,6 +893,7 @@ export type FunnelUncheckedCreateWithoutRecordingsInput = {
   productId: string
   metaPixelId?: string | null
   tiktokPixelCode?: string | null
+  pixelIds?: Prisma.FunnelCreatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -888,6 +926,7 @@ export type FunnelUpdateWithoutRecordingsInput = {
   status?: Prisma.EnumFunnelStatusFieldUpdateOperationsInput | $Enums.FunnelStatus
   metaPixelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tiktokPixelCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixelIds?: Prisma.FunnelUpdatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -906,6 +945,7 @@ export type FunnelUncheckedUpdateWithoutRecordingsInput = {
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   metaPixelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tiktokPixelCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixelIds?: Prisma.FunnelUpdatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -922,6 +962,7 @@ export type FunnelCreateWithoutStepsInput = {
   status?: $Enums.FunnelStatus
   metaPixelId?: string | null
   tiktokPixelCode?: string | null
+  pixelIds?: Prisma.FunnelCreatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -940,6 +981,7 @@ export type FunnelUncheckedCreateWithoutStepsInput = {
   productId: string
   metaPixelId?: string | null
   tiktokPixelCode?: string | null
+  pixelIds?: Prisma.FunnelCreatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -972,6 +1014,7 @@ export type FunnelUpdateWithoutStepsInput = {
   status?: Prisma.EnumFunnelStatusFieldUpdateOperationsInput | $Enums.FunnelStatus
   metaPixelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tiktokPixelCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixelIds?: Prisma.FunnelUpdatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -990,6 +1033,7 @@ export type FunnelUncheckedUpdateWithoutStepsInput = {
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   metaPixelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tiktokPixelCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixelIds?: Prisma.FunnelUpdatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1006,6 +1050,7 @@ export type FunnelCreateManyProductInput = {
   status?: $Enums.FunnelStatus
   metaPixelId?: string | null
   tiktokPixelCode?: string | null
+  pixelIds?: Prisma.FunnelCreatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1019,6 +1064,7 @@ export type FunnelUpdateWithoutProductInput = {
   status?: Prisma.EnumFunnelStatusFieldUpdateOperationsInput | $Enums.FunnelStatus
   metaPixelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tiktokPixelCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixelIds?: Prisma.FunnelUpdatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1036,6 +1082,7 @@ export type FunnelUncheckedUpdateWithoutProductInput = {
   status?: Prisma.EnumFunnelStatusFieldUpdateOperationsInput | $Enums.FunnelStatus
   metaPixelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tiktokPixelCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixelIds?: Prisma.FunnelUpdatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1053,6 +1100,7 @@ export type FunnelUncheckedUpdateManyWithoutProductInput = {
   status?: Prisma.EnumFunnelStatusFieldUpdateOperationsInput | $Enums.FunnelStatus
   metaPixelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tiktokPixelCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixelIds?: Prisma.FunnelUpdatepixelIdsInput | string[]
   protection?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1125,6 +1173,7 @@ export type FunnelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   productId?: boolean
   metaPixelId?: boolean
   tiktokPixelCode?: boolean
+  pixelIds?: boolean
   protection?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1145,6 +1194,7 @@ export type FunnelSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   productId?: boolean
   metaPixelId?: boolean
   tiktokPixelCode?: boolean
+  pixelIds?: boolean
   protection?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1160,6 +1210,7 @@ export type FunnelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   productId?: boolean
   metaPixelId?: boolean
   tiktokPixelCode?: boolean
+  pixelIds?: boolean
   protection?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1175,12 +1226,13 @@ export type FunnelSelectScalar = {
   productId?: boolean
   metaPixelId?: boolean
   tiktokPixelCode?: boolean
+  pixelIds?: boolean
   protection?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type FunnelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "templateId" | "status" | "productId" | "metaPixelId" | "tiktokPixelCode" | "protection" | "createdAt" | "updatedAt", ExtArgs["result"]["funnel"]>
+export type FunnelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "templateId" | "status" | "productId" | "metaPixelId" | "tiktokPixelCode" | "pixelIds" | "protection" | "createdAt" | "updatedAt", ExtArgs["result"]["funnel"]>
 export type FunnelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
   steps?: boolean | Prisma.Funnel$stepsArgs<ExtArgs>
@@ -1214,6 +1266,7 @@ export type $FunnelPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     productId: string
     metaPixelId: string | null
     tiktokPixelCode: string | null
+    pixelIds: string[]
     protection: runtime.JsonValue | null
     createdAt: Date
     updatedAt: Date
@@ -1653,6 +1706,7 @@ export interface FunnelFieldRefs {
   readonly productId: Prisma.FieldRef<"Funnel", 'String'>
   readonly metaPixelId: Prisma.FieldRef<"Funnel", 'String'>
   readonly tiktokPixelCode: Prisma.FieldRef<"Funnel", 'String'>
+  readonly pixelIds: Prisma.FieldRef<"Funnel", 'String[]'>
   readonly protection: Prisma.FieldRef<"Funnel", 'Json'>
   readonly createdAt: Prisma.FieldRef<"Funnel", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Funnel", 'DateTime'>

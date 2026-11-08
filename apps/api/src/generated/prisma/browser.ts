@@ -283,6 +283,11 @@ export type ProductSourcingRequest = Prisma.ProductSourcingRequestModel
  */
 export type PageViewEvent = Prisma.PageViewEventModel
 /**
+ * Model Pixel
+ * 
+ */
+export type Pixel = Prisma.PixelModel
+/**
  * Model Funnel
  * 
  */

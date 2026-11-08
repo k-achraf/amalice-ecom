@@ -39,7 +39,7 @@ export const MCP_SECTIONS = [
   { id: 'sourcing', label: 'Sourcing', description: 'Product research and sourcing tracker', segments: ['sourcing'] },
   { id: 'social', label: 'Social publishing', description: 'Social accounts and posts', segments: ['social'] },
   { id: 'meta_ads', label: 'Meta ads', description: 'Ad accounts, campaigns, insights', segments: ['meta-ads'], sensitive: true },
-  { id: 'integrations', label: 'Integrations', description: 'Pixels, Google Sheets and other connected apps', segments: ['apps', 'google-sheets'], sensitive: true },
+  { id: 'integrations', label: 'Integrations', description: 'Pixels, Google Sheets and other connected apps', segments: ['apps', 'pixels', 'google-sheets'], sensitive: true },
   { id: 'reports', label: 'Reports & alerts', description: 'Telegram reports and alert settings', segments: ['reports'] },
   { id: 'ai', label: 'AI settings & assistant', description: 'AI providers/keys, models, business assistant', segments: ['ai'], sensitive: true },
   { id: 'settings', label: 'Store settings', description: 'Storefront, brand and store configuration', segments: ['settings'], sensitive: true },
