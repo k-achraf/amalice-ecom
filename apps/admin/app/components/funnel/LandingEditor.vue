@@ -32,6 +32,12 @@ const emit = defineEmits<{ save: [landing: LandingSettings]; 'pages-changed': [p
 const api = useAdminApi()
 const { run } = useApiAction()
 
+// A deep plain copy. structuredClone throws on the nested reactive proxies a template switch leaves in the
+// draft (it reuses offerLabels etc. from the reactive draft), which silently killed the Save button.
+function plain<T>(v: T): T {
+  return JSON.parse(JSON.stringify(v))
+}
+
 // Run through the schema so settings saved before newer options existed get their defaults.
 const saved = computed<LandingSettings | null>(() => {
   const raw = props.step.config.landing
@@ -39,12 +45,12 @@ const saved = computed<LandingSettings | null>(() => {
   const parsed = LandingSettingsSchema.safeParse(raw)
   return parsed.success ? withDescriptionSection(parsed.data) : null
 })
-const draft = ref<LandingSettings | null>(saved.value ? structuredClone(toRaw(saved.value)) : null)
+const draft = ref<LandingSettings | null>(saved.value ? plain(saved.value) : null)
 // Re-sync when the saved settings change underneath (after a save, or switching step).
 watch(
   () => [props.step.id, JSON.stringify(saved.value)],
   () => {
-    draft.value = saved.value ? structuredClone(toRaw(saved.value)) : null
+    draft.value = saved.value ? plain(saved.value) : null
   }
 )
 
@@ -192,10 +198,10 @@ function usePage(page: ProductLandingPage) {
 }
 
 function discard() {
-  draft.value = saved.value ? structuredClone(toRaw(saved.value)) : null
+  draft.value = saved.value ? plain(saved.value) : null
 }
 function save() {
-  if (draft.value) emit('save', structuredClone(toRaw(draft.value)))
+  if (draft.value) emit('save', plain(draft.value))
 }
 </script>
 
