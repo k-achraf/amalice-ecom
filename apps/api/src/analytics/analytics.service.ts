@@ -181,7 +181,7 @@ export class AnalyticsService {
       }),
       this.prisma.orderAttribution.findMany({
         where: { visitorId },
-        select: { order: { select: { id: true, number: true, state: true, totalCents: true, createdAt: true } }, platform: true, campaignName: true, utmSource: true }
+        select: { order: { select: { id: true, state: true, totalCents: true, funnelId: true, riskLevel: true, createdAt: true } }, platform: true, campaignName: true, utmSource: true }
       })
     ])
     return {
