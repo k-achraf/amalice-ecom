@@ -14,7 +14,8 @@ Remote MCP server (Streamable HTTP, **stateless**) that lets AI agents (Claude, 
 - **Curated tools** (`src/tools/{orders,products,shipping,analytics}.ts`): ergonomic wrappers for the common jobs (orders, products incl. full creation with images from URLs / variants / offers / upsells, stock, shipping & dispatch, funnels, visitors, sessions). `src/tools/abilities.ts` maps every tool to the abilities it needs; an unmapped tool makes startup fail, so a tool can't ship without deciding who may use it. This is only a visibility filter: the API still enforces.
 - **Generic tools** (`src/tools/generic.ts`): `find_api_endpoints` (searches `GET /mcp/endpoints`, the OpenAPI document filtered to what the token may call) and `call_api` (any `/admin/*` call). They give a token reach over every section it was granted, including ones without a curated tool.
 - `create_product` always creates the product hidden (`visible:false`); the owner publishes it in the admin. `add_product_images` downloads images from public URLs only (private/localhost hosts refused).
-- Responses over ~60k chars are truncated (`tools/util.ts`).
+- **Full-data tools for AI analysis**: `get_order_full` / `list_orders_full` (API `GET admin/orders/:id/full`, `AdminOrdersService.fullProfile`: order + IP/user agent/visitorId/cookies + page views + calls + audit + courier events + protection refusals + related orders by customer/IP/visitor) and `get_funnel_full` / `list_funnel_blocked_attempts`. No canvas/hardware fingerprint exists in the DB; visitorId + user agent + IP are the device identity.
+- Responses over ~200k chars are truncated (`tools/util.ts`).
 
 ## Run
 

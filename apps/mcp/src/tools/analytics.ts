@@ -176,6 +176,49 @@ export function registerAnalyticsTools({ server, api }: ToolContext) {
   )
 
   server.registerTool(
+    'list_funnel_blocked_attempts',
+    {
+      title: 'Funnel blocked order attempts',
+      description:
+        'Order attempts the funnel protection refused (last 30 days): reason, phone, IP address, user agent, detail, time, plus a count per reason. Useful to spot spam/bot sources.',
+      inputSchema: { funnelId: z.string(), page: z.number().int().positive().default(1) },
+      annotations: { readOnlyHint: true }
+    },
+    safe(({ funnelId, page }) => api.get(`/admin/funnels/${funnelId}/blocked-attempts`, { page }))
+  )
+
+  server.registerTool(
+    'get_funnel_full',
+    {
+      title: 'Funnel — everything in the database',
+      description:
+        "Everything about one funnel for analysis: its full configuration (steps, pixels, protection rules), stats for the last N days, the next-test suggestion, protection refusals (IP/phone/user agent) with counts per reason, the recorded sessions list, and its most recent orders each with the complete device/attribution footprint (IP, user agent, visitorId, cookies, UTM/ad ids, risk factors, related orders). Use get_funnel_session for one visit's behaviour.",
+      inputSchema: {
+        funnelId: z.string(),
+        days: days(30),
+        orderPages: z.number().int().min(1).max(5).default(1).describe('How many pages of 10 recent orders to include in full'),
+        blockedPages: z.number().int().min(1).max(5).default(1).describe('How many pages of 20 blocked attempts to include'),
+        recordingPages: z.number().int().min(1).max(5).default(1)
+      },
+      annotations: { readOnlyHint: true }
+    },
+    safe(async ({ funnelId, days, orderPages, blockedPages, recordingPages }) => {
+      const pages = (n: number) => Array.from({ length: n }, (_, i) => i + 1)
+      const [funnel, stats, nextTest, blocked, recordings, orderLists] = await Promise.all([
+        api.get(`/admin/funnels/${funnelId}`),
+        api.get(`/admin/funnels/${funnelId}/stats`, { days }),
+        api.get(`/admin/funnels/${funnelId}/next-test`, { days }),
+        Promise.all(pages(blockedPages).map((page) => api.get(`/admin/funnels/${funnelId}/blocked-attempts`, { page }))),
+        Promise.all(pages(recordingPages).map((page) => api.get(`/admin/funnels/${funnelId}/recordings`, { page }))),
+        Promise.all(pages(orderPages).map((page) => api.get<{ items: { id: string }[]; total: number }>('/admin/orders', { funnelId, page, pageSize: 10, archived: 'exclude' })))
+      ])
+      const ids = orderLists.flatMap((l) => l.items.map((o) => o.id))
+      const orders = await Promise.all(ids.map((id) => api.get(`/admin/orders/${id}/full`)))
+      return { funnel, stats, nextTest, blockedAttempts: blocked, recordings, totalOrders: orderLists[0]?.total ?? 0, orders }
+    })
+  )
+
+  server.registerTool(
     'update_funnel',
     {
       title: 'Update funnel',

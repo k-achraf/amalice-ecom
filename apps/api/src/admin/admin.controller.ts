@@ -335,6 +335,14 @@ export class AdminController {
     return this.callCenter.skip(id, actorFrom(req))
   }
 
+  // Everything stored about an order (device/IP footprint, visitor journey, calls, audit, courier events,
+  // related orders) — used by the MCP server so AI agents can analyse an order. Registered before orders/:id.
+  @Get('orders/:id/full')
+  @Roles('SuperAdmin', 'OpsManager')
+  orderFull(@Param('id') id: string) {
+    return this.orders.fullProfile(id)
+  }
+
   // CallCenterAgent included: an order reached via their own Call Center/
   // Drop Queue pages links here for the full detail view.
   @Get('orders/:id')

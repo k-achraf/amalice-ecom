@@ -249,6 +249,90 @@ export class AdminOrdersService {
     return withDerivedStates({ ...order, items: order.items.map((it) => toLineItem(it, order.funnelId ? texts.get(order.funnelId) : undefined)), shippingCompanyName: order.shippingCompany?.name ?? null })
   }
 
+  // Everything the database knows about one order, for AI analysis (MCP `get_order_full`): the order
+  // itself plus its full tracking footprint (IP, user agent, visitor id = the browser's device id,
+  // pixel cookies), call attempts, audit trail, courier events, the visitor's page views and funnel
+  // recordings, protection refusals from the same IP/phone, and every other order that shares the
+  // customer, phone, IP or visitor id (duplicate / fraud-ring signals).
+  async fullProfile(id: string) {
+    const order = await this.findOne(id)
+    const attr = order.attribution
+    const visitorId = attr?.visitorId ?? null
+    const ip = attr?.ipAddress ?? null
+    const phone = order.customer.phone
+    const relatedWhere: Prisma.OrderWhereInput = {
+      id: { not: id },
+      OR: [
+        { customerId: order.customerId },
+        ...(visitorId ? [{ attribution: { visitorId } }] : []),
+        ...(ip ? [{ attribution: { ipAddress: ip } }] : [])
+      ]
+    }
+    const [callAttempts, auditLogs, shipmentEvents, pageViews, recordings, blockedAttempts, related, relatedPhones] = await Promise.all([
+      this.prisma.callAttempt.findMany({ where: { orderId: id }, orderBy: { createdAt: 'asc' } }),
+      this.prisma.auditLog.findMany({ where: { entity: 'Order', entityId: id }, orderBy: { createdAt: 'asc' }, take: 300 }),
+      this.prisma.shipmentEvent.findMany({ where: { orderId: id }, orderBy: { occurredAt: 'asc' }, take: 300 }),
+      visitorId ? this.prisma.pageViewEvent.findMany({ where: { visitorId }, orderBy: { createdAt: 'asc' }, take: 300 }) : Promise.resolve([]),
+      visitorId
+        ? this.prisma.funnelRecording.findMany({ where: { visitorId }, orderBy: { startedAt: 'asc' }, take: 50, select: { id: true, funnelId: true, eventCount: true, bytes: true, startedAt: true, endedAt: true } })
+        : Promise.resolve([]),
+      order.funnelId && (ip || phone)
+        ? this.prisma.funnelBlockedAttempt.findMany({
+            where: { funnelId: order.funnelId, OR: [...(ip ? [{ ip }] : []), { phone }] },
+            orderBy: { createdAt: 'desc' },
+            take: 100
+          })
+        : Promise.resolve([]),
+      this.prisma.order.findMany({
+        where: relatedWhere,
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+        select: {
+          id: true,
+          state: true,
+          totalCents: true,
+          riskScore: true,
+          riskLevel: true,
+          isDuplicate: true,
+          funnelId: true,
+          createdAt: true,
+          customer: { select: { name: true, phone: true } },
+          address: { select: { region: true, city: true, line1: true } },
+          attribution: { select: { ipAddress: true, userAgent: true, visitorId: true, platform: true } }
+        }
+      }),
+      // other customers' orders from the same phone are impossible (phone is unique), so this is the
+      // customer's own address book: every address this customer has used
+      this.prisma.address.findMany({ where: { customerId: order.customerId }, orderBy: { createdAt: 'asc' } })
+    ])
+    const sharedBy = (o: (typeof related)[number]) => ({
+      sameCustomer: o.customer.phone === phone,
+      sameIp: !!ip && o.attribution?.ipAddress === ip,
+      sameVisitor: !!visitorId && o.attribution?.visitorId === visitorId,
+      sameUserAgent: !!attr?.userAgent && o.attribution?.userAgent === attr.userAgent
+    })
+    return {
+      order,
+      callAttempts,
+      auditLogs,
+      shipmentEvents,
+      device: {
+        ipAddress: ip,
+        userAgent: attr?.userAgent ?? null,
+        deviceType: attr?.deviceType ?? null,
+        visitorId,
+        fbp: attr?.fbp ?? null,
+        fbc: attr?.fbc ?? null,
+        ttp: attr?.ttp ?? null,
+        note: 'visitorId is the browser-persisted device/visitor id; there is no separate canvas/hardware fingerprint stored'
+      },
+      visitor: { pageViews, recordings },
+      protectionRefusals: blockedAttempts,
+      customerAddresses: relatedPhones,
+      relatedOrders: related.map((o) => ({ ...o, sharedWithThisOrder: sharedBy(o) }))
+    }
+  }
+
   // Soft-hide an order out of every default order-listing view (Orders,
   // Call Center, Fulfillment, Shipping, Drop Queue — see Order.archived's
   // Prisma comment and list()/dropQueue()'s own where clauses). Never a

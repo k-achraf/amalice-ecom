@@ -15,6 +15,8 @@ export const TOOL_ABILITIES: Record<string, readonly string[]> = {
   // orders
   list_orders: ['orders:read'],
   get_order: ['orders:read'],
+  get_order_full: ['orders:read'],
+  list_orders_full: ['orders:read'],
   get_order_timeline: ['orders:read'],
   get_order_calls: ['orders:read'],
   transition_order: ['orders:write'],
@@ -63,6 +65,8 @@ export const TOOL_ABILITIES: Record<string, readonly string[]> = {
   get_visitor: ['analytics:read'],
   list_funnels: ['funnels:read'],
   get_funnel: ['funnels:read'],
+  get_funnel_full: ['funnels:read', 'orders:read'],
+  list_funnel_blocked_attempts: ['funnels:read'],
   get_funnel_stats: ['funnels:read'],
   get_funnel_next_test: ['funnels:read'],
   list_funnel_sessions: ['funnels:read'],

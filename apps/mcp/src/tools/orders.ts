@@ -46,6 +46,50 @@ export function registerOrderTools({ server, api }: ToolContext) {
   )
 
   server.registerTool(
+    'get_order_full',
+    {
+      title: 'Get order — everything in the database',
+      description:
+        "EVERYTHING stored about one order, for analysis: the full order (customer, address, items, totals, shipment, risk score + factors, cash reconciliation, notifications), the complete attribution/device footprint (IP address, user agent, device type, visitorId = the browser's persisted device id, fbp/fbc/ttp cookies, click ids, UTM/campaign/ad ids, landing URL, referrer, first touch), call attempts, the audit trail, courier events, the visitor's page views and funnel session recordings, funnel-protection refusals from the same IP/phone, the customer's addresses, and every other order sharing the customer / IP / visitor id / user agent (duplicate or fraud-ring signals). Note: no canvas/hardware fingerprint is stored; visitorId + userAgent + IP are the device identity. Amounts in cents.",
+      inputSchema: { orderId: z.string() },
+      annotations: { readOnlyHint: true }
+    },
+    safe(({ orderId }) => api.get(`/admin/orders/${orderId}/full`))
+  )
+
+  server.registerTool(
+    'list_orders_full',
+    {
+      title: 'List orders with full details',
+      description:
+        'Same filters as list_orders, but returns the get_order_full profile (IP, user agent, visitor id, page views, call attempts, audit, related orders…) for every order on the page. Max 10 per page; use it to analyse a batch (e.g. all High-risk orders of a funnel, or all orders from one IP).',
+      inputSchema: {
+        state: OrderState.optional(),
+        search: z.string().optional().describe('Phone, customer name or order reference'),
+        page: z.number().int().positive().default(1),
+        pageSize: z.number().int().min(1).max(10).default(5),
+        productId: z.string().optional(),
+        funnelId: z.string().optional().describe("A funnel id, or 'none'"),
+        companyId: z.string().optional(),
+        region: z.string().optional(),
+        city: z.string().optional(),
+        platform: z.enum(['Meta', 'TikTok', 'Google', 'Snapchat', 'Other', 'Organic', 'Direct']).optional(),
+        riskLevel: z.enum(['Low', 'Medium', 'High']).optional(),
+        from: z.string().optional(),
+        to: z.string().optional(),
+        archived: z.enum(['only', 'exclude']).optional(),
+        abandoned: z.enum(['only', 'exclude']).optional()
+      },
+      annotations: { readOnlyHint: true }
+    },
+    safe(async (q) => {
+      const list = await api.get<{ items: { id: string }[]; total: number; page: number; pageSize: number }>('/admin/orders', q)
+      const profiles = await Promise.all(list.items.map((o) => api.get(`/admin/orders/${o.id}/full`)))
+      return { total: list.total, page: list.page, pageSize: list.pageSize, orders: profiles }
+    })
+  )
+
+  server.registerTool(
     'get_order_timeline',
     {
       title: 'Order timeline',

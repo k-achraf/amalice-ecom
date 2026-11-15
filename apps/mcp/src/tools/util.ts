@@ -10,10 +10,10 @@ export interface ToolContext {
 }
 
 // Responses are capped so a huge list can never flood the model's context.
-const MAX_CHARS = 60_000
+const MAX_CHARS = 200_000
 
 export function ok(data: unknown) {
-  let text = JSON.stringify(data, null, 1)
+  let text = JSON.stringify(data)
   if (text.length > MAX_CHARS) {
     text = text.slice(0, MAX_CHARS) + `\n…[truncated ${text.length - MAX_CHARS} chars — narrow the filters or lower pageSize]`
   }
