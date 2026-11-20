@@ -5938,6 +5938,12 @@ export const OrderScalarFieldEnum = {
   riskLevel: 'riskLevel',
   riskFactors: 'riskFactors',
   deliveredEventSentAt: 'deliveredEventSentAt',
+  confirmedEventSentAt: 'confirmedEventSentAt',
+  whatsappStatus: 'whatsappStatus',
+  whatsappSentAt: 'whatsappSentAt',
+  whatsappRespondedAt: 'whatsappRespondedAt',
+  whatsappMessageId: 'whatsappMessageId',
+  whatsappError: 'whatsappError',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -7011,6 +7017,20 @@ export type EnumRiskLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
  * Reference to a field of type 'RiskLevel[]'
  */
 export type ListEnumRiskLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RiskLevel[]'>
+    
+
+
+/**
+ * Reference to a field of type 'WhatsappStatus'
+ */
+export type EnumWhatsappStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WhatsappStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'WhatsappStatus[]'
+ */
+export type ListEnumWhatsappStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WhatsappStatus[]'>
     
 
 

@@ -531,6 +531,10 @@ function initials(name: string | null) {
       <AdsOrderStatus :state="CALL_CENTER_STATE_TO_ORDER_STATE[order.callCenterState]" />
       <AdsOrderStatus v-if="order.shippingState" :state="SHIPPING_STATE_TO_ORDER_STATE[order.shippingState]" />
       <span v-if="order.fromAbandoned || order.isAbandoned" class="pill outline" title="This order started as an abandoned cart.">Abandoned cart</span>
+      <span v-if="order.whatsappStatus === 'Confirmed'" class="pill installed" title="The customer tapped Confirm in WhatsApp.">Confirmed via WhatsApp</span>
+      <span v-else-if="order.whatsappStatus === 'Cancelled'" class="pill outline" title="The customer tapped Cancel in WhatsApp.">Cancelled via WhatsApp</span>
+      <span v-else-if="order.whatsappStatus === 'Sent'" class="pill neutral" title="WhatsApp confirmation sent, no answer yet.">WhatsApp sent</span>
+      <span v-else-if="order.whatsappStatus === 'Failed'" class="pill outline" title="The WhatsApp message could not be delivered.">WhatsApp failed</span>
     </template>
     <template v-if="order" #actions>
       <button v-if="PRICE_EDITABLE_STATES.includes(order.state) && !order.shipment" class="btn btn-primary" type="button" @click="openCustomerEditor"><AdsIcon name="i-lucide-pencil" />Edit order</button>

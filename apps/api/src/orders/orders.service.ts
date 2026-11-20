@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service'
 import type { Product, ProductVariant, Prisma } from '../generated/prisma/client'
 import { NotificationsService } from '../notifications/notifications.service'
 import { GoogleSheetsService } from '../apps/google-sheets.service'
+import { WhatsAppService } from '../apps/whatsapp.service'
 import { OrderItemsService, canAddOrderItems } from '../order-items/order-items.service'
 import { RedisService } from '../redis/redis.service'
 import { RiskService, type RiskPolicy } from '../risk/risk.service'
@@ -48,7 +49,8 @@ export class OrdersService {
     private readonly googleSheets: GoogleSheetsService,
     private readonly redis: RedisService,
     private readonly risk: RiskService,
-    private readonly stock: StockService
+    private readonly stock: StockService,
+    private readonly whatsapp: WhatsAppService
   ) {}
 
   // Don't let the client submit the same order twice — double-click,
@@ -390,6 +392,7 @@ export class OrdersService {
 
       await this.recordAttribution(order.id, checkout.tracking, context)
       this.pushToGoogleSheets(order.id)
+      this.whatsapp.sendForOrder(order.id, 'order')
 
       return order
     } catch (error) {
@@ -695,6 +698,7 @@ export class OrdersService {
 
     await this.recordAttribution(order.id, lead.tracking, context)
     this.pushToGoogleSheets(order.id)
+    this.whatsapp.sendForOrder(order.id, 'order')
 
     return order
   }
@@ -831,6 +835,8 @@ export class OrdersService {
       include: { items: true }
     })
     await this.recordAttribution(order.id, lead.tracking, context)
+    // A brand-new capture only: schedules the delayed abandoned-cart WhatsApp message (skipped if the customer submits first).
+    this.whatsapp.sendForOrder(order.id, 'abandoned')
     return order
   }
 

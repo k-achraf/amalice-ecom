@@ -1,10 +1,11 @@
 import { Body, Controller, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { SkipThrottle, Throttle } from '@nestjs/throttler'
-import { SendMetaPixelTestEventSchema, SendTikTokPixelTestEventSchema, UpdateAppInstallationSchema } from '@amalice/shared'
+import { SendMetaPixelTestEventSchema, SendTikTokPixelTestEventSchema, SendWhatsAppTestSchema, UpdateAppInstallationSchema } from '@amalice/shared'
 import { createZodDto } from 'nestjs-zod'
 import type { Request } from 'express'
 import { AppsService } from './apps.service'
+import { WhatsAppService } from './whatsapp.service'
 import { JwtAuthGuard } from '../identity/admin-auth/jwt-auth.guard'
 import { RolesGuard } from '../identity/admin-auth/roles.guard'
 import { Roles } from '../identity/admin-auth/roles.decorator'
@@ -14,6 +15,7 @@ import type { AuditActor } from '../common/audit.service'
 class UpdateAppInstallationDto extends createZodDto(UpdateAppInstallationSchema) {}
 class SendMetaPixelTestEventDto extends createZodDto(SendMetaPixelTestEventSchema) {}
 class SendTikTokPixelTestEventDto extends createZodDto(SendTikTokPixelTestEventSchema) {}
+class SendWhatsAppTestDto extends createZodDto(SendWhatsAppTestSchema) {}
 
 interface AuthedRequest extends Request {
   user: AdminJwtPayload
@@ -25,7 +27,10 @@ interface AuthedRequest extends Request {
 @ApiTags('apps')
 @Controller()
 export class AppsController {
-  constructor(private readonly apps: AppsService) {}
+  constructor(
+    private readonly apps: AppsService,
+    private readonly whatsapp: WhatsAppService
+  ) {}
 
   // Public — the storefront fetches this on every page load to decide
   // whether to inject the Meta Pixel script. No auth; no PII. Exempt from
@@ -82,5 +87,15 @@ export class AppsController {
   @Throttle({ default: { limit: 10, ttl: 5 * 60 * 1000 } })
   sendTikTokPixelTestEvent(@Body() body: SendTikTokPixelTestEventDto) {
     return this.apps.sendTikTokPixelTestEvent(body.eventName)
+  }
+
+  // Sends the saved message (sample order data) to one number so the owner can see it before going live.
+  @Post('admin/apps/whatsapp/test')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin')
+  @Throttle({ default: { limit: 10, ttl: 5 * 60 * 1000 } })
+  sendWhatsAppTest(@Body() body: SendWhatsAppTestDto) {
+    return this.whatsapp.sendTest(body.phone, body.kind)
   }
 }

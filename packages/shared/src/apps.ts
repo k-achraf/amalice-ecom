@@ -6,7 +6,7 @@ import { OrderAttributionInputSchema } from './attribution'
 // a fixed slug enum plus a metadata record the admin's Apps list page renders
 // from, so adding a new app later is "add a slug + metadata entry + its own
 // config schema", not a schema migration for every app.
-export const APP_IDS = ['meta-pixel', 'tiktok-pixel', 'google-sheets'] as const
+export const APP_IDS = ['meta-pixel', 'tiktok-pixel', 'google-sheets', 'whatsapp', 'order-events'] as const
 export type AppId = (typeof APP_IDS)[number]
 export const AppIdSchema = z.enum(APP_IDS)
 
@@ -28,6 +28,18 @@ export const APP_META: Record<AppId, { name: string; description: string; catego
     description: 'Push every order to a connected Google Sheet as it comes in, and keep its status column in sync as you work the order — route different products to different sheets, or all of them to one.',
     category: 'Operations',
     icon: 'i-lucide-table'
+  },
+  whatsapp: {
+    name: 'WhatsApp',
+    description: 'Send each new order (and each abandoned cart) a WhatsApp message with Confirm / Cancel buttons — the customer taps one and the order status updates by itself.',
+    category: 'Operations',
+    icon: 'i-lucide-message-circle'
+  },
+  'order-events': {
+    name: 'Order events',
+    description: 'Send your own events to Meta and TikTok when an order is confirmed or delivered (custom events such as “Confirmed” and “Delivered”), so ad campaigns can optimise for real sales instead of form submits.',
+    category: 'Analytics & Marketing',
+    icon: 'i-lucide-radio-tower'
   }
 }
 
@@ -197,3 +209,115 @@ export const UpdateAppInstallationSchema = z.object({
   config: z.record(z.string(), z.unknown()).nullable().optional()
 })
 export type UpdateAppInstallation = z.infer<typeof UpdateAppInstallationSchema>
+
+// ---- WhatsApp order confirmation (WhatsApp Business Cloud API) ----
+// Placeholders available in the message text. Replaced server-side when sending.
+export const WHATSAPP_PLACEHOLDERS = ['{name}', '{order_ref}', '{total}', '{products}', '{store}'] as const
+
+export const WhatsAppMessageSchema = z.object({
+  // Free-text body (interactive message). Max 1024 = WhatsApp limit.
+  body: z.string().trim().min(1).max(1024),
+  // Button titles — WhatsApp limits them to 20 characters.
+  confirmLabel: z.string().trim().min(1).max(20),
+  cancelLabel: z.string().trim().min(1).max(20),
+  // Optional approved template (quick-reply buttons: Confirm first, Cancel second). Needed to reach customers who
+  // never wrote to the business in the last 24h, where WhatsApp refuses free-text messages. Body variables, in order:
+  // {{1}} name, {{2}} order ref, {{3}} total, {{4}} products, {{5}} store.
+  templateName: z.string().trim().max(512).nullable().default(null),
+  templateLanguage: z.string().trim().max(20).default('ar')
+})
+export type WhatsAppMessage = z.infer<typeof WhatsAppMessageSchema>
+
+export const DEFAULT_WHATSAPP_ORDER_MESSAGE: WhatsAppMessage = {
+  body: 'مرحباً {name} 👋\nتلقّينا طلبك رقم {order_ref} من {store}.\nالمنتجات: {products}\nالمبلغ عند الاستلام: {total}\n\nهل تؤكد الطلب؟',
+  confirmLabel: 'تأكيد الطلب ✅',
+  cancelLabel: 'إلغاء الطلب ❌',
+  templateName: null,
+  templateLanguage: 'ar'
+}
+
+export const DEFAULT_WHATSAPP_ABANDONED_MESSAGE: WhatsAppMessage = {
+  body: 'مرحباً {name} 👋\nلاحظنا أنك لم تُكمل طلبك رقم {order_ref} من {store}.\nالمنتجات: {products}\nالمبلغ: {total}\n\nهل ترغب في تأكيد الطلب؟',
+  confirmLabel: 'نعم، أؤكد ✅',
+  cancelLabel: 'لا، إلغاء ❌',
+  templateName: null,
+  templateLanguage: 'ar'
+}
+
+// Secrets (accessToken, appSecret) are write-only: omitted = keep the stored one, null = clear, string = set.
+export const WhatsAppConfigSchema = z.object({
+  phoneNumberId: z.string().trim().regex(/^\d{5,25}$/, 'Enter the numeric Phone number ID').nullable().default(null),
+  accessToken: z.string().trim().min(1).nullable().optional(),
+  appSecret: z.string().trim().min(1).nullable().optional(),
+  // Echoed by Meta when you register the webhook (GET challenge).
+  verifyToken: z.string().trim().min(8).max(100).nullable().default(null),
+  sendOrderMessages: z.boolean().default(true),
+  sendAbandonedMessages: z.boolean().default(true),
+  // How long to wait after a cart is captured before messaging it. If the customer submits the form in the
+  // meantime the order becomes a regular one and gets the regular message instead.
+  abandonedDelayMinutes: z.number().int().min(1).max(1440).default(15),
+  orderMessage: WhatsAppMessageSchema.default(DEFAULT_WHATSAPP_ORDER_MESSAGE),
+  abandonedMessage: WhatsAppMessageSchema.default(DEFAULT_WHATSAPP_ABANDONED_MESSAGE),
+  // Short replies sent back after the customer taps a button.
+  confirmedReply: z.string().trim().max(500).default('شكراً لك، تم تأكيد طلبك ✅ سنتواصل معك قريباً.'),
+  cancelledReply: z.string().trim().max(500).default('تم إلغاء طلبك ❌ نتمنى خدمتك مستقبلاً.')
+})
+export type WhatsAppConfig = z.infer<typeof WhatsAppConfigSchema>
+
+export const WhatsAppAdminConfigSchema = WhatsAppConfigSchema.omit({ accessToken: true, appSecret: true }).extend({
+  hasAccessToken: z.boolean(),
+  hasAppSecret: z.boolean()
+})
+export type WhatsAppAdminConfig = z.infer<typeof WhatsAppAdminConfigSchema>
+
+export const SendWhatsAppTestSchema = z.object({
+  phone: z.string().trim().min(8).max(20),
+  kind: z.enum(['order', 'abandoned']).default('order')
+})
+export type SendWhatsAppTest = z.infer<typeof SendWhatsAppTestSchema>
+
+// How an order was answered over WhatsApp — shown as a badge in the admin.
+export const WHATSAPP_STATUSES = ['Sent', 'Failed', 'Confirmed', 'Cancelled'] as const
+export type WhatsAppStatus = (typeof WHATSAPP_STATUSES)[number]
+
+// Button ids carried back in the webhook: "wa:confirm:<orderId>" / "wa:cancel:<orderId>".
+export function whatsappButtonId(action: 'confirm' | 'cancel', orderId: string): string {
+  return `wa:${action}:${orderId}`
+}
+export function parseWhatsappButtonId(id: string): { action: 'confirm' | 'cancel'; orderId: string } | null {
+  const m = /^wa:(confirm|cancel):([0-9a-f-]{36})$/i.exec(id.trim())
+  return m ? { action: m[1] as 'confirm' | 'cancel', orderId: m[2]! } : null
+}
+
+// ---- Order events: custom conversion events sent server-side when an order is confirmed / delivered ----
+// Names that already mean something to the ad platforms: a custom event must never reuse one (it would be
+// counted as a real Purchase, Lead...).
+export const RESERVED_AD_EVENT_NAMES = [
+  'purchase', 'lead', 'addtocart', 'addtowishlist', 'initiatecheckout', 'addpaymentinfo', 'viewcontent', 'pageview',
+  'completeregistration', 'contact', 'customizeproduct', 'donate', 'findlocation', 'schedule', 'search', 'starttrial',
+  'submitapplication', 'subscribe', 'completepayment', 'submitform', 'clickbutton', 'download', 'placeanorder'
+] as const
+
+export const OrderEventNameSchema = z
+  .string()
+  .trim()
+  .regex(/^[A-Za-z][A-Za-z0-9_]{1,39}$/, 'Use 2-40 letters, digits or underscores, starting with a letter')
+  .refine((n) => !(RESERVED_AD_EVENT_NAMES as readonly string[]).includes(n.toLowerCase()), 'This name is a standard event (Purchase, Lead…): choose another one')
+
+export const OrderEventSettingSchema = z.object({
+  enabled: z.boolean(),
+  eventName: OrderEventNameSchema,
+  sendToMeta: z.boolean().default(true),
+  sendToTikTok: z.boolean().default(true)
+})
+export type OrderEventSetting = z.infer<typeof OrderEventSettingSchema>
+
+export const DEFAULT_ORDER_EVENT_CONFIRMED: OrderEventSetting = { enabled: false, eventName: 'Confirmed', sendToMeta: true, sendToTikTok: true }
+// Delivered was sent before this app existed: it stays on by default (and with no saved config at all).
+export const DEFAULT_ORDER_EVENT_DELIVERED: OrderEventSetting = { enabled: true, eventName: 'Delivered', sendToMeta: true, sendToTikTok: true }
+
+export const OrderEventsConfigSchema = z.object({
+  confirmed: OrderEventSettingSchema.default(DEFAULT_ORDER_EVENT_CONFIRMED),
+  delivered: OrderEventSettingSchema.default(DEFAULT_ORDER_EVENT_DELIVERED)
+})
+export type OrderEventsConfig = z.infer<typeof OrderEventsConfigSchema>

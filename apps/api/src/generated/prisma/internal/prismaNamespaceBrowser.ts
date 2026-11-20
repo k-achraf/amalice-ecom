@@ -385,6 +385,12 @@ export const OrderScalarFieldEnum = {
   riskLevel: 'riskLevel',
   riskFactors: 'riskFactors',
   deliveredEventSentAt: 'deliveredEventSentAt',
+  confirmedEventSentAt: 'confirmedEventSentAt',
+  whatsappStatus: 'whatsappStatus',
+  whatsappSentAt: 'whatsappSentAt',
+  whatsappRespondedAt: 'whatsappRespondedAt',
+  whatsappMessageId: 'whatsappMessageId',
+  whatsappError: 'whatsappError',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

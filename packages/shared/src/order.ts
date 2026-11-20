@@ -537,6 +537,8 @@ export interface AdminOrderListItem {
   isAbandoned: boolean
   // Started as an abandoned cart; stays true after the order is confirmed (label).
   fromAbandoned: boolean
+  // WhatsApp confirmation message state (null = never sent). Confirmed/Cancelled = customer tapped the button.
+  whatsappStatus: 'Sent' | 'Failed' | 'Confirmed' | 'Cancelled' | null
   // See FulfillmentMethodSchema's comment — dispatch requires this to be
   // ShippingCompany (with shippingCompanyName set) or Manual, never
   // Unassigned.
@@ -616,6 +618,8 @@ export interface AdminOrderDetail {
   // See Order.isAbandoned's Prisma comment.
   isAbandoned: boolean
   fromAbandoned: boolean
+  // WhatsApp confirmation message state (null = never sent). Confirmed/Cancelled = customer tapped the button.
+  whatsappStatus: 'Sent' | 'Failed' | 'Confirmed' | 'Cancelled' | null
   fulfillmentMethod: FulfillmentMethod
   shippingCompanyId: string | null
   shippingCompanyName: string | null

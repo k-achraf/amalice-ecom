@@ -420,6 +420,13 @@ export type EnumRiskLevelNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumRiskLevelNullableFilter<$PrismaModel> | $Enums.RiskLevel | null
 }
 
+export type EnumWhatsappStatusNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.WhatsappStatus | Prisma.EnumWhatsappStatusFieldRefInput<$PrismaModel> | null
+  in?: $Enums.WhatsappStatus[] | Prisma.ListEnumWhatsappStatusFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.WhatsappStatus[] | Prisma.ListEnumWhatsappStatusFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumWhatsappStatusNullableFilter<$PrismaModel> | $Enums.WhatsappStatus | null
+}
+
 export type EnumOrderStateWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.OrderState | Prisma.EnumOrderStateFieldRefInput<$PrismaModel>
   in?: $Enums.OrderState[] | Prisma.ListEnumOrderStateFieldRefInput<$PrismaModel>
@@ -482,6 +489,16 @@ export type EnumRiskLevelNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedEnumRiskLevelNullableFilter<$PrismaModel>
   _max?: Prisma.NestedEnumRiskLevelNullableFilter<$PrismaModel>
+}
+
+export type EnumWhatsappStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.WhatsappStatus | Prisma.EnumWhatsappStatusFieldRefInput<$PrismaModel> | null
+  in?: $Enums.WhatsappStatus[] | Prisma.ListEnumWhatsappStatusFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.WhatsappStatus[] | Prisma.ListEnumWhatsappStatusFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumWhatsappStatusNullableWithAggregatesFilter<$PrismaModel> | $Enums.WhatsappStatus | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumWhatsappStatusNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumWhatsappStatusNullableFilter<$PrismaModel>
 }
 
 export type EnumAttributionPlatformFilter<$PrismaModel = never> = {
@@ -1371,6 +1388,13 @@ export type NestedEnumRiskLevelNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumRiskLevelNullableFilter<$PrismaModel> | $Enums.RiskLevel | null
 }
 
+export type NestedEnumWhatsappStatusNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.WhatsappStatus | Prisma.EnumWhatsappStatusFieldRefInput<$PrismaModel> | null
+  in?: $Enums.WhatsappStatus[] | Prisma.ListEnumWhatsappStatusFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.WhatsappStatus[] | Prisma.ListEnumWhatsappStatusFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumWhatsappStatusNullableFilter<$PrismaModel> | $Enums.WhatsappStatus | null
+}
+
 export type NestedEnumOrderStateWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.OrderState | Prisma.EnumOrderStateFieldRefInput<$PrismaModel>
   in?: $Enums.OrderState[] | Prisma.ListEnumOrderStateFieldRefInput<$PrismaModel>
@@ -1433,6 +1457,16 @@ export type NestedEnumRiskLevelNullableWithAggregatesFilter<$PrismaModel = never
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedEnumRiskLevelNullableFilter<$PrismaModel>
   _max?: Prisma.NestedEnumRiskLevelNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumWhatsappStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.WhatsappStatus | Prisma.EnumWhatsappStatusFieldRefInput<$PrismaModel> | null
+  in?: $Enums.WhatsappStatus[] | Prisma.ListEnumWhatsappStatusFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.WhatsappStatus[] | Prisma.ListEnumWhatsappStatusFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumWhatsappStatusNullableWithAggregatesFilter<$PrismaModel> | $Enums.WhatsappStatus | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumWhatsappStatusNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumWhatsappStatusNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumAttributionPlatformFilter<$PrismaModel = never> = {

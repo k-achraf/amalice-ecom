@@ -90,6 +90,16 @@ export const AttributeType = {
 export type AttributeType = (typeof AttributeType)[keyof typeof AttributeType]
 
 
+export const WhatsappStatus = {
+  Sent: 'Sent',
+  Failed: 'Failed',
+  Confirmed: 'Confirmed',
+  Cancelled: 'Cancelled'
+} as const
+
+export type WhatsappStatus = (typeof WhatsappStatus)[keyof typeof WhatsappStatus]
+
+
 export const AttributionPlatform = {
   Meta: 'Meta',
   TikTok: 'TikTok',

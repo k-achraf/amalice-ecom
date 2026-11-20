@@ -6,15 +6,24 @@ import { MetaConversionsApiService, type MetaCapiCredentials } from '../apps/met
 import { TikTokEventsApiService, type TikTokEapiCredentials } from '../apps/tiktok-events-api.service'
 
 const DELIVERED_STATES = ['Delivered', 'CashCollected', 'Reconciled', 'Settled'] as const
+// Every state an order can be in AFTER the call center confirmed it (the "Confirmed" event is sent for all of
+// them: an order can move on before the sweep runs).
+const CONFIRMED_STATES = ['Confirmed', 'OnHold', 'Packed', 'HandedToCourier', 'OutForDelivery', 'DeliveryFailed', 'ReturnedToOrigin', 'Restocked', 'CancelledShipping', ...DELIVERED_STATES] as const
 // Meta drops events older than 7 days; stay inside that.
 const MAX_AGE_MS = 6 * 24 * 3600 * 1000
 const BATCH = 50
 
-// Sends a custom "Delivered" event to Meta CAPI / TikTok Events API once an
-// order is really delivered, so the ad platforms can learn from real sales.
-// A sweep (not a hook) because orders reach Delivered from several places
-// (admin transition, courier webhook, courier sync, Sheets). Each order is
-// marked deliveredEventSentAt once the enabled platforms accepted it.
+type EventKind = 'confirmed' | 'delivered'
+const KINDS: Record<EventKind, { states: readonly string[]; sentField: 'confirmedEventSentAt' | 'deliveredEventSentAt'; idPrefix: string }> = {
+  confirmed: { states: CONFIRMED_STATES, sentField: 'confirmedEventSentAt', idPrefix: 'confirmed' },
+  delivered: { states: DELIVERED_STATES, sentField: 'deliveredEventSentAt', idPrefix: 'delivered' }
+}
+
+// Sends the custom order events ("Confirmed", "Delivered" by default; names, platforms and on/off come from the
+// Order events app) to Meta CAPI / TikTok Events API, so the ad platforms can learn from real sales.
+// A sweep (not a hook) because orders reach these states from several places
+// (admin transition, call center, courier webhook, courier sync, Sheets). Each order is
+// marked (confirmedEventSentAt / deliveredEventSentAt) once the enabled platforms accepted it.
 @Injectable()
 export class DeliveryEventsService {
   private readonly logger = new Logger(DeliveryEventsService.name)
@@ -28,6 +37,7 @@ export class DeliveryEventsService {
   ) {}
 
   async sweep(): Promise<number> {
+    const config = await this.apps.getOrderEventsConfig()
     // Store-wide credentials need the app switched on. A funnel with its own pixels sends to those instead
     // (each with its own token), even while the store-wide app is off.
     const [storeMeta, storeTiktok, ownServerPixels] = await Promise.all([
@@ -37,8 +47,19 @@ export class DeliveryEventsService {
     ])
     if (!storeMeta && !storeTiktok && !ownServerPixels) return 0
 
+    let sent = 0
+    for (const kind of ['confirmed', 'delivered'] as const) {
+      const setting = config[kind]
+      if (!setting.enabled || (!setting.sendToMeta && !setting.sendToTikTok)) continue
+      sent += await this.sweepKind(kind, setting, storeMeta, storeTiktok)
+    }
+    return sent
+  }
+
+  private async sweepKind(kind: EventKind, setting: { eventName: string; sendToMeta: boolean; sendToTikTok: boolean }, storeMeta: MetaCapiCredentials | null, storeTiktok: TikTokEapiCredentials | null): Promise<number> {
+    const { states, sentField, idPrefix } = KINDS[kind]
     const orders = await this.prisma.order.findMany({
-      where: { state: { in: [...DELIVERED_STATES] }, deliveredEventSentAt: null, isAbandoned: false, updatedAt: { gte: new Date(Date.now() - MAX_AGE_MS) } },
+      where: { state: { in: [...states] as never[] }, [sentField]: null, isAbandoned: false, updatedAt: { gte: new Date(Date.now() - MAX_AGE_MS) } },
       orderBy: { updatedAt: 'asc' },
       take: BATCH,
       select: {
@@ -55,7 +76,7 @@ export class DeliveryEventsService {
     let sent = 0
     for (const o of orders) {
       const a = o.attribution
-      const eventId = `delivered-${o.id}`
+      const eventId = `${idPrefix}-${o.id}`
       const eventTime = Math.floor(o.updatedAt.getTime() / 1000)
       const value = Math.round(o.totalCents) / 100
       const own = o.funnel?.pixelIds ?? []
@@ -69,12 +90,14 @@ export class DeliveryEventsService {
         metaCreds = storeMeta ? [storeMeta] : []
         tiktokCreds = storeTiktok ? [storeTiktok] : []
       }
+      if (!setting.sendToMeta) metaCreds = []
+      if (!setting.sendToTikTok) tiktokCreds = []
       if (!metaCreds.length && !tiktokCreds.length) continue
       let ok = true
       try {
         if (metaCreds.length && (!a || a.platform === 'Meta' || a.fbp || a.fbc)) {
           for (const creds of metaCreds) await this.meta.sendEvent(creds, {
-            eventName: 'Delivered',
+            eventName: setting.eventName,
             eventId,
             eventTime,
             eventSourceUrl: a?.pageUrl ?? undefined,
@@ -84,7 +107,7 @@ export class DeliveryEventsService {
         }
         if (tiktokCreds.length && (!a || a.platform === 'TikTok' || a.ttp)) {
           for (const creds of tiktokCreds) await this.tiktok.sendEvent(creds, {
-            eventName: 'Delivered',
+            eventName: setting.eventName,
             eventId,
             eventTime,
             eventSourceUrl: a?.pageUrl ?? undefined,
@@ -94,10 +117,10 @@ export class DeliveryEventsService {
         }
       } catch (error) {
         ok = false
-        this.logger.warn(`Delivered event for order ${o.id} failed (will retry): ${(error as Error).message}`)
+        this.logger.warn(`${setting.eventName} event for order ${o.id} failed (will retry): ${(error as Error).message}`)
       }
       if (ok) {
-        await this.prisma.order.update({ where: { id: o.id }, data: { deliveredEventSentAt: new Date() } })
+        await this.prisma.order.update({ where: { id: o.id }, data: { [sentField]: new Date() } })
         sent++
       }
     }

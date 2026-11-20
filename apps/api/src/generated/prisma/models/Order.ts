@@ -78,6 +78,12 @@ export type OrderMinAggregateOutputType = {
   riskScore: number | null
   riskLevel: $Enums.RiskLevel | null
   deliveredEventSentAt: Date | null
+  confirmedEventSentAt: Date | null
+  whatsappStatus: $Enums.WhatsappStatus | null
+  whatsappSentAt: Date | null
+  whatsappRespondedAt: Date | null
+  whatsappMessageId: string | null
+  whatsappError: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -120,6 +126,12 @@ export type OrderMaxAggregateOutputType = {
   riskScore: number | null
   riskLevel: $Enums.RiskLevel | null
   deliveredEventSentAt: Date | null
+  confirmedEventSentAt: Date | null
+  whatsappStatus: $Enums.WhatsappStatus | null
+  whatsappSentAt: Date | null
+  whatsappRespondedAt: Date | null
+  whatsappMessageId: string | null
+  whatsappError: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -163,6 +175,12 @@ export type OrderCountAggregateOutputType = {
   riskLevel: number
   riskFactors: number
   deliveredEventSentAt: number
+  confirmedEventSentAt: number
+  whatsappStatus: number
+  whatsappSentAt: number
+  whatsappRespondedAt: number
+  whatsappMessageId: number
+  whatsappError: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -221,6 +239,12 @@ export type OrderMinAggregateInputType = {
   riskScore?: true
   riskLevel?: true
   deliveredEventSentAt?: true
+  confirmedEventSentAt?: true
+  whatsappStatus?: true
+  whatsappSentAt?: true
+  whatsappRespondedAt?: true
+  whatsappMessageId?: true
+  whatsappError?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -263,6 +287,12 @@ export type OrderMaxAggregateInputType = {
   riskScore?: true
   riskLevel?: true
   deliveredEventSentAt?: true
+  confirmedEventSentAt?: true
+  whatsappStatus?: true
+  whatsappSentAt?: true
+  whatsappRespondedAt?: true
+  whatsappMessageId?: true
+  whatsappError?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -306,6 +336,12 @@ export type OrderCountAggregateInputType = {
   riskLevel?: true
   riskFactors?: true
   deliveredEventSentAt?: true
+  confirmedEventSentAt?: true
+  whatsappStatus?: true
+  whatsappSentAt?: true
+  whatsappRespondedAt?: true
+  whatsappMessageId?: true
+  whatsappError?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -436,6 +472,12 @@ export type OrderGroupByOutputType = {
   riskLevel: $Enums.RiskLevel | null
   riskFactors: runtime.JsonValue | null
   deliveredEventSentAt: Date | null
+  confirmedEventSentAt: Date | null
+  whatsappStatus: $Enums.WhatsappStatus | null
+  whatsappSentAt: Date | null
+  whatsappRespondedAt: Date | null
+  whatsappMessageId: string | null
+  whatsappError: string | null
   createdAt: Date
   updatedAt: Date
   _count: OrderCountAggregateOutputType | null
@@ -502,6 +544,12 @@ export type OrderWhereInput = {
   riskLevel?: Prisma.EnumRiskLevelNullableFilter<"Order"> | $Enums.RiskLevel | null
   riskFactors?: Prisma.JsonNullableFilter<"Order">
   deliveredEventSentAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  confirmedEventSentAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  whatsappStatus?: Prisma.EnumWhatsappStatusNullableFilter<"Order"> | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  whatsappRespondedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  whatsappMessageId?: Prisma.StringNullableFilter<"Order"> | string | null
+  whatsappError?: Prisma.StringNullableFilter<"Order"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
@@ -560,6 +608,12 @@ export type OrderOrderByWithRelationInput = {
   riskLevel?: Prisma.SortOrderInput | Prisma.SortOrder
   riskFactors?: Prisma.SortOrderInput | Prisma.SortOrder
   deliveredEventSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  confirmedEventSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  whatsappStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  whatsappSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  whatsappRespondedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  whatsappMessageId?: Prisma.SortOrderInput | Prisma.SortOrder
+  whatsappError?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   customer?: Prisma.CustomerOrderByWithRelationInput
@@ -621,6 +675,12 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   riskLevel?: Prisma.EnumRiskLevelNullableFilter<"Order"> | $Enums.RiskLevel | null
   riskFactors?: Prisma.JsonNullableFilter<"Order">
   deliveredEventSentAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  confirmedEventSentAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  whatsappStatus?: Prisma.EnumWhatsappStatusNullableFilter<"Order"> | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  whatsappRespondedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  whatsappMessageId?: Prisma.StringNullableFilter<"Order"> | string | null
+  whatsappError?: Prisma.StringNullableFilter<"Order"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
@@ -679,6 +739,12 @@ export type OrderOrderByWithAggregationInput = {
   riskLevel?: Prisma.SortOrderInput | Prisma.SortOrder
   riskFactors?: Prisma.SortOrderInput | Prisma.SortOrder
   deliveredEventSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  confirmedEventSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  whatsappStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  whatsappSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  whatsappRespondedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  whatsappMessageId?: Prisma.SortOrderInput | Prisma.SortOrder
+  whatsappError?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.OrderCountOrderByAggregateInput
@@ -730,6 +796,12 @@ export type OrderScalarWhereWithAggregatesInput = {
   riskLevel?: Prisma.EnumRiskLevelNullableWithAggregatesFilter<"Order"> | $Enums.RiskLevel | null
   riskFactors?: Prisma.JsonNullableWithAggregatesFilter<"Order">
   deliveredEventSentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+  confirmedEventSentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+  whatsappStatus?: Prisma.EnumWhatsappStatusNullableWithAggregatesFilter<"Order"> | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+  whatsappRespondedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+  whatsappMessageId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  whatsappError?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
 }
@@ -768,6 +840,12 @@ export type OrderCreateInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -826,6 +904,12 @@ export type OrderUncheckedCreateInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -874,6 +958,12 @@ export type OrderUpdateInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -932,6 +1022,12 @@ export type OrderUncheckedUpdateInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -985,6 +1081,12 @@ export type OrderCreateManyInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1023,6 +1125,12 @@ export type OrderUpdateManyMutationInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1066,6 +1174,12 @@ export type OrderUncheckedUpdateManyInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1124,6 +1238,12 @@ export type OrderCountOrderByAggregateInput = {
   riskLevel?: Prisma.SortOrder
   riskFactors?: Prisma.SortOrder
   deliveredEventSentAt?: Prisma.SortOrder
+  confirmedEventSentAt?: Prisma.SortOrder
+  whatsappStatus?: Prisma.SortOrder
+  whatsappSentAt?: Prisma.SortOrder
+  whatsappRespondedAt?: Prisma.SortOrder
+  whatsappMessageId?: Prisma.SortOrder
+  whatsappError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -1173,6 +1293,12 @@ export type OrderMaxOrderByAggregateInput = {
   riskScore?: Prisma.SortOrder
   riskLevel?: Prisma.SortOrder
   deliveredEventSentAt?: Prisma.SortOrder
+  confirmedEventSentAt?: Prisma.SortOrder
+  whatsappStatus?: Prisma.SortOrder
+  whatsappSentAt?: Prisma.SortOrder
+  whatsappRespondedAt?: Prisma.SortOrder
+  whatsappMessageId?: Prisma.SortOrder
+  whatsappError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -1215,6 +1341,12 @@ export type OrderMinOrderByAggregateInput = {
   riskScore?: Prisma.SortOrder
   riskLevel?: Prisma.SortOrder
   deliveredEventSentAt?: Prisma.SortOrder
+  confirmedEventSentAt?: Prisma.SortOrder
+  whatsappStatus?: Prisma.SortOrder
+  whatsappSentAt?: Prisma.SortOrder
+  whatsappRespondedAt?: Prisma.SortOrder
+  whatsappMessageId?: Prisma.SortOrder
+  whatsappError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -1357,6 +1489,10 @@ export type EnumCourierOperationFieldUpdateOperationsInput = {
 
 export type NullableEnumRiskLevelFieldUpdateOperationsInput = {
   set?: $Enums.RiskLevel | null
+}
+
+export type NullableEnumWhatsappStatusFieldUpdateOperationsInput = {
+  set?: $Enums.WhatsappStatus | null
 }
 
 export type OrderUpdateOneWithoutDuplicateOrdersNestedInput = {
@@ -1647,6 +1783,12 @@ export type OrderCreateWithoutCustomerInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
@@ -1703,6 +1845,12 @@ export type OrderUncheckedCreateWithoutCustomerInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -1785,6 +1933,12 @@ export type OrderScalarWhereInput = {
   riskLevel?: Prisma.EnumRiskLevelNullableFilter<"Order"> | $Enums.RiskLevel | null
   riskFactors?: Prisma.JsonNullableFilter<"Order">
   deliveredEventSentAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  confirmedEventSentAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  whatsappStatus?: Prisma.EnumWhatsappStatusNullableFilter<"Order"> | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  whatsappRespondedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  whatsappMessageId?: Prisma.StringNullableFilter<"Order"> | string | null
+  whatsappError?: Prisma.StringNullableFilter<"Order"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
 }
@@ -1823,6 +1977,12 @@ export type OrderCreateWithoutAddressInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -1879,6 +2039,12 @@ export type OrderUncheckedCreateWithoutAddressInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -1953,6 +2119,12 @@ export type OrderCreateWithoutDuplicateOrdersInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -2010,6 +2182,12 @@ export type OrderUncheckedCreateWithoutDuplicateOrdersInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   callAttempts?: Prisma.CallAttemptUncheckedCreateNestedManyWithoutOrderInput
@@ -2062,6 +2240,12 @@ export type OrderCreateWithoutDuplicateOfOrderInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -2118,6 +2302,12 @@ export type OrderUncheckedCreateWithoutDuplicateOfOrderInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -2187,6 +2377,12 @@ export type OrderUpdateWithoutDuplicateOrdersInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -2244,6 +2440,12 @@ export type OrderUncheckedUpdateWithoutDuplicateOrdersInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   callAttempts?: Prisma.CallAttemptUncheckedUpdateManyWithoutOrderNestedInput
@@ -2307,6 +2509,12 @@ export type OrderCreateWithoutAttributionInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -2364,6 +2572,12 @@ export type OrderUncheckedCreateWithoutAttributionInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -2427,6 +2641,12 @@ export type OrderUpdateWithoutAttributionInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -2484,6 +2704,12 @@ export type OrderUncheckedUpdateWithoutAttributionInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -2531,6 +2757,12 @@ export type OrderCreateWithoutCallAttemptsInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -2588,6 +2820,12 @@ export type OrderUncheckedCreateWithoutCallAttemptsInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -2651,6 +2889,12 @@ export type OrderUpdateWithoutCallAttemptsInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -2708,6 +2952,12 @@ export type OrderUncheckedUpdateWithoutCallAttemptsInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -2755,6 +3005,12 @@ export type OrderCreateWithoutItemsInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -2812,6 +3068,12 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -2875,6 +3137,12 @@ export type OrderUpdateWithoutItemsInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -2932,6 +3200,12 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -2979,6 +3253,12 @@ export type OrderCreateWithoutShipmentInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -3036,6 +3316,12 @@ export type OrderUncheckedCreateWithoutShipmentInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -3099,6 +3385,12 @@ export type OrderUpdateWithoutShipmentInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -3156,6 +3448,12 @@ export type OrderUncheckedUpdateWithoutShipmentInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -3203,6 +3501,12 @@ export type OrderCreateWithoutCashReconciliationInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -3260,6 +3564,12 @@ export type OrderUncheckedCreateWithoutCashReconciliationInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -3323,6 +3633,12 @@ export type OrderUpdateWithoutCashReconciliationInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -3380,6 +3696,12 @@ export type OrderUncheckedUpdateWithoutCashReconciliationInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -3427,6 +3749,12 @@ export type OrderCreateWithoutLedgerEntriesInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -3484,6 +3812,12 @@ export type OrderUncheckedCreateWithoutLedgerEntriesInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -3547,6 +3881,12 @@ export type OrderUpdateWithoutLedgerEntriesInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -3604,6 +3944,12 @@ export type OrderUncheckedUpdateWithoutLedgerEntriesInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -3651,6 +3997,12 @@ export type OrderCreateWithoutNotificationsInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -3708,6 +4060,12 @@ export type OrderUncheckedCreateWithoutNotificationsInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -3771,6 +4129,12 @@ export type OrderUpdateWithoutNotificationsInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -3828,6 +4192,12 @@ export type OrderUncheckedUpdateWithoutNotificationsInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -3875,6 +4245,12 @@ export type OrderCreateWithoutGoogleSheetRowsInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -3932,6 +4308,12 @@ export type OrderUncheckedCreateWithoutGoogleSheetRowsInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -3995,6 +4377,12 @@ export type OrderUpdateWithoutGoogleSheetRowsInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -4052,6 +4440,12 @@ export type OrderUncheckedUpdateWithoutGoogleSheetRowsInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -4099,6 +4493,12 @@ export type OrderCreateWithoutShippingCompanyInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -4155,6 +4555,12 @@ export type OrderUncheckedCreateWithoutShippingCompanyInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -4229,6 +4635,12 @@ export type OrderCreateWithoutCourierWebhookEventsInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -4286,6 +4698,12 @@ export type OrderUncheckedCreateWithoutCourierWebhookEventsInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -4349,6 +4767,12 @@ export type OrderUpdateWithoutCourierWebhookEventsInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -4406,6 +4830,12 @@ export type OrderUncheckedUpdateWithoutCourierWebhookEventsInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -4453,6 +4883,12 @@ export type OrderCreateWithoutFunnelInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -4509,6 +4945,12 @@ export type OrderUncheckedCreateWithoutFunnelInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   duplicateOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutDuplicateOfOrderInput
@@ -4587,6 +5029,12 @@ export type OrderCreateManyCustomerInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -4625,6 +5073,12 @@ export type OrderUpdateWithoutCustomerInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
@@ -4681,6 +5135,12 @@ export type OrderUncheckedUpdateWithoutCustomerInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -4733,6 +5193,12 @@ export type OrderUncheckedUpdateManyWithoutCustomerInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -4775,6 +5241,12 @@ export type OrderCreateManyAddressInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -4813,6 +5285,12 @@ export type OrderUpdateWithoutAddressInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -4869,6 +5347,12 @@ export type OrderUncheckedUpdateWithoutAddressInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -4921,6 +5405,12 @@ export type OrderUncheckedUpdateManyWithoutAddressInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -4963,6 +5453,12 @@ export type OrderCreateManyDuplicateOfOrderInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -5001,6 +5497,12 @@ export type OrderUpdateWithoutDuplicateOfOrderInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -5057,6 +5559,12 @@ export type OrderUncheckedUpdateWithoutDuplicateOfOrderInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -5109,6 +5617,12 @@ export type OrderUncheckedUpdateManyWithoutDuplicateOfOrderInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -5151,6 +5665,12 @@ export type OrderCreateManyShippingCompanyInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -5189,6 +5709,12 @@ export type OrderUpdateWithoutShippingCompanyInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -5245,6 +5771,12 @@ export type OrderUncheckedUpdateWithoutShippingCompanyInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -5297,6 +5829,12 @@ export type OrderUncheckedUpdateManyWithoutShippingCompanyInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -5339,6 +5877,12 @@ export type OrderCreateManyFunnelInput = {
   riskLevel?: $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Date | string | null
+  confirmedEventSentAt?: Date | string | null
+  whatsappStatus?: $Enums.WhatsappStatus | null
+  whatsappSentAt?: Date | string | null
+  whatsappRespondedAt?: Date | string | null
+  whatsappMessageId?: string | null
+  whatsappError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -5377,6 +5921,12 @@ export type OrderUpdateWithoutFunnelInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -5433,6 +5983,12 @@ export type OrderUncheckedUpdateWithoutFunnelInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   duplicateOrders?: Prisma.OrderUncheckedUpdateManyWithoutDuplicateOfOrderNestedInput
@@ -5485,6 +6041,12 @@ export type OrderUncheckedUpdateManyWithoutFunnelInput = {
   riskLevel?: Prisma.NullableEnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel | null
   riskFactors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   deliveredEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedEventSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappStatus?: Prisma.NullableEnumWhatsappStatusFieldUpdateOperationsInput | $Enums.WhatsappStatus | null
+  whatsappSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappRespondedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  whatsappMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whatsappError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -5613,6 +6175,12 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   riskLevel?: boolean
   riskFactors?: boolean
   deliveredEventSentAt?: boolean
+  confirmedEventSentAt?: boolean
+  whatsappStatus?: boolean
+  whatsappSentAt?: boolean
+  whatsappRespondedAt?: boolean
+  whatsappMessageId?: boolean
+  whatsappError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -5672,6 +6240,12 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   riskLevel?: boolean
   riskFactors?: boolean
   deliveredEventSentAt?: boolean
+  confirmedEventSentAt?: boolean
+  whatsappStatus?: boolean
+  whatsappSentAt?: boolean
+  whatsappRespondedAt?: boolean
+  whatsappMessageId?: boolean
+  whatsappError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -5720,6 +6294,12 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   riskLevel?: boolean
   riskFactors?: boolean
   deliveredEventSentAt?: boolean
+  confirmedEventSentAt?: boolean
+  whatsappStatus?: boolean
+  whatsappSentAt?: boolean
+  whatsappRespondedAt?: boolean
+  whatsappMessageId?: boolean
+  whatsappError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -5768,11 +6348,17 @@ export type OrderSelectScalar = {
   riskLevel?: boolean
   riskFactors?: boolean
   deliveredEventSentAt?: boolean
+  confirmedEventSentAt?: boolean
+  whatsappStatus?: boolean
+  whatsappSentAt?: boolean
+  whatsappRespondedAt?: boolean
+  whatsappMessageId?: boolean
+  whatsappError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "addressId" | "state" | "totalCents" | "shippingType" | "shippingPriceCents" | "isAbandoned" | "fromAbandoned" | "fulfillmentMethod" | "shippingCompanyId" | "notes" | "postponedUntil" | "isDuplicate" | "duplicateOfOrderId" | "archived" | "archivedAt" | "assignedToId" | "assignedToEmail" | "lockedUntil" | "skippedUntil" | "callAttemptsCount" | "lastCalledAt" | "deliveryNote" | "isFragile" | "gpsLink" | "courierOperation" | "exchangeProduct" | "courierWilayaId" | "courierCommune" | "courierPostalCode" | "courierLocationCompanyId" | "stockReservedAt" | "funnelId" | "riskScore" | "riskLevel" | "riskFactors" | "deliveredEventSentAt" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "addressId" | "state" | "totalCents" | "shippingType" | "shippingPriceCents" | "isAbandoned" | "fromAbandoned" | "fulfillmentMethod" | "shippingCompanyId" | "notes" | "postponedUntil" | "isDuplicate" | "duplicateOfOrderId" | "archived" | "archivedAt" | "assignedToId" | "assignedToEmail" | "lockedUntil" | "skippedUntil" | "callAttemptsCount" | "lastCalledAt" | "deliveryNote" | "isFragile" | "gpsLink" | "courierOperation" | "exchangeProduct" | "courierWilayaId" | "courierCommune" | "courierPostalCode" | "courierLocationCompanyId" | "stockReservedAt" | "funnelId" | "riskScore" | "riskLevel" | "riskFactors" | "deliveredEventSentAt" | "confirmedEventSentAt" | "whatsappStatus" | "whatsappSentAt" | "whatsappRespondedAt" | "whatsappMessageId" | "whatsappError" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
   address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
@@ -5864,6 +6450,12 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     riskLevel: $Enums.RiskLevel | null
     riskFactors: runtime.JsonValue | null
     deliveredEventSentAt: Date | null
+    confirmedEventSentAt: Date | null
+    whatsappStatus: $Enums.WhatsappStatus | null
+    whatsappSentAt: Date | null
+    whatsappRespondedAt: Date | null
+    whatsappMessageId: string | null
+    whatsappError: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["order"]>
@@ -6342,6 +6934,12 @@ export interface OrderFieldRefs {
   readonly riskLevel: Prisma.FieldRef<"Order", 'RiskLevel'>
   readonly riskFactors: Prisma.FieldRef<"Order", 'Json'>
   readonly deliveredEventSentAt: Prisma.FieldRef<"Order", 'DateTime'>
+  readonly confirmedEventSentAt: Prisma.FieldRef<"Order", 'DateTime'>
+  readonly whatsappStatus: Prisma.FieldRef<"Order", 'WhatsappStatus'>
+  readonly whatsappSentAt: Prisma.FieldRef<"Order", 'DateTime'>
+  readonly whatsappRespondedAt: Prisma.FieldRef<"Order", 'DateTime'>
+  readonly whatsappMessageId: Prisma.FieldRef<"Order", 'String'>
+  readonly whatsappError: Prisma.FieldRef<"Order", 'String'>
   readonly createdAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Order", 'DateTime'>
 }

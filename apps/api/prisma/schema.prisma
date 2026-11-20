@@ -475,6 +475,15 @@ model Courier {
   @@map("couriers")
 }
 
+// How an order's WhatsApp confirmation message went (WhatsApp app). Confirmed/Cancelled = the customer
+// tapped the button in WhatsApp (the order state changed because of it).
+enum WhatsappStatus {
+  Sent
+  Failed
+  Confirmed
+  Cancelled
+}
+
 model Order {
   id                       String                @id @default(uuid())
   customerId               String                @map("customer_id")
@@ -606,6 +615,14 @@ model Order {
   // When the server-side "Delivered" event was sent to Meta CAPI / TikTok
   // Events API (ReportsModule's delivery sweep). Null = not sent yet.
   deliveredEventSentAt     DateTime?             @map("delivered_event_sent_at")
+  // Same for the custom "Confirmed" event (Order events app). Null = not sent yet.
+  confirmedEventSentAt     DateTime?             @map("confirmed_event_sent_at")
+  // WhatsApp confirmation message (Confirm / Cancel buttons). Null = never sent. whatsappMessageId = Meta's wamid.
+  whatsappStatus           WhatsappStatus?       @map("whatsapp_status")
+  whatsappSentAt           DateTime?             @map("whatsapp_sent_at")
+  whatsappRespondedAt      DateTime?             @map("whatsapp_responded_at")
+  whatsappMessageId        String?               @map("whatsapp_message_id")
+  whatsappError            String?               @map("whatsapp_error")
   createdAt                DateTime              @default(now()) @map("created_at")
   updatedAt                DateTime              @updatedAt @map("updated_at")
 
@@ -617,6 +634,7 @@ model Order {
   @@index([duplicateOfOrderId])
   @@index([shippingCompanyId])
   @@index([archived])
+  @@index([whatsappMessageId])
   @@map("orders")
 }
 

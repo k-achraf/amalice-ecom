@@ -7,6 +7,9 @@ import {
   GoogleSheetsConfigSchema,
   MetaPixelConfigSchema,
   TikTokPixelConfigSchema,
+  WhatsAppConfigSchema,
+  OrderEventsConfigSchema,
+  type OrderEventsConfig,
   type AppId,
   type AppInstallationView,
   type MetaPixelPublic,
@@ -27,7 +30,9 @@ import { TikTokEventsApiService, type TikTokEapiCredentials } from './tiktok-eve
 const CONFIG_SCHEMAS = {
   'meta-pixel': MetaPixelConfigSchema,
   'tiktok-pixel': TikTokPixelConfigSchema,
-  'google-sheets': GoogleSheetsConfigSchema
+  'google-sheets': GoogleSheetsConfigSchema,
+  whatsapp: WhatsAppConfigSchema,
+  'order-events': OrderEventsConfigSchema
 } as const satisfies Record<AppId, unknown>
 
 // Shape shared by every app in APPS_WITH_ACCESS_TOKEN — enough to mask/
@@ -51,6 +56,10 @@ export class AppsService {
   // secret) — replaced with a `hasAccessToken` boolean. Every other app's
   // config passes through unchanged.
   private maskConfigForAdmin(appId: AppId, config: Record<string, unknown> | null): Record<string, unknown> | null {
+    if (appId === 'whatsapp' && config) {
+      const { accessToken, appSecret, ...rest } = config as Record<string, unknown>
+      return { ...rest, hasAccessToken: !!accessToken, hasAppSecret: !!appSecret }
+    }
     if (!config || !(APPS_WITH_ACCESS_TOKEN as readonly AppId[]).includes(appId)) return config
     const { accessToken, ...rest } = config as ConfigWithAccessToken & Record<string, unknown>
     return { ...rest, hasAccessToken: !!accessToken }
@@ -118,6 +127,15 @@ export class AppsService {
       configToStore = { ...parsed, accessToken: parsed.accessToken === undefined ? previousToken : parsed.accessToken }
     }
 
+    // WhatsApp has two write-only secrets (accessToken, appSecret): same omit = keep / null = clear / string = set rule.
+    if (id === 'whatsapp') {
+      const parsed = configParsed.data as Record<string, unknown>
+      const prev = (before?.config ?? {}) as Record<string, unknown>
+      for (const key of ['accessToken', 'appSecret']) {
+        configToStore = { ...configToStore, [key]: parsed[key] === undefined ? (prev[key] ?? null) : parsed[key] }
+      }
+    }
+
     const changes: Record<string, { from: unknown; to: unknown }> = {}
     if (!before || before.enabled !== input.enabled) {
       changes.enabled = { from: before?.enabled ?? false, to: input.enabled }
@@ -154,6 +172,16 @@ export class AppsService {
       enabled: row.enabled,
       config: this.maskConfigForAdmin(id, row.config as Record<string, unknown> | null)
     }
+  }
+
+  // Which custom order events (Confirmed / Delivered) to send. No saved row = the defaults (Delivered on, as before this
+  // app existed); a saved row that is switched off turns both off.
+  async getOrderEventsConfig(): Promise<OrderEventsConfig> {
+    const row = await this.prisma.appInstallation.findUnique({ where: { appId: 'order-events' } })
+    const parsed = OrderEventsConfigSchema.safeParse(row?.config ?? {})
+    const config = parsed.success ? parsed.data : OrderEventsConfigSchema.parse({})
+    if (row && !row.enabled) return { confirmed: { ...config.confirmed, enabled: false }, delivered: { ...config.delivered, enabled: false } }
+    return config
   }
 
   // The full (unmasked) meta-pixel config for server-side use — CAPI event
