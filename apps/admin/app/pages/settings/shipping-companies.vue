@@ -21,7 +21,8 @@ const iconByProvider: Record<ShippingCompanyProvider, string> = {
   Dhd: 'i-lucide-truck',
   SwiftExpress: 'i-lucide-truck',
   Anderson: 'i-lucide-truck',
-  Hr48: 'i-lucide-truck'
+  Hr48: 'i-lucide-truck',
+  Imir: 'i-lucide-truck'
 }
 
 // Per-provider local UI state, keyed by provider — one card can be linking

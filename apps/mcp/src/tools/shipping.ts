@@ -6,7 +6,7 @@ export function registerShippingTools({ server, api }: ToolContext) {
     'list_shipping_companies',
     {
       title: 'Shipping companies',
-      description: 'Linked courier companies (DHD, Swift Express, Anderson, 48 Hr...) with their ids and status. Needed to assign an order.',
+      description: 'Linked courier companies (DHD, Swift Express, Anderson, 48 Hr, imir logistics...) with their ids and status. Needed to assign an order.',
       inputSchema: {},
       annotations: { readOnlyHint: true }
     },

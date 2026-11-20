@@ -1,9 +1,9 @@
 import { z } from 'zod'
 
 // Third-party courier integrations (see ShippingCompany's Prisma comment). One row per provider.
-// DHD and the three Ecotrack-hosted couriers all speak the same Ecotrack API (same endpoints, `api_token`
-// query auth, same webhook payload): they differ only in their base URL, so one client serves all four.
-export const SHIPPING_COMPANY_PROVIDERS = ['Dhd', 'SwiftExpress', 'Anderson', 'Hr48'] as const
+// DHD and the Ecotrack-hosted couriers all speak the same Ecotrack API (same endpoints, `api_token`
+// query auth, same webhook payload): they differ only in their base URL, so one client serves all of them.
+export const SHIPPING_COMPANY_PROVIDERS = ['Dhd', 'SwiftExpress', 'Anderson', 'Hr48', 'Imir'] as const
 export const ShippingCompanyProviderSchema = z.enum(SHIPPING_COMPANY_PROVIDERS)
 export type ShippingCompanyProvider = z.infer<typeof ShippingCompanyProviderSchema>
 
@@ -12,7 +12,8 @@ export const SHIPPING_COMPANY_CATALOG: Record<ShippingCompanyProvider, { name: s
   Dhd: { name: 'DHD', baseUrl: 'https://platform.dhd-dz.com' },
   SwiftExpress: { name: 'Swift Express', baseUrl: 'https://swift.ecotrack.dz' },
   Anderson: { name: 'Anderson', baseUrl: 'https://anderson-ecommerce.ecotrack.dz' },
-  Hr48: { name: '48 Hr Express', baseUrl: 'https://48hr.ecotrack.dz' }
+  Hr48: { name: '48 Hr Express', baseUrl: 'https://48hr.ecotrack.dz' },
+  Imir: { name: 'imir logistics', baseUrl: 'https://imir.ecotrack.dz' }
 }
 
 // The path segment each provider's inbound webhook lands on: POST /webhooks/<slug>/:shippingCompanyId.
@@ -20,7 +21,8 @@ export const SHIPPING_COMPANY_WEBHOOK_SLUG: Record<ShippingCompanyProvider, stri
   Dhd: 'dhd',
   SwiftExpress: 'swift-express',
   Anderson: 'anderson',
-  Hr48: '48hr'
+  Hr48: '48hr',
+  Imir: 'imir'
 }
 
 export function providerFromWebhookSlug(slug: string): ShippingCompanyProvider | undefined {
