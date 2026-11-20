@@ -257,9 +257,9 @@ const messageBlocks = computed(() => [
 
         <details>
           <summary class="muted" style="cursor: pointer">Approved template (for customers who never wrote to you)</summary>
-          <p class="muted" style="margin-top: 8px">
+          <p v-pre class="muted" style="margin-top: 8px">
             WhatsApp only allows free-text buttons within 24h of the customer’s last message. If it refuses, we send this template instead. Create it in WhatsApp Manager with two quick-reply buttons (Confirm first, Cancel second) and body variables:
-            {{ '{{1}}' }} name, {{ '{{2}}' }} order ref, {{ '{{3}}' }} total, {{ '{{4}}' }} products, {{ '{{5}}' }} store.
+            {{1}} name, {{2}} order ref, {{3}} total, {{4}} products, {{5}} store.
           </p>
           <div style="display: flex; flex-wrap: wrap; gap: 12px">
             <AdsField label="Template name"><AdsInput v-model="block.model.value.templateName" placeholder="order_confirmation" style="width: 240px" /></AdsField>
